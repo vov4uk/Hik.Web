@@ -1,0 +1,11 @@
+{
+  "IPAddress": "127.0.0.1",
+  "PortNumber": 8000,
+  "UserName": "user",
+  "Password": "pass",
+  "ProcessingPeriodHours": 6,
+  "DestinationFolder": "D:\\Video",
+  "ModeAllowedValues": [ "Fire-and-forget", "Recurring" ],
+  "Mode": "Recurring",
+  "IntervalMinutes": 120
+}
