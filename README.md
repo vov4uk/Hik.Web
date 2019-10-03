@@ -17,4 +17,4 @@ App works in two modes:
   * "Mode": "Recurring" - _Fire-and-forget OR Recurring._
   * "IntervalMinutes": 120 - _For Recurring mode, how often check for updates._
 
-![Alt text](HikConsole.jpg?raw=true "Output example")
+![Alt text](HikConsole.png?raw=true "Output example")

@@ -53,26 +53,31 @@ namespace HikConsole
 
             if (_downloader.Login())
             {
-                Console.WriteLine($"Get videos from {dateTimeStart} to {dateTimeEnd}");
-                List<SDK.NET_DVR_FINDDATA_V30> results = _downloader.Search(dateTimeStart, dateTimeEnd).SkipLast(1).ToList();
-                _downloader.PrintTable(results);
-                foreach (var file in results)
+                Console.WriteLine($"{DateTime.Now} : Get videos from {dateTimeStart} to {dateTimeEnd}");
+                List<SDK.NET_DVR_FINDDATA_V30> results = _downloader.Search(dateTimeStart, dateTimeEnd)?.SkipLast(1).ToList();
+                if (results != null && results.Any())
                 {
-                    if (_downloader.DownloadName(file))
+                    _downloader.PrintTable(results);
+                    int i = 1;
+                    foreach (var file in results)
                     {
-                        do
+                        Console.Write($"{i++} of {results.Count} : ");
+                        if (_downloader.DownloadByName(file))
                         {
-                            _downloader.CheckProgress(file);
-                            Thread.Sleep(5000);
+                            do
+                            {
+                                _downloader.CheckProgress(file);
+                                Thread.Sleep(5000);
 
-                        } while (_downloader.IsDownloading);
+                            } while (_downloader.IsDownloading);
+                        }
                     }
                 }
 
                 DateTime end = DateTime.Now;
                 string duration = (start - end).ToString("h'h 'm'm 's's'");
                 Console.WriteLine($"{end} : End. Duration : {duration}");
-                Console.WriteLine($"Next execution at {start.AddMinutes(_appConfig.Interval)}");
+                Console.WriteLine($"{DateTime.Now} : Next execution at {start.AddMinutes(_appConfig.Interval)}");
                 _downloader.Exit();
                 _downloader = null;
             }
