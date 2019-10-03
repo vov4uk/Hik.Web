@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/khmelovskyi/HikConsole/_apis/build/status/vov4uk.HikConsole?branchName=master)](https://dev.azure.com/khmelovskyi/HikConsole/_build/latest?definitionId=1&branchName=master)
+
 # HikConsole
 Download video files from Hikvision IP cameras, only x64 platform supported.
 
