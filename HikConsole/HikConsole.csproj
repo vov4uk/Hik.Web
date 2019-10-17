@@ -17,7 +17,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -49,14 +49,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Abstraction\ISDKWrapper.cs" />
     <Compile Include="AppConfig.cs" />
     <Compile Include="ConsoleHelper.cs" />
+    <Compile Include="DeviceInfo.cs" />
     <Compile Include="SDK.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgressBar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HikConsole.cs" />
+    <Compile Include="SDKWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

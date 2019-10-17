@@ -11,7 +11,7 @@ namespace HikConsole
     {
         static HikConsole _downloader;
         static AppConfig _appConfig;
-        static void Main(string[] args)
+        static void Main()
         {
             _appConfig = JsonConvert.DeserializeObject<AppConfig>(System.IO.File.ReadAllText("configuration.json"));
             C.WriteLine(_appConfig.ToString(), ConsoleColor.DarkMagenta);
@@ -51,8 +51,8 @@ namespace HikConsole
             DateTime periodStart = start.AddHours(-1* _appConfig.ProcessingPeriodHours);
             DateTime periodEnd = start;
 
-            _downloader = new HikConsole(_appConfig);
-
+            _downloader = new HikConsole(_appConfig, new SDKWrapper());
+            _downloader.Init();
             if (_downloader.Login())
             {
                 C.WriteLine($"Get videos from {periodStart} to {periodEnd}", timeStamp: DateTime.Now);

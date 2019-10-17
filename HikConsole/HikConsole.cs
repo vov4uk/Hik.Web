@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HikConsole.Abstraction;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -11,11 +12,11 @@ namespace HikConsole
     {
         private const int ProgressBarMaximum = 100;
         private const int ProgressBarMinimum = 0;
-        private SDK.NET_DVR_DEVICEINFO_V30 _deviceInfo;
-        private uint _dwAChanTotalNum;
+
+        private uint _channelsTotalNumber;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 96, ArraySubType = UnmanagedType.U4)]
-        private readonly int[] _iChannelNum = new int[96];
+        private readonly int[] _channelNumbers = new int[96];
         
         private int _downloadHandle = -1;
         private int _findHandle = -1;
@@ -23,21 +24,18 @@ namespace HikConsole
         private ProgressBar _progress;
         private int _progressBarValue;
         private readonly AppConfig _appConfig;
+        private readonly ISDKWrapper _sdk;
 
-        public HikConsole(AppConfig appConfig)
+        public HikConsole(AppConfig appConfig, ISDKWrapper sdk)
         {
-            this._appConfig = appConfig;
-            Init();
+            _appConfig = appConfig;
+            _sdk = sdk;
         }
 
         public void Init()
         {
-            if (!SDK.NET_DVR_Init())
-            {
-                C.PrintError("NET_DVR_Init");
-                return;
-            }
-            SDK.NET_DVR_SetLogToFile(3, Path.Combine(_appConfig.DestinationFolder, "SdkLog"), true);
+            _sdk.Initialize();
+            _sdk.SetupSDKLogs(3, Path.Combine(_appConfig.DestinationFolder, "SdkLog"), false);
         }
 
         public bool IsDownloading => _downloadHandle >= 0;
@@ -46,26 +44,15 @@ namespace HikConsole
         {
             if (_userId < 0)
             {
-                _userId = SDK.NET_DVR_Login_V30(_appConfig.IpAddress, _appConfig.PortNumber, _appConfig.UserName, _appConfig.Password, ref _deviceInfo);
-                if (_userId < 0)
-                {
-                    C.PrintError("NET_DVR_Login_V30", "Unable to login, check configuration.json for correct credentials");
-                    return false;
-                }
-                else
-                {
-                    C.Write(timeStamp: DateTime.Now);
-                    C.WriteLine("Login Success!", ConsoleColor.DarkGreen);
+                DeviceInfo _deviceInfo = null;
+                _userId = _sdk.Login(_appConfig.IpAddress, _appConfig.PortNumber, _appConfig.UserName, _appConfig.Password, ref _deviceInfo);
 
-                    _dwAChanTotalNum = _deviceInfo.byChanNum;
-                    for (var i = 0; i < _dwAChanTotalNum; i++)
-                    {
-                        ListAnalogChannel(i + 1, 1);
-                        _iChannelNum[i] = i + _deviceInfo.byStartChan;
-                    }
+                C.Write(timeStamp: DateTime.Now);
+                C.WriteLine("Login Success!", ConsoleColor.DarkGreen);
 
-                    return true;
-                }
+                UpdateChanelsInfo(_deviceInfo);
+
+                return true;
             }
             C.WriteLine("Already logged in", ConsoleColor.Red);
             return false;
@@ -102,8 +89,7 @@ namespace HikConsole
             }
 
             uint iOutValue = 0;
-
-            if (!SDK.NET_DVR_PlayBackControl_V40(_downloadHandle, SDK.NET_DVR_PLAYSTART, IntPtr.Zero, 0,IntPtr.Zero, ref iOutValue))
+            if (!SDK.NET_DVR_PlayBackControl_V40(_downloadHandle, SDK.NET_DVR_PLAYSTART, IntPtr.Zero, 0, IntPtr.Zero, ref iOutValue))
             {
                 C.PrintError("NET_DVR_PlayBackControl_V40");
                 return false;
@@ -186,7 +172,7 @@ namespace HikConsole
 
             SDK.NET_DVR_FILECOND_V40 findCond = new SDK.NET_DVR_FILECOND_V40
             {
-                lChannel = _iChannelNum[0],
+                lChannel = _channelNumbers[0],
                 dwFileType = 0xff,
                 dwIsLocked = 0xff,
                 struStartTime = new SDK.NET_DVR_TIME(periodStart),
@@ -248,6 +234,19 @@ namespace HikConsole
         {
             string folder = directory ?? GetWorkingDirectory(file);
             return Path.Combine(folder, $"{file.struStartTime.ToShortString()}_{file.struStopTime.ToShortString()}_{file.sFileName}.mp4");
+        }
+
+        private void UpdateChanelsInfo(DeviceInfo device)
+        {
+            if (device == null)
+                throw new ArgumentNullException("Device");
+
+            _channelsTotalNumber = device.ChannelNumber;
+            for (var i = 0; i < _channelsTotalNumber; i++)
+            {
+                ListAnalogChannel(i + 1, 1);
+                _channelNumbers[i] = i + device.StartChannel;
+            }
         }
     }
 }
