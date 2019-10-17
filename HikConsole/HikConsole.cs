@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
-using ConsoleTables;
+using C = HikConsole.ConsoleHelper;
 
 namespace HikConsole
 {
@@ -34,7 +34,7 @@ namespace HikConsole
         {
             if (!SDK.NET_DVR_Init())
             {
-                PrintError("NET_DVR_Init");
+                C.PrintError("NET_DVR_Init");
                 return;
             }
             SDK.NET_DVR_SetLogToFile(3, Path.Combine(_appConfig.DestinationFolder, "SdkLog"), true);
@@ -49,12 +49,13 @@ namespace HikConsole
                 _userId = SDK.NET_DVR_Login_V30(_appConfig.IpAddress, _appConfig.PortNumber, _appConfig.UserName, _appConfig.Password, ref _deviceInfo);
                 if (_userId < 0)
                 {
-                    PrintError("NET_DVR_Login_V30", "Unable to login, check configuration.json for correct credentials");
+                    C.PrintError("NET_DVR_Login_V30", "Unable to login, check configuration.json for correct credentials");
                     return false;
                 }
                 else
                 {
-                    WriteLine("Login Success!", ConsoleColor.DarkGreen);
+                    C.Write(timeStamp: DateTime.Now);
+                    C.WriteLine("Login Success!", ConsoleColor.DarkGreen);
 
                     _dwAChanTotalNum = _deviceInfo.byChanNum;
                     for (var i = 0; i < _dwAChanTotalNum; i++)
@@ -66,7 +67,7 @@ namespace HikConsole
                     return true;
                 }
             }
-            WriteLine("Already logged in", ConsoleColor.Red);
+            C.WriteLine("Already logged in", ConsoleColor.Red);
             return false;
         }
 
@@ -74,7 +75,7 @@ namespace HikConsole
         {
             if (IsDownloading)
             {
-                WriteLine("Downloading, please stop firstly!");
+                C.WriteLine("Downloading, please stop firstly!");
                 return false;
             }
 
@@ -82,20 +83,21 @@ namespace HikConsole
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
-                WriteLine($"Created {directory}", ConsoleColor.DarkYellow);
             }
 
             string fileName = GetFullPath(file, directory);
             if (File.Exists(fileName))
             {
-                WriteLine($"Exist {fileName}", ConsoleColor.DarkYellow);
+                C.Write($"{file.sFileName}, {file.struStartTime}, {file.struStopTime} ");
+                C.WriteLine($"- exist ", ConsoleColor.DarkYellow);
                 return false;
             }
-            WriteLine($"Downloading {fileName}");
+            C.Write($"{file.sFileName}, {file.struStartTime}, {file.struStopTime} ");
+
             _downloadHandle = SDK.NET_DVR_GetFileByName(_userId, file.sFileName, fileName);
             if (_downloadHandle < 0)
             {
-                PrintError("NET_DVR_GetFileByName");
+                C.PrintError("NET_DVR_GetFileByName");
                 return false;
             }
 
@@ -103,7 +105,7 @@ namespace HikConsole
 
             if (!SDK.NET_DVR_PlayBackControl_V40(_downloadHandle, SDK.NET_DVR_PLAYSTART, IntPtr.Zero, 0,IntPtr.Zero, ref iOutValue))
             {
-                PrintError("NET_DVR_PlayBackControl_V40");
+                C.PrintError("NET_DVR_PlayBackControl_V40");
                 return false;
             }
 
@@ -117,11 +119,11 @@ namespace HikConsole
 
             if (!SDK.NET_DVR_StopGetFile(_downloadHandle))
             {
-                PrintError("NET_DVR_StopGetFile", "Download controlling failed");
+                C.PrintError("NET_DVR_StopGetFile", "Download controlling failed");
                 return;
             }
 
-            WriteLine($"{DateTime.Now} : The downloading has been stopped successfully!");
+            C.WriteLine($"The downloading has been stopped successfully!", timeStamp : DateTime.Now);
             _downloadHandle = -1;
             _progressBarValue = 0;
             _progress.Dispose();
@@ -142,21 +144,21 @@ namespace HikConsole
                 _progressBarValue = barValue;
                 if (!SDK.NET_DVR_StopGetFile(_downloadHandle))
                 {
-                    PrintError("NET_DVR_StopGetFile", "Download controlling failed");
+                    C.PrintError("NET_DVR_StopGetFile", "Download controlling failed");
                     return;
                 }
 
                 _progress.Dispose();
                 _progress = null;
                 _downloadHandle = -1;
-                WriteLine("Downloaded", ConsoleColor.Green);
+                C.WriteLine("- downloaded", ConsoleColor.Green);
             }
             else if (barValue == 200)
             {
-                WriteLine("The downloading is abnormal for the abnormal network!", ConsoleColor.DarkRed);
+                C.WriteLine("The downloading is abnormal for the abnormal network!", ConsoleColor.DarkRed);
 
                 string path = GetFullPath(file);
-                WriteLine($"Removing file {path}", ConsoleColor.DarkRed);
+                C.WriteLine($"Removing file {path}", ConsoleColor.DarkRed);
                 if (File.Exists(path))
                 {
                     File.Delete(path);
@@ -172,13 +174,13 @@ namespace HikConsole
 
             if (_userId >= 0)
             {
-                WriteLine($"{DateTime.Now} : Logout the device");
+                C.WriteLine($"Logout the device", timeStamp  : DateTime.Now);
                 SDK.NET_DVR_Logout(_userId);
                 _userId = -1;
             }
         }
 
-        public IEnumerable<SDK.NET_DVR_FINDDATA_V30> Search(DateTime dateTimeStart, DateTime dateTimeEnd)
+        public IEnumerable<SDK.NET_DVR_FINDDATA_V30> Search(DateTime periodStart, DateTime periodEnd)
         {
             List<SDK.NET_DVR_FINDDATA_V30> results = new List<SDK.NET_DVR_FINDDATA_V30>();
 
@@ -187,15 +189,15 @@ namespace HikConsole
                 lChannel = _iChannelNum[0],
                 dwFileType = 0xff,
                 dwIsLocked = 0xff,
-                struStartTime = new SDK.NET_DVR_TIME(dateTimeStart),
-                struStopTime = new SDK.NET_DVR_TIME(dateTimeEnd)
+                struStartTime = new SDK.NET_DVR_TIME(periodStart),
+                struStopTime = new SDK.NET_DVR_TIME(periodEnd)
             };
 
             _findHandle = SDK.NET_DVR_FindFile_V40(_userId, ref findCond);
 
             if (_findHandle < 0)
             {
-                PrintError("NET_DVR_FindFile_V40", "find files failed");
+                C.PrintError("NET_DVR_FindFile_V40", "find files failed");
                 return null;
             }
             
@@ -215,7 +217,7 @@ namespace HikConsole
                 }
                 else if (findResult == SDK.NET_DVR_FILE_NOFIND || findResult == SDK.NET_DVR_NOMOREFILE)
                 {
-                    WriteLine($"{DateTime.Now} : Searching is finished");
+                    C.WriteLine($"Searching is finished", timeStamp : DateTime.Now);
                     break;
                 }
                 else
@@ -223,33 +225,19 @@ namespace HikConsole
                     break;
                 }
             }
-
             return results;
-        }
-
-        public void PrintTable(IEnumerable<SDK.NET_DVR_FINDDATA_V30> list)
-        {
-            ConsoleTable table = new ConsoleTable("FileName", "Start", "Stop");
-            foreach (var fileData in list)
-            {
-                table.AddRow(fileData.sFileName, fileData.struStartTime, fileData.struStopTime);
-            }
-            table.Write();
         }
 
         public void ListAnalogChannel(int iChanNo, byte enable)
         {
-            WriteLine($"Analog Channel {iChanNo} : {(enable == 0 ? "Disabled" : "Enabled")}", ConsoleColor.DarkGreen);
+            C.Write(timeStamp: DateTime.Now);
+            C.WriteLine($"Analog Channel {iChanNo} : {(enable == 0 ? "Disabled" : "Enabled")}", ConsoleColor.DarkGreen);
         }
 
         public void ListIpChannel(int iChanNo, byte online, byte id)
         {
-            WriteLine($"IPCamera {iChanNo} : {(id == 0 ? "X" : online == 0 ? "offline" : "online")}");
-        }
-
-        private void PrintError(string method, string msg = "")
-        {
-            WriteLine($"{method} failed, error code = {SDK.NET_DVR_GetLastError()} : {msg}", ConsoleColor.Red);
+            C.Write(timeStamp: DateTime.Now);
+            C.WriteLine($"IPCamera {iChanNo} : {(id == 0 ? "X" : online == 0 ? "offline" : "online")}");
         }
 
         private string GetWorkingDirectory(SDK.NET_DVR_FINDDATA_V30 file)
@@ -260,13 +248,6 @@ namespace HikConsole
         {
             string folder = directory ?? GetWorkingDirectory(file);
             return Path.Combine(folder, $"{file.struStartTime.ToShortString()}_{file.struStopTime.ToShortString()}_{file.sFileName}.mp4");
-        }
-
-        private void WriteLine(string str, ConsoleColor foreground = ConsoleColor.Gray)
-        {
-            Console.ForegroundColor = foreground;
-            Console.WriteLine(str);
-            Console.ResetColor();
         }
     }
 }

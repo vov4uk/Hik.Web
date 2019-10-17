@@ -27,5 +27,15 @@ namespace HikConsole
 
         [JsonProperty("IntervalMinutes")]
         public int Interval { get; set; }
+
+        public override string ToString()
+        {
+            return $@"IP Address  : {IpAddress}:{PortNumber}
+User name   : {UserName}
+Destination : {DestinationFolder}
+Mode        : {Mode}
+Interval    : {Interval}m
+Period      : {ProcessingPeriodHours}h";
+        }
     }
 }
