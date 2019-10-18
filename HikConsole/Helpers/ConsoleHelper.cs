@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HikConsole.SDK;
+using System;
 
 namespace HikConsole.Helpers
 {
@@ -41,8 +42,7 @@ namespace HikConsole.Helpers
 
         public static void PrintError(string method, string msg = "")
         {
-            Write(timeStamp: DateTime.Now);
-            WriteLine($"{method} failed, error code = {SDK.NET_DVR_GetLastError()} : {msg}", ConsoleColor.Red);
+            ColorWriteLine($"{method} failed, error code = {SDKWrapper.GetLastError()} : {msg}", ConsoleColor.Red, DateTime.Now);
         }
     }
 }

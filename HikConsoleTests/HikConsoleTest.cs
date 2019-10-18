@@ -75,25 +75,5 @@ namespace HikConsoleTests
             Assert.IsFalse(second);
             sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref outDevice), Times.Once);
         }
-
-
-        [TestMethod]
-        public void Login_CallLoginFails_ThrowsException()
-        {
-            var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
-
-            DeviceInfo inDevice = default;
-
-            sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref inDevice)).Returns(-1);
-
-            var client = new HikConsole.HikConsole(new AppConfig(), sdkMock.Object);
-
-            Assert.ThrowsException<ArgumentNullException>(() =>
-            {
-                client.Login();
-            });             
-
-            sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref inDevice), Times.Once);
-        }
     }
 }

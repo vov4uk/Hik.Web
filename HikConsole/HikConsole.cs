@@ -13,11 +13,11 @@ namespace HikConsole
     {
         private const int ProgressBarMaximum = 100;
         private const int ProgressBarMinimum = 0;
-
-        private readonly int[] _channelNumbers = new int[96];
         
         private int _downloadHandle = -1;
+        private FindResult _downloadFile;
         private int _userId = -1;
+        private int _channel = -1;
         private ProgressBar _progress;
         private readonly AppConfig _appConfig;
         private readonly ISDKWrapper _sdk;
@@ -45,7 +45,7 @@ namespace HikConsole
 
                 C.ColorWriteLine("Login Success!", ConsoleColor.DarkGreen, DateTime.Now);
 
-                UpdateChanelsInfo(_deviceInfo);
+                _channel = _deviceInfo.StartChannel;
 
                 return true;
             }
@@ -77,7 +77,7 @@ namespace HikConsole
             }
 
             _downloadHandle =_sdk.GetFileByName(_userId, file.FileName, fileName);
-
+            _downloadFile = file;
             _progress = new ProgressBar();
             return true;
         }
@@ -91,7 +91,7 @@ namespace HikConsole
             }
         }
 
-        public void CheckProgress(FindResult file)
+        public void CheckProgress()
         {
             int barValue = _sdk.GetDownloadPos(_downloadHandle);
 
@@ -102,6 +102,7 @@ namespace HikConsole
             else if (barValue == 100)
             {
                 StopDownload();
+                _downloadFile = null;
 
                 C.WriteLine("- downloaded", ConsoleColor.Green);
             }
@@ -109,21 +110,12 @@ namespace HikConsole
             {
                 C.WriteLine("The downloading is abnormal for the abnormal network!", ConsoleColor.DarkRed);
 
-                string path = GetFullPath(file);
-                C.WriteLine($"Removing file {path}", ConsoleColor.DarkRed);
-                if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-
-                Exit();
+                ForceExit();
             }
         }
 
-        public void Exit()
+        public void Logout()
         {
-            StopDownload();
-
             if (_userId >= 0)
             {
                 C.WriteLine($"Logout the device", timeStamp  : DateTime.Now);
@@ -132,14 +124,16 @@ namespace HikConsole
             }
         }
 
-        public async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd)
+        public void ForceExit()
         {
-            return await _sdk.Find(periodStart, periodEnd, _userId, _channelNumbers[0]);
+            StopDownload();
+            DeleteCurrentFile();
+            Logout();
         }
 
-        private void ListChannels(int iChanNo, byte enable)
+        public async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd)
         {
-            C.ColorWriteLine($"Channel {iChanNo} : {(enable == 0 ? "Disabled" : "Enabled")}", ConsoleColor.DarkGreen, DateTime.Now);
+            return await _sdk.Find(periodStart, periodEnd, _userId, _channel);
         }
 
         private void PrintFileInfo(FindResult file)
@@ -157,23 +151,25 @@ namespace HikConsole
             return Path.Combine(folder, $"{file.StartTime.ToString("hhmmss")}_{file.StopTime.ToString("hhmmss")}_{file.FileName}.mp4");
         }
 
-        private void UpdateChanelsInfo(DeviceInfo device)
-        {
-            if (device == null)
-                throw new ArgumentNullException("Device");
-
-            for (var i = 0; i < device.ChannelNumber; i++)
-            {
-                ListChannels(i + 1, 1);
-                _channelNumbers[i] = i + device.StartChannel;
-            }
-        }
-
         private void ResetDownloadStatus()
         {
             _downloadHandle = -1;
             _progress.Dispose();
             _progress = null;
+        }
+
+        private void DeleteCurrentFile()
+        {
+            if (_downloadFile != null)
+            {
+                string path = GetFullPath(_downloadFile);
+                C.WriteLine($"Removing file {path}", ConsoleColor.DarkRed);
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+                _downloadFile = null;
+            }
         }
     }
 }

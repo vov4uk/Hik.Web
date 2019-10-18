@@ -5,9 +5,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using C = HikConsole.Helpers.ConsoleHelper;
 using HikConsole.Data;
 using HikConsole.Helpers;
+using HikConsole.SDK;
+using C = HikConsole.Helpers.ConsoleHelper;
 
 namespace HikConsole
 {
@@ -28,8 +29,8 @@ namespace HikConsole
                     while (Console.Read() != 'q')
                     {
                     }
-                    _downloader?.StopDownload();
-                    _downloader?.Exit();
+
+                    _downloader?.ForceExit();
                 }
             }
             else if (_appConfig.Mode == "Fire-and-forget")
@@ -51,49 +52,60 @@ namespace HikConsole
             C.WriteLine($"Start.", timeStamp: start);
             if (_downloader != null)
             {
-                C.WriteLine("Job in working", timeStamp: DateTime.Now);
-                _downloader.Exit();
+                C.WriteLine("Job in working", ConsoleColor.DarkRed, DateTime.Now);
+                _downloader.Logout();
             }
             
             DateTime periodStart = start.AddHours(-1* _appConfig.ProcessingPeriodHours);
             DateTime periodEnd = start;
 
             _downloader = new HikConsole(_appConfig, new SDKWrapper());
-            _downloader.Init();
-            if (_downloader.Login())
+
+            try
             {
-                C.WriteLine($"Get videos from {periodStart} to {periodEnd}", timeStamp: DateTime.Now);
-                List<FindResult> results = (await _downloader.Find(periodStart, periodEnd))?.SkipLast(1).ToList();
-                C.WriteLine($"Searching finished", timeStamp: DateTime.Now);
-                C.WriteLine($"Found {results.Count} files\r\n", timeStamp: DateTime.Now);
-
-                if (results != null && results.Any())
+                _downloader.Init();
+                if (_downloader.Login())
                 {
-                    int i = 1;
-                    foreach (var file in results)
-                    {
-                        C.Write($"{i++}/{results.Count} : ");
-                        if (_downloader.StartDownloadByName(file))
-                        {
-                            do
-                            {
-                                await Task.Delay(5000);
-                                _downloader.CheckProgress(file);                                
+                    C.WriteLine($"Get videos from {periodStart} to {periodEnd}", timeStamp: DateTime.Now);
+                    IList<FindResult> results = await _downloader.Find(periodStart, periodEnd);
+                    C.WriteLine($"Searching finished", timeStamp: DateTime.Now);
+                    C.WriteLine($"Found {results.Count} files\r\n", timeStamp: DateTime.Now);
 
-                            } while (_downloader.IsDownloading);
+                    if (results != null && results.Any())
+                    {
+                        int i = 1;
+                        foreach (var file in results)
+                        {
+                            C.Write($"{i++}/{results.Count} : ");
+                            if (_downloader.StartDownloadByName(file))
+                            {
+                                do
+                                {
+                                    await Task.Delay(5000);
+                                    _downloader.CheckProgress();
+
+                                } while (_downloader.IsDownloading);
+                            }
                         }
                     }
-                }
 
-                DateTime end = DateTime.Now;
-                string duration = (start - end).ToString("h'h 'm'm 's's'");
-                C.WriteLine();
-                C.WriteLine($"End. Duration : {duration}", timeStamp: end);
-                C.WriteLine($"Next execution at {start.AddMinutes(_appConfig.Interval)}", timeStamp: DateTime.Now);
-                _downloader.Exit();
-                _downloader = null;
-                C.ColorWriteLine($"DirSize : {Utils.FormatBytes(Utils.DirSize(new DirectoryInfo(_appConfig.DestinationFolder)))}", ConsoleColor.Red, DateTime.Now);
-                C.ColorWriteLine($"Free space : {Utils.FormatBytes(Utils.GetTotalFreeSpace(_appConfig.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
+
+                    DateTime end = DateTime.Now;
+                    string duration = (start - end).ToString("h'h 'm'm 's's'");
+
+                    C.WriteLine();
+                    _downloader.Logout();
+                    _downloader = null;
+                    C.WriteLine($"End. Duration : {duration}", timeStamp: end);
+                    C.WriteLine($"Next execution at {start.AddMinutes(_appConfig.Interval)}", timeStamp: DateTime.Now);
+                    C.ColorWriteLine($"DirSize : {Utils.FormatBytes(Utils.DirSize(new DirectoryInfo(_appConfig.DestinationFolder)))}", ConsoleColor.Red, DateTime.Now);
+                    C.ColorWriteLine($"Free space : {Utils.FormatBytes(Utils.GetTotalFreeSpace(_appConfig.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
+                }
+            }
+            catch (Exception ex)
+            {
+                C.PrintError(ex.Message);
+                _downloader?.ForceExit();
             }
         }
     }

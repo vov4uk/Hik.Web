@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace HikConsole
+namespace HikConsole.SDK
 {
-    public class SDK
+    public class NetSDK
     {
         public const int CARDNUM_LEN_OUT = 32;
         public const int GUID_LEN = 16;
@@ -94,7 +94,8 @@ namespace HikConsole
         [StructLayout(LayoutKind.Explicit)]
         public struct NET_DVR_SPECIAL_FINDINFO_UNION
         {
-            [FieldOffset(0)] [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8, ArraySubType = UnmanagedType.I1)]
+            [FieldOffset(0)]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8, ArraySubType = UnmanagedType.I1)]
             public byte[] byLenth;
 
             [FieldOffset(0)] public NET_DVR_ATMFINDINFO struATMFindInfo;
