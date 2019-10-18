@@ -73,9 +73,9 @@ namespace HikConsole
                 return $"{dwYear:0000}-{dwMonth:00}-{dwDay:00}_{dwHour:00}:{dwMinute:00}:{dwSecond:00}";
             }
 
-            public string ToShortString()
+            public DateTime ToDateTime()
             {
-                return $"{dwHour:00}{dwMinute:00}{dwSecond:00}";
+                return new DateTime(dwYear, dwMonth, dwDay, dwHour, dwMinute, dwSecond);
             }
         }
 

@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
-using C = HikConsole.ConsoleHelper;
+using C = HikConsole.Helpers.ConsoleHelper;
+using HikConsole.Data;
+using HikConsole.Helpers;
 
 namespace HikConsole
 {
@@ -11,23 +15,26 @@ namespace HikConsole
     {
         static HikConsole _downloader;
         static AppConfig _appConfig;
-        static void Main()
+        static async Task Main()
         {
             _appConfig = JsonConvert.DeserializeObject<AppConfig>(System.IO.File.ReadAllText("configuration.json"));
+
             C.WriteLine(_appConfig.ToString(), ConsoleColor.DarkMagenta);
             if (_appConfig.Mode == "Recurring")
             {
-                using (Timer timer = new Timer((o) => DownloadCallback(), null, 0, _appConfig.Interval * 60 * 1000))
+                using (Timer timer = new Timer(async (o) => await DownloadCallback(), null, 0, _appConfig.Interval * 60 * 1000))
                 {
                     C.WriteLine("Press \'q\' to quit");
                     while (Console.Read() != 'q')
                     {
                     }
+                    _downloader?.StopDownload();
+                    _downloader?.Exit();
                 }
             }
             else if (_appConfig.Mode == "Fire-and-forget")
             {
-                DownloadCallback();
+                await DownloadCallback();
                 C.WriteLine("Press any key to quit.");
                 Console.ReadKey();
             }
@@ -38,7 +45,7 @@ namespace HikConsole
             }
         }
 
-        private static void DownloadCallback()
+        private async static Task DownloadCallback()
         {
             DateTime start = DateTime.Now;
             C.WriteLine($"Start.", timeStamp: start);
@@ -56,7 +63,8 @@ namespace HikConsole
             if (_downloader.Login())
             {
                 C.WriteLine($"Get videos from {periodStart} to {periodEnd}", timeStamp: DateTime.Now);
-                List<SDK.NET_DVR_FINDDATA_V30> results = _downloader.Search(periodStart, periodEnd)?.SkipLast(1).ToList();
+                List<FindResult> results = (await _downloader.Find(periodStart, periodEnd))?.SkipLast(1).ToList();
+                C.WriteLine($"Searching finished", timeStamp: DateTime.Now);
                 C.WriteLine($"Found {results.Count} files\r\n", timeStamp: DateTime.Now);
 
                 if (results != null && results.Any())
@@ -65,11 +73,11 @@ namespace HikConsole
                     foreach (var file in results)
                     {
                         C.Write($"{i++}/{results.Count} : ");
-                        if (_downloader.DownloadByName(file))
+                        if (_downloader.StartDownloadByName(file))
                         {
                             do
                             {
-                                Thread.Sleep(5000);
+                                await Task.Delay(5000);
                                 _downloader.CheckProgress(file);                                
 
                             } while (_downloader.IsDownloading);
@@ -84,6 +92,8 @@ namespace HikConsole
                 C.WriteLine($"Next execution at {start.AddMinutes(_appConfig.Interval)}", timeStamp: DateTime.Now);
                 _downloader.Exit();
                 _downloader = null;
+                C.ColorWriteLine($"DirSize : {Utils.FormatBytes(Utils.DirSize(new DirectoryInfo(_appConfig.DestinationFolder)))}", ConsoleColor.Red, DateTime.Now);
+                C.ColorWriteLine($"Free space : {Utils.FormatBytes(Utils.GetTotalFreeSpace(_appConfig.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
             }
         }
     }

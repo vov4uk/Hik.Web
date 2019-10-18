@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using HikConsole;
 using HikConsole.Abstraction;
+using HikConsole.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;

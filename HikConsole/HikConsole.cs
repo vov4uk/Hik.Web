@@ -2,9 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
-using C = HikConsole.ConsoleHelper;
+using System.Threading.Tasks;
+using C = HikConsole.Helpers.ConsoleHelper;
+using HikConsole.Data;
+using HikConsole.Helpers;
 
 namespace HikConsole
 {
@@ -13,16 +14,11 @@ namespace HikConsole
         private const int ProgressBarMaximum = 100;
         private const int ProgressBarMinimum = 0;
 
-        private uint _channelsTotalNumber;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 96, ArraySubType = UnmanagedType.U4)]
         private readonly int[] _channelNumbers = new int[96];
         
         private int _downloadHandle = -1;
-        private int _findHandle = -1;
         private int _userId = -1;
         private ProgressBar _progress;
-        private int _progressBarValue;
         private readonly AppConfig _appConfig;
         private readonly ISDKWrapper _sdk;
 
@@ -47,8 +43,7 @@ namespace HikConsole
                 DeviceInfo _deviceInfo = null;
                 _userId = _sdk.Login(_appConfig.IpAddress, _appConfig.PortNumber, _appConfig.UserName, _appConfig.Password, ref _deviceInfo);
 
-                C.Write(timeStamp: DateTime.Now);
-                C.WriteLine("Login Success!", ConsoleColor.DarkGreen);
+                C.ColorWriteLine("Login Success!", ConsoleColor.DarkGreen, DateTime.Now);
 
                 UpdateChanelsInfo(_deviceInfo);
 
@@ -58,7 +53,7 @@ namespace HikConsole
             return false;
         }
 
-        public bool DownloadByName(SDK.NET_DVR_FINDDATA_V30 file)
+        public bool StartDownloadByName(FindResult file)
         {
             if (IsDownloading)
             {
@@ -72,28 +67,16 @@ namespace HikConsole
                 Directory.CreateDirectory(directory);
             }
 
+            PrintFileInfo(file);
             string fileName = GetFullPath(file, directory);
+
             if (File.Exists(fileName))
             {
-                C.Write($"{file.sFileName}, {file.struStartTime}, {file.struStopTime} ");
                 C.WriteLine($"- exist ", ConsoleColor.DarkYellow);
                 return false;
             }
-            C.Write($"{file.sFileName}, {file.struStartTime}, {file.struStopTime} ");
 
-            _downloadHandle = SDK.NET_DVR_GetFileByName(_userId, file.sFileName, fileName);
-            if (_downloadHandle < 0)
-            {
-                C.PrintError("NET_DVR_GetFileByName");
-                return false;
-            }
-
-            uint iOutValue = 0;
-            if (!SDK.NET_DVR_PlayBackControl_V40(_downloadHandle, SDK.NET_DVR_PLAYSTART, IntPtr.Zero, 0, IntPtr.Zero, ref iOutValue))
-            {
-                C.PrintError("NET_DVR_PlayBackControl_V40");
-                return false;
-            }
+            _downloadHandle =_sdk.GetFileByName(_userId, file.FileName, fileName);
 
             _progress = new ProgressBar();
             return true;
@@ -101,42 +84,25 @@ namespace HikConsole
 
         public void StopDownload()
         {
-            if (!IsDownloading) return;
-
-            if (!SDK.NET_DVR_StopGetFile(_downloadHandle))
+            if (IsDownloading)
             {
-                C.PrintError("NET_DVR_StopGetFile", "Download controlling failed");
-                return;
+                _sdk.StopDownoloadFile(_downloadHandle);
+                ResetDownloadStatus();
             }
-
-            C.WriteLine($"The downloading has been stopped successfully!", timeStamp : DateTime.Now);
-            _downloadHandle = -1;
-            _progressBarValue = 0;
-            _progress.Dispose();
-            _progress = null;
         }
 
-        public void CheckProgress(SDK.NET_DVR_FINDDATA_V30 file)
+        public void CheckProgress(FindResult file)
         {
-            int barValue = SDK.NET_DVR_GetDownloadPos(_downloadHandle);
+            int barValue = _sdk.GetDownloadPos(_downloadHandle);
 
             if (barValue > ProgressBarMinimum && barValue < ProgressBarMaximum)
             {
-                _progressBarValue = barValue;
-                _progress.Report((double) _progressBarValue / 100);
+                _progress.Report((double)barValue / 100);
             }
             else if (barValue == 100)
             {
-                _progressBarValue = barValue;
-                if (!SDK.NET_DVR_StopGetFile(_downloadHandle))
-                {
-                    C.PrintError("NET_DVR_StopGetFile", "Download controlling failed");
-                    return;
-                }
+                StopDownload();
 
-                _progress.Dispose();
-                _progress = null;
-                _downloadHandle = -1;
                 C.WriteLine("- downloaded", ConsoleColor.Green);
             }
             else if (barValue == 200)
@@ -161,79 +127,34 @@ namespace HikConsole
             if (_userId >= 0)
             {
                 C.WriteLine($"Logout the device", timeStamp  : DateTime.Now);
-                SDK.NET_DVR_Logout(_userId);
+                _sdk.Logout(_userId);
                 _userId = -1;
             }
         }
 
-        public IEnumerable<SDK.NET_DVR_FINDDATA_V30> Search(DateTime periodStart, DateTime periodEnd)
+        public async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd)
         {
-            List<SDK.NET_DVR_FINDDATA_V30> results = new List<SDK.NET_DVR_FINDDATA_V30>();
-
-            SDK.NET_DVR_FILECOND_V40 findCond = new SDK.NET_DVR_FILECOND_V40
-            {
-                lChannel = _channelNumbers[0],
-                dwFileType = 0xff,
-                dwIsLocked = 0xff,
-                struStartTime = new SDK.NET_DVR_TIME(periodStart),
-                struStopTime = new SDK.NET_DVR_TIME(periodEnd)
-            };
-
-            _findHandle = SDK.NET_DVR_FindFile_V40(_userId, ref findCond);
-
-            if (_findHandle < 0)
-            {
-                C.PrintError("NET_DVR_FindFile_V40", "find files failed");
-                return null;
-            }
-            
-            while (true)
-            {
-                SDK.NET_DVR_FINDDATA_V30 fileData = new SDK.NET_DVR_FINDDATA_V30();
-                int findResult = SDK.NET_DVR_FindNextFile_V30(_findHandle, ref fileData);
-
-                if (findResult == SDK.NET_DVR_ISFINDING)
-                {
-                    Thread.Sleep(1000);
-                }
-                else if (findResult == SDK.NET_DVR_FILE_SUCCESS)
-                {
-                    results.Add(fileData);
-                   
-                }
-                else if (findResult == SDK.NET_DVR_FILE_NOFIND || findResult == SDK.NET_DVR_NOMOREFILE)
-                {
-                    C.WriteLine($"Searching is finished", timeStamp : DateTime.Now);
-                    break;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            return results;
+            return await _sdk.Find(periodStart, periodEnd, _userId, _channelNumbers[0]);
         }
 
-        public void ListAnalogChannel(int iChanNo, byte enable)
+        private void ListChannels(int iChanNo, byte enable)
         {
-            C.Write(timeStamp: DateTime.Now);
-            C.WriteLine($"Analog Channel {iChanNo} : {(enable == 0 ? "Disabled" : "Enabled")}", ConsoleColor.DarkGreen);
+            C.ColorWriteLine($"Channel {iChanNo} : {(enable == 0 ? "Disabled" : "Enabled")}", ConsoleColor.DarkGreen, DateTime.Now);
         }
 
-        public void ListIpChannel(int iChanNo, byte online, byte id)
+        private void PrintFileInfo(FindResult file)
         {
-            C.Write(timeStamp: DateTime.Now);
-            C.WriteLine($"IPCamera {iChanNo} : {(id == 0 ? "X" : online == 0 ? "offline" : "online")}");
+            C.Write($"{file.FileName}, {file.StartTime}, {file.StopTime}, {Utils.FormatBytes(file.FileSize)} ");
         }
 
-        private string GetWorkingDirectory(SDK.NET_DVR_FINDDATA_V30 file)
+        private string GetWorkingDirectory(FindResult file)
         {
-            return Path.Combine(_appConfig.DestinationFolder, $"{file.struStartTime.dwYear:0000}-{file.struStartTime.dwMonth:00}-{file.struStartTime.dwDay:00}");
+            return Path.Combine(_appConfig.DestinationFolder, $"{file.StartTime.Year:0000}-{file.StartTime.Month:00}-{file.StartTime.Day:00}");
         }
-        private string GetFullPath(SDK.NET_DVR_FINDDATA_V30 file, string directory = null)
+        private string GetFullPath(FindResult file, string directory = null)
         {
             string folder = directory ?? GetWorkingDirectory(file);
-            return Path.Combine(folder, $"{file.struStartTime.ToShortString()}_{file.struStopTime.ToShortString()}_{file.sFileName}.mp4");
+            return Path.Combine(folder, $"{file.StartTime.ToString("hhmmss")}_{file.StopTime.ToString("hhmmss")}_{file.FileName}.mp4");
         }
 
         private void UpdateChanelsInfo(DeviceInfo device)
@@ -241,12 +162,18 @@ namespace HikConsole
             if (device == null)
                 throw new ArgumentNullException("Device");
 
-            _channelsTotalNumber = device.ChannelNumber;
-            for (var i = 0; i < _channelsTotalNumber; i++)
+            for (var i = 0; i < device.ChannelNumber; i++)
             {
-                ListAnalogChannel(i + 1, 1);
+                ListChannels(i + 1, 1);
                 _channelNumbers[i] = i + device.StartChannel;
             }
+        }
+
+        private void ResetDownloadStatus()
+        {
+            _downloadHandle = -1;
+            _progress.Dispose();
+            _progress = null;
         }
     }
 }
