@@ -1,5 +1,4 @@
-﻿using HikConsole.SDK;
-using System;
+﻿using System;
 
 namespace HikConsole.Helpers
 {
@@ -7,7 +6,6 @@ namespace HikConsole.Helpers
     {
         public static void WriteLine(string str = null, ConsoleColor foreground = ConsoleColor.Gray, DateTime? timeStamp = null)
         {
-
             Console.ForegroundColor = foreground;
             if (timeStamp == null)
             {
@@ -17,6 +15,7 @@ namespace HikConsole.Helpers
             {
                 Console.WriteLine($"{timeStamp} : {str}");
             }
+
             Console.ResetColor();
         }
 
@@ -31,6 +30,7 @@ namespace HikConsole.Helpers
             {
                 Console.Write($"{timeStamp} : {str}");
             }
+
             Console.ResetColor();
         }
 
@@ -38,11 +38,6 @@ namespace HikConsole.Helpers
         {
             Write(timeStamp: timeStamp);
             WriteLine(str, foreground);
-        }
-
-        public static void PrintError(string method, string msg = "")
-        {
-            ColorWriteLine($"{method} failed, error code = {SDKWrapper.GetLastError()} : {msg}", ConsoleColor.Red, DateTime.Now);
         }
     }
 }

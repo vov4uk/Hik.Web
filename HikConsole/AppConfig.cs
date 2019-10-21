@@ -30,12 +30,12 @@ namespace HikConsole
 
         public override string ToString()
         {
-            return $@"IP Address  : {IpAddress}:{PortNumber}
-User name   : {UserName}
-Destination : {DestinationFolder}
-Mode        : {Mode}
-Interval    : {Interval}m
-Period      : {ProcessingPeriodHours}h";
+            return $@"IP Address  : {this.IpAddress}:{this.PortNumber}
+User name   : {this.UserName}
+Destination : {this.DestinationFolder}
+Mode        : {this.Mode}
+Interval    : {this.Interval}m
+Period      : {this.ProcessingPeriodHours}h";
         }
     }
 }

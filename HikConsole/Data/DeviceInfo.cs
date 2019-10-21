@@ -1,6 +1,4 @@
-﻿
-
-namespace HikConsole.Data
+﻿namespace HikConsole.Data
 {
     public class DeviceInfo
     {

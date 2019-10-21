@@ -1,11 +1,11 @@
-﻿using HikConsole.Abstraction;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using C = HikConsole.Helpers.ConsoleHelper;
+using HikConsole.Abstraction;
 using HikConsole.Data;
 using HikConsole.Helpers;
+using C = HikConsole.Helpers.ConsoleHelper;
 
 namespace HikConsole
 {
@@ -13,62 +13,62 @@ namespace HikConsole
     {
         private const int ProgressBarMaximum = 100;
         private const int ProgressBarMinimum = 0;
-        
-        private int _downloadHandle = -1;
-        private FindResult _downloadFile;
-        private int _userId = -1;
-        private int _channel = -1;
-        private ProgressBar _progress;
-        private readonly AppConfig _appConfig;
-        private readonly ISDKWrapper _sdk;
+        private readonly AppConfig appConfig;
+        private readonly ISDKWrapper sdk;
+        private int downloadHandle = -1;
+        private FindResult downloadFile;
+        private int userId = -1;
+        private int channel = -1;
+        private ProgressBar progress;
 
         public HikConsole(AppConfig appConfig, ISDKWrapper sdk)
         {
-            _appConfig = appConfig;
-            _sdk = sdk;
+            this.appConfig = appConfig;
+            this.sdk = sdk;
         }
+
+        public bool IsDownloading => this.downloadHandle >= 0;
 
         public void Init()
         {
-            _sdk.Initialize();
-            _sdk.SetupSDKLogs(3, Path.Combine(_appConfig.DestinationFolder, "SdkLog"), false);
+            this.sdk.Initialize();
+            this.sdk.SetupSDKLogs(3, Path.Combine(this.appConfig.DestinationFolder, "SdkLog"), false);
         }
-
-        public bool IsDownloading => _downloadHandle >= 0;
 
         public bool Login()
         {
-            if (_userId < 0)
+            if (this.userId < 0)
             {
-                DeviceInfo _deviceInfo = null;
-                _userId = _sdk.Login(_appConfig.IpAddress, _appConfig.PortNumber, _appConfig.UserName, _appConfig.Password, ref _deviceInfo);
+                DeviceInfo deviceInfo = null;
+                this.userId = this.sdk.Login(this.appConfig.IpAddress, this.appConfig.PortNumber, this.appConfig.UserName, this.appConfig.Password, ref deviceInfo);
 
                 C.ColorWriteLine("Login Success!", ConsoleColor.DarkGreen, DateTime.Now);
 
-                _channel = _deviceInfo.StartChannel;
+                this.channel = deviceInfo.StartChannel;
 
                 return true;
             }
+
             C.WriteLine("Already logged in", ConsoleColor.Red);
             return false;
         }
 
         public bool StartDownloadByName(FindResult file)
         {
-            if (IsDownloading)
+            if (this.IsDownloading)
             {
                 C.WriteLine("Downloading, please stop firstly!");
                 return false;
             }
 
-            string directory = GetWorkingDirectory(file);
+            string directory = this.GetWorkingDirectory(file);
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            PrintFileInfo(file);
-            string fileName = GetFullPath(file, directory);
+            this.PrintFileInfo(file);
+            string fileName = this.GetFullPath(file, directory);
 
             if (File.Exists(fileName))
             {
@@ -76,33 +76,33 @@ namespace HikConsole
                 return false;
             }
 
-            _downloadHandle =_sdk.GetFileByName(_userId, file.FileName, fileName);
-            _downloadFile = file;
-            _progress = new ProgressBar();
+            this.downloadHandle = this.sdk.GetFileByName(this.userId, file.FileName, fileName);
+            this.downloadFile = file;
+            this.progress = new ProgressBar();
             return true;
         }
 
         public void StopDownload()
         {
-            if (IsDownloading)
+            if (this.IsDownloading)
             {
-                _sdk.StopDownoloadFile(_downloadHandle);
-                ResetDownloadStatus();
+                this.sdk.StopDownoloadFile(this.downloadHandle);
+                this.ResetDownloadStatus();
             }
         }
 
         public void CheckProgress()
         {
-            int barValue = _sdk.GetDownloadPos(_downloadHandle);
+            int barValue = this.sdk.GetDownloadPos(this.downloadHandle);
 
             if (barValue > ProgressBarMinimum && barValue < ProgressBarMaximum)
             {
-                _progress.Report((double)barValue / 100);
+                this.progress.Report((double)barValue / 100);
             }
             else if (barValue == 100)
             {
-                StopDownload();
-                _downloadFile = null;
+                this.StopDownload();
+                this.downloadFile = null;
 
                 C.WriteLine("- downloaded", ConsoleColor.Green);
             }
@@ -110,30 +110,30 @@ namespace HikConsole
             {
                 C.WriteLine("The downloading is abnormal for the abnormal network!", ConsoleColor.DarkRed);
 
-                ForceExit();
+                this.ForceExit();
             }
         }
 
         public void Logout()
         {
-            if (_userId >= 0)
+            if (this.userId >= 0)
             {
-                C.WriteLine($"Logout the device", timeStamp  : DateTime.Now);
-                _sdk.Logout(_userId);
-                _userId = -1;
+                C.WriteLine($"Logout the device", timeStamp: DateTime.Now);
+                this.sdk.Logout(this.userId);
+                this.userId = -1;
             }
         }
 
         public void ForceExit()
         {
-            StopDownload();
-            DeleteCurrentFile();
-            Logout();
+            this.StopDownload();
+            this.DeleteCurrentFile();
+            this.Logout();
         }
 
         public async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd)
         {
-            return await _sdk.Find(periodStart, periodEnd, _userId, _channel);
+            return await this.sdk.Find(periodStart, periodEnd, this.userId, this.channel);
         }
 
         private void PrintFileInfo(FindResult file)
@@ -143,32 +143,34 @@ namespace HikConsole
 
         private string GetWorkingDirectory(FindResult file)
         {
-            return Path.Combine(_appConfig.DestinationFolder, $"{file.StartTime.Year:0000}-{file.StartTime.Month:00}-{file.StartTime.Day:00}");
+            return Path.Combine(this.appConfig.DestinationFolder, $"{file.StartTime.Year:0000}-{file.StartTime.Month:00}-{file.StartTime.Day:00}");
         }
+
         private string GetFullPath(FindResult file, string directory = null)
         {
-            string folder = directory ?? GetWorkingDirectory(file);
+            string folder = directory ?? this.GetWorkingDirectory(file);
             return Path.Combine(folder, $"{file.StartTime.ToString("hhmmss")}_{file.StopTime.ToString("hhmmss")}_{file.FileName}.mp4");
         }
 
         private void ResetDownloadStatus()
         {
-            _downloadHandle = -1;
-            _progress.Dispose();
-            _progress = null;
+            this.downloadHandle = -1;
+            this.progress.Dispose();
+            this.progress = null;
         }
 
         private void DeleteCurrentFile()
         {
-            if (_downloadFile != null)
+            if (this.downloadFile != null)
             {
-                string path = GetFullPath(_downloadFile);
+                string path = this.GetFullPath(this.downloadFile);
                 C.WriteLine($"Removing file {path}", ConsoleColor.DarkRed);
                 if (File.Exists(path))
                 {
                     File.Delete(path);
                 }
-                _downloadFile = null;
+
+                this.downloadFile = null;
             }
         }
     }

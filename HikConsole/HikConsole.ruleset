@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Rules for HikConsole" Description="Code analysis rules for HikConsole.csproj." ToolsVersion="16.0">
+  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+    <Rule Id="CA1821" Action="Warning" />
+    <Rule Id="CA2213" Action="Warning" />
+    <Rule Id="CA2231" Action="Warning" />
+  </Rules>
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA1200" Action="None" />
+    <Rule Id="SA1600" Action="None" />
+    <Rule Id="SA1629" Action="None" />
+    <Rule Id="SA1633" Action="None" />
+  </Rules>
+</RuleSet>

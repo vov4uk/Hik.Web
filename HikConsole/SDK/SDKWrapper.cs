@@ -1,10 +1,10 @@
-﻿using HikConsole.Abstraction;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using HikConsole.Abstraction;
 using HikConsole.Data;
 using HikConsole.Helpers;
-using System.Linq;
 
 namespace HikConsole.SDK
 {
@@ -14,8 +14,9 @@ namespace HikConsole.SDK
         {
             if (!NetSDK.NET_DVR_Init())
             {
-                throw new Exception(nameof(NetSDK.NET_DVR_Init));
+                throw this.CreateException(nameof(NetSDK.NET_DVR_Init));
             }
+
             return true;
         }
 
@@ -23,21 +24,23 @@ namespace HikConsole.SDK
         {
             if (!NetSDK.NET_DVR_SetLogToFile(bLogEnable, strLogDir, bAutoDel))
             {
-                throw new Exception(nameof(NetSDK.NET_DVR_SetLogToFile));
+                throw this.CreateException(nameof(NetSDK.NET_DVR_SetLogToFile));
             }
+
             return true;
         }
 
         public int Login(string ipAdress, int port, string userName, string password, ref DeviceInfo deviceInfo)
         {
             NetSDK.NET_DVR_DEVICEINFO_V30 lpDeviceInfo = default;
-            int _userId = NetSDK.NET_DVR_Login_V30(ipAdress, port, userName, password, ref lpDeviceInfo);
-            if (_userId < 0)
+            int userId = NetSDK.NET_DVR_Login_V30(ipAdress, port, userName, password, ref lpDeviceInfo);
+            if (userId < 0)
             {
-                throw new Exception(nameof(NetSDK.NET_DVR_Login_V30));
+                throw this.CreateException(nameof(NetSDK.NET_DVR_Login_V30));
             }
+
             deviceInfo = new DeviceInfo() { ChannelNumber = lpDeviceInfo.byChanNum, StartChannel = lpDeviceInfo.byStartChan };
-            return _userId;
+            return userId;
         }
 
         public async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd, int userid, int channel)
@@ -50,19 +53,19 @@ namespace HikConsole.SDK
                 dwFileType = 0xff,
                 dwIsLocked = 0xff,
                 struStartTime = new NetSDK.NET_DVR_TIME(periodStart),
-                struStopTime = new NetSDK.NET_DVR_TIME(periodEnd)
+                struStopTime = new NetSDK.NET_DVR_TIME(periodEnd),
             };
 
             var findHandle = NetSDK.NET_DVR_FindFile_V40(userid, ref findCond);
 
             if (findHandle < 0)
             {
-                throw new Exception(nameof(NetSDK.NET_DVR_FindFile_V40));
+                throw this.CreateException(nameof(NetSDK.NET_DVR_FindFile_V40), "find files failed");
             }
 
             while (true)
             {
-                NetSDK.NET_DVR_FINDDATA_V30 fileData = new NetSDK.NET_DVR_FINDDATA_V30();
+                NetSDK.NET_DVR_FINDDATA_V30 fileData = default(NetSDK.NET_DVR_FINDDATA_V30);
                 int findResult = NetSDK.NET_DVR_FindNextFile_V30(findHandle, ref fileData);
 
                 if (findResult == NetSDK.NET_DVR_ISFINDING)
@@ -76,9 +79,8 @@ namespace HikConsole.SDK
                         FileName = fileData.sFileName,
                         StartTime = fileData.struStartTime.ToDateTime(),
                         StopTime = fileData.struStopTime.ToDateTime(),
-                        FileSize = fileData.dwFileSize
+                        FileSize = fileData.dwFileSize,
                     });
-
                 }
                 else if (findResult == NetSDK.NET_DVR_FILE_NOFIND || findResult == NetSDK.NET_DVR_NOMOREFILE)
                 {
@@ -93,18 +95,18 @@ namespace HikConsole.SDK
             return results.SkipLast(1).ToList();
         }
 
-        public int GetFileByName(int userID, string fileName, string savedFileName)
+        public int GetFileByName(int userId, string fileName, string savedFileName)
         {
-            var downloadHandle = NetSDK.NET_DVR_GetFileByName(userID, fileName, savedFileName);
+            var downloadHandle = NetSDK.NET_DVR_GetFileByName(userId, fileName, savedFileName);
             if (downloadHandle < 0)
             {
-                throw new Exception(nameof(NetSDK.NET_DVR_GetFileByName));
+                throw this.CreateException(nameof(NetSDK.NET_DVR_GetFileByName));
             }
 
             uint iOutValue = 0;
             if (!NetSDK.NET_DVR_PlayBackControl_V40(downloadHandle, NetSDK.NET_DVR_PLAYSTART, IntPtr.Zero, 0, IntPtr.Zero, ref iOutValue))
             {
-                throw new Exception(nameof(NetSDK.NET_DVR_PlayBackControl_V40));
+                throw this.CreateException(nameof(NetSDK.NET_DVR_PlayBackControl_V40));
             }
 
             return downloadHandle;
@@ -114,7 +116,7 @@ namespace HikConsole.SDK
         {
             if (!NetSDK.NET_DVR_StopGetFile(fileHandle))
             {
-                throw new Exception(nameof(NetSDK.NET_DVR_StopGetFile));
+                throw this.CreateException(nameof(NetSDK.NET_DVR_StopGetFile));
             }
         }
 
@@ -127,13 +129,20 @@ namespace HikConsole.SDK
         {
             if (!NetSDK.NET_DVR_Logout(userId))
             {
-                throw new Exception(nameof(NetSDK.NET_DVR_Logout));
+                throw this.CreateException(nameof(NetSDK.NET_DVR_Logout));
             }
         }
 
-        public static uint GetLastError()
+        private SdkException CreateException(string method, string message = null)
         {
-            return NetSDK.NET_DVR_GetLastError();
+            uint lastErrorCode = NetSDK.NET_DVR_GetLastError();
+            string msg = string.Empty;
+            if (string.IsNullOrEmpty(message))
+            {
+                msg = $" : {message}";
+            }
+
+            return new SdkException($"{method} failed, error code = {lastErrorCode}{msg}");
         }
     }
 }

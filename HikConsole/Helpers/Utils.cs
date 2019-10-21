@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 
 namespace HikConsole.Helpers
 {
@@ -9,11 +9,20 @@ namespace HikConsole.Helpers
     {
         public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> data, int count)
         {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-            if (count <= 0) return data;
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
+            if (count <= 0)
+            {
+                return data;
+            }
 
             if (data is ICollection<T> collection)
+            {
                 return collection.Take(collection.Count - count);
+            }
 
             IEnumerable<T> Skipper()
             {
@@ -23,7 +32,9 @@ namespace HikConsole.Helpers
                     int index = 0;
 
                     while (index < count && enumer.MoveNext())
+                    {
                         queue[index++] = enumer.Current;
+                    }
 
                     index = -1;
                     while (enumer.MoveNext())
@@ -41,32 +52,35 @@ namespace HikConsole.Helpers
         public static long DirSize(DirectoryInfo d)
         {
             long size = 0;
+
             // Add file sizes.
             FileInfo[] fis = d.GetFiles();
             foreach (FileInfo fi in fis)
             {
                 size += fi.Length;
             }
+
             // Add subdirectory sizes.
             DirectoryInfo[] dis = d.GetDirectories();
             foreach (DirectoryInfo di in dis)
             {
                 size += DirSize(di);
             }
+
             return size;
         }
 
         public static string FormatBytes(long bytes)
         {
-            string[] Suffix = { "B", "KB", "MB", "GB", "TB" };
+            string[] suffix = { "B", "KB", "MB", "GB", "TB" };
             int i;
             double dblSByte = bytes;
-            for (i = 0; i < Suffix.Length && bytes >= 1024; i++, bytes /= 1024)
+            for (i = 0; i < suffix.Length && bytes >= 1024; i++, bytes /= 1024)
             {
                 dblSByte = bytes / 1024.0;
             }
 
-            return string.Format("{0:0.##} {1}", dblSByte, Suffix[i]);
+            return string.Format("{0:0.##} {1}", dblSByte, suffix[i]);
         }
 
         public static long GetTotalFreeSpace(string destenation)
@@ -80,6 +94,7 @@ namespace HikConsole.Helpers
                     return drive.TotalFreeSpace;
                 }
             }
+
             return -1;
         }
     }

@@ -6,14 +6,16 @@ namespace HikConsole.Helpers
 {
     /// <summary>
     /// https://gist.github.com/DanielSWolf/0ab6a96899cc5377bf54
+    /// Author.2019
     /// </summary>
     public class ProgressBar : IDisposable, IProgress<double>
     {
-        private const int blockCount = 20;
+        private const string Animation = @"|/-\";
+        private const int BlockCount = 20;
         private readonly TimeSpan animationInterval = TimeSpan.FromSeconds(1.0 / 8);
-        private const string animation = @"|/-\";
 
         private readonly Timer timer;
+        private readonly object timerLock = new object();
 
         private double currentProgress = 0;
         private string currentText = string.Empty;
@@ -22,14 +24,14 @@ namespace HikConsole.Helpers
 
         public ProgressBar()
         {
-            timer = new Timer(TimerHandler);
+            this.timer = new Timer(this.TimerHandler);
 
             // A progress bar is only for temporary display in a console window.
             // If the console output is redirected to a file, draw nothing.
             // Otherwise, we'll end up with a lot of garbage in the target file.
             if (!Console.IsOutputRedirected)
             {
-                ResetTimer();
+                this.ResetTimer();
             }
         }
 
@@ -37,24 +39,41 @@ namespace HikConsole.Helpers
         {
             // Make sure value is in [0..1] range
             value = Math.Max(0, Math.Min(1, value));
-            Interlocked.Exchange(ref currentProgress, value);
+            Interlocked.Exchange(ref this.currentProgress, value);
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            lock (this.timerLock)
+            {
+                this.disposed = true;
+                this.UpdateText(string.Empty);
+                this.timer.Dispose();
+            }
         }
 
         private void TimerHandler(object state)
         {
-            lock (timer)
+            lock (this.timerLock)
             {
-                if (disposed) return;
+                if (this.disposed)
+                {
+                    return;
+                }
 
-                int progressBlockCount = (int)(currentProgress * blockCount);
-                int percent = (int)(currentProgress * 100);
-                string text = string.Format("[{0}{1}] {2,3}% {3}",
-                    new string('#', progressBlockCount), new string('-', blockCount - progressBlockCount),
-                    percent,
-                    animation[animationIndex++ % animation.Length]);
-                UpdateText(text);
+                int progressBlockCount = (int)(this.currentProgress * BlockCount);
+                int percent = (int)(this.currentProgress * 100);
+                string text = $"[{new string('#', progressBlockCount)}" +
+                    $"{new string('-', count: BlockCount - progressBlockCount)}] {percent,3}% {Animation[this.animationIndex++ % Animation.Length]}";
+                this.UpdateText(text);
 
-                ResetTimer();
+                this.ResetTimer();
             }
         }
 
@@ -62,21 +81,21 @@ namespace HikConsole.Helpers
         {
             // Get length of common portion
             int commonPrefixLength = 0;
-            int commonLength = Math.Min(currentText.Length, text.Length);
-            while (commonPrefixLength < commonLength && text[commonPrefixLength] == currentText[commonPrefixLength])
+            int commonLength = Math.Min(this.currentText.Length, text.Length);
+            while (commonPrefixLength < commonLength && text[commonPrefixLength] == this.currentText[commonPrefixLength])
             {
                 commonPrefixLength++;
             }
 
             // Backtrack to the first differing character
             StringBuilder outputBuilder = new StringBuilder();
-            outputBuilder.Append('\b', currentText.Length - commonPrefixLength);
+            outputBuilder.Append('\b', this.currentText.Length - commonPrefixLength);
 
             // Output new suffix
             outputBuilder.Append(text.Substring(commonPrefixLength));
 
             // If the new text is shorter than the old one: delete overlapping characters
-            int overlapCount = currentText.Length - text.Length;
+            int overlapCount = this.currentText.Length - text.Length;
             if (overlapCount > 0)
             {
                 outputBuilder.Append(' ', overlapCount);
@@ -84,21 +103,12 @@ namespace HikConsole.Helpers
             }
 
             Console.Write(outputBuilder);
-            currentText = text;
+            this.currentText = text;
         }
 
         private void ResetTimer()
         {
-            timer.Change(animationInterval, TimeSpan.FromMilliseconds(-1));
-        }
-
-        public void Dispose()
-        {
-            lock (timer)
-            {
-                disposed = true;
-                UpdateText(string.Empty);
-            }
+            this.timer.Change(this.animationInterval, TimeSpan.FromMilliseconds(-1));
         }
     }
 }
