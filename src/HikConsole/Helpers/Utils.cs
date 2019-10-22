@@ -80,7 +80,7 @@ namespace HikConsole.Helpers
                 dblSByte = bytes / 1024.0;
             }
 
-            return string.Format("{0:0.##} {1}", dblSByte, suffix[i]);
+            return string.Format("{0,6:0.00} {1}", dblSByte, suffix[i]);
         }
 
         public static long GetTotalFreeSpace(string destenation)
