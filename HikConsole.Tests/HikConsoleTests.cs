@@ -146,11 +146,6 @@ namespace HikConsoleTests
         public void Find_CallFindWithInvalidParametersa_ThrowsException()
         {
             var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
-
-            DeviceInfo inDevice = default;
-
-            sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref inDevice)).Returns(-1);
-
             var client = new HikConsole.HikConsole(new AppConfig(), sdkMock.Object);
 
             Assert.ThrowsExceptionAsync<ArgumentException>(async () =>
