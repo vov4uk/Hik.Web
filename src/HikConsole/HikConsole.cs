@@ -140,7 +140,7 @@ namespace HikConsole
 
         private void PrintFileInfo(FindResult file)
         {
-            C.Write($"{file.FileName}, {file.StartTime}, {file.StopTime}, {Utils.FormatBytes(file.FileSize)} ");
+            C.Write($"{file.FileName}, {file.StartTime.ToString("yyyy.MM.dd HH:mm:ss")}, {file.StopTime.ToString("yyyy.MM.dd HH:mm:ss")}, {Utils.FormatBytes(file.FileSize)} ");
         }
 
         private string GetWorkingDirectory(FindResult file)
@@ -157,7 +157,7 @@ namespace HikConsole
         private void ResetDownloadStatus()
         {
             this.downloadHandle = -1;
-            this.progress.Dispose();
+            this.progress?.Dispose();
             this.progress = null;
         }
 
