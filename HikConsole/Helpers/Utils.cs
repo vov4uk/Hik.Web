@@ -97,5 +97,20 @@ namespace HikConsole.Helpers
 
             return -1;
         }
+
+        public static DateTime GetNewestFile(string folder)
+        {
+            return GetFiles(folder).Max(o => o.LastWriteTime);
+        }
+
+        public static DateTime GetOldestFile(string folder)
+        {
+            return GetFiles(folder).Min(o => o.LastWriteTime);
+        }
+
+        private static IEnumerable<FileInfo> GetFiles(string folder)
+        {
+            return new DirectoryInfo(folder).GetFiles("*.mp4", SearchOption.AllDirectories);
+        }
     }
 }

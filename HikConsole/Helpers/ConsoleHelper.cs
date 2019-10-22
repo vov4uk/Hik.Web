@@ -39,5 +39,10 @@ namespace HikConsole.Helpers
             Write(timeStamp: timeStamp);
             WriteLine(str, foreground);
         }
+
+        public static void PrintLine()
+        {
+            WriteLine(new string('_', 100));
+        }
     }
 }

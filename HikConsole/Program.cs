@@ -26,11 +26,13 @@ namespace HikConsole
                 using (Timer timer = new Timer(async (o) => await DownloadCallback(), null, 0, appConfig.Interval * 60 * 1000))
                 {
                     C.WriteLine("Press \'q\' to quit");
-                    while (Console.Read() != 'q')
+                    while (Console.ReadKey() != new ConsoleKeyInfo('q', ConsoleKey.Q, false, false, false))
                     {
                         // do nothing
                     }
 
+                    C.WriteLine();
+                    C.WriteLine("Force exit", ConsoleColor.Red);
                     downloader?.ForceExit();
                 }
             }
@@ -49,6 +51,7 @@ namespace HikConsole
 
         private static async Task DownloadCallback()
         {
+            C.PrintLine();
             DateTime start = DateTime.Now;
             C.WriteLine($"Start.", timeStamp: start);
             downloader?.Logout();
@@ -71,16 +74,14 @@ namespace HikConsole
                     int i = 1;
                     foreach (var file in results)
                     {
-                        C.Write($"{i++}/{results.Count} : ");
-                        await DownloadFile(downloader, file);
+                        await DownloadFile(downloader, file, i++, results.Count);
                     }
 
-                    DateTime end = DateTime.Now;
-
+                    C.WriteLine();
                     downloader.Logout();
                     downloader = null;
 
-                    PrintStatistic(start, end);
+                    PrintStatistic(start);
                 }
             }
             catch (Exception ex)
@@ -88,20 +89,30 @@ namespace HikConsole
                 C.WriteLine(ex.Message, ConsoleColor.Red);
                 downloader?.ForceExit();
             }
+            finally
+            {
+                string duration = (start - DateTime.Now).ToString("h'h 'm'm 's's'");
+                C.WriteLine($"End. Duration  : {duration}", timeStamp: DateTime.Now);
+                C.PrintLine();
+            }
         }
 
-        private static void PrintStatistic(DateTime start, DateTime end)
+        private static void PrintStatistic(DateTime start)
         {
-            string duration = (start - end).ToString("h'h 'm'm 's's'");
-            C.WriteLine();
-            C.WriteLine($"End. Duration : {duration}", timeStamp: end);
+            var firstFile = Utils.GetOldestFile(appConfig.DestinationFolder);
+            var lastFile = Utils.GetNewestFile(appConfig.DestinationFolder);
+
             C.WriteLine($"Next execution at {start.AddMinutes(appConfig.Interval)}", timeStamp: DateTime.Now);
-            C.ColorWriteLine($"DirSize : {Utils.FormatBytes(Utils.DirSize(new DirectoryInfo(appConfig.DestinationFolder)))}", ConsoleColor.Red, DateTime.Now);
-            C.ColorWriteLine($"Free space : {Utils.FormatBytes(Utils.GetTotalFreeSpace(appConfig.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Directory Size : {Utils.FormatBytes(Utils.DirSize(new DirectoryInfo(appConfig.DestinationFolder)))}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Free space     : {Utils.FormatBytes(Utils.GetTotalFreeSpace(appConfig.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Oldest File    : {firstFile}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Newest File    : {lastFile}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Period         : {(int)(lastFile - firstFile).TotalDays} days", ConsoleColor.Red, DateTime.Now);
         }
 
-        private static async Task DownloadFile(HikConsole downloader, FindResult file)
+        private static async Task DownloadFile(HikConsole downloader, FindResult file, int order, int count)
         {
+            C.Write($"{order}/{count} : ");
             if (downloader.StartDownloadByName(file))
             {
                 do

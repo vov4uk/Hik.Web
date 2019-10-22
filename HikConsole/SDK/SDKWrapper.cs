@@ -137,7 +137,7 @@ namespace HikConsole.SDK
         {
             uint lastErrorCode = NetSDK.NET_DVR_GetLastError();
             string msg = string.Empty;
-            if (string.IsNullOrEmpty(message))
+            if (!string.IsNullOrEmpty(message))
             {
                 msg = $" : {message}";
             }

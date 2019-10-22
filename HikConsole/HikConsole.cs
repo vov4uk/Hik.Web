@@ -133,7 +133,9 @@ namespace HikConsole
 
         public async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd)
         {
-            return await this.sdk.Find(periodStart, periodEnd, this.userId, this.channel);
+            this.ValidateDateParameters(periodStart, periodEnd);
+
+            return await this.Find(periodStart, periodEnd, this.userId, this.channel);
         }
 
         private void PrintFileInfo(FindResult file)
@@ -172,6 +174,19 @@ namespace HikConsole
 
                 this.downloadFile = null;
             }
+        }
+
+        private void ValidateDateParameters(DateTime start, DateTime end)
+        {
+            if (end <= start)
+            {
+                throw new ArgumentException("Start period grather than end");
+            }
+        }
+
+        private async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd, int userId, int channel)
+        {
+            return await this.sdk.Find(periodStart, periodEnd, userId, channel);
         }
     }
 }
