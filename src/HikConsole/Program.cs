@@ -112,7 +112,7 @@ namespace HikConsole
 
         private static async Task DownloadFile(HikConsole downloader, FindResult file, int order, int count)
         {
-            C.Write($"{order}/{count} : ");
+            C.Write($"{order,2}/{count} : ");
             if (downloader.StartDownloadByName(file))
             {
                 do
