@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HikConsole", "HikConsole\HikConsole.csproj", "{7BFF9903-03B0-4179-BFCA-272148721326}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HikConsole", "src\HikConsole\HikConsole.csproj", "{7BFF9903-03B0-4179-BFCA-272148721326}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HikConsole.Tests", "HikConsole.Tests\HikConsole.Tests.csproj", "{6B19B422-4D15-49D4-99EC-58FF2C4902C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HikConsole.Tests", "src\HikConsole.Tests\HikConsole.Tests.csproj", "{6B19B422-4D15-49D4-99EC-58FF2C4902C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
