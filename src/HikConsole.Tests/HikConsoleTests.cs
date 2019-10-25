@@ -8,10 +8,10 @@ using Moq;
 using NUnit.Framework;
 
 namespace HikConsoleTests
-{    
+{
     public class HikConsoleTests
     {
-        delegate void LoginDelegate(string sDVRIP, int wDVRPort, string sUserName, string sPassword, ref DeviceInfo deviceInfo);
+        private delegate void LoginDelegate(string sDVRIP, int wDVRPort, string sUserName, string sPassword, ref DeviceInfo deviceInfo);
 
         [Test]
         public void Init_CallInit_ClientInitialized()
@@ -105,7 +105,7 @@ namespace HikConsoleTests
         [Test]
         public void Logout_DontCallLogin_LogoutNotCall()
         {
-            var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);            
+            var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
             var client = new HikConsole.HikConsole(new AppConfig(), sdkMock.Object);
 
             client.Logout();
@@ -118,10 +118,13 @@ namespace HikConsoleTests
         {
             var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
 
-            DateTime start = new DateTime();
+            DateTime start = default(DateTime);
             DateTime end = start.AddSeconds(1);
-            DeviceInfo inDevice = default(DeviceInfo);
-            var outDevice = new DeviceInfo() {StartChannel = 1};
+            DeviceInfo inDevice = default;
+            var outDevice = new DeviceInfo()
+            {
+                StartChannel = 1,
+            };
 
             var userId = 1;
             sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref inDevice))

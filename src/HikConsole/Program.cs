@@ -31,8 +31,6 @@ namespace HikConsole
                         // do nothing
                     }
 
-                    C.WriteLine();
-                    C.WriteLine("Force exit", ConsoleColor.Red);
                     downloader?.ForceExit();
                 }
             }
@@ -80,17 +78,16 @@ namespace HikConsole
                     C.WriteLine();
                     downloader.Logout();
                     downloader = null;
-
-                    PrintStatistic(start);
                 }
             }
             catch (Exception ex)
             {
-                C.WriteLine(ex.Message, ConsoleColor.Red);
+                C.WriteLine(ex.ToString(), ConsoleColor.Red);
                 downloader?.ForceExit();
             }
             finally
             {
+                PrintStatistic(start);
                 string duration = (start - DateTime.Now).ToString("h'h 'm'm 's's'");
                 C.WriteLine($"End. Duration  : {duration}", timeStamp: DateTime.Now);
                 C.PrintLine();
@@ -101,13 +98,14 @@ namespace HikConsole
         {
             var firstFile = Utils.GetOldestFile(appConfig.DestinationFolder);
             var lastFile = Utils.GetNewestFile(appConfig.DestinationFolder);
-
+            DateTime.TryParse(firstFile.Directory.Name, out var firstDate);
+            DateTime.TryParse(lastFile.Directory.Name, out var lastDate);
             C.WriteLine($"Next execution at {start.AddMinutes(appConfig.Interval)}", timeStamp: DateTime.Now);
             C.ColorWriteLine($"Directory Size : {Utils.FormatBytes(Utils.DirSize(new DirectoryInfo(appConfig.DestinationFolder)))}", ConsoleColor.Red, DateTime.Now);
             C.ColorWriteLine($"Free space     : {Utils.FormatBytes(Utils.GetTotalFreeSpace(appConfig.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
-            C.ColorWriteLine($"Oldest File    : {firstFile}", ConsoleColor.Red, DateTime.Now);
-            C.ColorWriteLine($"Newest File    : {lastFile}", ConsoleColor.Red, DateTime.Now);
-            C.ColorWriteLine($"Period         : {(int)(lastFile - firstFile).TotalDays} days", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Oldest File    : {firstFile.FullName.TrimStart(appConfig.DestinationFolder.ToCharArray())}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Newest File    : {lastFile.FullName.TrimStart(appConfig.DestinationFolder.ToCharArray())}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Period         : {(int)(lastDate - firstDate).TotalDays} days", ConsoleColor.Red, DateTime.Now);
         }
 
         private static async Task DownloadFile(HikConsole downloader, FindResult file, int order, int count)

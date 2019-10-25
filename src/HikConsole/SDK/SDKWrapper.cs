@@ -92,7 +92,7 @@ namespace HikConsole.SDK
                 }
             }
 
-            return results.SkipEnd(1).ToList();
+            return results.SkipLast(1).ToList();
         }
 
         public int GetFileByName(int userId, string fileName, string savedFileName)

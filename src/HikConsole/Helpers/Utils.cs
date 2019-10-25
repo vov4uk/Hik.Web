@@ -7,48 +7,6 @@ namespace HikConsole.Helpers
 {
     public static class Utils
     {
-        public static IEnumerable<T> SkipEnd<T>(this IEnumerable<T> data, int count)
-        {
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-
-            if (count <= 0)
-            {
-                return data;
-            }
-
-            if (data is ICollection<T> collection)
-            {
-                return collection.Take(collection.Count - count);
-            }
-
-            IEnumerable<T> Skipper()
-            {
-                using (var enumer = data.GetEnumerator())
-                {
-                    T[] queue = new T[count];
-                    int index = 0;
-
-                    while (index < count && enumer.MoveNext())
-                    {
-                        queue[index++] = enumer.Current;
-                    }
-
-                    index = -1;
-                    while (enumer.MoveNext())
-                    {
-                        index = (index + 1) % count;
-                        yield return queue[index];
-                        queue[index] = enumer.Current;
-                    }
-                }
-            }
-
-            return Skipper();
-        }
-
         public static long DirSize(DirectoryInfo d)
         {
             long size = 0;
@@ -98,14 +56,18 @@ namespace HikConsole.Helpers
             return -1;
         }
 
-        public static DateTime GetNewestFile(string folder)
+        public static FileInfo GetNewestFile(string folder)
         {
-            return GetFiles(folder).Max(o => o.LastWriteTime);
+            var allFiles = GetFiles(folder);
+            var maxFileName = allFiles.Max(o => o.FullName);
+            return allFiles.FirstOrDefault(x => x.FullName == maxFileName);
         }
 
-        public static DateTime GetOldestFile(string folder)
+        public static FileInfo GetOldestFile(string folder)
         {
-            return GetFiles(folder).Min(o => o.LastWriteTime);
+            var allFiles = GetFiles(folder);
+            var minFileName = allFiles.Min(o => o.FullName);
+            return allFiles.FirstOrDefault(x => x.FullName == minFileName);
         }
 
         private static IEnumerable<FileInfo> GetFiles(string folder)

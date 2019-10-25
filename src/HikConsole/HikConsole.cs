@@ -13,6 +13,8 @@ namespace HikConsole
     {
         private const int ProgressBarMaximum = 100;
         private const int ProgressBarMinimum = 0;
+        private const string DateTimePrintFormat = "yyyy.MM.dd HH:mm:ss";
+        private const string TimeFormat = "HHmmss";
         private readonly AppConfig appConfig;
         private readonly ISDKWrapper sdk;
         private int downloadHandle = -1;
@@ -33,6 +35,11 @@ namespace HikConsole
         {
             this.sdk.Initialize();
             this.sdk.SetupSDKLogs(3, Path.Combine(this.appConfig.DestinationFolder, "SdkLog"), false);
+
+            if (!Directory.Exists(this.appConfig.DestinationFolder))
+            {
+                Directory.CreateDirectory(this.appConfig.DestinationFolder);
+            }
         }
 
         public bool Login()
@@ -42,7 +49,7 @@ namespace HikConsole
                 DeviceInfo deviceInfo = null;
                 this.userId = this.sdk.Login(this.appConfig.IpAddress, this.appConfig.PortNumber, this.appConfig.UserName, this.appConfig.Password, ref deviceInfo);
 
-                C.ColorWriteLine("Login Success!", ConsoleColor.DarkGreen, DateTime.Now);
+                C.ColorWriteLine($"Login to {this.appConfig.IpAddress}:{this.appConfig.PortNumber} successfull!", ConsoleColor.DarkGreen, DateTime.Now);
 
                 this.channel = deviceInfo.StartChannel;
 
@@ -126,6 +133,7 @@ namespace HikConsole
 
         public void ForceExit()
         {
+            C.WriteLine("\r\nForce exit", ConsoleColor.DarkRed);
             this.StopDownload();
             this.DeleteCurrentFile();
             this.Logout();
@@ -140,7 +148,7 @@ namespace HikConsole
 
         private void PrintFileInfo(FindResult file)
         {
-            C.Write($"{file.FileName}, {file.StartTime.ToString("yyyy.MM.dd HH:mm:ss")}, {file.StopTime.ToString("yyyy.MM.dd HH:mm:ss")}, {Utils.FormatBytes(file.FileSize)} ");
+            C.Write($"{file.FileName}, {file.StartTime.ToString(DateTimePrintFormat)}, {file.StopTime.ToString(DateTimePrintFormat)}, {Utils.FormatBytes(file.FileSize)} ");
         }
 
         private string GetWorkingDirectory(FindResult file)
@@ -151,7 +159,7 @@ namespace HikConsole
         private string GetFullPath(FindResult file, string directory = null)
         {
             string folder = directory ?? this.GetWorkingDirectory(file);
-            return Path.Combine(folder, $"{file.StartTime.ToString("hhmmss")}_{file.StopTime.ToString("hhmmss")}_{file.FileName}.mp4");
+            return Path.Combine(folder, $"{file.StartTime.ToString(TimeFormat)}_{file.StopTime.ToString(TimeFormat)}_{file.FileName}.mp4");
         }
 
         private void ResetDownloadStatus()
