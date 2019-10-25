@@ -7,7 +7,7 @@ namespace HikConsole.Helpers
 {
     public static class Utils
     {
-        public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> data, int count)
+        public static IEnumerable<T> SkipEnd<T>(this IEnumerable<T> data, int count)
         {
             if (data == null)
             {

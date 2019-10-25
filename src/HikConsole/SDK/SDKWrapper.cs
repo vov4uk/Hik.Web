@@ -32,7 +32,7 @@ namespace HikConsole.SDK
 
         public int Login(string ipAdress, int port, string userName, string password, ref DeviceInfo deviceInfo)
         {
-            NetSDK.NET_DVR_DEVICEINFO_V30 lpDeviceInfo = default;
+            NetSDK.NET_DVR_DEVICEINFO_V30 lpDeviceInfo = default(NetSDK.NET_DVR_DEVICEINFO_V30);
             int userId = NetSDK.NET_DVR_Login_V30(ipAdress, port, userName, password, ref lpDeviceInfo);
             if (userId < 0)
             {
@@ -92,7 +92,7 @@ namespace HikConsole.SDK
                 }
             }
 
-            return results.SkipLast(1).ToList();
+            return results.SkipEnd(1).ToList();
         }
 
         public int GetFileByName(int userId, string fileName, string savedFileName)

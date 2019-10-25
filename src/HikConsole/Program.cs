@@ -11,12 +11,12 @@ using C = HikConsole.Helpers.ConsoleHelper;
 
 namespace HikConsole
 {
-    internal static class Program
+    public static class Program
     {
         private static HikConsole downloader;
         private static AppConfig appConfig;
 
-        private static async Task Main()
+        public static void Main()
         {
             appConfig = JsonConvert.DeserializeObject<AppConfig>(System.IO.File.ReadAllText("configuration.json"));
 
@@ -38,7 +38,7 @@ namespace HikConsole
             }
             else if (appConfig.Mode == "Fire-and-forget")
             {
-                await DownloadCallback();
+                DownloadCallback().GetAwaiter().GetResult();
                 C.WriteLine("Press any key to quit.");
                 Console.ReadKey();
             }

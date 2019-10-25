@@ -4,17 +4,16 @@ using AutoFixture;
 using HikConsole;
 using HikConsole.Abstraction;
 using HikConsole.Data;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using NUnit.Framework;
 
 namespace HikConsoleTests
-{
-    [TestClass]
+{    
     public class HikConsoleTests
     {
         delegate void LoginDelegate(string sDVRIP, int wDVRPort, string sUserName, string sPassword, ref DeviceInfo deviceInfo);
 
-        [TestMethod]
+        [Test]
         public void Init_CallInit_ClientInitialized()
         {
             var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
@@ -31,12 +30,12 @@ namespace HikConsoleTests
             sdkMock.Verify(x => x.SetupSDKLogs(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
         }
 
-        [TestMethod]
+        [Test]
         public void Login_CallLogin_LoginSucessfully()
         {
             var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
 
-            DeviceInfo inDevice = default;
+            DeviceInfo inDevice = default(DeviceInfo);
             DeviceInfo outDevice = new DeviceInfo();
 
             sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref inDevice))
@@ -53,12 +52,12 @@ namespace HikConsoleTests
             Assert.IsTrue(res);
         }
 
-        [TestMethod]
+        [Test]
         public void Login_CallLoginTwice_LoginOnce()
         {
             var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
 
-            DeviceInfo inDevice = default;
+            DeviceInfo inDevice = default(DeviceInfo);
             var outDevice = new DeviceInfo();
 
             sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref inDevice))
@@ -77,12 +76,12 @@ namespace HikConsoleTests
             sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref outDevice), Times.Once);
         }
 
-        [TestMethod]
+        [Test]
         public void Logout_CallLogin_LogoutSuccess()
         {
             var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
 
-            DeviceInfo inDevice = default;
+            DeviceInfo inDevice = default(DeviceInfo);
             var outDevice = new DeviceInfo();
 
             var userId = 1;
@@ -103,7 +102,7 @@ namespace HikConsoleTests
             sdkMock.Verify(x => x.Logout(userId), Times.Once);
         }
 
-        [TestMethod]
+        [Test]
         public void Logout_DontCallLogin_LogoutNotCall()
         {
             var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);            
@@ -114,14 +113,14 @@ namespace HikConsoleTests
             sdkMock.Verify(x => x.Logout(It.IsAny<int>()), Times.Never);
         }
 
-        [TestMethod]
+        [Test]
         public void Find_CallLogin_CallFindWithCorrectParameters()
         {
             var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
 
             DateTime start = new DateTime();
             DateTime end = start.AddSeconds(1);
-            DeviceInfo inDevice = default;
+            DeviceInfo inDevice = default(DeviceInfo);
             var outDevice = new DeviceInfo() {StartChannel = 1};
 
             var userId = 1;
@@ -142,13 +141,13 @@ namespace HikConsoleTests
             sdkMock.Verify(x => x.Find(start, end, userId, outDevice.StartChannel), Times.Once);
         }
 
-        [TestMethod]
+        [Test]
         public void Find_CallFindWithInvalidParametersa_ThrowsException()
         {
             var sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
             var client = new HikConsole.HikConsole(new AppConfig(), sdkMock.Object);
 
-            Assert.ThrowsExceptionAsync<ArgumentException>(async () =>
+            Assert.ThrowsAsync<ArgumentException>(async () =>
             {
                 var date = new DateTime(1970, 1, 1);
                 var res = await client.Find(date, date);
