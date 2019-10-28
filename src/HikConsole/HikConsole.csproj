@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,7 +6,6 @@
     <StartupObject>HikConsole.Program</StartupObject>
     <CodeAnalysisRuleSet>HikConsole.ruleset</CodeAnalysisRuleSet>
     <DebugType>full</DebugType>
-    <ApplicationIcon />
   </PropertyGroup>
 
   <ItemGroup>
