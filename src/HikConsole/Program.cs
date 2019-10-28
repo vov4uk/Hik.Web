@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using HikConsole.Data;
@@ -13,12 +12,12 @@ namespace HikConsole
 {
     public static class Program
     {
-        private static HikConsole downloader;
+        private static HikClient downloader;
         private static AppConfig appConfig;
 
         public static void Main()
         {
-            appConfig = JsonConvert.DeserializeObject<AppConfig>(System.IO.File.ReadAllText("configuration.json"));
+            appConfig = JsonConvert.DeserializeObject<AppConfig>(new FilesHelper().ReadAllText("configuration.json"));
 
             C.WriteLine(appConfig.ToString(), ConsoleColor.DarkMagenta);
             if (appConfig.Mode == "Recurring")
@@ -49,19 +48,35 @@ namespace HikConsole
 
         private static async Task DownloadCallback()
         {
-            C.PrintLine();
             DateTime start = DateTime.Now;
+            C.PrintLine();
             C.WriteLine($"Start.", timeStamp: start);
+            DateTime periodStart = start.AddHours(-1 * appConfig.ProcessingPeriodHours);
+            DateTime periodEnd = start;
+
+            foreach (var camera in appConfig.Cameras)
+            {
+                await ProcessCamera(camera, periodStart, periodEnd);
+                C.PrintLine(40);
+            }
+
+            C.WriteLine($"Next execution at {start.AddMinutes(appConfig.Interval)}", timeStamp: DateTime.Now);
+            string duration = (start - DateTime.Now).ToString("h'h 'm'm 's's'");
+            C.WriteLine($"End. Duration  : {duration}", timeStamp: DateTime.Now);
+        }
+
+        private static async Task ProcessCamera(CameraConfig camera, DateTime periodStart, DateTime periodEnd)
+        {
             downloader?.Logout();
-            downloader = new HikConsole(appConfig, new SDKWrapper());
+            downloader = new HikClient(camera, new SDKWrapper(), new FilesHelper(), new ProgressBarFactory());
 
             try
             {
                 downloader.Init();
                 if (downloader.Login())
                 {
-                    DateTime periodStart = start.AddHours(-1 * appConfig.ProcessingPeriodHours);
-                    DateTime periodEnd = start;
+                    C.ColorWriteLine($"Login success!", ConsoleColor.DarkGreen, DateTime.Now);
+                    C.WriteLine(camera.ToString(), ConsoleColor.DarkMagenta);
                     C.WriteLine($"Get videos from {periodStart} to {periodEnd}", timeStamp: DateTime.Now);
 
                     IList<FindResult> results = await downloader.Find(periodStart, periodEnd);
@@ -87,31 +102,27 @@ namespace HikConsole
             }
             finally
             {
-                PrintStatistic(start);
-                string duration = (start - DateTime.Now).ToString("h'h 'm'm 's's'");
-                C.WriteLine($"End. Duration  : {duration}", timeStamp: DateTime.Now);
-                C.PrintLine();
+                PrintStatistic(camera);
             }
         }
 
-        private static void PrintStatistic(DateTime start)
+        private static void PrintStatistic(CameraConfig camera)
         {
-            var firstFile = Utils.GetOldestFile(appConfig.DestinationFolder);
-            var lastFile = Utils.GetNewestFile(appConfig.DestinationFolder);
+            var firstFile = Utils.GetOldestFile(camera.DestinationFolder);
+            var lastFile = Utils.GetNewestFile(camera.DestinationFolder);
             DateTime.TryParse(firstFile.Directory.Name, out var firstDate);
             DateTime.TryParse(lastFile.Directory.Name, out var lastDate);
-            C.WriteLine($"Next execution at {start.AddMinutes(appConfig.Interval)}", timeStamp: DateTime.Now);
-            C.ColorWriteLine($"Directory Size : {Utils.FormatBytes(Utils.DirSize(new DirectoryInfo(appConfig.DestinationFolder)))}", ConsoleColor.Red, DateTime.Now);
-            C.ColorWriteLine($"Free space     : {Utils.FormatBytes(Utils.GetTotalFreeSpace(appConfig.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
-            C.ColorWriteLine($"Oldest File    : {firstFile.FullName.TrimStart(appConfig.DestinationFolder.ToCharArray())}", ConsoleColor.Red, DateTime.Now);
-            C.ColorWriteLine($"Newest File    : {lastFile.FullName.TrimStart(appConfig.DestinationFolder.ToCharArray())}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Directory Size : {Utils.FormatBytes(Utils.DirSize(camera.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Free space     : {Utils.FormatBytes(Utils.GetTotalFreeSpace(camera.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Oldest File    : {firstFile.FullName.TrimStart(camera.DestinationFolder.ToCharArray())}", ConsoleColor.Red, DateTime.Now);
+            C.ColorWriteLine($"Newest File    : {lastFile.FullName.TrimStart(camera.DestinationFolder.ToCharArray())}", ConsoleColor.Red, DateTime.Now);
             C.ColorWriteLine($"Period         : {(int)(lastDate - firstDate).TotalDays} days", ConsoleColor.Red, DateTime.Now);
         }
 
-        private static async Task DownloadFile(HikConsole downloader, FindResult file, int order, int count)
+        private static async Task DownloadFile(HikClient downloader, FindResult file, int order, int count)
         {
             C.Write($"{order,2}/{count} : ");
-            if (downloader.StartDownloadByName(file))
+            if (downloader.StartDownload(file))
             {
                 do
                 {

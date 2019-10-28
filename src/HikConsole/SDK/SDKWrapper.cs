@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using HikConsole.Abstraction;
 using HikConsole.Data;
-using HikConsole.Helpers;
 
 namespace HikConsole.SDK
 {
+    [ExcludeFromCodeCoverage]
     public class SDKWrapper : ISDKWrapper
     {
         public bool Initialize()
@@ -92,10 +93,11 @@ namespace HikConsole.SDK
                 }
             }
 
+            this.CloseSearch(findHandle);
             return results.SkipLast(1).ToList();
         }
 
-        public int GetFileByName(int userId, string fileName, string savedFileName)
+        public int StartDownloadFile(int userId, string fileName, string savedFileName)
         {
             var downloadHandle = NetSDK.NET_DVR_GetFileByName(userId, fileName, savedFileName);
             if (downloadHandle < 0)
@@ -123,6 +125,19 @@ namespace HikConsole.SDK
         public int GetDownloadPos(int fileHandle)
         {
             return NetSDK.NET_DVR_GetDownloadPos(fileHandle);
+        }
+
+        public void CloseSearch(int fileHandle)
+        {
+            if (fileHandle > 0 && NetSDK.NET_DVR_FindClose_V30(fileHandle))
+            {
+                throw this.CreateException(nameof(NetSDK.NET_DVR_FindClose_V30));
+            }
+        }
+
+        public void Cleanup()
+        {
+            NetSDK.NET_DVR_Cleanup();
         }
 
         public void Logout(int userId)

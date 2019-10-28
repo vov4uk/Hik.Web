@@ -7,6 +7,7 @@ namespace HikConsole.SDK
     [ExcludeFromCodeCoverage]
     public class NetSDK
     {
+        public const string DllPath = @"SDK\HCNetSDK";
 #pragma warning disable SA1310
         public const int CARDNUM_LEN_OUT = 32;
         public const int GUID_LEN = 16;
@@ -18,39 +19,43 @@ namespace HikConsole.SDK
         public const int NET_DVR_NOMOREFILE = 1003;
 #pragma warning restore SA1310
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
         internal static extern int NET_DVR_FindFile_V40(int lUserID, ref NET_DVR_FILECOND_V40 pFindCond);
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
         internal static extern uint NET_DVR_GetLastError();
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
         internal static extern int NET_DVR_FindNextFile_V30(int lFindHandle, ref NET_DVR_FINDDATA_V30 lpFindData);
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
         internal static extern bool NET_DVR_StopGetFile(int lFileHandle);
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
         internal static extern int NET_DVR_GetDownloadPos(int lFileHandle);
 
-#pragma warning disable SA1313
-        [DllImport(@"SDK\HCNetSDK.dll")]
-        internal static extern bool NET_DVR_PlayBackControl_V40(int lPlayHandle, uint dwControlCode, IntPtr lpInBuffer, uint dwInValue, IntPtr lpOutBuffer, ref uint LPOutValue);
-#pragma warning restore SA1310
+        [DllImport(DllPath)]
+        internal static extern bool NET_DVR_PlayBackControl_V40(int lPlayHandle, uint dwControlCode, IntPtr lpInBuffer, uint dwInValue, IntPtr lpOutBuffer, ref uint lPOutValue);
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
         internal static extern int NET_DVR_GetFileByName(int lUserID, string sDVRFileName, string sSavedFileName);
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
         internal static extern bool NET_DVR_Init();
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
         internal static extern bool NET_DVR_SetLogToFile(int bLogEnable, string strLogDir, bool bAutoDel);
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
         internal static extern bool NET_DVR_Logout(int iUserID);
 
-        [DllImport(@"SDK\HCNetSDK.dll")]
+        [DllImport(DllPath)]
+        internal static extern bool NET_DVR_FindClose_V30(int lFindHandle);
+
+        [DllImport(DllPath)]
+        internal static extern bool NET_DVR_Cleanup();
+
+        [DllImport(DllPath)]
         internal static extern int NET_DVR_Login_V30(string sDVRIP, int wDVRPort, string sUserName, string sPassword, ref NET_DVR_DEVICEINFO_V30 lpDeviceInfo);
 
 #pragma warning disable SA1307

@@ -15,12 +15,16 @@ namespace HikConsole.Abstraction
 
         Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd, int userid, int channel);
 
-        int GetFileByName(int userId, string fileName, string savedFileName);
+        int StartDownloadFile(int userId, string fileName, string savedFileName);
 
         void StopDownoloadFile(int fileHandle);
 
         int GetDownloadPos(int fileHandle);
 
         void Logout(int userId);
+
+        void Cleanup();
+
+        void CloseSearch(int fileHandle);
     }
 }

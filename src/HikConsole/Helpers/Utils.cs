@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
 namespace HikConsole.Helpers
 {
+    [ExcludeFromCodeCoverage]
     public static class Utils
     {
-        public static long DirSize(DirectoryInfo d)
+        public static long DirSize(string path)
         {
+            var d = new DirectoryInfo(path);
             long size = 0;
 
             // Add file sizes.
@@ -22,7 +24,7 @@ namespace HikConsole.Helpers
             DirectoryInfo[] dis = d.GetDirectories();
             foreach (DirectoryInfo di in dis)
             {
-                size += DirSize(di);
+                size += DirSize(di.FullName);
             }
 
             return size;

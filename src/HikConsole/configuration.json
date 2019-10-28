@@ -1,11 +1,26 @@
 {
-  "IPAddress": "127.0.0.1",
-  "PortNumber": 8000,
-  "UserName": "user",
-  "Password": "pass",
-  "ProcessingPeriodHours": 6,
-  "DestinationFolder": "D:\\Video",
+  "ProcessingPeriodHours": 4,
   "ModeAllowedValues": [ "Fire-and-forget", "Recurring" ],
   "Mode": "Recurring",
-  "IntervalMinutes": 120
+  "IntervalMinutes": 120,
+  "Cameras": [
+    {
+      "Allias": "Camera1",
+      "IPAddress": "192.168.1.64",
+      "PortNumber": 8000,
+      "UserName": "admin",
+      "Password": "adminpass",
+      "ProcessingPeriodHours": 24,
+      "DestinationFolder": "D:\\Video\\Camera1"
+    },
+    {
+      "Allias": "Camera2",
+      "IPAddress": "192.168.1.65",
+      "PortNumber": 8000,
+      "UserName": "admin",
+      "Password": "adminpass",
+      "ProcessingPeriodHours": 24,
+      "DestinationFolder": "D:\\Video\\Camera2"
+    }
+  ]
 }
