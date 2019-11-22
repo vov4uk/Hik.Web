@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using HikConsole.Abstraction;
 using HikConsole.Data;
-using HikConsole.Helpers;
 
 namespace HikConsole.SDK
 {
+    [ExcludeFromCodeCoverage]
     public class SDKWrapper : ISDKWrapper
     {
         public bool Initialize()
@@ -32,7 +35,7 @@ namespace HikConsole.SDK
 
         public int Login(string ipAdress, int port, string userName, string password, ref DeviceInfo deviceInfo)
         {
-            NetSDK.NET_DVR_DEVICEINFO_V30 lpDeviceInfo = default;
+            NetSDK.NET_DVR_DEVICEINFO_V30 lpDeviceInfo = default(NetSDK.NET_DVR_DEVICEINFO_V30);
             int userId = NetSDK.NET_DVR_Login_V30(ipAdress, port, userName, password, ref lpDeviceInfo);
             if (userId < 0)
             {
@@ -92,10 +95,11 @@ namespace HikConsole.SDK
                 }
             }
 
+            this.CloseSearch(findHandle);
             return results.SkipLast(1).ToList();
         }
 
-        public int GetFileByName(int userId, string fileName, string savedFileName)
+        public int StartDownloadFile(int userId, string fileName, string savedFileName)
         {
             var downloadHandle = NetSDK.NET_DVR_GetFileByName(userId, fileName, savedFileName);
             if (downloadHandle < 0)
@@ -125,6 +129,19 @@ namespace HikConsole.SDK
             return NetSDK.NET_DVR_GetDownloadPos(fileHandle);
         }
 
+        public void CloseSearch(int fileHandle)
+        {
+            if (fileHandle > 0 && NetSDK.NET_DVR_FindClose_V30(fileHandle))
+            {
+                throw this.CreateException(nameof(NetSDK.NET_DVR_FindClose_V30));
+            }
+        }
+
+        public void Cleanup()
+        {
+            NetSDK.NET_DVR_Cleanup();
+        }
+
         public void Logout(int userId)
         {
             if (!NetSDK.NET_DVR_Logout(userId))
@@ -136,13 +153,30 @@ namespace HikConsole.SDK
         private SdkException CreateException(string method, string message = null)
         {
             uint lastErrorCode = NetSDK.NET_DVR_GetLastError();
+
+            Error last = (Error)lastErrorCode;
             string msg = string.Empty;
             if (!string.IsNullOrEmpty(message))
             {
                 msg = $" : {message}";
             }
 
-            return new SdkException($"{method} failed, error code = {lastErrorCode}{msg}");
+            return new SdkException($"{method} failed, error code = {lastErrorCode.ToString()}{Environment.NewLine}{this.GetEnumDescription(last)}{Environment.NewLine}{msg}");
+        }
+
+        private string GetEnumDescription(Error value)
+        {
+            string val = value.ToString();
+            FieldInfo fi = value.GetType().GetField(val);
+
+            DescriptionAttribute[] attributes = fi.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
+
+            if (attributes != null && attributes.Any())
+            {
+                return attributes.First().Description;
+            }
+
+            return val;
         }
     }
 }

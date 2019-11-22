@@ -1,11 +1,33 @@
 {
-  "IPAddress": "127.0.0.1",
-  "PortNumber": 8000,
-  "UserName": "user",
-  "Password": "pass",
-  "ProcessingPeriodHours": 6,
-  "DestinationFolder": "D:\\Video",
-  "ModeAllowedValues": [ "Fire-and-forget", "Recurring" ],
+  "ProcessingPeriodHours": 4,
   "Mode": "Recurring",
-  "IntervalMinutes": 120
+  "ShowProgress" :  false,
+  "IntervalMinutes": 120,
+  "Cameras": [
+    {
+      "Allias": "Camera1",
+      "IPAddress": "192.168.1.64",
+      "PortNumber": 8000,
+      "UserName": "admin",
+      "Password": "adminpass",
+      "ProcessingPeriodHours": 24,
+      "DestinationFolder": "D:\\Video\\Camera1"
+    },
+    {
+      "Allias": "Camera2",
+      "IPAddress": "192.168.1.65",
+      "PortNumber": 8000,
+      "UserName": "admin",
+      "Password": "adminpass",
+      "ProcessingPeriodHours": 24,
+      "DestinationFolder": "D:\\Video\\Camera2"
+    }
+  ],
+  "EmailSettings": {
+    "UserName": "user@gmail.com",
+    "Password": "pass",
+    "Server": "smtp.gmail.com",
+    "Port": 587,
+    "Receiver": "receiver@gmail.com"
+  }
 }

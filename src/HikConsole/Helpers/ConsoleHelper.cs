@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HikConsole.Helpers
 {
+    [ExcludeFromCodeCoverage]
     public static class ConsoleHelper
     {
         public static void WriteLine(string str = null, ConsoleColor foreground = ConsoleColor.Gray, DateTime? timeStamp = null)
@@ -40,9 +42,9 @@ namespace HikConsole.Helpers
             WriteLine(str, foreground);
         }
 
-        public static void PrintLine()
+        public static void PrintLine(int length = 100)
         {
-            WriteLine(new string('_', 100));
+            WriteLine(new string('_', length));
         }
     }
 }

@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading;
+using HikConsole.Abstraction;
 
 namespace HikConsole.Helpers
 {
@@ -8,7 +10,8 @@ namespace HikConsole.Helpers
     /// https://gist.github.com/DanielSWolf/0ab6a96899cc5377bf54
     /// Author.2019
     /// </summary>
-    public class ProgressBar : IDisposable, IProgress<double>
+    [ExcludeFromCodeCoverage]
+    internal class ProgressBar : IProgressBar
     {
         private const string Animation = @"|/-\";
         private const int BlockCount = 20;
