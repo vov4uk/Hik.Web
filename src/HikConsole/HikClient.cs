@@ -79,7 +79,7 @@ namespace HikConsole
 
             this.downloadHandle = this.sdk.StartDownloadFile(this.userId, file.FileName, fileName);
             this.downloadFile = file;
-            this.progress = this.progressFactory.Create();
+            this.progress = this.progressFactory?.Create();
             return true;
         }
 
@@ -100,7 +100,7 @@ namespace HikConsole
 
                 if (barValue > ProgressBarMinimum && barValue < ProgressBarMaximum)
                 {
-                    this.progress.Report((double)barValue / 100);
+                    this.progress?.Report((double)barValue / 100);
                 }
                 else if (barValue == 100)
                 {

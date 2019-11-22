@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -74,7 +75,15 @@ namespace HikConsole.Helpers
 
         private static IEnumerable<FileInfo> GetFiles(string folder)
         {
-            return new DirectoryInfo(folder).GetFiles("*.mp4", SearchOption.AllDirectories);
+            try
+            {
+                return new DirectoryInfo(folder).GetFiles("*.mp4", SearchOption.AllDirectories).ToList();
+            }
+            catch (Exception ex)
+            {
+                ConsoleHelper.WriteLine(ex.ToString());
+                return new List<FileInfo>();
+            }
         }
     }
 }

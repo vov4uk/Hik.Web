@@ -1,7 +1,7 @@
 {
   "ProcessingPeriodHours": 4,
-  "ModeAllowedValues": [ "Fire-and-forget", "Recurring" ],
   "Mode": "Recurring",
+  "ShowProgress" :  false,
   "IntervalMinutes": 120,
   "Cameras": [
     {
@@ -22,5 +22,12 @@
       "ProcessingPeriodHours": 24,
       "DestinationFolder": "D:\\Video\\Camera2"
     }
-  ]
+  ],
+  "EmailSettings": {
+    "UserName": "user@gmail.com",
+    "Password": "pass",
+    "Server": "smtp.gmail.com",
+    "Port": 587,
+    "Receiver": "receiver@gmail.com"
+  }
 }

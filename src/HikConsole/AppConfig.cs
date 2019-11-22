@@ -15,14 +15,20 @@ namespace HikConsole
         [JsonProperty("IntervalMinutes")]
         public int Interval { get; set; }
 
+        [JsonProperty("ShowProgress")]
+        public bool ShowProgress { get; set; }
+
         [JsonProperty("Cameras")]
         public CameraConfig[] Cameras { get; set; }
+
+        [JsonProperty("EmailSettings")]
+        public EmailConfig EmailConfig { get; set; }
 
         public override string ToString()
         {
             return $@"Mode        : {this.Mode}
-Interval    : {this.Interval}m
-Period      : {this.ProcessingPeriodHours}h";
+Interval    : {this.Interval.ToString()}m
+Period      : {this.ProcessingPeriodHours.ToString()}h";
         }
     }
 }

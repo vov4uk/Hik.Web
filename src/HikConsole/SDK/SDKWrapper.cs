@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using HikConsole.Abstraction;
 using HikConsole.Data;
@@ -151,13 +153,30 @@ namespace HikConsole.SDK
         private SdkException CreateException(string method, string message = null)
         {
             uint lastErrorCode = NetSDK.NET_DVR_GetLastError();
+
+            Error last = (Error)lastErrorCode;
             string msg = string.Empty;
             if (!string.IsNullOrEmpty(message))
             {
                 msg = $" : {message}";
             }
 
-            return new SdkException($"{method} failed, error code = {lastErrorCode}{msg}");
+            return new SdkException($"{method} failed, error code = {lastErrorCode.ToString()}{Environment.NewLine}{this.GetEnumDescription(last)}{Environment.NewLine}{msg}");
+        }
+
+        private string GetEnumDescription(Error value)
+        {
+            string val = value.ToString();
+            FieldInfo fi = value.GetType().GetField(val);
+
+            DescriptionAttribute[] attributes = fi.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
+
+            if (attributes != null && attributes.Any())
+            {
+                return attributes.First().Description;
+            }
+
+            return val;
         }
     }
 }
