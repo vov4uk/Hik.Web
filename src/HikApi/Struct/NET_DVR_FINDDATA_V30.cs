@@ -1,0 +1,24 @@
+﻿using System.Runtime.InteropServices;
+
+namespace HikApi.Struct
+{
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public struct NET_DVR_FINDDATA_V30
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
+        public string sFileName;
+
+        public NET_DVR_TIME struStartTime;
+        public NET_DVR_TIME struStopTime;
+        public uint dwFileSize;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string sCardNum;
+
+        public byte byLocked;
+        public byte byFileType;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2, ArraySubType = UnmanagedType.I1)]
+        public byte[] byRes;
+    }
+}

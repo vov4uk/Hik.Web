@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 
-namespace HikConsole.SDK
+namespace HikApi
 {
-    public enum Error
+    public enum HikError
     {
 #pragma warning disable SA1602
         [Description("No error.")]

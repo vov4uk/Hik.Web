@@ -6,14 +6,14 @@ namespace HikConsole.Data
 {
     [Serializable]
     [ExcludeFromCodeCoverage]
-    public class SdkException : Exception
+    public class HikException : Exception
     {
-        public SdkException(string message)
+        public HikException(string message)
             : base(message)
         {
         }
 
-        protected SdkException(SerializationInfo info, StreamingContext context)
+        protected HikException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }

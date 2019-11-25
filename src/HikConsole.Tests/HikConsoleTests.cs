@@ -11,14 +11,14 @@ namespace HikConsoleTests
 {
     public class HikConsoleTests
     {
-        private readonly Mock<ISDKWrapper> sdkMock;
+        private readonly Mock<IHikService> sdkMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IProgressBarFactory> progressMock;
         private readonly Fixture fixture;
 
         public HikConsoleTests()
         {
-            this.sdkMock = new Mock<ISDKWrapper>(MockBehavior.Strict);
+            this.sdkMock = new Mock<IHikService>(MockBehavior.Strict);
             this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
             this.progressMock = new Mock<IProgressBarFactory>(MockBehavior.Strict);
             this.fixture = new Fixture();
@@ -32,31 +32,30 @@ namespace HikConsoleTests
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
             this.sdkMock.Setup(x => x.Initialize()).Returns(true);
-            this.sdkMock.Setup(x => x.SetupSDKLogs(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(true);
+            this.sdkMock.Setup(x => x.SetupLogs(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<bool>())).Returns(true);
 
             var client = this.GetHikClient();
-            client.Init();
+            client.InitializeClient();
 
             this.sdkMock.Verify(x => x.Initialize(), Times.Once);
-            this.sdkMock.Verify(x => x.SetupSDKLogs(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
+            this.sdkMock.Verify(x => x.SetupLogs(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
         }
 
         [Fact]
         public void Login_CallLogin_LoginSucessfully()
         {
-            DeviceInfo outDevice = this.SetupLogin(1);
-
+            this.SetupLogin(1);
             var client = this.GetHikClient();
             bool res = client.Login();
 
-            this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref outDevice), Times.Once);
+            this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             Assert.True(res);
         }
 
         [Fact]
         public void Login_CallLoginTwice_LoginOnce()
         {
-            DeviceInfo outDevice = this.SetupLogin(1);
+            this.SetupLogin(1);
 
             var client = this.GetHikClient();
             var first = client.Login();
@@ -64,14 +63,14 @@ namespace HikConsoleTests
 
             Assert.True(first);
             Assert.False(second);
-            this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref outDevice), Times.Once);
+            this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
         public void Logout_CallLogin_LogoutSuccess()
         {
             int userId = 1;
-            DeviceInfo outDevice = this.SetupLogin(userId);
+            this.SetupLogin(userId);
 
             this.sdkMock.Setup(x => x.Logout(userId));
             this.sdkMock.Setup(x => x.Cleanup());
@@ -81,7 +80,7 @@ namespace HikConsoleTests
             client.Logout();
 
             Assert.True(first);
-            this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref outDevice), Times.Once);
+            this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             this.sdkMock.Verify(x => x.Logout(userId), Times.Once);
             this.sdkMock.Verify(x => x.Cleanup(), Times.Once);
         }
@@ -102,16 +101,16 @@ namespace HikConsoleTests
             DateTime start = default(DateTime);
             DateTime end = start.AddSeconds(1);
             int userId = 1;
-            DeviceInfo outDevice = this.SetupLogin(userId);
+            var result = this.SetupLogin(userId);
 
-            this.sdkMock.Setup(x => x.Find(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(new List<FindResult>());
+            this.sdkMock.Setup(x => x.SearchVideoFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(new List<RemoteVideoFile>());
 
             var client = this.GetHikClient();
             var first = client.Login();
 
             var find = client.Find(start, end);
 
-            this.sdkMock.Verify(x => x.Find(start, end, userId, outDevice.StartChannel), Times.Once);
+            this.sdkMock.Verify(x => x.SearchVideoFilesAsync(start, end, userId, result.Device.StartChannel), Times.Once);
         }
 
         [Fact]
@@ -130,15 +129,15 @@ namespace HikConsoleTests
         public void StartDwonload_CallStartDownload_ReturnTrue()
         {
             int downloadHandler = 1;
-
+            this.SetupLogin(1);
             this.SetupFilesMockForDwonload();
 
             this.sdkMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(downloadHandler);
             this.progressMock.Setup(x => x.Create()).Returns(default(IProgressBar));
 
             var client = this.GetHikClient();
-
-            var isDownloading = client.StartDownload(this.fixture.Create<FindResult>());
+            client.Login();
+            var isDownloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
 
             Assert.True(isDownloading);
             this.filesMock.Verify(x => x.CombinePath(It.IsAny<string[]>()), Times.Exactly(2));
@@ -157,7 +156,7 @@ namespace HikConsoleTests
 
             var client = this.GetHikClient();
 
-            var isDownloading = client.StartDownload(this.fixture.Create<FindResult>());
+            var isDownloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
 
             Assert.False(isDownloading);
         }
@@ -168,14 +167,14 @@ namespace HikConsoleTests
             int downloadHandler = 1;
 
             this.SetupFilesMockForDwonload();
-
+            this.SetupLogin(1);
             this.sdkMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(downloadHandler);
             this.progressMock.Setup(x => x.Create()).Returns(default(IProgressBar));
 
             var client = this.GetHikClient();
-
-            var downloading = client.StartDownload(this.fixture.Create<FindResult>());
-            var notDownloading = client.StartDownload(this.fixture.Create<FindResult>());
+            client.Login();
+            var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
+            var notDownloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
 
             Assert.False(notDownloading);
             this.filesMock.Verify(x => x.CombinePath(It.IsAny<string[]>()), Times.Exactly(2));
@@ -192,7 +191,7 @@ namespace HikConsoleTests
 
             client.StopDownload();
 
-            this.sdkMock.Verify(x => x.StopDownoloadFile(It.IsAny<int>()), Times.Never);
+            this.sdkMock.Verify(x => x.StopDownloadFile(It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -200,21 +199,21 @@ namespace HikConsoleTests
         {
             var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
             int downloadHandler = 1;
-
+            this.SetupLogin(1);
             this.SetupFilesMockForDwonload();
 
             this.sdkMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(downloadHandler);
             progressBarMock.Setup(x => x.Dispose());
             this.progressMock.Setup(x => x.Create()).Returns(progressBarMock.Object);
-            this.sdkMock.Setup(x => x.StopDownoloadFile(downloadHandler));
+            this.sdkMock.Setup(x => x.StopDownloadFile(downloadHandler));
 
             var client = this.GetHikClient();
-
-            var isDownloadinStarted = client.StartDownload(this.fixture.Create<FindResult>());
+            client.Login();
+            var isDownloadinStarted = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
             client.StopDownload();
 
             Assert.True(isDownloadinStarted);
-            this.sdkMock.Verify(x => x.StopDownoloadFile(downloadHandler), Times.Once);
+            this.sdkMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
             Assert.False(client.IsDownloading);
             progressBarMock.Verify(x => x.Dispose(), Times.Once);
         }
@@ -224,24 +223,24 @@ namespace HikConsoleTests
         {
             int downloadHandler = 1;
             int userId = 1;
-            DeviceInfo outDevice = this.SetupLogin(userId);
+            this.SetupLogin(userId);
 
             this.SetupFilesMockForDwonload();
 
             this.filesMock.Setup(x => x.DeleteFile(It.IsAny<string>()));
             this.sdkMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(downloadHandler);
             this.progressMock.Setup(x => x.Create()).Returns(default(IProgressBar));
-            this.sdkMock.Setup(x => x.StopDownoloadFile(downloadHandler));
+            this.sdkMock.Setup(x => x.StopDownloadFile(downloadHandler));
             this.sdkMock.Setup(x => x.Logout(userId));
             this.sdkMock.Setup(x => x.Cleanup());
 
             var client = this.GetHikClient();
             client.Login();
-            var downloading = client.StartDownload(this.fixture.Create<FindResult>());
+            var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
             client.ForceExit();
 
             Assert.True(downloading);
-            this.sdkMock.Verify(x => x.StopDownoloadFile(downloadHandler), Times.Once);
+            this.sdkMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
             this.sdkMock.Verify(x => x.Logout(userId), Times.Once);
             this.sdkMock.Verify(x => x.Cleanup(), Times.Once);
             this.filesMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
@@ -252,7 +251,7 @@ namespace HikConsoleTests
         public void ForceExit_FilesNotDownloading_DoNotDeleteFile()
         {
             int userId = 1;
-            DeviceInfo outDevice = this.SetupLogin(userId);
+            this.SetupLogin(userId);
 
             this.sdkMock.Setup(x => x.Logout(userId));
             this.sdkMock.Setup(x => x.Cleanup());
@@ -273,7 +272,7 @@ namespace HikConsoleTests
 
             client.CheckProgress();
 
-            this.sdkMock.Verify(x => x.GetDownloadPos(It.IsAny<int>()), Times.Never);
+            this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -283,18 +282,19 @@ namespace HikConsoleTests
             int downloadHandler = 1;
 
             this.SetupFilesMockForDwonload();
-
+            this.SetupLogin(1);
             this.sdkMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(downloadHandler);
-            this.sdkMock.Setup(x => x.GetDownloadPos(downloadHandler)).Returns(50);
+            this.sdkMock.Setup(x => x.GetDownloadPosition(downloadHandler)).Returns(50);
             progressBarMock.Setup(x => x.Report(0.5));
             this.progressMock.Setup(x => x.Create()).Returns(progressBarMock.Object);
 
             var client = this.GetHikClient();
-            var downloading = client.StartDownload(this.fixture.Create<FindResult>());
+            client.Login();
+            var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
             client.CheckProgress();
 
             Assert.True(downloading);
-            this.sdkMock.Verify(x => x.GetDownloadPos(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);
             progressBarMock.Verify(x => x.Report(0.5), Times.Once);
         }
 
@@ -305,21 +305,22 @@ namespace HikConsoleTests
             int downloadHandler = 1;
 
             this.SetupFilesMockForDwonload();
-
+            this.SetupLogin(1);
             this.sdkMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(downloadHandler);
-            this.sdkMock.Setup(x => x.GetDownloadPos(downloadHandler)).Returns(100);
-            this.sdkMock.Setup(x => x.StopDownoloadFile(downloadHandler));
+            this.sdkMock.Setup(x => x.GetDownloadPosition(downloadHandler)).Returns(100);
+            this.sdkMock.Setup(x => x.StopDownloadFile(downloadHandler));
             progressBarMock.Setup(x => x.Dispose());
             this.progressMock.Setup(x => x.Create()).Returns(progressBarMock.Object);
 
             var client = this.GetHikClient();
-            var downloading = client.StartDownload(this.fixture.Create<FindResult>());
+            client.Login();
+            var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
             client.CheckProgress();
 
             Assert.True(downloading);
-            this.sdkMock.Verify(x => x.GetDownloadPos(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);
             progressBarMock.Verify(x => x.Dispose(), Times.Once);
-            this.sdkMock.Verify(x => x.StopDownoloadFile(downloadHandler), Times.Once);
+            this.sdkMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
             Assert.False(client.IsDownloading);
         }
 
@@ -334,39 +335,34 @@ namespace HikConsoleTests
             this.SetupFilesMockForDwonload();
 
             this.sdkMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(downloadHandler);
-            this.sdkMock.Setup(x => x.GetDownloadPos(downloadHandler)).Returns(200);
+            this.sdkMock.Setup(x => x.GetDownloadPosition(downloadHandler)).Returns(200);
             this.filesMock.Setup(x => x.DeleteFile(It.IsAny<string>()));
             this.progressMock.Setup(x => x.Create()).Returns(default(IProgressBar));
-            this.sdkMock.Setup(x => x.StopDownoloadFile(downloadHandler));
+            this.sdkMock.Setup(x => x.StopDownloadFile(downloadHandler));
             this.sdkMock.Setup(x => x.Logout(userId));
             this.sdkMock.Setup(x => x.Cleanup());
 
             var client = this.GetHikClient();
             client.Login();
-            var downloading = client.StartDownload(this.fixture.Create<FindResult>());
+            var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
             client.CheckProgress();
 
             Assert.True(downloading);
-            this.sdkMock.Verify(x => x.GetDownloadPos(It.IsAny<int>()), Times.Once);
-            this.sdkMock.Verify(x => x.StopDownoloadFile(downloadHandler), Times.Once);
+            this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
             this.sdkMock.Verify(x => x.Logout(userId), Times.Once);
             this.sdkMock.Verify(x => x.Cleanup(), Times.Once);
             this.filesMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
             Assert.False(client.IsDownloading);
         }
 
-        private DeviceInfo SetupLogin(int userId)
+        private LoginResult SetupLogin(int userId)
         {
-            DeviceInfo inDevice = null;
             DeviceInfo outDevice = this.fixture.Create<DeviceInfo>();
-
-            this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), ref inDevice))
-                .Callback(new LoginDelegate((string ip, int port, string user, string pass, ref DeviceInfo dev) =>
-                {
-                    dev = outDevice;
-                }))
-                .Returns(userId);
-            return outDevice;
+            var result = new LoginResult(userId, outDevice.ChannelNumber, outDevice.StartChannel);
+            this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(result);
+            return result;
         }
 
         private void SetupFilesMockForDwonload()
@@ -378,7 +374,7 @@ namespace HikConsoleTests
 
         private HikClient GetHikClient()
         {
-            return new HikClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.progressMock.Object);
+            return new HikClient(this.fixture.Create<HikConsole.Config.CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.progressMock.Object);
         }
     }
 }

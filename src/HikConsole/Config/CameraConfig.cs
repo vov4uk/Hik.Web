@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
-namespace HikConsole
+namespace HikConsole.Config
 {
     [ExcludeFromCodeCoverage]
     public class CameraConfig
