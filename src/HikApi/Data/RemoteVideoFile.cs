@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using HikApi.Struct;
 
-namespace HikConsole.Data
+namespace HikApi.Data
 {
+    [ExcludeFromCodeCoverage]
     public class RemoteVideoFile
     {
         public RemoteVideoFile()
-        { 
+        {
         }
 
         public RemoteVideoFile(NET_DVR_FINDDATA_V30 findData)

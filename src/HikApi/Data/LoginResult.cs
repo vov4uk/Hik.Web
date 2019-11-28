@@ -1,5 +1,8 @@
-﻿namespace HikConsole.Data
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace HikApi.Data
 {
+    [ExcludeFromCodeCoverage]
     public class LoginResult
     {
         public LoginResult(int userId, byte channelNumber, byte startChannel)

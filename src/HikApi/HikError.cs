@@ -2,7 +2,7 @@
 
 namespace HikApi
 {
-    public enum HikError
+    internal enum HikError
     {
 #pragma warning disable SA1602
         [Description("No error.")]

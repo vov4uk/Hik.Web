@@ -15,9 +15,6 @@ namespace HikConsole.Config
         [JsonProperty("IntervalMinutes")]
         public int Interval { get; set; }
 
-        [JsonProperty("ShowProgress")]
-        public bool ShowProgress { get; set; }
-
         [JsonProperty("Cameras")]
         public CameraConfig[] Cameras { get; set; }
 
@@ -26,7 +23,8 @@ namespace HikConsole.Config
 
         public override string ToString()
         {
-            return $@"Mode        : {this.Mode}
+            return $@"
+Mode        : {this.Mode}
 Interval    : {this.Interval.ToString()}m
 Period      : {this.ProcessingPeriodHours.ToString()}h";
         }

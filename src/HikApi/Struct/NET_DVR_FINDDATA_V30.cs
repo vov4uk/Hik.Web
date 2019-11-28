@@ -1,7 +1,10 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
 namespace HikApi.Struct
 {
+#pragma warning disable S101
+    [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct NET_DVR_FINDDATA_V30
     {
@@ -21,4 +24,5 @@ namespace HikApi.Struct
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2, ArraySubType = UnmanagedType.I1)]
         public byte[] byRes;
     }
+#pragma warning restore S101
 }

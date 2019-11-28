@@ -31,7 +31,7 @@ namespace HikConsole.Helpers
             }
             catch (Exception ex)
             {
-                ConsoleHelper.WriteLine(ex.ToString(), ConsoleColor.Red);
+                Logger.Instance.Error($"SendEmail failed", ex);
             }
         }
     }

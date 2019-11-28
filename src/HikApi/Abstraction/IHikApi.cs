@@ -1,11 +1,11 @@
-﻿using System;
+﻿using HikApi.Data;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HikConsole.Data;
 
-namespace HikConsole.Abstraction
+namespace HikApi.Abstraction
 {
-    public interface IHikService
+    public interface IHikApi
     {
         bool Initialize();
 
@@ -13,7 +13,7 @@ namespace HikConsole.Abstraction
 
         LoginResult Login(string ipAdress, int port, string userName, string password);
 
-        Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, int userid, int channel);
+        Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, int userId, int channel);
 
         int StartDownloadFile(int userId, string sourceFileName, string destenationFilePath);
 

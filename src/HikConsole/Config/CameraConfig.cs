@@ -24,11 +24,15 @@ namespace HikConsole.Config
         [JsonProperty("Password")]
         public string Password { get; set; }
 
+        [JsonProperty("ShowProgress")]
+        public bool ShowProgress { get; set; } = true;
+
         public override string ToString()
         {
-            return $@"Allias      : {this.Allias}
+            return $@"
+Allias      : {this.Allias}
 Destination : {this.DestinationFolder}
-IP Address  : {this.IpAddress}:{this.PortNumber}
+IP Address  : {this.IpAddress}:{this.PortNumber.ToString()}
 User name   : {this.UserName}";
         }
     }

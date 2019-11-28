@@ -1,26 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using AutoFixture;
+using HikApi.Abstraction;
+using HikApi.Data;
 using HikConsole;
 using HikConsole.Abstraction;
-using HikConsole.Data;
 using Moq;
 using Xunit;
 
 namespace HikConsoleTests
 {
-    public class HikConsoleTests
+    public class HikClientTests
     {
-        private readonly Mock<IHikService> sdkMock;
+        private readonly Mock<IHikApi> sdkMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IProgressBarFactory> progressMock;
+        private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
 
-        public HikConsoleTests()
+        public HikClientTests()
         {
-            this.sdkMock = new Mock<IHikService>(MockBehavior.Strict);
+            this.sdkMock = new Mock<IHikApi>(MockBehavior.Strict);
             this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
             this.progressMock = new Mock<IProgressBarFactory>(MockBehavior.Strict);
+            this.loggerMock = new Mock<ILogger>();
             this.fixture = new Fixture();
         }
 
@@ -108,7 +111,7 @@ namespace HikConsoleTests
             var client = this.GetHikClient();
             var first = client.Login();
 
-            var find = client.Find(start, end);
+            var find = client.FindAsync(start, end);
 
             this.sdkMock.Verify(x => x.SearchVideoFilesAsync(start, end, userId, result.Device.StartChannel), Times.Once);
         }
@@ -121,7 +124,7 @@ namespace HikConsoleTests
             Assert.ThrowsAsync<ArgumentException>(async () =>
             {
                 var date = new DateTime(1970, 1, 1);
-                var res = await client.Find(date, date);
+                var res = await client.FindAsync(date, date);
             });
         }
 
@@ -270,7 +273,7 @@ namespace HikConsoleTests
         {
             var client = this.GetHikClient();
 
-            client.CheckProgress();
+            client.UpdateProgress();
 
             this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Never);
         }
@@ -291,7 +294,7 @@ namespace HikConsoleTests
             var client = this.GetHikClient();
             client.Login();
             var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
-            client.CheckProgress();
+            client.UpdateProgress();
 
             Assert.True(downloading);
             this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);
@@ -315,7 +318,7 @@ namespace HikConsoleTests
             var client = this.GetHikClient();
             client.Login();
             var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
-            client.CheckProgress();
+            client.UpdateProgress();
 
             Assert.True(downloading);
             this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);
@@ -345,7 +348,7 @@ namespace HikConsoleTests
             var client = this.GetHikClient();
             client.Login();
             var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
-            client.CheckProgress();
+            client.UpdateProgress();
 
             Assert.True(downloading);
             this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);
@@ -374,7 +377,7 @@ namespace HikConsoleTests
 
         private HikClient GetHikClient()
         {
-            return new HikClient(this.fixture.Create<HikConsole.Config.CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.progressMock.Object);
+            return new HikClient(this.fixture.Create<HikConsole.Config.CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.progressMock.Object, this.loggerMock.Object);
         }
     }
 }

@@ -41,7 +41,7 @@ namespace HikConsole.Helpers
                 dblSByte = bytes / 1024.0;
             }
 
-            return string.Format("{0,6:0.00} {1}", dblSByte, suffix[i]);
+            return $"{dblSByte,6:0.00} {suffix[i]}";
         }
 
         public static long GetTotalFreeSpace(string destenation)
@@ -81,7 +81,7 @@ namespace HikConsole.Helpers
             }
             catch (Exception ex)
             {
-                ConsoleHelper.WriteLine(ex.ToString());
+                Logger.Instance.Error($"GetFiles({folder}) failed", ex);
                 return new List<FileInfo>();
             }
         }
