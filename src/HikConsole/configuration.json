@@ -1,7 +1,6 @@
 {
   "ProcessingPeriodHours": 4,
   "Mode": "Recurring",
-  "ShowProgress" :  false,
   "IntervalMinutes": 120,
   "Cameras": [
     {
@@ -10,8 +9,8 @@
       "PortNumber": 8000,
       "UserName": "admin",
       "Password": "adminpass",
-      "ProcessingPeriodHours": 24,
-      "DestinationFolder": "D:\\Video\\Camera1"
+      "DestinationFolder": "D:\\Video\\Camera1",
+      "ShowProgress": false
     },
     {
       "Allias": "Camera2",
@@ -19,8 +18,8 @@
       "PortNumber": 8000,
       "UserName": "admin",
       "Password": "adminpass",
-      "ProcessingPeriodHours": 24,
-      "DestinationFolder": "D:\\Video\\Camera2"
+      "DestinationFolder": "D:\\Video\\Camera2",
+      "ShowProgress": false
     }
   ],
   "EmailSettings": {
