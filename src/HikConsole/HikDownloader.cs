@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using HikApi.Data;
@@ -15,14 +16,24 @@ namespace HikConsole
         private readonly AppConfig appConfig;
         private readonly IContainer container;
         private readonly ILogger logger;
+        private readonly IEmailHelper emailHelper;
+        private readonly IDirectoryHelper directoryHelper;
+        private readonly CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
         private IHikClient client;
 
-        public HikDownloader(AppConfig appConfig, IContainer container)
+        public HikDownloader(AppConfig appConfig, IContainer container, int progressCheckPeriodMiliseconds = 5000)
         {
             this.appConfig = appConfig;
             this.container = container;
             this.logger = container.Resolve<ILogger>();
+            this.emailHelper = container.Resolve<IEmailHelper>();
+            this.directoryHelper = container.Resolve<IDirectoryHelper>();
+            this.ProgressCheckPeriodMiliseconds = progressCheckPeriodMiliseconds;
         }
+
+        public int ProgressCheckPeriodMiliseconds { get; }
+
+        private CancellationToken Token => this.cancelTokenSource.Token;
 
         public async Task DownloadAsync()
         {
@@ -34,6 +45,12 @@ namespace HikConsole
 
             foreach (var camera in this.appConfig.Cameras)
             {
+                if (this.Token.IsCancellationRequested)
+                {
+                    this.LogWarnAndExit();
+                    return;
+                }
+
                 await this.ProcessCameraAsync(camera, periodStart, periodEnd);
                 this.logger.Info(new string('_', 40));
             }
@@ -43,21 +60,49 @@ namespace HikConsole
             this.logger.Info($"End. Duration  : {duration}");
         }
 
-        public void ForceExit()
+        public void Cancel()
         {
-            this.client?.ForceExit();
+            this.cancelTokenSource.Cancel();
+            this.logger.Warn("cancelTokenSource.cancel");
+        }
+
+        private void ForceExit()
+        {
+            if (this.client != null)
+            {
+                this.client.ForceExit();
+                this.client = null;
+                this.logger.Warn("ForceExit");
+            }
+            else
+            {
+                this.logger.Warn("ForceExit, no client found");
+            }
         }
 
         private async Task ProcessCameraAsync(CameraConfig camera, DateTime periodStart, DateTime periodEnd)
         {
-            this.client?.Logout();
-            this.client = this.container.Resolve<IHikClient>(new TypedParameter(typeof(CameraConfig), camera));
-
             try
             {
+                this.client?.Logout();
+                this.client = this.container.Resolve<IHikClient>(new TypedParameter(typeof(CameraConfig), camera));
+
                 this.client.InitializeClient();
+
+                if (this.Token.IsCancellationRequested)
+                {
+                    this.LogWarnAndExit();
+                    return;
+                }
+
                 if (this.client.Login())
                 {
+                    if (this.Token.IsCancellationRequested)
+                    {
+                        this.LogWarnAndExit();
+                        return;
+                    }
+
                     this.logger.Info($"Login success!");
                     this.logger.Info(camera.ToString());
                     this.logger.Info($"Get videos from {periodStart.ToString()} to {periodEnd.ToString()}");
@@ -67,61 +112,83 @@ namespace HikConsole
                     this.logger.Info($"Searching finished");
                     this.logger.Info($"Found {results.Count.ToString()} files\r\n");
 
+                    if (this.Token.IsCancellationRequested)
+                    {
+                        this.LogWarnAndExit();
+                        return;
+                    }
+
                     int i = 1;
                     foreach (var file in results)
                     {
                         await this.DownloadRemoteVideoFileAsync(file, i++, results.Count);
                     }
 
-                    this.logger.Info(string.Empty);
+                    if (this.Token.IsCancellationRequested)
+                    {
+                        this.LogWarnAndExit();
+                        return;
+                    }
+
                     this.client.Logout();
                     this.client = null;
-                }
 
-                this.PrintStatistic(camera);
+                    this.PrintStatistic(camera.DestinationFolder);
+                }
+                else
+                {
+                    this.logger.Warn("Unable to login");
+                }
             }
             catch (Exception ex)
             {
                 this.logger.Error(camera.ToString(), ex);
 
                 string msg = $"{camera.ToString()}\r\n{ex.ToString()}";
-                EmailHelper.SendEmail(this.appConfig.EmailConfig, msg);
-                this.client?.ForceExit();
+                this.emailHelper.SendEmail(this.appConfig.EmailConfig, msg);
+                this.ForceExit();
             }
         }
 
-        private void PrintStatistic(CameraConfig camera)
+        private void PrintStatistic(string destinationFolder)
         {
-            System.IO.FileInfo firstFile = Utils.GetOldestFile(camera.DestinationFolder);
-            System.IO.FileInfo lastFile = Utils.GetNewestFile(camera.DestinationFolder);
-            if (!string.IsNullOrEmpty(firstFile?.FullName) && !string.IsNullOrEmpty(lastFile?.FullName))
-            {
-                DateTime.TryParse(firstFile.Directory.Name, out var firstDate);
-                DateTime.TryParse(lastFile.Directory.Name, out var lastDate);
-                TimeSpan period = lastDate - firstDate;
                 string statisitcs = $@"
-Directory Size : {Utils.FormatBytes(Utils.DirSize(camera.DestinationFolder))}
-Free space     : {Utils.FormatBytes(Utils.GetTotalFreeSpace(camera.DestinationFolder))}
-Oldest File    : {firstFile.FullName.TrimStart(camera.DestinationFolder.ToCharArray())}
-Newest File    : {lastFile.FullName.TrimStart(camera.DestinationFolder.ToCharArray())}
-Period         : {Math.Floor(period.TotalDays).ToString()} days";
+Directory Size : {Utils.FormatBytes(this.directoryHelper.DirSize(destinationFolder))}
+Free space     : {Utils.FormatBytes(this.directoryHelper.GetTotalFreeSpace(destinationFolder))}";
 
                 this.logger.Info(statisitcs);
-            }
         }
 
         private async Task DownloadRemoteVideoFileAsync(RemoteVideoFile file, int order, int count)
         {
+            if (this.Token.IsCancellationRequested)
+            {
+                this.LogWarnAndExit();
+                return;
+            }
+
             this.logger.Info($"{order.ToString(),2}/{count.ToString()} : ");
             if (this.client.StartDownload(file))
             {
                 do
                 {
-                    await Task.Delay(5000);
+                    if (this.Token.IsCancellationRequested)
+                    {
+                        this.LogWarnAndExit();
+                        return;
+                    }
+
+                    await Task.Delay(this.ProgressCheckPeriodMiliseconds);
                     this.client.UpdateProgress();
                 }
                 while (this.client.IsDownloading);
             }
+        }
+
+        private void LogWarnAndExit()
+        {
+            this.logger.Warn("CancellationRequested, ForceExit");
+            this.ForceExit();
         }
     }
 }

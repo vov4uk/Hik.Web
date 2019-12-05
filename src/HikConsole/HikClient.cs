@@ -110,7 +110,7 @@ namespace HikConsole
             }
             else
             {
-                this.logger.Warn(" UpdateProgress() : File not downloading now");
+                this.logger.Warn("UpdateProgress() : File not downloading now");
             }
         }
 
@@ -131,7 +131,7 @@ namespace HikConsole
 
         public void ForceExit()
         {
-            this.logger.Warn("\r\nForce exit");
+            this.logger.Warn("Force exit");
             this.StopDownload();
             this.DeleteCurrentFile();
             this.Logout();
@@ -200,24 +200,20 @@ namespace HikConsole
         {
             if (progress > ProgressBarMinimum && progress < ProgressBarMaximum)
             {
-                this.progress?.Report((double)progress / 100);
+                this.progress?.Report((double)progress / ProgressBarMaximum);
             }
-            else if (progress == 100)
+            else if (progress == ProgressBarMaximum)
             {
                 this.StopDownload();
                 this.currentDownloadFile = null;
 
                 this.logger.Info("- downloaded");
             }
-            else if (progress == 200)
+            else
             {
                 this.logger.Error("The downloading is abnormal for the abnormal network!");
 
-                this.ForceExit();
-            }
-            else
-            {
-                this.logger.Warn($"UpdateDownloadProgress() : Abnormal progress {progress.ToString()}");
+                throw new Exception($"UpdateDownloadProgress failed, progress  value = {progress}");
             }
         }
     }

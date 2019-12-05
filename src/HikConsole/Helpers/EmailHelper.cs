@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Mail;
+using HikConsole.Abstraction;
 using HikConsole.Config;
 
 namespace HikConsole.Helpers
 {
-    public static class EmailHelper
+    [ExcludeFromCodeCoverage]
+    public class EmailHelper : IEmailHelper
     {
-        public static void SendEmail(EmailConfig settings, string msg)
+        public void SendEmail(EmailConfig settings, string msg)
         {
             try
             {

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using NLog;
 using ILog = HikConsole.Abstraction.ILogger;
 
 namespace HikConsole.Helpers
 {
+    [ExcludeFromCodeCoverage]
     public class Logger : ILog
     {
         private readonly NLog.Logger logger;

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Autofac;
 using HikConsole.Abstraction;
@@ -6,6 +7,7 @@ using HikConsole.Infrastructure;
 
 namespace HikConsole
 {
+    [ExcludeFromCodeCoverage]
     public static class Program
     {
         public static void Main()
@@ -22,7 +24,7 @@ namespace HikConsole
                 using (Timer timer = new Timer(async (o) => await downloader.DownloadAsync(), null, 0, appConfig.Interval * 60 * 1000))
                 {
                     WaitForExit();
-                    downloader?.ForceExit();
+                    downloader?.Cancel();
                 }
             }
             else if (appConfig.Mode == "Fire-and-forget")

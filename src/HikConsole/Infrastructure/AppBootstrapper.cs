@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Autofac;
@@ -6,6 +7,7 @@ using HikConsole.Helpers;
 
 namespace HikConsole.Infrastructure
 {
+    [ExcludeFromCodeCoverage]
     public static class AppBootstrapper
     {
         public static IContainer ConfigureIoc()

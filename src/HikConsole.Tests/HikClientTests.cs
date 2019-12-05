@@ -27,8 +27,6 @@ namespace HikConsoleTests
             this.fixture = new Fixture();
         }
 
-        private delegate void LoginDelegate(string sDVRIP, int wDVRPort, string sUserName, string sPassword, ref DeviceInfo deviceInfo);
-
         [Fact]
         public void Init_CallInit_ClientInitialized()
         {
@@ -356,6 +354,7 @@ namespace HikConsoleTests
             this.sdkMock.Verify(x => x.Logout(userId), Times.Once);
             this.sdkMock.Verify(x => x.Cleanup(), Times.Once);
             this.filesMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
+            this.loggerMock.Verify(x => x.Error(It.IsAny<string>()), Times.Once);
             Assert.False(client.IsDownloading);
         }
 
