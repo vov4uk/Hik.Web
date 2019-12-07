@@ -213,7 +213,7 @@ namespace HikConsole
             {
                 this.logger.Error("The downloading is abnormal for the abnormal network!");
 
-                throw new Exception($"UpdateDownloadProgress failed, progress  value = {progress}");
+                throw new InvalidOperationException($"UpdateDownloadProgress failed, progress  value = {progress}");
             }
         }
     }

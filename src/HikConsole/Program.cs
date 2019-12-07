@@ -31,12 +31,10 @@ namespace HikConsole
             {
                 downloader.DownloadAsync().GetAwaiter().GetResult();
                 Console.WriteLine("Press any key to quit.");
-                Console.ReadKey();
             }
             else
             {
                 Console.WriteLine("Invalid config. Press any key to quit.");
-                Console.ReadKey();
             }
         }
 

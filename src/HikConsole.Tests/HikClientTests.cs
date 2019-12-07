@@ -326,7 +326,7 @@ namespace HikConsoleTests
         }
 
         [Fact]
-        public void CheckProgress_ErrorHappen_ForceExit()
+        public void CheckProgress_ErrorHappen_ThrowsException()
         {
             var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
             int downloadHandler = 1;
@@ -346,16 +346,11 @@ namespace HikConsoleTests
             var client = this.GetHikClient();
             client.Login();
             var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
-            client.UpdateProgress();
+
+            Assert.Throws<Exception>(client.UpdateProgress);
 
             Assert.True(downloading);
             this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);
-            this.sdkMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
-            this.sdkMock.Verify(x => x.Logout(userId), Times.Once);
-            this.sdkMock.Verify(x => x.Cleanup(), Times.Once);
-            this.filesMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
-            this.loggerMock.Verify(x => x.Error(It.IsAny<string>()), Times.Once);
-            Assert.False(client.IsDownloading);
         }
 
         private LoginResult SetupLogin(int userId)

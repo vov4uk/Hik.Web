@@ -327,7 +327,7 @@ namespace HikConsole.Tests
         }
 
         [Fact]
-        public async Task ForceExit_ForceExitOnCleintItitialize_ClientForceExited()
+        public async Task ForceExit_CancelattionOnCleintItitialize_ClientForceExited()
         {
             var appcConfig = this.fixture.Build<AppConfig>()
                     .Create();
