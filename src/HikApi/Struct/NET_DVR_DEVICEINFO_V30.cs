@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace HikApi.Struct
 {
-#pragma warning disable S101
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential)]
     public struct NET_DVR_DEVICEINFO_V30
@@ -37,5 +36,4 @@ namespace HikApi.Struct
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 9, ArraySubType = UnmanagedType.I1)]
         public byte[] byRes2;
     }
-#pragma warning restore S101
 }

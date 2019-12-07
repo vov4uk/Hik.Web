@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace HikApi.Struct
 {
-#pragma warning disable S101
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential)]
     public struct NET_DVR_TIME
@@ -36,5 +35,4 @@ namespace HikApi.Struct
             return new DateTime(this.dwYear, this.dwMonth, this.dwDay, this.dwHour, this.dwMinute, this.dwSecond);
         }
     }
-#pragma warning restore S101
 }

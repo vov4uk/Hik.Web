@@ -4,7 +4,6 @@ namespace HikApi
 {
     internal enum HikError
     {
-#pragma warning disable SA1602
         [Description("No error.")]
         NET_DVR_NOERROR = 0,
 
@@ -310,6 +309,5 @@ namespace HikApi
 
         [Description("The hard disk capacity is too small and can not be formatted.")]
         NET_DVR_STATUS_CANT_FORMAT_LITTLE_DISK = 802,
-#pragma warning restore SA1602
     }
 }

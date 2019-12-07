@@ -2,7 +2,7 @@
 
 namespace HikConsole.Abstraction
 {
-    public interface IHikConfigurationManager
+    public interface IHikConfig
     {
         AppConfig Config { get; }
     }

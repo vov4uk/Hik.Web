@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace HikApi.Struct
 {
-#pragma warning disable S101
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential)]
     public struct NET_DVR_ATMFINDINFO
@@ -15,5 +14,4 @@ namespace HikApi.Struct
 
         public uint dwTransationAmount;
     }
-#pragma warning restore S101
 }

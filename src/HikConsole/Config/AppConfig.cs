@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace HikConsole.Config
@@ -6,16 +7,13 @@ namespace HikConsole.Config
     [ExcludeFromCodeCoverage]
     public class AppConfig
     {
-        [JsonProperty("ProcessingPeriodHours")]
         public int ProcessingPeriodHours { get; set; }
 
-        [JsonProperty("Mode")]
         public string Mode { get; set; }
 
         [JsonProperty("IntervalMinutes")]
         public int Interval { get; set; }
 
-        [JsonProperty("Cameras")]
         public CameraConfig[] Cameras { get; set; }
 
         [JsonProperty("EmailSettings")]
@@ -23,10 +21,13 @@ namespace HikConsole.Config
 
         public override string ToString()
         {
-            return $@"
-Mode        : {this.Mode}
-Interval    : {this.Interval.ToString()}m
-Period      : {this.ProcessingPeriodHours.ToString()}h";
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine();
+            sb.AppendLine($"Mode        : {this.Mode}");
+            sb.AppendLine($"Interval    : {this.Interval.ToString()}m");
+            sb.AppendLine($"Period      : {this.ProcessingPeriodHours.ToString()}h");
+
+            return sb.ToString();
         }
     }
 }

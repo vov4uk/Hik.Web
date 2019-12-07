@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoFixture;
 using HikApi.Abstraction;
 using HikApi.Data;
@@ -97,7 +98,7 @@ namespace HikConsoleTests
         }
 
         [Fact]
-        public void Find_CallLogin_CallFindWithCorrectParameters()
+        public async Task FindAsync_CallLogin_CallFindWithCorrectParameters()
         {
             DateTime start = default(DateTime);
             DateTime end = start.AddSeconds(1);
@@ -107,10 +108,11 @@ namespace HikConsoleTests
             this.sdkMock.Setup(x => x.SearchVideoFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(new List<RemoteVideoFile>());
 
             var client = this.GetHikClient();
-            var first = client.Login();
+            var loginResult = client.Login();
 
-            var find = client.FindAsync(start, end);
+            await client.FindAsync(start, end);
 
+            Assert.True(loginResult);
             this.sdkMock.Verify(x => x.SearchVideoFilesAsync(start, end, userId, result.Device.StartChannel), Times.Once);
         }
 
@@ -122,7 +124,7 @@ namespace HikConsoleTests
             Assert.ThrowsAsync<ArgumentException>(async () =>
             {
                 var date = new DateTime(1970, 1, 1);
-                var res = await client.FindAsync(date, date);
+                await client.FindAsync(date, date);
             });
         }
 
@@ -177,6 +179,7 @@ namespace HikConsoleTests
             var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
             var notDownloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
 
+            Assert.True(downloading);
             Assert.False(notDownloading);
             this.filesMock.Verify(x => x.CombinePath(It.IsAny<string[]>()), Times.Exactly(2));
             this.filesMock.Verify(x => x.FolderCreateIfNotExist(It.IsAny<string>()), Times.Once);
@@ -328,7 +331,6 @@ namespace HikConsoleTests
         [Fact]
         public void CheckProgress_ErrorHappen_ThrowsException()
         {
-            var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
             int downloadHandler = 1;
             int userId = 1;
 
@@ -347,7 +349,7 @@ namespace HikConsoleTests
             client.Login();
             var downloading = client.StartDownload(this.fixture.Create<RemoteVideoFile>());
 
-            Assert.Throws<Exception>(client.UpdateProgress);
+            Assert.Throws<InvalidOperationException>(client.UpdateProgress);
 
             Assert.True(downloading);
             this.sdkMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);

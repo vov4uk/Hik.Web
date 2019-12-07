@@ -19,7 +19,7 @@ namespace HikConsole.Infrastructure
             hikAssemblies.Add(Assembly.GetExecutingAssembly());
 
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();
-            builder.RegisterType<HikConfigurationManager>().SingleInstance();
+            builder.RegisterType<HikConfig>().SingleInstance();
             builder.RegisterType<Logger>().SingleInstance();
             IContainer container = builder.Build();
 

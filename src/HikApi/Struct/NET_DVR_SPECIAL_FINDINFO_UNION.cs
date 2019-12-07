@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace HikApi.Struct
 {
-#pragma warning disable S101
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Explicit)]
     public struct NET_DVR_SPECIAL_FINDINFO_UNION
@@ -15,5 +14,4 @@ namespace HikApi.Struct
         [FieldOffset(0)]
         public NET_DVR_ATMFINDINFO struATMFindInfo;
     }
-#pragma warning restore S101
 }

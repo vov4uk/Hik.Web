@@ -19,7 +19,7 @@ namespace HikConsole.Tests
         private readonly Mock<IDirectoryHelper> directoryMock;
         private readonly Mock<IEmailHelper> emailMock;
         private readonly Fixture fixture;
-        private Mock<IHikClient> clientMock;
+        private readonly Mock<IHikClient> clientMock;
 
         public HikDownloaderTests()
         {

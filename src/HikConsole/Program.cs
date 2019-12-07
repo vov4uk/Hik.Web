@@ -13,7 +13,7 @@ namespace HikConsole
         public static void Main()
         {
             var container = AppBootstrapper.ConfigureIoc();
-            var appConfig = container.Resolve<IHikConfigurationManager>().Config;
+            var appConfig = container.Resolve<IHikConfig>().Config;
             var logger = container.Resolve<ILogger>();
             logger.Info(appConfig.ToString());
 

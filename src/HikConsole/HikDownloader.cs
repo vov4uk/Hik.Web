@@ -84,8 +84,15 @@ namespace HikConsole
 
         public void Cancel()
         {
-            this.cancelTokenSource.Cancel();
-            this.logger.Warn("Cancel signal was sent");
+            if (this.cancelTokenSource != null && this.cancelTokenSource.Token.CanBeCanceled)
+            {
+                this.cancelTokenSource.Cancel();
+                this.logger.Warn("Cancel signal was sent");
+            }
+            else
+            {
+                this.logger.Warn("Nothing to Cancel");
+            }
         }
 
         private void ForceExit()
@@ -169,11 +176,12 @@ namespace HikConsole
 
         private void PrintStatistic(string destinationFolder)
         {
-                string statisitcs = $@"
-Directory Size : {Utils.FormatBytes(this.directoryHelper.DirSize(destinationFolder))}
-Free space     : {Utils.FormatBytes(this.directoryHelper.GetTotalFreeSpace(destinationFolder))}";
+            StringBuilder statisticsSb = new StringBuilder();
+            statisticsSb.AppendLine();
+            statisticsSb.AppendLine($"Directory Size : {Utils.FormatBytes(this.directoryHelper.DirSize(destinationFolder))}");
+            statisticsSb.AppendLine($"Free space: {Utils.FormatBytes(this.directoryHelper.GetTotalFreeSpace(destinationFolder))}");
 
-                this.logger.Info(statisitcs);
+            this.logger.Info(statisticsSb.ToString());
         }
 
         private async Task DownloadRemoteVideoFileAsync(RemoteVideoFile file, int order, int count)
