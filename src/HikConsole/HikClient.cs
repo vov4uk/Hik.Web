@@ -52,7 +52,7 @@ namespace HikConsole
             }
             else
             {
-                this.logger.Warn("Login() : Already logged in");
+                this.logger.Warn("HikClient.Login : Already logged in");
                 return false;
             }
         }
@@ -82,7 +82,7 @@ namespace HikConsole
             }
             else
             {
-                this.logger.Warn("Downloading, please stop firstly!");
+                this.logger.Warn("HikClient.StartDownload : Downloading, please stop firstly!");
                 return false;
             }
         }
@@ -96,7 +96,7 @@ namespace HikConsole
             }
             else
             {
-                this.logger.Warn("StopDownload() : File not downloading now");
+                this.logger.Warn("HikClient.StopDownload : File not downloading now");
             }
         }
 
@@ -106,11 +106,11 @@ namespace HikConsole
             {
                 int downloadProgress = this.hikApi.GetDownloadPosition(this.downloadId);
 
-                this.UpdateDownloadProgress(downloadProgress);
+                this.UpdateProgressInternal(downloadProgress);
             }
             else
             {
-                this.logger.Warn("UpdateProgress() : File not downloading now");
+                this.logger.Warn("HikClient.UpdateProgress : File not downloading now");
             }
         }
 
@@ -190,7 +190,7 @@ namespace HikConsole
             }
             else
             {
-                this.logger.Warn("DeleteCurrentFile() : Nothing to delete");
+                this.logger.Warn("HikClient.DeleteCurrentFile : Nothing to delete");
             }
         }
 
@@ -207,7 +207,7 @@ namespace HikConsole
             return await this.hikApi.FindVideoFilesAsync(periodStart, periodEnd, loginResult.UserId, loginResult.Device.StartChannel);
         }
 
-        private void UpdateDownloadProgress(int progress)
+        private void UpdateProgressInternal(int progress)
         {
             if (progress > ProgressBarMinimum && progress < ProgressBarMaximum)
             {
@@ -222,9 +222,8 @@ namespace HikConsole
             }
             else
             {
-                this.logger.Error("The downloading is abnormal for the abnormal network!");
-
-                throw new InvalidOperationException($"UpdateDownloadProgress failed, progress  value = {progress}");
+                this.StopDownload();
+                throw new InvalidOperationException($"UpdateDownloadProgress failed, progress value = {progress}");
             }
         }
     }
