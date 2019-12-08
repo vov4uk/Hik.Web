@@ -13,7 +13,7 @@ namespace HikConsole.Abstraction
 
         bool Login();
 
-        bool StartDownload(RemoteVideoFile file);
+        bool StartDownload(RemoteVideoFile remoteFile);
 
         void StopDownload();
 

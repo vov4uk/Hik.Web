@@ -13,6 +13,7 @@ namespace HikConsole
 {
     public class HikDownloader
     {
+        private const string DurationFormat = "h'h 'm'm 's's'";
         private readonly AppConfig appConfig;
         private readonly ILogger logger;
         private readonly IEmailHelper emailHelper;
@@ -71,14 +72,7 @@ namespace HikConsole
                 }
                 catch (Exception ex)
                 {
-                    StringBuilder msgBuilder = new StringBuilder("Exception happend : ");
-                    if (ex.Data.Contains("Camera"))
-                    {
-                        msgBuilder.AppendLine(ex.Data["Camera"] as string);
-                    }
-
-                    msgBuilder.AppendLine(ex.ToString());
-                    string msg = msgBuilder.ToString();
+                    string msg = this.GetExceptionMessage(ex);
 
                     this.logger.Error(msg, ex);
 
@@ -103,16 +97,8 @@ namespace HikConsole
 
         private void ForceExit()
         {
-            if (this.client != null)
-            {
-                this.client.ForceExit();
-                this.client = null;
-                this.logger.Warn("ForceExit");
-            }
-            else
-            {
-                this.logger.Warn("ForceExit, no client found");
-            }
+            this.client?.ForceExit();
+            this.client = null;
 
             this.cancelTokenSource?.Dispose();
             this.cancelTokenSource = null;
@@ -129,10 +115,9 @@ namespace HikConsole
             {
                 this.cancelTokenSource.Token.ThrowIfCancellationRequested();
                 await this.ProcessCameraAsync(camera, periodStart, appStart);
-                this.logger.Info(new string('_', 40));
             }
 
-            string duration = (appStart - DateTime.Now).ToString("h'h 'm'm 's's'");
+            string duration = (DateTime.Now - appStart).ToString(DurationFormat);
             this.logger.Info($"End. Duration  : {duration}");
             this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
         }
@@ -151,13 +136,12 @@ namespace HikConsole
                         this.cancelTokenSource.Token.ThrowIfCancellationRequested();
                         List<RemoteVideoFile> results = (await this.client.FindAsync(periodStart, periodEnd)).ToList();
 
-                        this.logger.Info($"Searching finished. Found {results.Count.ToString()} files\r\n");
+                        this.logger.Info($"Searching finished. Found {results.Count.ToString()} files");
 
-                        int i = 1;
-                        foreach (var file in results)
+                        for (int i = 0; i < results.Count; i++)
                         {
                             this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                            await this.DownloadRemoteVideoFileAsync(file, i++, results.Count);
+                            await this.DownloadRemoteVideoFileAsync(results[i], i + 1, results.Count);
                         }
 
                         this.PrintStatistic(camera.DestinationFolder);
@@ -179,8 +163,10 @@ namespace HikConsole
         {
             StringBuilder statisticsSb = new StringBuilder();
             statisticsSb.AppendLine();
+            statisticsSb.AppendLine();
             statisticsSb.AppendLine($"Directory Size : {Utils.FormatBytes(this.directoryHelper.DirSize(destinationFolder))}");
             statisticsSb.AppendLine($"Free space: {Utils.FormatBytes(this.directoryHelper.GetTotalFreeSpace(destinationFolder))}");
+            statisticsSb.AppendLine(new string('_', 40)); // separator
 
             this.logger.Info(statisticsSb.ToString());
         }
@@ -190,6 +176,7 @@ namespace HikConsole
             this.logger.Info($"{order.ToString(),2}/{count.ToString()} : ");
             if (this.client.StartDownload(file))
             {
+                DateTime downloadStarted = DateTime.Now;
                 do
                 {
                     await Task.Delay(this.ProgressCheckPeriodMiliseconds);
@@ -197,7 +184,22 @@ namespace HikConsole
                     this.client.UpdateProgress();
                 }
                 while (this.client.IsDownloading);
+
+                TimeSpan duration = DateTime.Now - downloadStarted;
+                this.logger.Info($"Download duration {duration.ToString(DurationFormat)}, avg speed {Utils.FormatBytes((long)(file.Size / duration.TotalSeconds))}/s");
             }
+        }
+
+        private string GetExceptionMessage(Exception ex)
+        {
+            StringBuilder msgBuilder = new StringBuilder("Exception happend : ");
+            if (ex.Data.Contains("Camera"))
+            {
+                msgBuilder.AppendLine(ex.Data["Camera"] as string);
+            }
+
+            msgBuilder.AppendLine(ex.ToString());
+            return msgBuilder.ToString();
         }
     }
 }

@@ -25,7 +25,7 @@ namespace HikConsole.Helpers
             if (File.Exists(path))
             {
                 var info = new FileInfo(path);
-                return info.Length == size + 40;
+                return info.Length == size + 40; // Local file is 40 bytes bigger than remote
             }
 
             return false;

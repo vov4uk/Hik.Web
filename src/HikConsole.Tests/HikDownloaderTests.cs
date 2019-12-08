@@ -305,7 +305,7 @@ namespace HikConsole.Tests
         }
 
         [Fact]
-        public void ForceExit_ClientNotCreated_LogWarning()
+        public void Cancel_ClientNotCreated_LogWarning()
         {
             var appConfig = this.fixture.Build<AppConfig>()
                 .Create();
@@ -319,7 +319,7 @@ namespace HikConsole.Tests
         }
 
         [Fact]
-        public async Task ForceExit_CancelattionOnCleintItitialize_ClientForceExited()
+        public async Task Cancel_CancelationOnClintItitialize_ClientForceExited()
         {
             var appConfig = this.fixture.Build<AppConfig>()
                     .Create();
@@ -338,7 +338,7 @@ namespace HikConsole.Tests
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.ForceExit(), Times.Once);
-            this.loggerMock.Verify(x => x.Warn(It.IsAny<string>()), Times.AtLeast(2));
+            this.loggerMock.Verify(x => x.Warn(It.IsAny<string>()), Times.Once);
         }
 
         private void SetupDirectoryHelper()

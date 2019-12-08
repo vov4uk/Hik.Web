@@ -5,7 +5,6 @@ using HikApi.Abstraction;
 using HikApi.Data;
 using HikConsole.Abstraction;
 using HikConsole.Config;
-using HikConsole.Helpers;
 
 namespace HikConsole
 {
@@ -13,8 +12,6 @@ namespace HikConsole
     {
         private const int ProgressBarMaximum = 100;
         private const int ProgressBarMinimum = 0;
-        private const string DateTimePrintFormat = "yyyy.MM.dd HH:mm:ss";
-        private const string TimeFormat = "HHmmss";
         private readonly CameraConfig config;
         private readonly IHikApi hikApi;
         private readonly IFilesHelper filesHelper;
@@ -60,26 +57,27 @@ namespace HikConsole
             }
         }
 
-        public bool StartDownload(RemoteVideoFile file)
+        public bool StartDownload(RemoteVideoFile remoteFile)
         {
             if (!this.IsDownloading)
             {
-                string workingDirectory = this.GetWorkingDirectory(file);
+                string workingDirectory = this.GetWorkingDirectory(remoteFile);
                 this.filesHelper.FolderCreateIfNotExist(workingDirectory);
 
-                string fileInfo = this.GetPrintableFileInfo(file);
-                string fileName = this.GetFullPath(file, workingDirectory);
+                string destenationFilePath = this.GetFullPath(remoteFile, workingDirectory);
 
-                if (!this.filesHelper.FileExists(fileName, file.Size))
+                if (!this.filesHelper.FileExists(destenationFilePath, remoteFile.Size))
                 {
-                    this.downloadId = this.hikApi.StartDownloadFile(this.session.UserId, file.Name, fileName);
-                    this.logger.Info($"{fileInfo}- downloading");
-                    this.currentDownloadFile = file;
+                    this.downloadId = this.hikApi.StartDownloadFile(this.session.UserId, remoteFile.Name, destenationFilePath);
+
+                    this.logger.Info($"{remoteFile.ToUserFriendlyString()}- downloading");
+
+                    this.currentDownloadFile = remoteFile;
                     this.progress = this.config.ShowProgress ? this.progressFactory.Create() : default(IProgressBar);
                     return true;
                 }
 
-                this.logger.Info($"{fileInfo}- exist");
+                this.logger.Info($"{remoteFile.ToUserFriendlyString()}- exist");
                 return false;
             }
             else
@@ -118,7 +116,7 @@ namespace HikConsole
 
         public void ForceExit()
         {
-            this.logger.Warn("Force exit");
+            this.logger.Warn("HikClient.ForceExit");
             this.StopDownload();
             this.DeleteCurrentFile();
         }
@@ -162,20 +160,15 @@ namespace HikConsole
             }
         }
 
-        private string GetPrintableFileInfo(RemoteVideoFile file)
-        {
-            return $"{file.Name}, {file.StartTime.ToString(DateTimePrintFormat)}, {file.StopTime.ToString(DateTimePrintFormat)}, {Utils.FormatBytes(file.Size)} ";
-        }
-
         private string GetWorkingDirectory(RemoteVideoFile file)
         {
-            return this.filesHelper.CombinePath(this.config.DestinationFolder, $"{file.StartTime.Year:0000}-{file.StartTime.Month:00}-{file.StartTime.Day:00}");
+            return this.filesHelper.CombinePath(this.config.DestinationFolder, file.ToDirectoryNameString());
         }
 
         private string GetFullPath(RemoteVideoFile file, string directory = null)
         {
             string folder = directory ?? this.GetWorkingDirectory(file);
-            return this.filesHelper.CombinePath(folder, $"{file.StartTime.ToString(TimeFormat)}_{file.StopTime.ToString(TimeFormat)}_{file.Name}.mp4");
+            return this.filesHelper.CombinePath(folder, file.ToFileNameString());
         }
 
         private void ResetDownloadStatus()
