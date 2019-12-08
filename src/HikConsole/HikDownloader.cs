@@ -80,6 +80,8 @@ namespace HikConsole
                     this.ForceExit();
                 }
             }
+
+            this.cancelTokenSource = null;
         }
 
         public void Cancel()
