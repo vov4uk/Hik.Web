@@ -5,7 +5,7 @@ using HikApi.Data;
 
 namespace HikConsole.Abstraction
 {
-    public interface IHikClient
+    public interface IHikClient : IDisposable
     {
         bool IsDownloading { get; }
 
@@ -18,8 +18,6 @@ namespace HikConsole.Abstraction
         void StopDownload();
 
         void UpdateProgress();
-
-        void Logout();
 
         void ForceExit();
 

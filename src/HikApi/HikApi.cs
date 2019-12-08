@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using HikApi.Abstraction;
@@ -17,19 +18,19 @@ namespace HikApi
 
         public bool Initialize()
         {
-            return this.InvokeApi(HikApi.NET_DVR_Init, "NET_DVR_Init");
+            return this.InvokeSDK(() => HikApi.NET_DVR_Init());
         }
 
-        public bool SetupLogs(int logingEnable, string logDirectory, bool autoDelete)
+        public bool SetupLogs(int logLevel, string logDirectory, bool autoDelete)
         {
-            return this.InvokeApi(() => HikApi.NET_DVR_SetLogToFile(logingEnable, logDirectory, autoDelete), "NET_DVR_SetLogToFile");
+            return this.InvokeSDK(() => HikApi.NET_DVR_SetLogToFile(logLevel, logDirectory, autoDelete));
         }
 
-        public LoginResult Login(string ipAdress, int port, string userName, string password)
+        public Session Login(string ipAdress, int port, string userName, string password)
         {
             NET_DVR_DEVICEINFO_V30 deviceInfo = default(NET_DVR_DEVICEINFO_V30);
-            int userId = this.InvokeApi(() => HikApi.NET_DVR_Login_V30(ipAdress, port, userName, password, ref deviceInfo), "NET_DVR_Login_V30");
-            return new LoginResult(userId, deviceInfo.byChanNum, deviceInfo.byStartChan);
+            int userId = this.InvokeSDK(() => HikApi.NET_DVR_Login_V30(ipAdress, port, userName, password, ref deviceInfo));
+            return new Session(userId, deviceInfo.byChanNum, deviceInfo.byStartChan);
         }
 
         public async Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, int userId, int channel)
@@ -65,36 +66,36 @@ namespace HikApi
 
         public int StartDownloadFile(int userId, string sourceFileName, string destenationFilePath)
         {
-            int downloadHandle = this.InvokeApi(() => HikApi.NET_DVR_GetFileByName(userId, sourceFileName, destenationFilePath), "NET_DVR_GetFileByName");
+            int downloadHandle = this.InvokeSDK(() => HikApi.NET_DVR_GetFileByName(userId, sourceFileName, destenationFilePath));
 
             uint iOutValue = 0;
-            this.InvokeApi(() => HikApi.NET_DVR_PlayBackControl_V40(downloadHandle, HikConst.NET_DVR_PLAYSTART, IntPtr.Zero, 0, IntPtr.Zero, ref iOutValue), "NET_DVR_PlayBackControl_V40");
+            this.InvokeSDK(() => HikApi.NET_DVR_PlayBackControl_V40(downloadHandle, HikConst.NET_DVR_PLAYSTART, IntPtr.Zero, 0, IntPtr.Zero, ref iOutValue));
             return downloadHandle;
         }
 
         public void StopDownloadFile(int fileHandle)
         {
-            this.InvokeApi(() => HikApi.NET_DVR_StopGetFile(fileHandle), "NET_DVR_StopGetFile");
+            this.InvokeSDK(() => HikApi.NET_DVR_StopGetFile(fileHandle));
         }
 
         public int GetDownloadPosition(int fileHandle)
         {
-            return this.InvokeApi(() => HikApi.NET_DVR_GetDownloadPos(fileHandle), "NET_DVR_GetDownloadPos");
+            return this.InvokeSDK(() => HikApi.NET_DVR_GetDownloadPos(fileHandle));
         }
 
         public void CloseSearch(int fileHandle)
         {
-            this.InvokeApi(() => HikApi.NET_DVR_FindClose_V30(fileHandle), "NET_DVR_FindClose_V30");
+            this.InvokeSDK(() => HikApi.NET_DVR_FindClose_V30(fileHandle));
         }
 
         public void Cleanup()
         {
-            this.InvokeApi(HikApi.NET_DVR_Cleanup, "NET_DVR_Cleanup");
+            this.InvokeSDK(() => HikApi.NET_DVR_Cleanup());
         }
 
         public void Logout(int userId)
         {
-            this.InvokeApi(() => HikApi.NET_DVR_Logout(userId), "NET_DVR_Logout");
+            this.InvokeSDK(() => HikApi.NET_DVR_Logout(userId));
         }
 
         private NET_DVR_FILECOND_V40 PrepareSearchCondition(DateTime periodStart, DateTime periodEnd, int channel)
@@ -112,7 +113,7 @@ namespace HikApi
 
         private int StartSearch(int userId, NET_DVR_FILECOND_V40 findConditions)
         {
-            return this.InvokeApi(() => HikApi.NET_DVR_FindFile_V40(userId, ref findConditions), "NET_DVR_FindFile_V40");
+            return this.InvokeSDK(() => HikApi.NET_DVR_FindFile_V40(userId, ref findConditions));
         }
 
         private HikException CreateException(string method)
@@ -121,23 +122,23 @@ namespace HikApi
             return new HikException(method, lastErrorCode);
         }
 
-        private int InvokeApi(Func<int> func, string methodName)
+        private int InvokeSDK(Expression<Func<int>> func)
         {
-            int result = func.Invoke();
+            int result = func.Compile().Invoke();
             if (result < 0)
             {
-                throw this.CreateException(methodName);
+                throw this.CreateException(func.ToString());
             }
 
             return result;
         }
 
-        private bool InvokeApi(Func<bool> func, string methodName)
+        private bool InvokeSDK(Expression<Func<bool>> func)
         {
-            bool result = func.Invoke();
+            bool result = func.Compile().Invoke();
             if (!result)
             {
-                throw this.CreateException(methodName);
+                throw this.CreateException(func.ToString());
             }
 
             return result;

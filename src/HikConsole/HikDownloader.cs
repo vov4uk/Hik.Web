@@ -113,6 +113,9 @@ namespace HikConsole
             {
                 this.logger.Warn("ForceExit, no client found");
             }
+
+            this.cancelTokenSource?.Dispose();
+            this.cancelTokenSource = null;
         }
 
         private async Task InternalDownload()
@@ -129,48 +132,40 @@ namespace HikConsole
                 this.logger.Info(new string('_', 40));
             }
 
-            this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
             string duration = (appStart - DateTime.Now).ToString("h'h 'm'm 's's'");
             this.logger.Info($"End. Duration  : {duration}");
+            this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
         }
 
         private async Task ProcessCameraAsync(CameraConfig camera, DateTime periodStart, DateTime periodEnd)
         {
             try
             {
-                this.client?.Logout();
-                this.client = this.clientFactory.Create(camera);
-
-                this.client.InitializeClient();
-                this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-
-                if (this.client.Login())
+                using (this.client = this.clientFactory.Create(camera))
                 {
-                    this.logger.Info($"Login success!");
-                    this.logger.Info(camera.ToString());
-                    this.logger.Info($"Get videos from {periodStart.ToString()} to {periodEnd.ToString()}");
-
+                    this.client.InitializeClient();
                     this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                    List<RemoteVideoFile> results = (await this.client.FindAsync(periodStart, periodEnd)).ToList();
 
-                    this.logger.Info($"Searching finished");
-                    this.logger.Info($"Found {results.Count.ToString()} files\r\n");
-
-                    int i = 1;
-                    foreach (var file in results)
+                    if (this.client.Login())
                     {
                         this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                        await this.DownloadRemoteVideoFileAsync(file, i++, results.Count);
+                        List<RemoteVideoFile> results = (await this.client.FindAsync(periodStart, periodEnd)).ToList();
+
+                        this.logger.Info($"Searching finished. Found {results.Count.ToString()} files\r\n");
+
+                        int i = 1;
+                        foreach (var file in results)
+                        {
+                            this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+                            await this.DownloadRemoteVideoFileAsync(file, i++, results.Count);
+                        }
+
+                        this.PrintStatistic(camera.DestinationFolder);
                     }
-
-                    this.client.Logout();
-                    this.client = null;
-
-                    this.PrintStatistic(camera.DestinationFolder);
-                }
-                else
-                {
-                    this.logger.Warn("Unable to login");
+                    else
+                    {
+                        this.logger.Warn("Unable to login");
+                    }
                 }
             }
             catch (Exception ex)

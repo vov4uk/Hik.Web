@@ -22,8 +22,9 @@ namespace HikConsole
         private readonly ILogger logger;
         private int downloadId = -1;
         private RemoteVideoFile currentDownloadFile;
-        private LoginResult loginResult;
+        private Session session;
         private IProgressBar progress;
+        private bool disposedValue = false;
 
         public HikClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, IProgressBarFactory progressFactory, ILogger logger)
         {
@@ -46,9 +47,10 @@ namespace HikConsole
 
         public bool Login()
         {
-            if (this.loginResult == null)
+            if (this.session == null)
             {
-                this.loginResult = this.hikApi.Login(this.config.IpAddress, this.config.PortNumber, this.config.UserName, this.config.Password);
+                this.session = this.hikApi.Login(this.config.IpAddress, this.config.PortNumber, this.config.UserName, this.config.Password);
+                this.logger.Info($"Sucessfull login to {this.config.ToString()}");
                 return true;
             }
             else
@@ -70,7 +72,7 @@ namespace HikConsole
 
                 if (!this.filesHelper.FileExists(fileName, file.Size))
                 {
-                    this.downloadId = this.hikApi.StartDownloadFile(this.loginResult.UserId, file.Name, fileName);
+                    this.downloadId = this.hikApi.StartDownloadFile(this.session.UserId, file.Name, fileName);
                     this.logger.Info($"{fileInfo}- downloading");
                     this.currentDownloadFile = file;
                     this.progress = this.config.ShowProgress ? this.progressFactory.Create() : default(IProgressBar);
@@ -114,34 +116,50 @@ namespace HikConsole
             }
         }
 
-        public void Logout()
-        {
-            if (this.loginResult != null)
-            {
-                this.logger.Info($"Logout the device");
-                this.hikApi.Logout(this.loginResult.UserId);
-                this.hikApi.Cleanup();
-                this.loginResult = null;
-            }
-            else
-            {
-                this.logger.Warn("Logout() : Session ended");
-            }
-        }
-
         public void ForceExit()
         {
             this.logger.Warn("Force exit");
             this.StopDownload();
             this.DeleteCurrentFile();
-            this.Logout();
         }
 
         public Task<IList<RemoteVideoFile>> FindAsync(DateTime periodStart, DateTime periodEnd)
         {
             this.ValidateDateParameters(periodStart, periodEnd);
 
-            return this.SearchVideoFilesAsync(periodStart, periodEnd, this.loginResult);
+            this.logger.Info($"Get videos from {periodStart.ToString()} to {periodEnd.ToString()}");
+
+            return this.SearchVideoFilesAsync(periodStart, periodEnd, this.session);
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposedValue)
+            {
+                if (disposing)
+                {
+                    this.progress?.Dispose();
+                }
+
+                this.logger.Info($"Logout the device");
+                if (this.session != null)
+                {
+                    this.hikApi.Logout(this.session.UserId);
+                }
+
+                this.session = null;
+                this.progress = null;
+                this.currentDownloadFile = null;
+
+                this.hikApi.Cleanup();
+                this.disposedValue = true;
+            }
         }
 
         private string GetPrintableFileInfo(RemoteVideoFile file)
@@ -191,7 +209,7 @@ namespace HikConsole
             }
         }
 
-        private async Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, LoginResult loginResult)
+        private async Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, Session loginResult)
         {
             return await this.hikApi.SearchVideoFilesAsync(periodStart, periodEnd, loginResult.UserId, loginResult.Device.StartChannel);
         }

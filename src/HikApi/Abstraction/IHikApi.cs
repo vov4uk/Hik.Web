@@ -9,9 +9,14 @@ namespace HikApi.Abstraction
     {
         bool Initialize();
 
-        bool SetupLogs(int logingEnable, string logDirectory, bool autoDelete);
+        /// <summary>Setups the logs.</summary>
+        /// <param name="logLevel">Log level. 0- close log(default), 1- output ERROR log only, 2- output ERROR and DEBUG log, 3- output all log, including ERROR, DEBUG and INFO log</param>
+        /// <param name="logDirectory">The log directory. Log file saving path, if set to NULL, the default path for Windows is "C:\\SdkLog\\", and the default path for Linux is ""/home/sdklog/"</param>
+        /// <param name="autoDelete">Whether to delete the files which exceed the number limit. Default: TRUE.</param>
+        /// <returns></returns>
+        bool SetupLogs(int logLevel, string logDirectory, bool autoDelete);
 
-        LoginResult Login(string ipAdress, int port, string userName, string password);
+        Session Login(string ipAdress, int port, string userName, string password);
 
         Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, int userId, int channel);
 

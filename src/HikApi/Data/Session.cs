@@ -3,9 +3,9 @@
 namespace HikApi.Data
 {
     [ExcludeFromCodeCoverage]
-    public class LoginResult
+    public class Session
     {
-        public LoginResult(int userId, byte channelNumber, byte startChannel)
+        public Session(int userId, byte channelNumber, byte startChannel)
         {
             this.UserId = userId;
             this.Device = new DeviceInfo() { ChannelNumber = channelNumber, StartChannel = startChannel };
