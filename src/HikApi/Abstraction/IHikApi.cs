@@ -18,7 +18,7 @@ namespace HikApi.Abstraction
 
         Session Login(string ipAdress, int port, string userName, string password);
 
-        Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, int userId, int channel);
+        Task<IList<RemoteVideoFile>> FindVideoFilesAsync(DateTime periodStart, DateTime periodEnd, int userId, int channel);
 
         int StartDownloadFile(int userId, string sourceFileName, string destenationFilePath);
 
@@ -30,6 +30,6 @@ namespace HikApi.Abstraction
 
         void Cleanup();
 
-        void CloseSearch(int fileHandle);
+        void FindClose(int fileHandle);
     }
 }

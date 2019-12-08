@@ -211,7 +211,7 @@ namespace HikConsole
 
         private async Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, Session loginResult)
         {
-            return await this.hikApi.SearchVideoFilesAsync(periodStart, periodEnd, loginResult.UserId, loginResult.Device.StartChannel);
+            return await this.hikApi.FindVideoFilesAsync(periodStart, periodEnd, loginResult.UserId, loginResult.Device.StartChannel);
         }
 
         private void UpdateDownloadProgress(int progress)

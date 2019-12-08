@@ -109,7 +109,7 @@ namespace HikConsoleTests
             DateTime end = start.AddSeconds(1);
             var result = this.SetupLogin();
 
-            this.sdkMock.Setup(x => x.SearchVideoFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(new List<RemoteVideoFile>());
+            this.sdkMock.Setup(x => x.FindVideoFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(new List<RemoteVideoFile>());
 
             var client = this.GetHikClient();
             var loginResult = client.Login();
@@ -117,7 +117,7 @@ namespace HikConsoleTests
             await client.FindAsync(start, end);
 
             Assert.True(loginResult);
-            this.sdkMock.Verify(x => x.SearchVideoFilesAsync(start, end, DefaultUserId, result.Device.StartChannel), Times.Once);
+            this.sdkMock.Verify(x => x.FindVideoFilesAsync(start, end, DefaultUserId, result.Device.StartChannel), Times.Once);
         }
 
         [Fact]

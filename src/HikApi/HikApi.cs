@@ -33,34 +33,14 @@ namespace HikApi
             return new Session(userId, deviceInfo.byChanNum, deviceInfo.byStartChan);
         }
 
-        public async Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, int userId, int channel)
+        public async Task<IList<RemoteVideoFile>> FindVideoFilesAsync(DateTime periodStart, DateTime periodEnd, int userId, int channel)
         {
-            var results = new List<RemoteVideoFile>();
+            NET_DVR_FILECOND_V40 findCondition = this.PrepareFindCondition(periodStart, periodEnd, channel);
 
-            NET_DVR_FILECOND_V40 searchCondition = this.PrepareSearchCondition(periodStart, periodEnd, channel);
+            int findId = this.StartFind(userId, findCondition);
+            IEnumerable<RemoteVideoFile> results = await this.GetFindResults(findId);
 
-            int searchId = this.StartSearch(userId, searchCondition);
-
-            while (true)
-            {
-                NET_DVR_FINDDATA_V30 findData = default(NET_DVR_FINDDATA_V30);
-                int findStatus = HikApi.NET_DVR_FindNextFile_V30(searchId, ref findData);
-
-                if (findStatus == HikConst.NET_DVR_ISFINDING)
-                {
-                    await Task.Delay(500);
-                }
-                else if (findStatus == HikConst.NET_DVR_FILE_SUCCESS)
-                {
-                    results.Add(new RemoteVideoFile(findData));
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            this.CloseSearch(searchId);
+            this.FindClose(findId);
             return results.SkipLast(1).ToList(); // skip last, because this file still recording
         }
 
@@ -83,7 +63,7 @@ namespace HikApi
             return this.InvokeSDK(() => HikApi.NET_DVR_GetDownloadPos(fileHandle));
         }
 
-        public void CloseSearch(int fileHandle)
+        public void FindClose(int fileHandle)
         {
             this.InvokeSDK(() => HikApi.NET_DVR_FindClose_V30(fileHandle));
         }
@@ -98,25 +78,49 @@ namespace HikApi
             this.InvokeSDK(() => HikApi.NET_DVR_Logout(userId));
         }
 
-        private NET_DVR_FILECOND_V40 PrepareSearchCondition(DateTime periodStart, DateTime periodEnd, int channel)
+        private NET_DVR_FILECOND_V40 PrepareFindCondition(DateTime periodStart, DateTime periodEnd, int channel)
         {
             NET_DVR_FILECOND_V40 findConditions = new NET_DVR_FILECOND_V40
             {
                 lChannel = channel,
-                dwFileType = 0xff,
-                dwIsLocked = 0xff,
+                dwFileType = 0xff, // all
+                dwIsLocked = 0xff, // all, locked and unlocked
                 struStartTime = new NET_DVR_TIME(periodStart),
                 struStopTime = new NET_DVR_TIME(periodEnd),
             };
             return findConditions;
         }
 
-        private int StartSearch(int userId, NET_DVR_FILECOND_V40 findConditions)
+        private int StartFind(int userId, NET_DVR_FILECOND_V40 findConditions)
         {
             return this.InvokeSDK(() => HikApi.NET_DVR_FindFile_V40(userId, ref findConditions));
         }
 
-        private HikException CreateException(string method)
+        private async Task<IEnumerable<RemoteVideoFile>> GetFindResults(int findId)
+        {
+            var results = new List<RemoteVideoFile>();
+            while (true)
+            {
+                NET_DVR_FINDDATA_V30 findData = default(NET_DVR_FINDDATA_V30);
+                int findStatus = HikApi.NET_DVR_FindNextFile_V30(findId, ref findData);
+
+                if (findStatus == HikConst.NET_DVR_ISFINDING)
+                {
+                    await Task.Delay(500);
+                }
+                else if (findStatus == HikConst.NET_DVR_FILE_SUCCESS)
+                {
+                   results.Add( new RemoteVideoFile(findData));
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return results;
+        }
+            private HikException CreateException(string method)
         {
             uint lastErrorCode = HikApi.NET_DVR_GetLastError();
             return new HikException(method, lastErrorCode);
