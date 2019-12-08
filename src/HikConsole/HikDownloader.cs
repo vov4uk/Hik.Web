@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
 using HikApi.Data;
 using HikConsole.Abstraction;
 using HikConsole.Config;
@@ -15,20 +14,27 @@ namespace HikConsole
     public class HikDownloader
     {
         private readonly AppConfig appConfig;
-        private readonly IContainer container;
         private readonly ILogger logger;
         private readonly IEmailHelper emailHelper;
         private readonly IDirectoryHelper directoryHelper;
+        private readonly IHikClientFactory clientFactory;
         private CancellationTokenSource cancelTokenSource;
         private IHikClient client;
 
-        public HikDownloader(AppConfig appConfig, IContainer container, int progressCheckPeriodMiliseconds = 5000)
+        public HikDownloader(
+            AppConfig appConfig,
+            ILogger logger,
+            IEmailHelper emailHelper,
+            IDirectoryHelper directoryHelper,
+            IHikClientFactory clientFactory,
+            int progressCheckPeriodMiliseconds = 5000)
         {
             this.appConfig = appConfig;
-            this.container = container;
-            this.logger = container.Resolve<ILogger>();
-            this.emailHelper = container.Resolve<IEmailHelper>();
-            this.directoryHelper = container.Resolve<IDirectoryHelper>();
+
+            this.logger = logger;
+            this.emailHelper = emailHelper;
+            this.directoryHelper = directoryHelper;
+            this.clientFactory = clientFactory;
             this.ProgressCheckPeriodMiliseconds = progressCheckPeriodMiliseconds;
         }
 
@@ -133,7 +139,7 @@ namespace HikConsole
             try
             {
                 this.client?.Logout();
-                this.client = this.container.Resolve<IHikClient>(new TypedParameter(typeof(CameraConfig), camera));
+                this.client = this.clientFactory.Create(camera);
 
                 this.client.InitializeClient();
                 this.cancelTokenSource.Token.ThrowIfCancellationRequested();

@@ -13,11 +13,11 @@ namespace HikConsole
         public static void Main()
         {
             var container = AppBootstrapper.ConfigureIoc();
-            var appConfig = container.Resolve<IHikConfig>().Config;
-            var logger = container.Resolve<ILogger>();
+            Config.AppConfig appConfig = container.Resolve<IHikConfig>().Config;
+            ILogger logger = container.Resolve<ILogger>();
             logger.Info(appConfig.ToString());
 
-            var downloader = new HikDownloader(appConfig, container);
+            var downloader = container.Resolve<HikDownloader>(new TypedParameter(typeof(Config.AppConfig), appConfig));
 
             if (appConfig.Mode == "Recurring")
             {
