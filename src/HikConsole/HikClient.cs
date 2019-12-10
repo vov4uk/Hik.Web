@@ -37,7 +37,9 @@ namespace HikConsole
         public void InitializeClient()
         {
             this.hikApi.Initialize();
-            this.hikApi.SetupLogs(3, this.filesHelper.CombinePath(this.config.DestinationFolder, "SdkLog"), false);
+            string sdkLogsPath = this.filesHelper.CombinePath(Environment.CurrentDirectory, "logs", this.config.Allias + "_SdkLog");
+            this.filesHelper.FolderCreateIfNotExist(sdkLogsPath);
+            this.hikApi.SetupLogs(3, sdkLogsPath, false);
 
             this.filesHelper.FolderCreateIfNotExist(this.config.DestinationFolder);
         }

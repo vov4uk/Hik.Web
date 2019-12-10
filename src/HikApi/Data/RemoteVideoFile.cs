@@ -40,7 +40,7 @@ namespace HikApi.Data
         
         public string ToDirectoryNameString()
         {
-            return $"{this.StartTime.Year:0000}-{this.StartTime.Month:00}-{this.StartTime.Day:00}";
+            return $"{this.StartTime.Year:0000}-{this.StartTime.Month:00}/{this.StartTime.Day:00}";
         }
         
         public string ToFileNameString()
