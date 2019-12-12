@@ -29,9 +29,9 @@ namespace HikConsole.Helpers
             return size;
         }
 
-        public long GetTotalFreeSpace(string destenation)
+        public long GetTotalFreeSpace(string destination)
         {
-            var driveName = Path.GetPathRoot(destenation);
+            var driveName = Path.GetPathRoot(destination);
 
             foreach (DriveInfo drive in DriveInfo.GetDrives())
             {

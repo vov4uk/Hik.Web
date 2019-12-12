@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using HikApi.Struct;
+using HikApi.Abstraction;
+using HikApi.Struct.Video;
 
 namespace HikApi.Data
 {
     [ExcludeFromCodeCoverage]
-    public class RemoteVideoFile
+    public class RemoteVideoFile : IRemoteFile
     {
         private const string StartDateTimePrintFormat = "yyyy.MM.dd HH:mm:ss";
         private const string EndDateTimePrintFormat = "HH:mm:ss";
         private const string TimeFormat = "HHmmss";
+        private const string DateFormat = "yyyyMMdd_HHmmss";
         private const double BytesInMegaByte = 1024.0 * 1024.0;  
 
         public RemoteVideoFile()
@@ -25,13 +27,13 @@ namespace HikApi.Data
             this.Size = findData.dwFileSize;
         }
 
-        public string Name { get; set; }
+        public string Name { get; }
 
         public DateTime StartTime { get; set; }
 
         public DateTime StopTime { get; set; }
 
-        public long Size { get; set; }
+        public long Size { get; }
 
         public string ToUserFriendlyString()
         {
@@ -40,12 +42,12 @@ namespace HikApi.Data
         
         public string ToDirectoryNameString()
         {
-            return $"{this.StartTime.Year:0000}-{this.StartTime.Month:00}/{this.StartTime.Day:00}";
+            return $"{this.StartTime.Year:0000}-{this.StartTime.Month:00}\\{this.StartTime.Day:00}";
         }
         
         public string ToFileNameString()
         {
-            return $"{this.StartTime.ToString(TimeFormat)}_{this.StopTime.ToString(TimeFormat)}_{this.Name}.mp4";
+            return $"{this.StartTime.ToString(DateFormat)}_{this.StopTime.ToString(TimeFormat)}_{this.Name}.mp4";
         }
     }
 }

@@ -13,14 +13,18 @@ namespace HikConsole.Abstraction
 
         bool Login();
 
-        bool StartDownload(RemoteVideoFile remoteFile);
+        bool PhotoDownload(RemotePhotoFile remoteFile);
 
-        void StopDownload();
+        bool StartVideoDownload(RemoteVideoFile remoteFile);
 
-        void UpdateProgress();
+        void StopVideoDownload();
+
+        void UpdateVideoProgress();
 
         void ForceExit();
 
-        Task<IList<RemoteVideoFile>> FindAsync(DateTime periodStart, DateTime periodEnd);
+        Task<IList<RemoteVideoFile>> FindVideosAsync(DateTime periodStart, DateTime periodEnd);
+
+        Task<IList<RemotePhotoFile>> FindPhotosAsync(DateTime periodStart, DateTime periodEnd);
     }
 }

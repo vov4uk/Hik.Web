@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace HikApi.Struct
+namespace HikApi.Struct.Video
 {
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential)]
@@ -9,7 +9,10 @@ namespace HikApi.Struct
     {
         public int lChannel;
         public uint dwFileType;
-        public uint dwIsLocked; //Is it locked: 0-unlocked file, 1-locked file, 0xff means all files (including locked and unlocked)
+
+        public uint
+            dwIsLocked; //Is it locked: 0-unlocked file, 1-locked file, 0xff means all files (including locked and unlocked)
+
         public uint dwUseCardNo;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = HikConst.CARDNUM_LEN_OUT, ArraySubType = UnmanagedType.I1)]

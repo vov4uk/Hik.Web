@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -27,6 +28,10 @@ namespace HikConsole.Tests
             this.emailMock = new Mock<IEmailHelper>(MockBehavior.Strict);
             this.clientMock = new Mock<IHikClient>(MockBehavior.Strict);
             this.clientFactoryMock = new Mock<IHikClientFactory>(MockBehavior.Strict);
+
+            // temp fix, till not cover photo download with UT
+            this.clientMock.Setup(x => x.FindPhotosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync(new List<RemotePhotoFile>());
 
             this.fixture = new Fixture();
         }
@@ -102,11 +107,11 @@ namespace HikConsole.Tests
                     .With(x => x.Cameras, new CameraConfig[] { cameraConfig })
                     .Create();
 
-            this.SetupClientSucessLogin();
+            this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
 
-            this.clientMock.Setup(x => x.FindAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new RemoteVideoFile[] { });
+            this.clientMock.Setup(x => x.FindVideosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new RemoteVideoFile[] { });
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
@@ -131,14 +136,14 @@ namespace HikConsole.Tests
             var file = this.fixture.Build<RemoteVideoFile>()
                 .Create();
 
-            this.SetupClientSucessLogin();
+            this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
             this.SetupUpdateProgress();
-            this.clientMock.Setup(x => x.StartDownload(file)).Returns(true);
+            this.clientMock.Setup(x => x.StartVideoDownload(file)).Returns(true);
             this.clientMock.SetupGet(x => x.IsDownloading).Returns(false);
 
-            this.clientMock.Setup(x => x.FindAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new RemoteVideoFile[] { file });
+            this.clientMock.Setup(x => x.FindVideosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new RemoteVideoFile[] { file, file });
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
@@ -148,8 +153,8 @@ namespace HikConsole.Tests
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
-            this.clientMock.Verify(x => x.StartDownload(file), Times.Once);
-            this.clientMock.Verify(x => x.UpdateProgress(), Times.Once);
+            this.clientMock.Verify(x => x.StartVideoDownload(file), Times.Once);
+            this.clientMock.Verify(x => x.UpdateVideoProgress(), Times.Once);
             this.VerifyStatisticWasPrinted();
         }
 
@@ -167,14 +172,14 @@ namespace HikConsole.Tests
                 .CreateMany(filesCount)
                 .ToArray();
 
-            this.SetupClientSucessLogin();
+            this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
             this.SetupUpdateProgress();
-            this.clientMock.Setup(x => x.StartDownload(It.IsAny<RemoteVideoFile>())).Returns(true);
+            this.clientMock.Setup(x => x.StartVideoDownload(It.IsAny<RemoteVideoFile>())).Returns(true);
             this.clientMock.SetupGet(x => x.IsDownloading).Returns(false);
 
-            this.clientMock.Setup(x => x.FindAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(files);
+            this.clientMock.Setup(x => x.FindVideosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(files);
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
@@ -184,8 +189,8 @@ namespace HikConsole.Tests
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
-            this.clientMock.Verify(x => x.StartDownload(It.IsAny<RemoteVideoFile>()), Times.Exactly(filesCount));
-            this.clientMock.Verify(x => x.UpdateProgress(), Times.Exactly(filesCount));
+            this.clientMock.Verify(x => x.StartVideoDownload(It.IsAny<RemoteVideoFile>()), Times.Exactly(filesCount - 1));
+            this.clientMock.Verify(x => x.UpdateVideoProgress(), Times.Exactly(filesCount - 1));
             this.VerifyStatisticWasPrinted();
         }
 
@@ -203,18 +208,17 @@ namespace HikConsole.Tests
                 .CreateMany(filesCount)
                 .ToArray();
 
-            this.SetupClientSucessLogin();
+            this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
             this.SetupUpdateProgress();
-            this.clientMock.SetupSequence(x => x.StartDownload(It.IsAny<RemoteVideoFile>()))
-                .Returns(false)
+            this.clientMock.SetupSequence(x => x.StartVideoDownload(It.IsAny<RemoteVideoFile>()))
                 .Returns(false)
                 .Returns(true);
 
             this.clientMock.Setup(x => x.IsDownloading).Returns(false);
 
-            this.clientMock.Setup(x => x.FindAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(files);
+            this.clientMock.Setup(x => x.FindVideosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(files);
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
@@ -224,8 +228,8 @@ namespace HikConsole.Tests
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
-            this.clientMock.Verify(x => x.StartDownload(It.IsAny<RemoteVideoFile>()), Times.Exactly(filesCount));
-            this.clientMock.Verify(x => x.UpdateProgress(), Times.Once);
+            this.clientMock.Verify(x => x.StartVideoDownload(It.IsAny<RemoteVideoFile>()), Times.Exactly(filesCount - 1));
+            this.clientMock.Verify(x => x.UpdateVideoProgress(), Times.Once);
             this.clientMock.VerifyGet(x => x.IsDownloading, Times.Once);
             this.VerifyStatisticWasPrinted();
         }
@@ -241,17 +245,17 @@ namespace HikConsole.Tests
             var file = this.fixture.Build<RemoteVideoFile>()
                 .Create();
 
-            this.SetupClientSucessLogin();
+            this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
             this.SetupUpdateProgress();
-            this.clientMock.Setup(x => x.StartDownload(file)).Returns(true).Verifiable();
+            this.clientMock.Setup(x => x.StartVideoDownload(It.IsAny<RemoteVideoFile>())).Returns(true).Verifiable();
             this.clientMock.SetupSequence(x => x.IsDownloading)
                 .Returns(true)
                 .Returns(true)
                 .Returns(false);
 
-            this.clientMock.Setup(x => x.FindAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new RemoteVideoFile[] { file });
+            this.clientMock.Setup(x => x.FindVideosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new RemoteVideoFile[] { file, file });
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
@@ -262,8 +266,8 @@ namespace HikConsole.Tests
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
-            this.clientMock.Verify(x => x.StartDownload(file), Times.Once);
-            this.clientMock.Verify(x => x.UpdateProgress(), Times.Exactly(3));
+            this.clientMock.Verify(x => x.StartVideoDownload(file), Times.Once);
+            this.clientMock.Verify(x => x.UpdateVideoProgress(), Times.Exactly(3));
             this.VerifyStatisticWasPrinted();
         }
 
@@ -280,14 +284,14 @@ namespace HikConsole.Tests
             var file = this.fixture.Build<RemoteVideoFile>()
                 .Create();
 
-            this.SetupClientSucessLogin();
+            this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
             this.SetupUpdateProgress();
-            this.clientMock.Setup(x => x.StartDownload(file)).Returns(true).Verifiable();
+            this.clientMock.Setup(x => x.StartVideoDownload(It.IsAny<RemoteVideoFile>())).Returns(true).Verifiable();
             this.clientMock.SetupGet(x => x.IsDownloading).Returns(false);
 
-            this.clientMock.Setup(x => x.FindAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new RemoteVideoFile[] { file });
+            this.clientMock.Setup(x => x.FindVideosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new RemoteVideoFile[] { file, file });
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
@@ -298,8 +302,8 @@ namespace HikConsole.Tests
             this.clientMock.Verify(x => x.InitializeClient(), Times.Exactly(cameraCount));
             this.clientMock.Verify(x => x.Login(), Times.Exactly(cameraCount));
             this.clientMock.Verify(x => x.Dispose(), Times.Exactly(cameraCount));
-            this.clientMock.Verify(x => x.StartDownload(file), Times.Exactly(cameraCount));
-            this.clientMock.Verify(x => x.UpdateProgress(), Times.Exactly(cameraCount));
+            this.clientMock.Verify(x => x.StartVideoDownload(It.IsAny<RemoteVideoFile>()), Times.Exactly(cameraCount));
+            this.clientMock.Verify(x => x.UpdateVideoProgress(), Times.Exactly(cameraCount));
             this.directoryMock.Verify(x => x.GetTotalFreeSpace(It.IsAny<string>()), Times.Exactly(cameraCount));
             this.directoryMock.Verify(x => x.DirSize(It.IsAny<string>()), Times.Exactly(cameraCount));
         }
@@ -347,7 +351,7 @@ namespace HikConsole.Tests
             this.directoryMock.Setup(x => x.DirSize(It.IsAny<string>())).Returns(1024);
         }
 
-        private void SetupClientSucessLogin()
+        private void SetupClientSuccessLogin()
         {
             this.SetupClientInitialize();
             this.clientMock.Setup(x => x.Login()).Returns(true);
@@ -365,7 +369,7 @@ namespace HikConsole.Tests
 
         private void SetupUpdateProgress()
         {
-            this.clientMock.Setup(x => x.UpdateProgress());
+            this.clientMock.Setup(x => x.UpdateVideoProgress());
         }
 
         private void VerifyStatisticWasPrinted()

@@ -8,6 +8,8 @@
 
         bool FileExists(string path, long size);
 
+        public long FileSize(string path);
+
         void DeleteFile(string path);
 
         string ReadAllText(string path);

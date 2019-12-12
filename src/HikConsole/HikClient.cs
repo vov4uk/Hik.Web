@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using HikApi.Abstraction;
 using HikApi.Data;
@@ -18,7 +21,7 @@ namespace HikConsole
         private readonly IProgressBarFactory progressFactory;
         private readonly ILogger logger;
         private int downloadId = -1;
-        private RemoteVideoFile currentDownloadFile;
+        private IRemoteFile currentDownloadFile;
         private Session session;
         private IProgressBar progress;
         private bool disposedValue = false;
@@ -36,12 +39,14 @@ namespace HikConsole
 
         public void InitializeClient()
         {
-            this.hikApi.Initialize();
             string sdkLogsPath = this.filesHelper.CombinePath(Environment.CurrentDirectory, "logs", this.config.Allias + "_SdkLog");
             this.filesHelper.FolderCreateIfNotExist(sdkLogsPath);
-            this.hikApi.SetupLogs(3, sdkLogsPath, false);
-
             this.filesHelper.FolderCreateIfNotExist(this.config.DestinationFolder);
+
+            this.hikApi.Initialize();
+            this.hikApi.SetupLogs(3, sdkLogsPath, false);
+            this.hikApi.SetConnectTime(2000, 1);
+            this.hikApi.SetReconnect(10000, 1);
         }
 
         public bool Login()
@@ -59,18 +64,16 @@ namespace HikConsole
             }
         }
 
-        public bool StartDownload(RemoteVideoFile remoteFile)
+        public bool StartVideoDownload(RemoteVideoFile remoteFile)
         {
             if (!this.IsDownloading)
             {
-                string workingDirectory = this.GetWorkingDirectory(remoteFile);
-                this.filesHelper.FolderCreateIfNotExist(workingDirectory);
+                string destinationFilePath = this.GetPathSafety(remoteFile);
 
-                string destenationFilePath = this.GetFullPath(remoteFile, workingDirectory);
-
-                if (!this.filesHelper.FileExists(destenationFilePath, remoteFile.Size))
+                // Local video file is 40 bytes bigger than remote
+                if (!this.filesHelper.FileExists(destinationFilePath, remoteFile.Size + 40))
                 {
-                    this.downloadId = this.hikApi.StartDownloadFile(this.session.UserId, remoteFile.Name, destenationFilePath);
+                    this.downloadId = this.hikApi.VideoService.StartDownloadFile(this.session.UserId, remoteFile.Name, destinationFilePath);
 
                     this.logger.Info($"{remoteFile.ToUserFriendlyString()}- downloading");
 
@@ -89,11 +92,39 @@ namespace HikConsole
             }
         }
 
-        public void StopDownload()
+        public bool PhotoDownload(RemotePhotoFile remoteFile)
+        {
+            if (!this.IsDownloading)
+            {
+                string destinationFilePath = this.GetPathSafety(remoteFile);
+
+                long fileSize = this.filesHelper.FileSize(destinationFilePath);
+
+                if ((remoteFile.Size + 70) != fileSize && (remoteFile.Size + 56) != fileSize)
+                {
+                    string tempFile = remoteFile.ToFileNameString();
+                    this.hikApi.PhotoService.DownloadFile(this.session.UserId, remoteFile, tempFile);
+
+                    this.SetDate(tempFile, destinationFilePath, remoteFile.Date);
+                    this.filesHelper.DeleteFile(tempFile);
+
+                    return true;
+                }
+
+                return false;
+            }
+            else
+            {
+                this.logger.Warn("HikClient.PhotoDownload : Downloading, please stop firstly!");
+                return false;
+            }
+        }
+
+        public void StopVideoDownload()
         {
             if (this.IsDownloading)
             {
-                this.hikApi.StopDownloadFile(this.downloadId);
+                this.hikApi.VideoService.StopDownloadFile(this.downloadId);
                 this.ResetDownloadStatus();
             }
             else
@@ -102,11 +133,11 @@ namespace HikConsole
             }
         }
 
-        public void UpdateProgress()
+        public void UpdateVideoProgress()
         {
             if (this.IsDownloading)
             {
-                int downloadProgress = this.hikApi.GetDownloadPosition(this.downloadId);
+                int downloadProgress = this.hikApi.VideoService.GetDownloadPosition(this.downloadId);
 
                 this.UpdateProgressInternal(downloadProgress);
             }
@@ -119,17 +150,26 @@ namespace HikConsole
         public void ForceExit()
         {
             this.logger.Warn("HikClient.ForceExit");
-            this.StopDownload();
+            this.StopVideoDownload();
             this.DeleteCurrentFile();
         }
 
-        public Task<IList<RemoteVideoFile>> FindAsync(DateTime periodStart, DateTime periodEnd)
+        public Task<IList<RemoteVideoFile>> FindVideosAsync(DateTime periodStart, DateTime periodEnd)
         {
             this.ValidateDateParameters(periodStart, periodEnd);
 
             this.logger.Info($"Get videos from {periodStart.ToString()} to {periodEnd.ToString()}");
 
-            return this.SearchVideoFilesAsync(periodStart, periodEnd, this.session);
+            return this.hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, this.session);
+        }
+
+        public Task<IList<RemotePhotoFile>> FindPhotosAsync(DateTime periodStart, DateTime periodEnd)
+        {
+            this.ValidateDateParameters(periodStart, periodEnd);
+
+            this.logger.Info($"Get photos from {periodStart.ToString()} to {periodEnd.ToString()}");
+
+            return this.hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd, this.session);
         }
 
         public void Dispose()
@@ -162,12 +202,12 @@ namespace HikConsole
             }
         }
 
-        private string GetWorkingDirectory(RemoteVideoFile file)
+        private string GetWorkingDirectory(IRemoteFile file)
         {
             return this.filesHelper.CombinePath(this.config.DestinationFolder, file.ToDirectoryNameString());
         }
 
-        private string GetFullPath(RemoteVideoFile file, string directory = null)
+        private string GetFullPath(IRemoteFile file, string directory = null)
         {
             string folder = directory ?? this.GetWorkingDirectory(file);
             return this.filesHelper.CombinePath(folder, file.ToFileNameString());
@@ -204,28 +244,45 @@ namespace HikConsole
             }
         }
 
-        private async Task<IList<RemoteVideoFile>> SearchVideoFilesAsync(DateTime periodStart, DateTime periodEnd, Session loginResult)
+        private void UpdateProgressInternal(int progressValue)
         {
-            return await this.hikApi.FindVideoFilesAsync(periodStart, periodEnd, loginResult.UserId, loginResult.Device.StartChannel);
-        }
-
-        private void UpdateProgressInternal(int progress)
-        {
-            if (progress > ProgressBarMinimum && progress < ProgressBarMaximum)
+            if (progressValue >= ProgressBarMinimum && progressValue < ProgressBarMaximum)
             {
-                this.progress?.Report((double)progress / ProgressBarMaximum);
+                this.progress?.Report((double)progressValue / ProgressBarMaximum);
             }
-            else if (progress == ProgressBarMaximum)
+            else if (progressValue == ProgressBarMaximum)
             {
-                this.StopDownload();
+                this.StopVideoDownload();
                 this.currentDownloadFile = null;
 
                 this.logger.Info("- downloaded");
             }
             else
             {
-                this.StopDownload();
-                throw new InvalidOperationException($"UpdateDownloadProgress failed, progress value = {progress}");
+                this.StopVideoDownload();
+                throw new InvalidOperationException($"HikClient.UpdateDownloadProgress failed, progress value = {progressValue}");
+            }
+        }
+
+        private string GetPathSafety(IRemoteFile remoteFile)
+        {
+            string workingDirectory = this.GetWorkingDirectory(remoteFile);
+            this.filesHelper.FolderCreateIfNotExist(workingDirectory);
+
+            string destinationFilePath = this.GetFullPath(remoteFile, workingDirectory);
+            return destinationFilePath;
+        }
+
+        private void SetDate(string path, string newPath, DateTime date)
+        {
+            using (Image image = Image.FromFile(path))
+            {
+                var newItem = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
+                newItem.Value = System.Text.Encoding.ASCII.GetBytes(date.ToString("yyyy':'MM':'dd' 'HH':'mm':'ss"));
+                newItem.Type = 2;
+                newItem.Id = 306;
+                image.SetPropertyItem(newItem);
+                image.Save(newPath, image.RawFormat);
             }
         }
     }

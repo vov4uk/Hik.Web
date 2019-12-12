@@ -72,9 +72,7 @@ namespace HikConsole.Helpers
             {
                 this.Log(LogLevel.Error, error, exception);
 
-                AggregateException aggregateException = exception as AggregateException;
-
-                if (aggregateException != null)
+                if (exception is AggregateException aggregateException)
                 {
                     for (int i = 0; i < aggregateException.InnerExceptions.Count; i++)
                     {

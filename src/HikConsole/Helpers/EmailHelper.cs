@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Mail;
 using HikConsole.Abstraction;
 using HikConsole.Config;
@@ -15,26 +16,26 @@ namespace HikConsole.Helpers
             {
                 if (settings != null)
                 {
-                    using (MailMessage mail = new MailMessage())
+                    using var mail = new MailMessage
                     {
-                        mail.From = new MailAddress(settings.UserName);
-                        mail.To.Add(settings.Receiver);
-                        mail.Subject = "HikConsole error";
-                        mail.Body = msg;
-                        mail.IsBodyHtml = false;
+                        From = new MailAddress(settings.UserName),
+                    };
+                    mail.To.Add(settings.Receiver);
+                    mail.Subject = "HikConsole error";
+                    mail.Body = msg;
+                    mail.IsBodyHtml = false;
 
-                        using (SmtpClient smtp = new SmtpClient(settings.Server, settings.Port))
-                        {
-                            smtp.Credentials = new System.Net.NetworkCredential(settings.UserName, settings.Password);
-                            smtp.EnableSsl = true;
-                            smtp.Send(mail);
-                        }
-                    }
+                    using var smtp = new SmtpClient(settings.Server, settings.Port)
+                    {
+                        Credentials = new NetworkCredential(settings.UserName, settings.Password),
+                        EnableSsl = true,
+                    };
+                    smtp.Send(mail);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Instance.Error($"SendEmail failed", ex);
+                Logger.Instance.Error("SendEmail failed", ex);
             }
         }
     }

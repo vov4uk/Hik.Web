@@ -21,6 +21,7 @@ namespace HikConsole
         private readonly IHikClientFactory clientFactory;
         private CancellationTokenSource cancelTokenSource;
         private IHikClient client;
+        private DateTime? lastRun;
 
         public HikDownloader(
             AppConfig appConfig,
@@ -28,7 +29,7 @@ namespace HikConsole
             IEmailHelper emailHelper,
             IDirectoryHelper directoryHelper,
             IHikClientFactory clientFactory,
-            int progressCheckPeriodMiliseconds = 5000)
+            int progressCheckPeriodMilliseconds = 5000)
         {
             this.appConfig = appConfig;
 
@@ -36,10 +37,10 @@ namespace HikConsole
             this.emailHelper = emailHelper;
             this.directoryHelper = directoryHelper;
             this.clientFactory = clientFactory;
-            this.ProgressCheckPeriodMiliseconds = progressCheckPeriodMiliseconds;
+            this.ProgressCheckPeriodMilliseconds = progressCheckPeriodMilliseconds;
         }
 
-        public int ProgressCheckPeriodMiliseconds { get; }
+        public int ProgressCheckPeriodMilliseconds { get; }
 
         public async Task DownloadAsync()
         {
@@ -72,12 +73,7 @@ namespace HikConsole
                 }
                 catch (Exception ex)
                 {
-                    string msg = this.GetExceptionMessage(ex);
-
-                    this.logger.Error(msg, ex);
-
-                    this.emailHelper.SendEmail(this.appConfig.EmailConfig, msg);
-                    this.ForceExit();
+                    this.HandleException(ex);
                 }
             }
 
@@ -111,7 +107,7 @@ namespace HikConsole
             DateTime appStart = DateTime.Now;
 
             this.logger.Info($"Start.");
-            DateTime periodStart = appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
+            DateTime periodStart = this.lastRun ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
 
             foreach (var camera in this.appConfig.Cameras)
             {
@@ -122,6 +118,7 @@ namespace HikConsole
             string duration = (DateTime.Now - appStart).ToString(DurationFormat);
             this.logger.Info($"End. Duration  : {duration}");
             this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
+            this.lastRun = appStart;
         }
 
         private async Task ProcessCameraAsync(CameraConfig camera, DateTime periodStart, DateTime periodEnd)
@@ -136,14 +133,30 @@ namespace HikConsole
                     if (this.client.Login())
                     {
                         this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                        List<RemoteVideoFile> results = (await this.client.FindAsync(periodStart, periodEnd)).ToList();
+                        List<RemoteVideoFile> videos = (await this.client.FindVideosAsync(periodStart, periodEnd)).SkipLast(1).ToList();
 
-                        this.logger.Info($"Searching finished. Found {results.Count.ToString()} files");
+                        string resultCountString = videos.Count.ToString();
+                        this.logger.Info($"Video searching finished. Found {resultCountString} files");
 
-                        for (int i = 0; i < results.Count; i++)
+                        int j = 1;
+                        foreach (RemoteVideoFile video in videos)
                         {
                             this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                            await this.DownloadRemoteVideoFileAsync(results[i], i + 1, results.Count);
+                            this.logger.Info($"{(j++).ToString(),2}/{resultCountString} : ");
+                            await this.DownloadRemoteVideoFileAsync(video);
+                        }
+
+                        List<RemotePhotoFile> photos = (await this.client.FindPhotosAsync(periodStart, periodEnd)).ToList();
+                        resultCountString = photos.Count.ToString();
+
+                        this.logger.Info($"Picture searching finished. Found {resultCountString} files");
+                        j = 1;
+                        foreach (RemotePhotoFile photo in photos)
+                        {
+                            this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+                            bool isDownloaded = this.client.PhotoDownload(photo);
+
+                            this.logger.Info($"{(j++).ToString(),3}/{resultCountString} : {photo.ToUserFriendlyString()}- {(isDownloaded ? "downloaded" : "exist")}");
                         }
 
                         this.PrintStatistic(camera.DestinationFolder);
@@ -154,10 +167,14 @@ namespace HikConsole
                     }
                 }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
                 ex.Data.Add("Camera", camera.ToString());
                 throw;
+            }
+            catch (Exception ex)
+            {
+                this.HandleException(ex);
             }
         }
 
@@ -167,23 +184,22 @@ namespace HikConsole
             statisticsSb.AppendLine();
             statisticsSb.AppendLine();
             statisticsSb.AppendLine($"Directory Size : {Utils.FormatBytes(this.directoryHelper.DirSize(destinationFolder))}");
-            statisticsSb.AppendLine($"Free space: {Utils.FormatBytes(this.directoryHelper.GetTotalFreeSpace(destinationFolder))}");
+            statisticsSb.AppendLine($"Free space     : {Utils.FormatBytes(this.directoryHelper.GetTotalFreeSpace(destinationFolder))}");
             statisticsSb.AppendLine(new string('_', 40)); // separator
 
             this.logger.Info(statisticsSb.ToString());
         }
 
-        private async Task DownloadRemoteVideoFileAsync(RemoteVideoFile file, int order, int count)
+        private async Task DownloadRemoteVideoFileAsync(RemoteVideoFile file)
         {
-            this.logger.Info($"{order.ToString(),2}/{count.ToString()} : ");
-            if (this.client.StartDownload(file))
+            if (this.client.StartVideoDownload(file))
             {
                 DateTime downloadStarted = DateTime.Now;
                 do
                 {
-                    await Task.Delay(this.ProgressCheckPeriodMiliseconds);
+                    await Task.Delay(this.ProgressCheckPeriodMilliseconds);
                     this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                    this.client.UpdateProgress();
+                    this.client.UpdateVideoProgress();
                 }
                 while (this.client.IsDownloading);
 
@@ -194,7 +210,7 @@ namespace HikConsole
 
         private string GetExceptionMessage(Exception ex)
         {
-            StringBuilder msgBuilder = new StringBuilder("Exception happend : ");
+            StringBuilder msgBuilder = new StringBuilder("Exception happened : ");
             if (ex.Data.Contains("Camera"))
             {
                 msgBuilder.AppendLine(ex.Data["Camera"] as string);
@@ -202,6 +218,16 @@ namespace HikConsole
 
             msgBuilder.AppendLine(ex.ToString());
             return msgBuilder.ToString();
+        }
+
+        private void HandleException(Exception ex)
+        {
+            string msg = this.GetExceptionMessage(ex);
+
+            this.logger.Error(msg, ex);
+
+            this.emailHelper.SendEmail(this.appConfig.EmailConfig, msg);
+            this.ForceExit();
         }
     }
 }

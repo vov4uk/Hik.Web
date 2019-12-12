@@ -8,7 +8,7 @@ namespace HikApi.Data
         public Session(int userId, byte channelNumber, byte startChannel)
         {
             this.UserId = userId;
-            this.Device = new DeviceInfo() { ChannelNumber = channelNumber, StartChannel = startChannel };
+            this.Device = new DeviceInfo { ChannelNumber = channelNumber, StartChannel = startChannel };
         }
 
         public int UserId { get; }

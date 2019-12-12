@@ -2,7 +2,7 @@
 {
     public interface IDirectoryHelper
     {
-        long GetTotalFreeSpace(string destenation);
+        long GetTotalFreeSpace(string destination);
 
         long DirSize(string path);
     }

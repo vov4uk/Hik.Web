@@ -22,13 +22,18 @@ namespace HikConsole.Helpers
 
         public bool FileExists(string path, long size)
         {
+            return this.FileSize(path) == size;
+        }
+
+        public long FileSize(string path)
+        {
             if (File.Exists(path))
             {
                 var info = new FileInfo(path);
-                return info.Length == size + 40; // Local file is 40 bytes bigger than remote
+                return info.Length;
             }
 
-            return false;
+            return -1;
         }
 
         public void DeleteFile(string path)
