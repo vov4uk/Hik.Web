@@ -386,7 +386,7 @@ namespace HikConsole.Tests
         private Session SetupLogin()
         {
             DeviceInfo outDevice = this.fixture.Create<DeviceInfo>();
-            var result = new Session(DefaultUserId, outDevice.ChannelNumber, outDevice.StartChannel);
+            var result = new Session(DefaultUserId, outDevice.ChannelNumber);
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(result);
             return result;

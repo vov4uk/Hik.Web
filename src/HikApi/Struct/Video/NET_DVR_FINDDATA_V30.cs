@@ -7,7 +7,7 @@ namespace HikApi.Struct.Video
 {
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public struct NET_DVR_FINDDATA_V30 : ISourceFile
+    internal struct NET_DVR_FINDDATA_V30 : ISourceFile
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
         public string sFileName;

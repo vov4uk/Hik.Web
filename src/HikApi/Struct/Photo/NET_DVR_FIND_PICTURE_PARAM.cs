@@ -3,7 +3,7 @@
 namespace HikApi.Struct.Photo
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct NET_DVR_FIND_PICTURE_PARAM
+    internal struct NET_DVR_FIND_PICTURE_PARAM
     {
         public uint dwSize;
         public int lChannel;

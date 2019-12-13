@@ -5,7 +5,7 @@ namespace HikApi.Struct.Video
 {
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential)]
-    public struct NET_DVR_FILECOND_V40
+    internal struct NET_DVR_FILECOND_V40
     {
         public int lChannel;
         public uint dwFileType;

@@ -21,6 +21,8 @@ namespace HikApi.Abstraction
 
         void Logout(int userId);
 
+        HdInfo GetHddStatus(int userId);
+
         void Cleanup();
     }
 }

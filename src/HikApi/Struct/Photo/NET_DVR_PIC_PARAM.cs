@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace HikApi.Struct.Photo
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct NET_DVR_PIC_PARAM
+    internal struct NET_DVR_PIC_PARAM
     {
         [MarshalAs(UnmanagedType.LPStr)] public string pDVRFileName;
         public IntPtr pSavedFileBuf;

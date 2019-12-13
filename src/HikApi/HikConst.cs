@@ -11,5 +11,8 @@
         public const int NET_DVR_PLAYSTART = 1;
         public const int NET_DVR_FILE_SUCCESS = 1000;
         public const int NET_DVR_ISFINDING = 1002;
+
+        public const int NET_DVR_GET_HDCFG = 1054;
+        public const int MAX_DISKNUM_V30 = 33;
     }
 }

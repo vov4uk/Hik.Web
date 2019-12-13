@@ -13,6 +13,8 @@ namespace HikConsole.Abstraction
 
         bool Login();
 
+        void CheckHardDriveStatus();
+
         bool PhotoDownload(RemotePhotoFile remoteFile);
 
         bool StartVideoDownload(RemoteVideoFile remoteFile);

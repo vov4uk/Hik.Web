@@ -5,10 +5,10 @@ namespace HikApi.Data
     [ExcludeFromCodeCoverage]
     public class Session
     {
-        public Session(int userId, byte channelNumber, byte startChannel)
+        public Session(int userId, byte channelNumber)
         {
             this.UserId = userId;
-            this.Device = new DeviceInfo { ChannelNumber = channelNumber, StartChannel = startChannel };
+            this.Device = new DeviceInfo { ChannelNumber = channelNumber};
         }
 
         public int UserId { get; }

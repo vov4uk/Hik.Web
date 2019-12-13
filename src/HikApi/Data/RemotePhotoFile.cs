@@ -10,7 +10,7 @@ namespace HikApi.Data
         private const string DateFormat = "yyyyMMdd_HHmmss";
         private const double BytesInKiloByte = 1024.0;
 
-        public RemotePhotoFile(NET_DVR_FIND_PICTURE_V50 findData)
+        internal RemotePhotoFile(NET_DVR_FIND_PICTURE_V50 findData)
         {
             this.Name = findData.sFileName;
             this.Date = findData.struTime.ToDateTime();

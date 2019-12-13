@@ -1,10 +1,12 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using HikApi.Abstraction;
 using HikApi.Data;
 using HikApi.Helpers;
 using HikApi.Services;
 using HikApi.Struct;
+using HikApi.Struct.Config;
 
 namespace HikApi
 {
@@ -63,7 +65,7 @@ namespace HikApi
         {
             NET_DVR_DEVICEINFO_V30 deviceInfo = default(NET_DVR_DEVICEINFO_V30);
             int userId = SdkHelper.InvokeSDK(() => NET_DVR_Login_V30(ipAddress, port, userName, password, ref deviceInfo));
-            return new Session(userId, deviceInfo.byChanNum, deviceInfo.byStartChan);
+            return new Session(userId, deviceInfo.byChanNum);
         }
 
         public void Cleanup()
@@ -75,6 +77,28 @@ namespace HikApi
         {
             SdkHelper.InvokeSDK(() => NET_DVR_Logout(userId));
         }
+
+        public HdInfo GetHddStatus(int userId)
+        {
+
+            NET_DVR_HDCFG hdConfig = default;
+            uint returned = 0;
+            int sizeOfConfig = Marshal.SizeOf(hdConfig);
+            IntPtr ptrDeviceCfg = Marshal.AllocHGlobal(sizeOfConfig);
+            Marshal.StructureToPtr(hdConfig, ptrDeviceCfg, false);
+            SdkHelper.InvokeSDK(() => NET_DVR_GetDVRConfig(
+                userId,
+                HikConst.NET_DVR_GET_HDCFG,
+                -1, 
+                ptrDeviceCfg,
+                (uint) sizeOfConfig, 
+                ref returned));
+           
+            hdConfig = (NET_DVR_HDCFG)Marshal.PtrToStructure(ptrDeviceCfg, typeof(NET_DVR_HDCFG));
+            Marshal.FreeHGlobal(ptrDeviceCfg);
+            return new HdInfo(hdConfig.struHDInfo[0]);
+        }
+
 
         [DllImport(DllPath)]
         private static extern bool NET_DVR_Init();
@@ -95,6 +119,9 @@ namespace HikApi
         private static extern bool NET_DVR_SetConnectTime(uint dwWaitTime, uint dwTryTimes);
 
         [DllImport(DllPath)]
-        private static extern bool NET_DVR_SetReconnect(uint dwInterval, int bEnableRecon);
+        private static extern bool NET_DVR_SetReconnect(uint dwInterval, int bEnableRecon);  
+        
+        [DllImport(DllPath)]
+        private static extern bool NET_DVR_GetDVRConfig(int lUserID, uint dwCommand, int lChannel, IntPtr lpOutBuffer, uint dwOutBufferSize, ref uint lpBytesReturned);
     }
 }

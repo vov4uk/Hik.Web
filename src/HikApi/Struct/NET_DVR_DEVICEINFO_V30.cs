@@ -5,7 +5,7 @@ namespace HikApi.Struct
 {
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential)]
-    public struct NET_DVR_DEVICEINFO_V30
+    internal struct NET_DVR_DEVICEINFO_V30
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = HikConst.SERIALNO_LEN, ArraySubType = UnmanagedType.I1)]
         public byte[] sSerialNumber;

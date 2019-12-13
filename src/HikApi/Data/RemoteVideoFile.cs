@@ -19,7 +19,7 @@ namespace HikApi.Data
             // needed for Unit Tests, to be mocked
         }
 
-        public RemoteVideoFile(NET_DVR_FINDDATA_V30 findData)
+        internal RemoteVideoFile(NET_DVR_FINDDATA_V30 findData)
         {
             this.Name = findData.sFileName;
             this.StartTime = findData.struStartTime.ToDateTime();

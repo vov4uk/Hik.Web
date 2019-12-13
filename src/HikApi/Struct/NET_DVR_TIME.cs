@@ -6,7 +6,7 @@ namespace HikApi.Struct
 {
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential)]
-    public struct NET_DVR_TIME
+    internal struct NET_DVR_TIME
     {
         public int dwYear;
         public int dwMonth;

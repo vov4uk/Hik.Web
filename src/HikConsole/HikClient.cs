@@ -154,6 +154,16 @@ namespace HikConsole
             this.DeleteCurrentFile();
         }
 
+        public void CheckHardDriveStatus()
+        {
+            var info = this.hikApi.GetHddStatus(this.session.UserId);
+            this.logger.Info(info.ToString());
+            if (info.IsErrorStatus)
+            {
+                throw new InvalidOperationException("HD error");
+            }
+        }
+
         public Task<IList<RemoteVideoFile>> FindVideosAsync(DateTime periodStart, DateTime periodEnd)
         {
             this.ValidateDateParameters(periodStart, periodEnd);

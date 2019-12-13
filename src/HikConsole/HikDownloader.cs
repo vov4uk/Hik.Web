@@ -19,6 +19,7 @@ namespace HikConsole
         private readonly IEmailHelper emailHelper;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IHikClientFactory clientFactory;
+        private readonly IProgressBarFactory progressFactory;
         private CancellationTokenSource cancelTokenSource;
         private IHikClient client;
         private DateTime? lastRun;
@@ -29,6 +30,7 @@ namespace HikConsole
             IEmailHelper emailHelper,
             IDirectoryHelper directoryHelper,
             IHikClientFactory clientFactory,
+            IProgressBarFactory progressFactory,
             int progressCheckPeriodMilliseconds = 5000)
         {
             this.appConfig = appConfig;
@@ -37,6 +39,7 @@ namespace HikConsole
             this.emailHelper = emailHelper;
             this.directoryHelper = directoryHelper;
             this.clientFactory = clientFactory;
+            this.progressFactory = progressFactory;
             this.ProgressCheckPeriodMilliseconds = progressCheckPeriodMilliseconds;
         }
 
@@ -132,6 +135,8 @@ namespace HikConsole
 
                     if (this.client.Login())
                     {
+                        this.client.CheckHardDriveStatus();
+
                         this.cancelTokenSource.Token.ThrowIfCancellationRequested();
                         List<RemoteVideoFile> videos = (await this.client.FindVideosAsync(periodStart, periodEnd)).SkipLast(1).ToList();
 
@@ -149,15 +154,30 @@ namespace HikConsole
                         List<RemotePhotoFile> photos = (await this.client.FindPhotosAsync(periodStart, periodEnd)).ToList();
                         resultCountString = photos.Count.ToString();
 
-                        this.logger.Info($"Picture searching finished. Found {resultCountString} files");
-                        j = 1;
-                        foreach (RemotePhotoFile photo in photos)
-                        {
-                            this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                            bool isDownloaded = this.client.PhotoDownload(photo);
+                        this.logger.Info("Photos searching finished.");
+                        this.logger.Info($"Found {resultCountString} photos");
 
-                            this.logger.Info($"{(j++).ToString(),3}/{resultCountString} : {photo.ToUserFriendlyString()}- {(isDownloaded ? "downloaded" : "exist")}");
+                        var photoDownloadResults = new Dictionary<bool, int>
+                        {
+                            { false, 0 },
+                            { true, 0 },
+                        };
+
+                        j = 0;
+                        using (var progressBar = this.progressFactory.Create())
+                        {
+                            foreach (RemotePhotoFile photo in photos)
+                            {
+                                this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+                                bool isDownloaded = this.client.PhotoDownload(photo);
+                                photoDownloadResults[isDownloaded]++;
+                                j++;
+                                progressBar.Report((double)j / photos.Count);
+                            }
                         }
+
+                        this.logger.Info($"Exist {photoDownloadResults[false]} photos");
+                        this.logger.Info($"Downloaded {photoDownloadResults[true]} photos");
 
                         this.PrintStatistic(camera.DestinationFolder);
                     }

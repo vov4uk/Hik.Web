@@ -3,7 +3,7 @@
 namespace HikApi.Struct
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public struct NET_DVR_IPADDR
+    internal struct NET_DVR_IPADDR
     {
         /// char[16]
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)]

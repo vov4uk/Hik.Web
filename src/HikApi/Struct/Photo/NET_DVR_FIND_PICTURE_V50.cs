@@ -5,7 +5,7 @@ using HikApi.Data;
 namespace HikApi.Struct.Photo
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct NET_DVR_FIND_PICTURE_V50 : ISourceFile
+    internal struct NET_DVR_FIND_PICTURE_V50 : ISourceFile
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = HikConst.PICTURE_NAME_LEN)]
         public string sFileName;

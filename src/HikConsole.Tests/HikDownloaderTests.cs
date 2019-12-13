@@ -20,6 +20,7 @@ namespace HikConsole.Tests
         private readonly Fixture fixture;
         private readonly Mock<IHikClient> clientMock;
         private readonly Mock<IHikClientFactory> clientFactoryMock;
+        private readonly Mock<IProgressBarFactory> progressMock;
 
         public HikDownloaderTests()
         {
@@ -28,6 +29,7 @@ namespace HikConsole.Tests
             this.emailMock = new Mock<IEmailHelper>(MockBehavior.Strict);
             this.clientMock = new Mock<IHikClient>(MockBehavior.Strict);
             this.clientFactoryMock = new Mock<IHikClientFactory>(MockBehavior.Strict);
+            this.progressMock = new Mock<IProgressBarFactory>();
 
             // temp fix, till not cover photo download with UT
             this.clientMock.Setup(x => x.FindPhotosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
@@ -382,7 +384,7 @@ namespace HikConsole.Tests
         {
             this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>())).Returns(this.clientMock.Object);
 
-            return new HikDownloader(appConfig, this.loggerMock.Object, this.emailMock.Object, this.directoryMock.Object, this.clientFactoryMock.Object, 100);
+            return new HikDownloader(appConfig, this.loggerMock.Object, this.emailMock.Object, this.directoryMock.Object, this.clientFactoryMock.Object, this.progressMock.Object, 100);
         }
     }
 }
