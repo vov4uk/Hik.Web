@@ -7,6 +7,7 @@ namespace HikApi.Data
 {
     public class HdInfo
     {
+        public HdInfo() { }
         internal HdInfo(NET_DVR_SINGLE_HD hd)
         {
             Capacity = hd.dwCapacity;

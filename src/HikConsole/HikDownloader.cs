@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using HikApi.Data;
 using HikConsole.Abstraction;
 using HikConsole.Config;
+using HikConsole.DataAccess;
+using HikConsole.DataAccess.Data;
 using HikConsole.Helpers;
 
 namespace HikConsole
@@ -20,6 +22,7 @@ namespace HikConsole
         private readonly IDirectoryHelper directoryHelper;
         private readonly IHikClientFactory clientFactory;
         private readonly IProgressBarFactory progressFactory;
+        private readonly IUnitOfWorkFactory unitOfWorkFactory;
         private CancellationTokenSource cancelTokenSource;
         private IHikClient client;
         private DateTime? lastRun;
@@ -31,7 +34,7 @@ namespace HikConsole
             IDirectoryHelper directoryHelper,
             IHikClientFactory clientFactory,
             IProgressBarFactory progressFactory,
-            int progressCheckPeriodMilliseconds = 5000)
+            IUnitOfWorkFactory unitOfWorkFactory)
         {
             this.appConfig = appConfig;
 
@@ -40,10 +43,10 @@ namespace HikConsole
             this.directoryHelper = directoryHelper;
             this.clientFactory = clientFactory;
             this.progressFactory = progressFactory;
-            this.ProgressCheckPeriodMilliseconds = progressCheckPeriodMilliseconds;
+            this.unitOfWorkFactory = unitOfWorkFactory;
         }
 
-        public int ProgressCheckPeriodMilliseconds { get; }
+        public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
 
         public async Task DownloadAsync()
         {
@@ -100,86 +103,68 @@ namespace HikConsole
         {
             this.client?.ForceExit();
             this.client = null;
-
-            this.cancelTokenSource?.Dispose();
-            this.cancelTokenSource = null;
         }
 
         private async Task InternalDownload()
         {
-            DateTime appStart = DateTime.Now;
-
-            this.logger.Info($"Start.");
-            DateTime periodStart = this.lastRun ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
-
-            foreach (var camera in this.appConfig.Cameras)
+            using (var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork(this.appConfig.ConnectionString))
             {
-                this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                await this.ProcessCameraAsync(camera, periodStart, appStart);
-            }
+                DateTime appStart = DateTime.Now;
 
-            string duration = (DateTime.Now - appStart).ToString(DurationFormat);
-            this.logger.Info($"End. Duration  : {duration}");
-            this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
-            this.lastRun = appStart;
+                this.logger.Info($"Start.");
+                DateTime periodStart = this.lastRun ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
+
+                var job = await this.CreateJobInstance(periodStart, appStart, unitOfWork);
+
+                foreach (var camera in this.appConfig.Cameras)
+                {
+                    await this.ProcessCameraAsync(camera, periodStart, appStart, job, unitOfWork);
+                }
+
+                string duration = (DateTime.Now - appStart).ToString(DurationFormat);
+                this.logger.Info($"End. Duration  : {duration}");
+                this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
+                this.lastRun = appStart;
+
+                job.Finished = DateTime.Now;
+                await unitOfWork.SaveChangesAsync();
+            }
         }
 
-        private async Task ProcessCameraAsync(CameraConfig camera, DateTime periodStart, DateTime periodEnd)
+        private async Task<Job> CreateJobInstance(DateTime periodStart, DateTime appStart, IUnitOfWork unitOfWork)
+        {
+            var job = new Job { PeriodStart = periodStart, PeriodEnd = appStart, Started = DateTime.Now };
+            var repo = unitOfWork.GetRepository<Job>();
+            await repo.Add(job);
+            await unitOfWork.SaveChangesAsync();
+            return job;
+        }
+
+        private async Task ProcessCameraAsync(CameraConfig cameraConf, DateTime periodStart, DateTime periodEnd, Job job, IUnitOfWork unitOfWork)
         {
             try
             {
-                using (this.client = this.clientFactory.Create(camera))
+                using (this.client = this.clientFactory.Create(cameraConf))
                 {
                     this.client.InitializeClient();
                     this.cancelTokenSource.Token.ThrowIfCancellationRequested();
 
                     if (this.client.Login())
                     {
-                        this.client.CheckHardDriveStatus();
+                        var camRepo = unitOfWork.GetRepository<Camera>();
+                        var cam = await camRepo.FindBy(x => x.Alias == cameraConf.Alias);
+
+                        await this.CheckClientHardDriveStatus(job.Id, cam.Id, unitOfWork);
 
                         this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                        List<RemoteVideoFile> videos = (await this.client.FindVideosAsync(periodStart, periodEnd)).SkipLast(1).ToList();
+                        await this.DownloadVideos(periodStart, periodEnd, job.Id, cam.Id, unitOfWork);
 
-                        string resultCountString = videos.Count.ToString();
-                        this.logger.Info($"Video searching finished. Found {resultCountString} files");
-
-                        int j = 1;
-                        foreach (RemoteVideoFile video in videos)
+                        if (cameraConf.DownloadPhotos)
                         {
-                            this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                            this.logger.Info($"{(j++).ToString(),2}/{resultCountString} : ");
-                            await this.DownloadRemoteVideoFileAsync(video);
+                            await this.DownloadPhotos(periodStart, periodEnd, job.Id, cam.Id, unitOfWork);
                         }
 
-                        List<RemotePhotoFile> photos = (await this.client.FindPhotosAsync(periodStart, periodEnd)).ToList();
-                        resultCountString = photos.Count.ToString();
-
-                        this.logger.Info("Photos searching finished.");
-                        this.logger.Info($"Found {resultCountString} photos");
-
-                        var photoDownloadResults = new Dictionary<bool, int>
-                        {
-                            { false, 0 },
-                            { true, 0 },
-                        };
-
-                        j = 0;
-                        using (var progressBar = this.progressFactory.Create())
-                        {
-                            foreach (RemotePhotoFile photo in photos)
-                            {
-                                this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                                bool isDownloaded = this.client.PhotoDownload(photo);
-                                photoDownloadResults[isDownloaded]++;
-                                j++;
-                                progressBar.Report((double)j / photos.Count);
-                            }
-                        }
-
-                        this.logger.Info($"Exist {photoDownloadResults[false]} photos");
-                        this.logger.Info($"Downloaded {photoDownloadResults[true]} photos");
-
-                        this.PrintStatistic(camera.DestinationFolder);
+                        this.PrintStatistic(cameraConf.DestinationFolder);
                     }
                     else
                     {
@@ -189,12 +174,168 @@ namespace HikConsole
             }
             catch (OperationCanceledException ex)
             {
-                ex.Data.Add("Camera", camera.ToString());
+                ex.Data.Add("Camera", cameraConf.ToString());
                 throw;
             }
             catch (Exception ex)
             {
+                job.FailsCount++;
+                ex.Data.Add("Camera", cameraConf.ToString());
                 this.HandleException(ex);
+            }
+        }
+
+        private async Task DownloadPhotos(
+            DateTime periodStart,
+            DateTime periodEnd,
+            int job,
+            int cam,
+            IUnitOfWork unitOfWork)
+        {
+            var photos = await this.GetRemotePhotosFilesList(periodStart, periodEnd);
+
+            var photoDownloadResults = this.DownloadPhotosFromClient(photos, job, cam);
+
+            await this.SaveDownloadedPhotoResultsToDataBase(photoDownloadResults, unitOfWork);
+        }
+
+        private async Task DownloadVideos(
+            DateTime periodStart,
+            DateTime periodEnd,
+            int job,
+            int cam,
+            IUnitOfWork unitOfWork)
+        {
+            var videos = await this.GetRemoteVideoFilesList(periodStart, periodEnd);
+
+            var downloadedVideos = await this.DownloadVideoFilesFromClient(videos);
+
+            await this.SaveDownloadedVideoResultsToDataBase(downloadedVideos, job, cam, unitOfWork);
+        }
+
+        private async Task SaveDownloadedPhotoResultsToDataBase(List<Photo> photoDownloadResults, IUnitOfWork unitOfWork)
+        {
+            var repo = unitOfWork.GetRepository<Photo>();
+            await repo.AddRange(photoDownloadResults);
+        }
+
+        private List<Photo> DownloadPhotosFromClient(List<RemotePhotoFile> photos, int job, int cam)
+        {
+            var photoDownloadResults = new Dictionary<bool, int>
+            {
+                { false, 0 },
+                { true, 0 },
+            };
+
+            int j = 0;
+            var photoResult = new List<Photo>();
+            using (var progressBar = this.progressFactory.Create())
+            {
+                foreach (RemotePhotoFile photo in photos)
+                {
+                    DateTime start = DateTime.Now;
+                    this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+                    bool isDownloaded = this.client.PhotoDownload(photo);
+                    DateTime finish = DateTime.Now;
+                    photoDownloadResults[isDownloaded]++;
+                    j++;
+                    progressBar.Report((double)j / photos.Count);
+
+                    if (isDownloaded)
+                    {
+                        photoResult.Add(new Photo
+                        {
+                            CameraId = cam,
+                            JobId = job,
+                            Size = photo.Size,
+                            Name = photo.Name,
+                            DateTaken = photo.Date,
+                            DownloadStartTime = start,
+                            DownloadStopTime = finish,
+                        });
+                    }
+                }
+            }
+
+            this.logger.Info($"Exist {photoDownloadResults[false]} photos");
+            this.logger.Info($"Downloaded {photoDownloadResults[true]} photos");
+            return photoResult;
+        }
+
+        private async Task<List<RemotePhotoFile>> GetRemotePhotosFilesList(DateTime periodStart, DateTime periodEnd)
+        {
+            List<RemotePhotoFile> photos = (await this.client.FindPhotosAsync(periodStart, periodEnd)).ToList();
+            var resultCountString = photos.Count.ToString();
+
+            this.logger.Info("Photos searching finished.");
+            this.logger.Info($"Found {resultCountString} photos");
+            return photos;
+        }
+
+        private async Task SaveDownloadedVideoResultsToDataBase(
+            List<Video> downloadedVideos,
+            int job,
+            int cam,
+            IUnitOfWork unitOfWork)
+        {
+            downloadedVideos.ForEach(x =>
+            {
+                x.CameraId = cam;
+                x.JobId = job;
+            });
+            var repo = unitOfWork.GetRepository<Video>();
+            await repo.AddRange(downloadedVideos);
+        }
+
+        private async Task<List<Video>> DownloadVideoFilesFromClient(List<RemoteVideoFile> videos)
+        {
+            int j = 1;
+            var videoResult = new List<Video>();
+            foreach (RemoteVideoFile video in videos)
+            {
+                this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+                this.logger.Info($"{(j++).ToString(),2}/{videos.Count} : ");
+                var res = await this.DownloadRemoteVideoFileAsync(video);
+                if (res != null)
+                {
+                    videoResult.Add(res);
+                }
+            }
+
+            return videoResult;
+        }
+
+        private async Task<List<RemoteVideoFile>> GetRemoteVideoFilesList(DateTime periodStart, DateTime periodEnd)
+        {
+            List<RemoteVideoFile> videos = (await this.client.FindVideosAsync(periodStart, periodEnd)).SkipLast(1).ToList();
+
+            this.logger.Info($"Video searching finished. Found {videos.Count} files");
+            return videos;
+        }
+
+        private async Task CheckClientHardDriveStatus(int jobId, int cameraId, IUnitOfWork unitOfWork)
+        {
+            var status = this.client.CheckHardDriveStatus();
+
+            var hdRepo = unitOfWork.GetRepository<HardDriveStatus>();
+            await hdRepo.Add(new HardDriveStatus
+            {
+                CameraId = cameraId,
+                JobId = jobId,
+                Capacity = status.Capacity,
+                FreeSpace = status.FreeSpace,
+                PictureCapacity = status.PictureCapacity,
+                FreePictureSpace = status.FreePictureSpace,
+                HDAttr = status.HDAttr,
+                HdStatus = status.HdStatus,
+                HDType = status.HDType,
+                Recycling = status.Recycling,
+            });
+            this.logger.Info(status.ToString());
+
+            if (status.IsErrorStatus)
+            {
+                throw new InvalidOperationException("HD error");
             }
         }
 
@@ -210,7 +351,7 @@ namespace HikConsole
             this.logger.Info(statisticsSb.ToString());
         }
 
-        private async Task DownloadRemoteVideoFileAsync(RemoteVideoFile file)
+        private async Task<Video> DownloadRemoteVideoFileAsync(RemoteVideoFile file)
         {
             if (this.client.StartVideoDownload(file))
             {
@@ -225,7 +366,19 @@ namespace HikConsole
 
                 TimeSpan duration = DateTime.Now - downloadStarted;
                 this.logger.Info($"Download duration {duration.ToString(DurationFormat)}, avg speed {Utils.FormatBytes((long)(file.Size / duration.TotalSeconds))}/s");
+
+                return new Video
+                {
+                    Size = file.Size,
+                    Name = file.Name,
+                    StartTime = file.StartTime,
+                    StopTime = file.StopTime,
+                    DownloadStartTime = downloadStarted,
+                    DownloadStopTime = DateTime.Now,
+                };
             }
+
+            return default(Video);
         }
 
         private string GetExceptionMessage(Exception ex)

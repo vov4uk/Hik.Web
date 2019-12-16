@@ -6,7 +6,7 @@ namespace HikConsole.Config
     [ExcludeFromCodeCoverage]
     public class CameraConfig
     {
-        public string Allias { get; set; }
+        public string Alias { get; set; }
 
         public string DestinationFolder { get; set; }
 
@@ -20,11 +20,13 @@ namespace HikConsole.Config
 
         public bool ShowProgress { get; set; } = true;
 
+        public bool DownloadPhotos { get; set; }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine();
-            sb.AppendLine($"Allias      : {this.Allias}");
+            sb.AppendLine($"Alias       : {this.Alias}");
             sb.AppendLine($"Destination : {this.DestinationFolder}");
             sb.AppendLine($"IP Address  : {this.IpAddress}:{this.PortNumber.ToString()}");
             sb.AppendLine($"User name   : {this.UserName}");

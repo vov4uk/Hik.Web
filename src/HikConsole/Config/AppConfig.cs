@@ -19,6 +19,10 @@ namespace HikConsole.Config
         [JsonProperty("EmailSettings")]
         public EmailConfig EmailConfig { get; set; }
 
+        public int? RetentionPeriodDays { get; set; } = 30;
+
+        public string ConnectionString { get; set; }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

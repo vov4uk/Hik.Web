@@ -8,6 +8,7 @@ using HikApi.Abstraction;
 using HikApi.Data;
 using HikConsole.Abstraction;
 using HikConsole.Config;
+using HikConsole.Helpers;
 
 namespace HikConsole
 {
@@ -39,7 +40,7 @@ namespace HikConsole
 
         public void InitializeClient()
         {
-            string sdkLogsPath = this.filesHelper.CombinePath(Environment.CurrentDirectory, "logs", this.config.Allias + "_SdkLog");
+            string sdkLogsPath = this.filesHelper.CombinePath(Environment.CurrentDirectory, "logs", this.config.Alias + "_SdkLog");
             this.filesHelper.FolderCreateIfNotExist(sdkLogsPath);
             this.filesHelper.FolderCreateIfNotExist(this.config.DestinationFolder);
 
@@ -154,19 +155,18 @@ namespace HikConsole
             this.DeleteCurrentFile();
         }
 
-        public void CheckHardDriveStatus()
+        public HdInfo CheckHardDriveStatus()
         {
-            var info = this.hikApi.GetHddStatus(this.session.UserId);
-            this.logger.Info(info.ToString());
-            if (info.IsErrorStatus)
-            {
-                throw new InvalidOperationException("HD error");
-            }
+            return this.hikApi.GetHddStatus(this.session.UserId);
         }
 
         public Task<IList<RemoteVideoFile>> FindVideosAsync(DateTime periodStart, DateTime periodEnd)
         {
-            this.ValidateDateParameters(periodStart, periodEnd);
+            Guard.IsValid(
+                () => periodStart,
+                periodStart,
+                start => start < periodEnd,
+                "Start period grater than end");
 
             this.logger.Info($"Get videos from {periodStart.ToString()} to {periodEnd.ToString()}");
 
@@ -250,7 +250,7 @@ namespace HikConsole
         {
             if (end <= start)
             {
-                throw new ArgumentException("Start period grather than end");
+                throw new ArgumentException("Start period grater than end");
             }
         }
 

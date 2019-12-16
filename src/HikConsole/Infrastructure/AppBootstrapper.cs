@@ -15,7 +15,11 @@ namespace HikConsole.Infrastructure
             var builder = new ContainerBuilder();
 
             var referencedAssembliesNames = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
-            List<Assembly> hikAssemblies = referencedAssembliesNames.Where(assembly => assembly.FullName.StartsWith("HikApi")).Select(x => Assembly.Load(x)).ToList();
+            List<Assembly> hikAssemblies = referencedAssembliesNames
+                .Where(assembly => assembly.FullName.StartsWith("HikApi") || assembly.FullName.StartsWith("HikConsole"))
+                .Select(x => Assembly.Load(x))
+                .ToList();
+
             hikAssemblies.Add(Assembly.GetExecutingAssembly());
 
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();

@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoFixture;
 using HikApi;
 using HikApi.Data;
 using HikConsole.Abstraction;
 using HikConsole.Config;
+using HikConsole.DataAccess;
+using HikConsole.DataAccess.Data;
 using Moq;
 using Xunit;
 
@@ -21,6 +24,13 @@ namespace HikConsole.Tests
         private readonly Mock<IHikClient> clientMock;
         private readonly Mock<IHikClientFactory> clientFactoryMock;
         private readonly Mock<IProgressBarFactory> progressMock;
+        private readonly Mock<IUnitOfWorkFactory> uowFactoryMock;
+        private readonly Mock<IUnitOfWork> uowMock;
+        private readonly Mock<IBaseRepository<Job>> jobRepoMock;
+        private readonly Mock<IBaseRepository<HardDriveStatus>> hdRepoMock;
+        private readonly Mock<IBaseRepository<Video>> videoRepoMock;
+        private readonly Mock<IBaseRepository<Camera>> cameraRepoMock;
+        private readonly Mock<IBaseRepository<Photo>> photoRepoMock;
 
         public HikDownloaderTests()
         {
@@ -30,12 +40,32 @@ namespace HikConsole.Tests
             this.clientMock = new Mock<IHikClient>(MockBehavior.Strict);
             this.clientFactoryMock = new Mock<IHikClientFactory>(MockBehavior.Strict);
             this.progressMock = new Mock<IProgressBarFactory>();
+            this.uowFactoryMock = new Mock<IUnitOfWorkFactory>();
+            this.uowMock = new Mock<IUnitOfWork>();
+            this.jobRepoMock = new Mock<IBaseRepository<Job>>();
+            this.hdRepoMock = new Mock<IBaseRepository<HardDriveStatus>>();
+            this.videoRepoMock = new Mock<IBaseRepository<Video>>();
+            this.cameraRepoMock = new Mock<IBaseRepository<Camera>>();
+            this.photoRepoMock = new Mock<IBaseRepository<Photo>>();
 
             // temp fix, till not cover photo download with UT
             this.clientMock.Setup(x => x.FindPhotosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
                 .ReturnsAsync(new List<RemotePhotoFile>());
 
+            this.SetupCreateJobInstance();
+            this.cameraRepoMock.Setup(x => x.FindBy(It.IsAny<Expression<Func<Camera, bool>>>()))
+                .ReturnsAsync(new Camera());
+            this.uowMock.Setup(x => x.GetRepository<Job>()).Returns(this.jobRepoMock.Object);
+            this.uowMock.Setup(x => x.GetRepository<HardDriveStatus>()).Returns(this.hdRepoMock.Object);
+            this.uowMock.Setup(x => x.GetRepository<Video>()).Returns(this.videoRepoMock.Object);
+            this.uowMock.Setup(x => x.GetRepository<Camera>()).Returns(this.cameraRepoMock.Object);
+            this.uowMock.Setup(x => x.GetRepository<Photo>()).Returns(this.photoRepoMock.Object);
+            this.uowMock.Setup(x => x.SaveChangesAsync());
+            this.uowFactoryMock.Setup(x => x.CreateUnitOfWork(It.IsAny<string>())).Returns(this.uowMock.Object);
+
             this.fixture = new Fixture();
+            var status = this.fixture.Build<HdInfo>().With(x => x.HdStatus, 0U).Create();
+            this.clientMock.Setup(x => x.CheckHardDriveStatus()).Returns(status);
         }
 
         [Fact]
@@ -333,6 +363,7 @@ namespace HikConsole.Tests
             this.clientMock.Setup(x => x.InitializeClient());
             this.clientMock.Setup(x => x.ForceExit());
             this.SetupClientDispose();
+            this.SetupCreateJobInstance();
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
@@ -384,7 +415,16 @@ namespace HikConsole.Tests
         {
             this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>())).Returns(this.clientMock.Object);
 
-            return new HikDownloader(appConfig, this.loggerMock.Object, this.emailMock.Object, this.directoryMock.Object, this.clientFactoryMock.Object, this.progressMock.Object, 100);
+            return new HikDownloader(appConfig, this.loggerMock.Object, this.emailMock.Object, this.directoryMock.Object, this.clientFactoryMock.Object, this.progressMock.Object, this.uowFactoryMock.Object)
+            {
+                ProgressCheckPeriodMilliseconds = 100
+            };
+        }
+
+        private void SetupCreateJobInstance()
+        {
+            this.jobRepoMock.Setup(x => x.Add(It.IsAny<Job>()));
+            this.jobRepoMock.Setup(x => x.Update(It.IsAny<Job>()));
         }
     }
 }

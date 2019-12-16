@@ -30,7 +30,15 @@ namespace HikConsole.Helpers
                         Credentials = new NetworkCredential(settings.UserName, settings.Password),
                         EnableSsl = true,
                     };
+
+#if DEBUG
+                    Logger.Instance.Info("SendEmail");
+                    Logger.Instance.Info(msg);
+                    smtp.Dispose();
+#elif RELEASE
+
                     smtp.Send(mail);
+#endif
                 }
             }
             catch (Exception ex)
