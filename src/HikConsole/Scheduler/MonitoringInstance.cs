@@ -9,7 +9,7 @@ using HikConsole.Helpers;
 using NLog;
 using Logger = NLog.Logger;
 
-namespace HikConsole.Service
+namespace HikConsole.Scheduler
 {
     public class MonitoringInstance
     {
@@ -82,8 +82,21 @@ namespace HikConsole.Service
         private async Task<bool> Download()
         {
             Log.Info("Downloading...");
-            await this.downloader.DownloadAsync();
+            var result = await this.downloader.DownloadAsync();
             Log.Info("Downloading. Done!");
+
+            if (!string.IsNullOrEmpty(this.configuration.ConnectionString))
+            {
+                Log.Info("Saving results to DB...");
+                var jobResultSaver = new JobResultsSaver(this.configuration.ConnectionString, result);
+                await jobResultSaver.SaveAsync();
+                Log.Info("Saving results to DB. Done!");
+            }
+            else
+            {
+                Log.Warn("ConnectionString not provided, nothing to save to DB");
+            }
+
             return true;
         }
     }

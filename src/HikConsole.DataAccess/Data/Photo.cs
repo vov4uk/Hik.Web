@@ -5,13 +5,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace HikConsole.DataAccess.Data
 {
     [Table("Photo")]
-    public class Photo
+    public class Photo : IAuditable
     {
         [Key]
         public int Id { get; set; }
 
+        [ForeignKey("Camera")]
         public int CameraId { get; set; }
 
+        [ForeignKey("Job")]
         public int JobId { get; set; }
 
         public string Name { get; set; }
@@ -25,5 +27,9 @@ namespace HikConsole.DataAccess.Data
         public DateTime DownloadStartTime { get; set; }
 
         public DateTime DownloadStopTime { get; set; }
+
+        public virtual Camera Camera { get; set; }
+
+        public virtual Job Job { get; set; }
     }
 }

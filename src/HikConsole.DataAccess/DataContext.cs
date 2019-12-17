@@ -1,4 +1,5 @@
 ﻿using HikConsole.DataAccess.Data;
+using HikConsole.DataAccess.Mappings;
 using Microsoft.EntityFrameworkCore;
 
 namespace HikConsole.DataAccess
@@ -26,6 +27,18 @@ namespace HikConsole.DataAccess
         {
             base.OnConfiguring(optionsBuilder);
             optionsBuilder.UseSqlServer(ConnectionString);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder
+                .ApplyConfiguration(new VideoMapping())
+                .ApplyConfiguration(new PhotoMapping())
+                .ApplyConfiguration(new JobMapping())
+                .ApplyConfiguration(new CameraMapping())
+                .ApplyConfiguration(new HardDriveStatusMapping());
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

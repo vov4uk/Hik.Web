@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using HikConsole.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace HikConsole.DataAccess
@@ -14,6 +17,7 @@ namespace HikConsole.DataAccess
         public UnitOfWork(TContext context)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            Context.Database.EnsureCreated();
         }
 
         public IBaseRepository<TEntity> GetRepository<TEntity>() where TEntity : class
@@ -32,6 +36,13 @@ namespace HikConsole.DataAccess
             return Context.SaveChangesAsync();
         }
 
+        public async Task<int> SaveChangesAsync(Job job, Camera camera)
+        {
+            this.ProcessAuditItems(job, camera);
+            var res = await this.SaveChangesAsync();
+            return res;
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -48,6 +59,19 @@ namespace HikConsole.DataAccess
                 }
 
                 this.disposedValue = true;
+            }
+        }
+
+        private void ProcessAuditItems(Job job, Camera camera)
+        {
+            foreach (var entity in this.Context.ChangeTracker
+                .Entries()
+                .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added)
+                .Select(e => e.Entity)
+                .OfType<IAuditable>())
+            {
+                entity.Job = job;
+                entity.Camera = camera;
             }
         }
     }

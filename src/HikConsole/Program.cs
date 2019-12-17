@@ -4,6 +4,7 @@ using Autofac;
 using HikConsole.Abstraction;
 using HikConsole.Config;
 using HikConsole.Infrastructure;
+using HikConsole.Scheduler;
 using HikConsole.Service;
 
 namespace HikConsole
@@ -22,7 +23,9 @@ namespace HikConsole
 
             var downloader = container.Resolve<HikDownloader>(new TypedParameter(typeof(AppConfig), appConfig));
 
-            downloader.DownloadAsync().GetAwaiter().GetResult();
+            var result = downloader.DownloadAsync().GetAwaiter().GetResult();
+            var jobResultSaver = new JobResultsSaver(appConfig.ConnectionString, result);
+            jobResultSaver.SaveAsync().GetAwaiter().GetResult();
 
             if (appConfig.Mode == "Recurring")
             {

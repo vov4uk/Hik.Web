@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -20,5 +21,10 @@ namespace HikConsole.DataAccess.Data
 
         public DateTime Finished { get; set; }
 
+        public List<Video> Videos { get; set; } = new List<Video>();
+
+        public List<Photo> Photos { get; set; } = new List<Photo>();
+
+        public List<HardDriveStatus> HardDriveStatuses { get; set; } = new List<HardDriveStatus>();
     }
 }

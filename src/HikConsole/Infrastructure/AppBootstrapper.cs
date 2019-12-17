@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Autofac;
 using HikConsole.Helpers;
+using HikConsole.Scheduler;
 
 namespace HikConsole.Infrastructure
 {

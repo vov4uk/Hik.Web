@@ -2,6 +2,7 @@
   "ProcessingPeriodHours": 4,
   "Mode": "Recurring",
   "IntervalMinutes": 120,
+  "ConnectionString": "Data Source=(LocalDB)\\MSSQLLocalDB;database=HikConsole;Integrated Security=True;Connect Timeout=30",
   "Cameras": [
     {
       "Allias": "Camera1",
@@ -10,7 +11,8 @@
       "UserName": "admin",
       "Password": "adminpass",
       "DestinationFolder": "D:\\Video\\Camera1",
-      "ShowProgress": false
+      "ShowProgress": false,
+      "DownloadPhotos": false
     },
     {
       "Allias": "Camera2",
@@ -19,7 +21,8 @@
       "UserName": "admin",
       "Password": "adminpass",
       "DestinationFolder": "D:\\Video\\Camera2",
-      "ShowProgress": false
+      "ShowProgress": false,
+      "DownloadPhotos": true
     }
   ],
   "EmailSettings": {

@@ -16,12 +16,6 @@ namespace HikConsole.Infrastructure
             this.lazyAppConfig = new Lazy<AppConfig>(() => JsonConvert.DeserializeObject<AppConfig>(fileHelper.ReadAllText("configuration.json")));
         }
 
-        public AppConfig Config
-        {
-            get
-            {
-                return this.lazyAppConfig.Value;
-            }
-        }
+        public AppConfig Config => this.lazyAppConfig.Value;
     }
 }

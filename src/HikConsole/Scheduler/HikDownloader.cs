@@ -7,11 +7,10 @@ using System.Threading.Tasks;
 using HikApi.Data;
 using HikConsole.Abstraction;
 using HikConsole.Config;
-using HikConsole.DataAccess;
 using HikConsole.DataAccess.Data;
 using HikConsole.Helpers;
 
-namespace HikConsole
+namespace HikConsole.Scheduler
 {
     public class HikDownloader
     {
@@ -22,7 +21,6 @@ namespace HikConsole
         private readonly IDirectoryHelper directoryHelper;
         private readonly IHikClientFactory clientFactory;
         private readonly IProgressBarFactory progressFactory;
-        private readonly IUnitOfWorkFactory unitOfWorkFactory;
         private CancellationTokenSource cancelTokenSource;
         private IHikClient client;
         private DateTime? lastRun;
@@ -33,8 +31,7 @@ namespace HikConsole
             IEmailHelper emailHelper,
             IDirectoryHelper directoryHelper,
             IHikClientFactory clientFactory,
-            IProgressBarFactory progressFactory,
-            IUnitOfWorkFactory unitOfWorkFactory)
+            IProgressBarFactory progressFactory)
         {
             this.appConfig = appConfig;
 
@@ -43,13 +40,13 @@ namespace HikConsole
             this.directoryHelper = directoryHelper;
             this.clientFactory = clientFactory;
             this.progressFactory = progressFactory;
-            this.unitOfWorkFactory = unitOfWorkFactory;
         }
 
         public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
 
-        public async Task DownloadAsync()
+        public async Task<JobResult> DownloadAsync()
         {
+            JobResult jobResult = null;
             using (this.cancelTokenSource = new CancellationTokenSource())
             {
                 TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
@@ -61,12 +58,12 @@ namespace HikConsole
 
                 try
                 {
-                    Task downloadTask = this.InternalDownload();
+                    Task<JobResult> downloadTask = this.InternalDownload();
                     Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
 
                     if (completedTask == downloadTask)
                     {
-                        await downloadTask;
+                        jobResult = await downloadTask;
                         taskCompletionSource.TrySetResult(true);
                     }
 
@@ -84,6 +81,7 @@ namespace HikConsole
             }
 
             this.cancelTokenSource = null;
+            return jobResult;
         }
 
         public void Cancel()
@@ -105,43 +103,40 @@ namespace HikConsole
             this.client = null;
         }
 
-        private async Task InternalDownload()
+        private async Task<JobResult> InternalDownload()
         {
-            using (var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork(this.appConfig.ConnectionString))
+            DateTime appStart = DateTime.Now;
+
+            this.logger.Info($"Start.");
+            DateTime periodStart = this.lastRun ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
+
+            var job = new Job { PeriodStart = periodStart, PeriodEnd = appStart, Started = appStart };
+            var jobResult = new JobResult(job);
+            bool failed = false;
+
+            foreach (var camera in this.appConfig.Cameras)
             {
-                DateTime appStart = DateTime.Now;
+                var result = await this.ProcessCameraAsync(camera, periodStart, appStart);
+                jobResult.CameraResults[camera.Alias] = result;
 
-                this.logger.Info($"Start.");
-                DateTime periodStart = this.lastRun ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
-
-                var job = await this.CreateJobInstance(periodStart, appStart, unitOfWork);
-
-                foreach (var camera in this.appConfig.Cameras)
+                if (!failed)
                 {
-                    await this.ProcessCameraAsync(camera, periodStart, appStart, job, unitOfWork);
+                    failed = result.Failed;
                 }
-
-                string duration = (DateTime.Now - appStart).ToString(DurationFormat);
-                this.logger.Info($"End. Duration  : {duration}");
-                this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
-                this.lastRun = appStart;
-
-                job.Finished = DateTime.Now;
-                await unitOfWork.SaveChangesAsync();
             }
+
+            string duration = (DateTime.Now - appStart).ToString(DurationFormat);
+            this.logger.Info($"End. Duration  : {duration}");
+            this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
+            this.lastRun = failed ? default : appStart;
+
+            job.Finished = DateTime.Now;
+            return jobResult;
         }
 
-        private async Task<Job> CreateJobInstance(DateTime periodStart, DateTime appStart, IUnitOfWork unitOfWork)
+        private async Task<CameraResult> ProcessCameraAsync(CameraConfig cameraConf, DateTime periodStart, DateTime periodEnd)
         {
-            var job = new Job { PeriodStart = periodStart, PeriodEnd = appStart, Started = DateTime.Now };
-            var repo = unitOfWork.GetRepository<Job>();
-            await repo.Add(job);
-            await unitOfWork.SaveChangesAsync();
-            return job;
-        }
-
-        private async Task ProcessCameraAsync(CameraConfig cameraConf, DateTime periodStart, DateTime periodEnd, Job job, IUnitOfWork unitOfWork)
-        {
+            var result = new CameraResult(cameraConf);
             try
             {
                 using (this.client = this.clientFactory.Create(cameraConf))
@@ -151,17 +146,16 @@ namespace HikConsole
 
                     if (this.client.Login())
                     {
-                        var camRepo = unitOfWork.GetRepository<Camera>();
-                        var cam = await camRepo.FindBy(x => x.Alias == cameraConf.Alias);
-
-                        await this.CheckClientHardDriveStatus(job.Id, cam.Id, unitOfWork);
+                        this.CheckClientHardDriveStatus(result);
 
                         this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                        await this.DownloadVideos(periodStart, periodEnd, job.Id, cam.Id, unitOfWork);
+                        var videos = await this.DownloadVideos(periodStart, periodEnd);
+                        result.DownloadedVideos.AddRange(videos);
 
                         if (cameraConf.DownloadPhotos)
                         {
-                            await this.DownloadPhotos(periodStart, periodEnd, job.Id, cam.Id, unitOfWork);
+                            var photos = await this.DownloadPhotos(periodStart, periodEnd);
+                            result.DownloadedPhotos.AddRange(photos);
                         }
 
                         this.PrintStatistic(cameraConf.DestinationFolder);
@@ -179,47 +173,33 @@ namespace HikConsole
             }
             catch (Exception ex)
             {
-                job.FailsCount++;
+                result.Failed = true;
                 ex.Data.Add("Camera", cameraConf.ToString());
                 this.HandleException(ex);
             }
+
+            return result;
         }
 
-        private async Task DownloadPhotos(
+        private async Task<IEnumerable<Photo>> DownloadPhotos(
             DateTime periodStart,
-            DateTime periodEnd,
-            int job,
-            int cam,
-            IUnitOfWork unitOfWork)
+            DateTime periodEnd)
         {
             var photos = await this.GetRemotePhotosFilesList(periodStart, periodEnd);
 
-            var photoDownloadResults = this.DownloadPhotosFromClient(photos, job, cam);
-
-            await this.SaveDownloadedPhotoResultsToDataBase(photoDownloadResults, unitOfWork);
+            return this.DownloadPhotosFromClient(photos);
         }
 
-        private async Task DownloadVideos(
+        private async Task<IEnumerable<Video>> DownloadVideos(
             DateTime periodStart,
-            DateTime periodEnd,
-            int job,
-            int cam,
-            IUnitOfWork unitOfWork)
+            DateTime periodEnd)
         {
             var videos = await this.GetRemoteVideoFilesList(periodStart, periodEnd);
 
-            var downloadedVideos = await this.DownloadVideoFilesFromClient(videos);
-
-            await this.SaveDownloadedVideoResultsToDataBase(downloadedVideos, job, cam, unitOfWork);
+            return await this.DownloadVideoFilesFromClient(videos);
         }
 
-        private async Task SaveDownloadedPhotoResultsToDataBase(List<Photo> photoDownloadResults, IUnitOfWork unitOfWork)
-        {
-            var repo = unitOfWork.GetRepository<Photo>();
-            await repo.AddRange(photoDownloadResults);
-        }
-
-        private List<Photo> DownloadPhotosFromClient(List<RemotePhotoFile> photos, int job, int cam)
+        private List<Photo> DownloadPhotosFromClient(List<RemotePhotoFile> photos)
         {
             var photoDownloadResults = new Dictionary<bool, int>
             {
@@ -228,7 +208,7 @@ namespace HikConsole
             };
 
             int j = 0;
-            var photoResult = new List<Photo>();
+            var photosFromClient = new List<Photo>();
             using (var progressBar = this.progressFactory.Create())
             {
                 foreach (RemotePhotoFile photo in photos)
@@ -243,10 +223,8 @@ namespace HikConsole
 
                     if (isDownloaded)
                     {
-                        photoResult.Add(new Photo
+                        photosFromClient.Add(new Photo
                         {
-                            CameraId = cam,
-                            JobId = job,
                             Size = photo.Size,
                             Name = photo.Name,
                             DateTaken = photo.Date,
@@ -259,7 +237,7 @@ namespace HikConsole
 
             this.logger.Info($"Exist {photoDownloadResults[false]} photos");
             this.logger.Info($"Downloaded {photoDownloadResults[true]} photos");
-            return photoResult;
+            return photosFromClient;
         }
 
         private async Task<List<RemotePhotoFile>> GetRemotePhotosFilesList(DateTime periodStart, DateTime periodEnd)
@@ -272,22 +250,7 @@ namespace HikConsole
             return photos;
         }
 
-        private async Task SaveDownloadedVideoResultsToDataBase(
-            List<Video> downloadedVideos,
-            int job,
-            int cam,
-            IUnitOfWork unitOfWork)
-        {
-            downloadedVideos.ForEach(x =>
-            {
-                x.CameraId = cam;
-                x.JobId = job;
-            });
-            var repo = unitOfWork.GetRepository<Video>();
-            await repo.AddRange(downloadedVideos);
-        }
-
-        private async Task<List<Video>> DownloadVideoFilesFromClient(List<RemoteVideoFile> videos)
+        private async Task<IEnumerable<Video>> DownloadVideoFilesFromClient(List<RemoteVideoFile> videos)
         {
             int j = 1;
             var videoResult = new List<Video>();
@@ -295,10 +258,10 @@ namespace HikConsole
             {
                 this.cancelTokenSource.Token.ThrowIfCancellationRequested();
                 this.logger.Info($"{(j++).ToString(),2}/{videos.Count} : ");
-                var res = await this.DownloadRemoteVideoFileAsync(video);
-                if (res != null)
+                var videoDownloadResult = await this.DownloadRemoteVideoFileAsync(video);
+                if (videoDownloadResult != null)
                 {
-                    videoResult.Add(res);
+                    videoResult.Add(videoDownloadResult);
                 }
             }
 
@@ -313,15 +276,12 @@ namespace HikConsole
             return videos;
         }
 
-        private async Task CheckClientHardDriveStatus(int jobId, int cameraId, IUnitOfWork unitOfWork)
+        private void CheckClientHardDriveStatus(CameraResult cameraResult)
         {
             var status = this.client.CheckHardDriveStatus();
 
-            var hdRepo = unitOfWork.GetRepository<HardDriveStatus>();
-            await hdRepo.Add(new HardDriveStatus
+            cameraResult.HardDriveStatus = new HardDriveStatus
             {
-                CameraId = cameraId,
-                JobId = jobId,
                 Capacity = status.Capacity,
                 FreeSpace = status.FreeSpace,
                 PictureCapacity = status.PictureCapacity,
@@ -330,7 +290,7 @@ namespace HikConsole
                 HdStatus = status.HdStatus,
                 HDType = status.HDType,
                 Recycling = status.Recycling,
-            });
+            };
             this.logger.Info(status.ToString());
 
             if (status.IsErrorStatus)

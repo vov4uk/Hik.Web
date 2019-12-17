@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using HikConsole.Abstraction;
 using NLog;
 
-namespace HikConsole.Service
+namespace HikConsole.Scheduler
 {
     public class DeleteArchiving : IDeleteArchiving
     {

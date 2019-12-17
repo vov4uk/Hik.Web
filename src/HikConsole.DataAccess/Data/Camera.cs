@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HikConsole.DataAccess.Data
@@ -17,5 +18,17 @@ namespace HikConsole.DataAccess.Data
         public int PortNumber { get; set; }
 
         public string UserName { get; set; }
+
+        public List<Video> Videos { get; set; } = new List<Video>();
+
+        public List<Photo> Photos { get; set; } = new List<Photo>();
+
+        public List<HardDriveStatus> HardDriveStatuses { get; set; } = new List<HardDriveStatus>();
+
+        // public int LastJob { get; set; }
+
+        // public int LastVideo { get; set; }
+
+        // public int? LastPhoto { get; set; }
     }
 }

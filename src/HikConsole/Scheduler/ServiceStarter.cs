@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Concurrency;
 using HikConsole.Config;
 using HikConsole.Helpers;
+using HikConsole.Scheduler;
 using Topshelf;
 
 namespace HikConsole.Service
