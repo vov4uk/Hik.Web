@@ -22,7 +22,7 @@ namespace HikConsole.DataAccess.Data
 
         public long Size { get; set; }
 
-        public long LocalSize { get; set; }
+        public long? LocalSize { get; set; }
 
         public DateTime DownloadStartTime { get; set; }
 

@@ -23,6 +23,16 @@ namespace HikConsole.DataAccess.Mappings
                 .HasOne(v => v.Camera)
                 .WithMany(camera => camera.Videos)
                 .HasForeignKey(v => v.CameraId);
+            builder.Property(f => f.StartTime)
+                .HasColumnType("datetime2(0)");
+            builder.Property(f => f.StopTime)
+                .HasColumnType("datetime2(0)");
+            builder.Property(f => f.DownloadStartTime)
+                .HasColumnType("datetime2(0)");
+            builder.Property(f => f.DownloadStopTime)
+                .HasColumnType("datetime2(0)");
+            builder.Property(f => f.Name)
+                .HasMaxLength(30);
         }
     }
 }

@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 using HikConsole.Abstraction;
 using HikConsole.Config;
 using HikConsole.Helpers;
-using NLog;
-using Logger = NLog.Logger;
+using ILogger = HikConsole.Abstraction.ILogger;
 
 namespace HikConsole.Scheduler
 {
     public class MonitoringInstance
     {
-        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        private readonly ILogger logger;
 
         private readonly AppConfig configuration;
 
@@ -25,7 +24,7 @@ namespace HikConsole.Scheduler
 
         private readonly IScheduler scheduler;
 
-        public MonitoringInstance(IScheduler scheduler, AppConfig configuration, HikDownloader downloader, IDeleteArchiving archiving)
+        public MonitoringInstance(IScheduler scheduler, AppConfig configuration, HikDownloader downloader, IDeleteArchiving archiving, ILogger logger)
         {
             Guard.NotNull(() => configuration, configuration);
             Guard.NotNull(() => scheduler, scheduler);
@@ -34,6 +33,7 @@ namespace HikConsole.Scheduler
             this.archiving = archiving;
             this.downloader = downloader;
             this.scheduler = scheduler;
+            this.logger = logger;
         }
 
         public bool Start()
@@ -73,28 +73,26 @@ namespace HikConsole.Scheduler
 
         private async Task<bool> Archiving()
         {
-            Log.Info("Archiving...");
+            this.logger.Info("Archiving...");
             await this.archiving.Archive("destenation", TimeSpan.FromDays(this.configuration.RetentionPeriodDays.Value)).ConfigureAwait(false);
-            Log.Info("Archiving. Done!");
+            this.logger.Info("Archiving. Done!");
             return true;
         }
 
         private async Task<bool> Download()
         {
-            Log.Info("Downloading...");
+            this.logger.Info("Downloading...");
             var result = await this.downloader.DownloadAsync();
-            Log.Info("Downloading. Done!");
+            this.logger.Info("Downloading. Done!");
 
             if (!string.IsNullOrEmpty(this.configuration.ConnectionString))
             {
-                Log.Info("Saving results to DB...");
-                var jobResultSaver = new JobResultsSaver(this.configuration.ConnectionString, result);
+                var jobResultSaver = new JobResultsSaver(this.configuration.ConnectionString, result, logger);
                 await jobResultSaver.SaveAsync();
-                Log.Info("Saving results to DB. Done!");
             }
             else
             {
-                Log.Warn("ConnectionString not provided, nothing to save to DB");
+                this.logger.Warn("ConnectionString not provided, nothing to save to DB");
             }
 
             return true;

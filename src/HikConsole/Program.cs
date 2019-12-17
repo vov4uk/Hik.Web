@@ -12,8 +12,6 @@ namespace HikConsole
     [ExcludeFromCodeCoverage]
     public static class Program
     {
-        public static IServiceProvider Container { get; private set; }
-
         public static void Main()
         {
             var container = AppBootstrapper.ConfigureIoc();
@@ -24,14 +22,14 @@ namespace HikConsole
             var downloader = container.Resolve<HikDownloader>(new TypedParameter(typeof(AppConfig), appConfig));
 
             var result = downloader.DownloadAsync().GetAwaiter().GetResult();
-            var jobResultSaver = new JobResultsSaver(appConfig.ConnectionString, result);
+            var jobResultSaver = new JobResultsSaver(appConfig.ConnectionString, result, logger);
             jobResultSaver.SaveAsync().GetAwaiter().GetResult();
 
             if (appConfig.Mode == "Recurring")
             {
                 logger.Info("Starting as service");
                 ServiceStarter serviceStarter = new ServiceStarter();
-                serviceStarter.StartService(appConfig, downloader);
+                serviceStarter.StartService(appConfig, downloader, logger);
             }
 
             WaitForExit();

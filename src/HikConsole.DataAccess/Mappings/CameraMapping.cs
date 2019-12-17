@@ -13,6 +13,15 @@ namespace HikConsole.DataAccess.Mappings
         {
             builder.ToTable(Tables.Camera, Schemas.Dbo);
             builder.HasKey(camera => camera.Id);
+
+            builder.Property(f => f.Alias)
+                .HasMaxLength(30);
+            builder.Property(f => f.DestinationFolder)
+                .HasMaxLength(255);
+            builder.Property(f => f.IpAddress)
+                .HasMaxLength(30);
+            builder.Property(f => f.UserName)
+                .HasMaxLength(30);
         }
     }
 }

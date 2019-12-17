@@ -42,8 +42,8 @@ namespace HikApi.Data
             sb.AppendLine($"PictureCapacity  {ToGB(PictureCapacity)}");
             sb.AppendLine($"FreePictureSpace {ToGB(FreePictureSpace)}");
             sb.AppendLine($"HdStatus         {(HdStatuses.TryGetValue(HdStatus, out var status) ? status : "unknown")}");
-            sb.AppendLine($"HDAttr           {(HdAttributes.TryGetValue(HdStatus, out var atr) ? atr : "unknown")}");
-            sb.AppendLine($"HDType           {(HdTypes.TryGetValue(HdStatus, out var hdType) ? hdType : "unknown")}");
+            sb.AppendLine($"HDAttr           {(HdAttributes.TryGetValue(HDAttr, out var atr) ? atr : "unknown")}");
+            sb.AppendLine($"HDType           {(HdTypes.TryGetValue(HDType, out var hdType) ? hdType : "unknown")}");
             sb.AppendLine($"Recycling        {Convert.ToString(Recycling)}");
 
             return sb.ToString();
@@ -90,7 +90,7 @@ namespace HikApi.Data
 
         private string ToGB(uint mb)
         {
-            return $"{mb / 1024.0:0.00} GB";
+            return $"{mb / 1024.0:0.00} GB ({mb} Mb)";
         }
     }
 }

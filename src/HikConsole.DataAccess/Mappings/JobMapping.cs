@@ -13,6 +13,15 @@ namespace HikConsole.DataAccess.Mappings
         {
             builder.ToTable(Tables.Job, Schemas.Dbo);
             builder.HasKey(job => job.Id);
+
+            builder.Property(f => f.Started)
+                .HasColumnType("datetime2(0)"); 
+            builder.Property(f => f.Finished)
+                .HasColumnType("datetime2(0)");
+            builder.Property(f => f.PeriodEnd)
+                .HasColumnType("datetime2(0)");    
+            builder.Property(f => f.PeriodStart)
+                .HasColumnType("datetime2(0)");
         }
     }
 }

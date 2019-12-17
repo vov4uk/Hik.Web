@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Concurrency;
+using HikConsole.Abstraction;
 using HikConsole.Config;
 using HikConsole.Helpers;
 using HikConsole.Scheduler;
@@ -8,7 +9,7 @@ namespace HikConsole.Service
 {
     public class ServiceStarter
     {
-        public void StartService(AppConfig config, HikDownloader downloader)
+        public void StartService(AppConfig config, HikDownloader downloader, ILogger logger)
         {
             Guard.NotNull(() => config, config);
 
@@ -18,7 +19,7 @@ namespace HikConsole.Service
                     x.Service<MonitoringInstance>(
                         s =>
                         {
-                            s.ConstructUsing(name => new MonitoringInstance(TaskPoolScheduler.Default, config, downloader, new DeleteArchiving()));
+                            s.ConstructUsing(name => new MonitoringInstance(TaskPoolScheduler.Default, config, downloader, new DeleteArchiving(), logger));
                             s.WhenStarted(tc => tc.Start());
                             s.WhenStopped(tc => tc.Stop());
                         });
