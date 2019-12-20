@@ -18,7 +18,7 @@ namespace HikConsole.DataAccess.Mappings
                 .HasOne(v => v.Job)
                 .WithMany(job => job.Videos)
                 .HasForeignKey(v => v.JobId);
-            
+
             builder
                 .HasOne(v => v.Camera)
                 .WithMany(camera => camera.Videos)

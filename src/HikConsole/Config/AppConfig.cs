@@ -27,9 +27,9 @@ namespace HikConsole.Config
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine();
-            sb.AppendLine($"Mode        : {this.Mode}");
-            sb.AppendLine($"Interval    : {this.Interval.ToString()}m");
-            sb.AppendLine($"Period      : {this.ProcessingPeriodHours.ToString()}h");
+            sb.AppendLine($"{"Mode",-24}: {this.Mode}");
+            sb.AppendLine($"{"Interval",-24}: {this.Interval.ToString()}m");
+            sb.AppendLine($"{"Period",-24}: {this.ProcessingPeriodHours.ToString()}h");
 
             return sb.ToString();
         }

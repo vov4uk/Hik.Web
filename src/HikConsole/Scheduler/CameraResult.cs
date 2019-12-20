@@ -11,6 +11,7 @@ namespace HikConsole.Scheduler
             this.Config = config;
             this.DownloadedPhotos = new List<Photo>();
             this.DownloadedVideos = new List<Video>();
+            this.DeletedFiles = new List<DeletedFile>();
         }
 
         public CameraConfig Config { get; }
@@ -20,6 +21,8 @@ namespace HikConsole.Scheduler
         public List<Video> DownloadedVideos { get; }
 
         public List<Photo> DownloadedPhotos { get; }
+
+        public List<DeletedFile> DeletedFiles { get; }
 
         public HardDriveStatus HardDriveStatus { get; set; }
     }

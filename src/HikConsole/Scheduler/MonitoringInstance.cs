@@ -74,8 +74,19 @@ namespace HikConsole.Scheduler
         private async Task<bool> Archiving()
         {
             this.logger.Info("Archiving...");
-            await this.archiving.Archive("destenation", TimeSpan.FromDays(this.configuration.RetentionPeriodDays.Value)).ConfigureAwait(false);
+            var result = this.archiving.Archive(new CameraConfig[] { }, TimeSpan.FromDays(this.configuration.RetentionPeriodDays.Value));
             this.logger.Info("Archiving. Done!");
+
+            if (!string.IsNullOrEmpty(this.configuration.ConnectionString))
+            {
+                var jobResultSaver = new JobResultsSaver(this.configuration.ConnectionString, result, this.logger);
+                await jobResultSaver.SaveAsync();
+            }
+            else
+            {
+                this.logger.Warn("ConnectionString not provided, nothing to save to DB");
+            }
+
             return true;
         }
 
@@ -87,7 +98,7 @@ namespace HikConsole.Scheduler
 
             if (!string.IsNullOrEmpty(this.configuration.ConnectionString))
             {
-                var jobResultSaver = new JobResultsSaver(this.configuration.ConnectionString, result, logger);
+                var jobResultSaver = new JobResultsSaver(this.configuration.ConnectionString, result, this.logger);
                 await jobResultSaver.SaveAsync();
             }
             else

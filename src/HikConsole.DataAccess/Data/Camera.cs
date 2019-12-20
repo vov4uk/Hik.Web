@@ -25,6 +25,8 @@ namespace HikConsole.DataAccess.Data
 
         public List<HardDriveStatus> HardDriveStatuses { get; set; } = new List<HardDriveStatus>();
 
+        public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();
+
         // public int LastJob { get; set; }
 
         // public int LastVideo { get; set; }

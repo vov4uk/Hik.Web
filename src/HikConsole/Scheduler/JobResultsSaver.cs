@@ -33,8 +33,10 @@ namespace HikConsole.Scheduler
                     var videoRepo = unitOfWork.GetRepository<Video>();
                     var photoRepo = unitOfWork.GetRepository<Photo>();
                     var cameraRepo = unitOfWork.GetRepository<Camera>();
+                    var deletedFilesRepo = unitOfWork.GetRepository<DeletedFile>();
 
                     await jobRepo.Add(this.result.Job);
+                    await unitOfWork.SaveChangesAsync();
 
                     foreach (var cameraResult in this.result.CameraResults)
                     {
@@ -47,9 +49,14 @@ namespace HikConsole.Scheduler
 
                         this.result.Job.FailsCount += cameraResult.Value.Failed ? 1 : 0;
 
-                        await hdRepo.Add(cameraResult.Value.HardDriveStatus);
+                        if (cameraResult.Value.HardDriveStatus != null)
+                        {
+                            await hdRepo.Add(cameraResult.Value.HardDriveStatus);
+                        }
+
                         await videoRepo.AddRange(cameraResult.Value.DownloadedVideos);
                         await photoRepo.AddRange(cameraResult.Value.DownloadedPhotos);
+                        await deletedFilesRepo.AddRange(cameraResult.Value.DeletedFiles);
 
                         await unitOfWork.SaveChangesAsync(this.result.Job, camera);
                     }

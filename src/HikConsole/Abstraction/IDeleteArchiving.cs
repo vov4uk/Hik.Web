@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
+using HikConsole.Config;
+using HikConsole.Scheduler;
 
 namespace HikConsole.Abstraction
 {
     public interface IDeleteArchiving
     {
-        Task Archive(string destination, TimeSpan time);
+        JobResult Archive(CameraConfig[] cameras, TimeSpan time);
     }
 }

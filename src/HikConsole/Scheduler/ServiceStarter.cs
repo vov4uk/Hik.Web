@@ -19,7 +19,7 @@ namespace HikConsole.Service
                     x.Service<MonitoringInstance>(
                         s =>
                         {
-                            s.ConstructUsing(name => new MonitoringInstance(TaskPoolScheduler.Default, config, downloader, new DeleteArchiving(), logger));
+                            s.ConstructUsing(name => new MonitoringInstance(TaskPoolScheduler.Default, config, downloader, new DeleteArchiving(logger), logger));
                             s.WhenStarted(tc => tc.Start());
                             s.WhenStopped(tc => tc.Stop());
                         });

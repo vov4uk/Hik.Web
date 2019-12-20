@@ -26,12 +26,17 @@ namespace HikConsole.Config
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine();
-            sb.AppendLine($"Alias       : {this.Alias}");
-            sb.AppendLine($"Destination : {this.DestinationFolder}");
-            sb.AppendLine($"IP Address  : {this.IpAddress}:{this.PortNumber.ToString()}");
-            sb.AppendLine($"User name   : {this.UserName}");
+            sb.AppendLine(this.GetRow("Alias", this.Alias));
+            sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
+            sb.AppendLine(this.GetRow("IP Address", $"{this.IpAddress}:{this.PortNumber.ToString()}"));
+            sb.AppendLine(this.GetRow("User name", this.UserName));
 
             return sb.ToString();
+        }
+
+        private string GetRow(string field, string value)
+        {
+            return $"{field,-24}: {value}";
         }
     }
 }

@@ -37,14 +37,14 @@ namespace HikApi.Data
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine();
-            sb.AppendLine($"Capacity         {ToGB(Capacity)}");
-            sb.AppendLine($"FreeSpace        {ToGB(FreeSpace)}");
-            sb.AppendLine($"PictureCapacity  {ToGB(PictureCapacity)}");
-            sb.AppendLine($"FreePictureSpace {ToGB(FreePictureSpace)}");
-            sb.AppendLine($"HdStatus         {(HdStatuses.TryGetValue(HdStatus, out var status) ? status : "unknown")}");
-            sb.AppendLine($"HDAttr           {(HdAttributes.TryGetValue(HDAttr, out var atr) ? atr : "unknown")}");
-            sb.AppendLine($"HDType           {(HdTypes.TryGetValue(HDType, out var hdType) ? hdType : "unknown")}");
-            sb.AppendLine($"Recycling        {Convert.ToString(Recycling)}");
+            sb.AppendLine(GetRow(nameof(Capacity), ToGB(Capacity)));
+            sb.AppendLine(GetRow(nameof(FreeSpace), ToGB(FreeSpace)));
+            sb.AppendLine(GetRow(nameof(PictureCapacity), ToGB(PictureCapacity)));
+            sb.AppendLine(GetRow(nameof(FreePictureSpace), ToGB(FreePictureSpace)));
+            sb.AppendLine(GetRow(nameof(HdStatus), (HdStatuses.TryGetValue(HdStatus, out var status) ? status : "unknown")));
+            sb.AppendLine(GetRow(nameof(HDAttr), (HdAttributes.TryGetValue(HDAttr, out var atr) ? atr : "unknown")));
+            sb.AppendLine(GetRow(nameof(HDType), (HdTypes.TryGetValue(HDType, out var hdType) ? hdType : "unknown")));
+            sb.AppendLine(GetRow(nameof(Recycling), Convert.ToString(Recycling)));
 
             return sb.ToString();
         }
@@ -91,6 +91,11 @@ namespace HikApi.Data
         private string ToGB(uint mb)
         {
             return $"{mb / 1024.0:0.00} GB ({mb} Mb)";
+        }
+
+        private string GetRow(string field, string value)
+        {
+            return $"{field,-24}: {value}";
         }
     }
 }

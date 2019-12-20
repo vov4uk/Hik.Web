@@ -44,6 +44,8 @@ namespace HikConsole.Scheduler
 
         public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
 
+        public AppConfig Config { get => this.appConfig; }
+
         public async Task<JobResult> DownloadAsync()
         {
             JobResult jobResult = null;
@@ -110,7 +112,7 @@ namespace HikConsole.Scheduler
             this.logger.Info($"Start.");
             DateTime periodStart = this.lastRun ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
 
-            var job = new Job { PeriodStart = periodStart, PeriodEnd = appStart, Started = appStart };
+            var job = new Job { PeriodStart = periodStart, PeriodEnd = appStart, Started = appStart, JobType = nameof(HikDownloader) };
             var jobResult = new JobResult(job);
             bool failed = false;
 
@@ -128,7 +130,7 @@ namespace HikConsole.Scheduler
             string duration = (DateTime.Now - appStart).ToString(DurationFormat);
             this.logger.Info($"End. Duration  : {duration}");
             this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
-            this.lastRun = failed ? default : appStart;
+            this.lastRun = failed ? periodStart : appStart;
 
             job.Finished = DateTime.Now;
             return jobResult;
@@ -304,8 +306,8 @@ namespace HikConsole.Scheduler
             StringBuilder statisticsSb = new StringBuilder();
             statisticsSb.AppendLine();
             statisticsSb.AppendLine();
-            statisticsSb.AppendLine($"Directory Size : {Utils.FormatBytes(this.directoryHelper.DirSize(destinationFolder))}");
-            statisticsSb.AppendLine($"Free space     : {Utils.FormatBytes(this.directoryHelper.GetTotalFreeSpace(destinationFolder))}");
+            statisticsSb.AppendLine($"{"Directory Size",-24}: {Utils.FormatBytes(this.directoryHelper.DirSize(destinationFolder))}");
+            statisticsSb.AppendLine($"{"Free space",-24}: {Utils.FormatBytes(this.directoryHelper.GetTotalFreeSpace(destinationFolder))}");
             statisticsSb.AppendLine(new string('_', 40)); // separator
 
             this.logger.Info(statisticsSb.ToString());
