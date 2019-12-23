@@ -5,13 +5,13 @@ namespace HikConsole.Scheduler
 {
     public class JobResult
     {
-        public JobResult(Job job)
+        public JobResult(HikJob job)
         {
             this.Job = job;
             this.CameraResults = new Dictionary<string, CameraResult>();
         }
 
-        public Job Job { get; }
+        public HikJob Job { get; }
 
         public Dictionary<string, CameraResult> CameraResults { get; }
     }

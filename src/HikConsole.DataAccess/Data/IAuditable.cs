@@ -12,6 +12,6 @@ namespace HikConsole.DataAccess.Data
 
         Camera Camera { get; set; }
 
-        Job Job { get; set; }
+        HikJob Job { get; set; }
     }
 }

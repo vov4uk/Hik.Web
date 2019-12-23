@@ -2,9 +2,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace HikWeb
@@ -19,7 +20,7 @@ namespace HikWeb
 
             if (isService)
             {
-                var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
+                var pathToExe = Process.GetCurrentProcess().MainModule?.FileName;
                 var pathToContentRoot = Path.GetDirectoryName(pathToExe);
                 builder.UseContentRoot(pathToContentRoot);
             }
@@ -38,9 +39,19 @@ namespace HikWeb
 
         public static IWebHostBuilder CreateHostBuilder(bool isService, string[] args)
         {
+            var env = isService ? "Production" : "Development";
+            var config = new ConfigurationBuilder()
+            .SetBasePath(AssemblyDirectory)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
+            .AddCommandLine(args)
+            .Build();
+
             return new WebHostBuilder()
                 .UseKestrel()
-                .UseIISIntegration()
+                .UseEnvironment(env)
+                .UseConfiguration(config)
+                .UseIISIntegration()                
                 .UseStartup<Startup>()
                 .ConfigureLogging(logging =>
                 {
@@ -49,6 +60,17 @@ namespace HikWeb
                     logging.AddConsole();
                 })
                 .UseUrls(isService ? "http://+:5000" : "http://+:4000");
+        }
+
+        private static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -43,8 +44,6 @@ namespace HikConsole.Scheduler
         }
 
         public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
-
-        public AppConfig Config { get => this.appConfig; }
 
         public async Task<JobResult> DownloadAsync()
         {
@@ -110,9 +109,9 @@ namespace HikConsole.Scheduler
             DateTime appStart = DateTime.Now;
 
             this.logger.Info($"Start.");
-            DateTime periodStart = this.lastRun ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
+            DateTime periodStart = this.lastRun?.AddMinutes(-1) ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
 
-            var job = new Job { PeriodStart = periodStart, PeriodEnd = appStart, Started = appStart, JobType = nameof(HikDownloader) };
+            var job = new HikJob { PeriodStart = periodStart, PeriodEnd = appStart, Started = appStart, JobType = nameof(HikDownloader) };
             var jobResult = new JobResult(job);
             bool failed = false;
 
@@ -129,7 +128,7 @@ namespace HikConsole.Scheduler
 
             string duration = (DateTime.Now - appStart).ToString(DurationFormat);
             this.logger.Info($"End. Duration  : {duration}");
-            this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString()}");
+            this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString(CultureInfo.InvariantCulture)}");
             this.lastRun = failed ? periodStart : appStart;
 
             job.Finished = DateTime.Now;

@@ -1,11 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using Autofac;
 using HikConsole.Abstraction;
 using HikConsole.Config;
 using HikConsole.Infrastructure;
 using HikConsole.Scheduler;
-using HikConsole.Service;
 
 namespace HikConsole
 {
@@ -27,9 +27,13 @@ namespace HikConsole
 
             if (appConfig.Mode == "Recurring")
             {
-                logger.Info("Starting as service");
-                ServiceStarter serviceStarter = new ServiceStarter();
-                serviceStarter.StartService(appConfig, downloader, logger);
+                logger.Info("Starting Recurring");
+                var interval = appConfig.Interval * 60 * 1000;
+                using (Timer timer = new Timer(async (o) => await downloader.DownloadAsync(), null, interval, interval))
+                {
+                    WaitForExit();
+                    downloader?.Cancel();
+                }
             }
 
             WaitForExit();

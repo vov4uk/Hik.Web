@@ -1,10 +1,68 @@
 ﻿@page
-@model IndexModel
+@model HikWeb.Pages.IndexModel
+
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Index";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Jobs[0].JobType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Jobs[0].Started)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Jobs[0].Finished)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Jobs[0].PeriodStart)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Jobs[0].PeriodEnd)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Jobs[0].PhotosCount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Jobs[0].VideosCount)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Jobs)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.JobType)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Started)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Finished)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PeriodStart)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PeriodEnd)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PhotosCount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.VideosCount)
+                </td>
+                <td>
+                    <a asp-page="./Details" asp-route-id="@item.Id" asp-route-jobType="@item.JobType">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

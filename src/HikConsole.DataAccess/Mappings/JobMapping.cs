@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace HikConsole.DataAccess.Mappings
 {
     [ExcludeFromCodeCoverage]
-    public sealed class JobMapping : IEntityTypeConfiguration<Job>
+    public sealed class JobMapping : IEntityTypeConfiguration<HikJob>
     {
-        public void Configure(EntityTypeBuilder<Job> builder)
+        public void Configure(EntityTypeBuilder<HikJob> builder)
         {
             builder.ToTable(Tables.Job, Schemas.Dbo);
             builder.HasKey(job => job.Id);

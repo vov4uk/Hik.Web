@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using HikConsole.Abstraction;
 using HikConsole.Config;
@@ -28,15 +30,9 @@ namespace HikConsole.Scheduler
             {
                 using (var unitOfWork = new UnitOfWorkFactory().CreateUnitOfWork(this.connectionString))
                 {
-                    var jobRepo = unitOfWork.GetRepository<Job>();
-                    var hdRepo = unitOfWork.GetRepository<HardDriveStatus>();
-                    var videoRepo = unitOfWork.GetRepository<Video>();
-                    var photoRepo = unitOfWork.GetRepository<Photo>();
+                    var jobRepo = unitOfWork.GetRepository<HikJob>();
                     var cameraRepo = unitOfWork.GetRepository<Camera>();
-                    var deletedFilesRepo = unitOfWork.GetRepository<DeletedFile>();
-
                     await jobRepo.Add(this.result.Job);
-                    await unitOfWork.SaveChangesAsync();
 
                     foreach (var cameraResult in this.result.CameraResults)
                     {
@@ -48,16 +44,15 @@ namespace HikConsole.Scheduler
                         }
 
                         this.result.Job.FailsCount += cameraResult.Value.Failed ? 1 : 0;
+                        this.result.Job.PhotosCount += cameraResult.Value.DownloadedPhotos.Count;
+                        this.result.Job.VideosCount += cameraResult.Value.DownloadedVideos.Count;
+                        this.result.Job.PhotosCount += cameraResult.Value.DeletedFiles.Count(x => x.Extention == ".jpg");
+                        this.result.Job.VideosCount += cameraResult.Value.DeletedFiles.Count(x => x.Extention == ".mp4");
 
-                        if (cameraResult.Value.HardDriveStatus != null)
-                        {
-                            await hdRepo.Add(cameraResult.Value.HardDriveStatus);
-                        }
-
-                        await videoRepo.AddRange(cameraResult.Value.DownloadedVideos);
-                        await photoRepo.AddRange(cameraResult.Value.DownloadedPhotos);
-                        await deletedFilesRepo.AddRange(cameraResult.Value.DeletedFiles);
-
+                        await this.AddEntities<Video>(cameraResult.Value.DownloadedVideos, unitOfWork);
+                        await this.AddEntities<Photo>(cameraResult.Value.DownloadedPhotos, unitOfWork);
+                        await this.AddEntities<DeletedFile>(cameraResult.Value.DeletedFiles, unitOfWork);
+                        await this.AddEntities(cameraResult.Value.HardDriveStatus, unitOfWork);
                         await unitOfWork.SaveChangesAsync(this.result.Job, camera);
                     }
                 }
@@ -81,6 +76,30 @@ namespace HikConsole.Scheduler
                 UserName = cameraConf.UserName,
             };
             return cam;
+        }
+
+        private Task AddEntities<TEntity>(IEnumerable<TEntity> entities, IUnitOfWork unitOfWork)
+            where TEntity : class
+        {
+            if (entities != null && entities.Any())
+            {
+                var repo = unitOfWork.GetRepository<TEntity>();
+                return repo.AddRange(entities);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private Task AddEntities<TEntity>(TEntity entity, IUnitOfWork unitOfWork)
+            where TEntity : class
+        {
+            if (entity != null)
+            {
+                var repo = unitOfWork.GetRepository<TEntity>();
+                return repo.Add(entity).AsTask();
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

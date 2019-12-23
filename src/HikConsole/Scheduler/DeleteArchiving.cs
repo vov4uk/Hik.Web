@@ -17,27 +17,33 @@ namespace HikConsole.Scheduler
             this.logger = log;
         }
 
-        public JobResult Archive(CameraConfig[] cameras, TimeSpan time)
+        public Task<JobResult> Archive(CameraConfig[] cameras, TimeSpan time)
         {
-            DateTime appStart = DateTime.Now;
-
-            this.logger.Info($"Start.");
-            DateTime cutOff = DateTime.Today.Subtract(time);
-
-            var job = new Job { PeriodStart = default, PeriodEnd = cutOff, Started = appStart, JobType = nameof(DeleteArchiving) };
-            var jobResult = new JobResult(job);
-
-            foreach (var x in cameras)
+            return Task.Run(() =>
             {
-                var failCount = this.ArchiveInternal(x.DestinationFolder, cutOff);
-                job.FailsCount += failCount;
-            }
+                DateTime appStart = DateTime.Now;
 
-            job.Finished = DateTime.Now;
-            return jobResult;
+                this.logger.Info("Start.");
+                DateTime cutOff = DateTime.Today.Subtract(time);
+
+                var job = new HikJob { PeriodStart = default, PeriodEnd = cutOff, Started = appStart, JobType = nameof(DeleteArchiving) };
+                var jobResult = new JobResult(job);
+
+                foreach (var x in cameras)
+                {
+                    var cameraResult = new CameraResult(x);
+                    jobResult.CameraResults.Add(x.Alias, cameraResult);
+
+                    var failCount = this.ArchiveInternal(x.DestinationFolder, cutOff, cameraResult);
+                    job.FailsCount += failCount;
+                }
+
+                job.Finished = DateTime.Now;
+                return jobResult;
+            });
         }
 
-        private int ArchiveInternal(string destination, DateTime cutOff)
+        private int ArchiveInternal(string destination, DateTime cutOff, CameraResult camResult)
         {
             int failCount = 0;
             if (!Directory.Exists(destination))
@@ -49,7 +55,7 @@ namespace HikConsole.Scheduler
             var files = Directory.EnumerateFiles(destination, "*.mp4", SearchOption.AllDirectories).ToList();
             files.AddRange(Directory.EnumerateFiles(destination, "*.jpg", SearchOption.AllDirectories).ToList());
             this.logger.Info($"Destination: {destination}");
-            this.logger.Info($"Found: {files.Count()} files");
+            this.logger.Info($"Found: {files.Count} files");
 
             Parallel.ForEach(
                 files,
@@ -58,8 +64,7 @@ namespace HikConsole.Scheduler
                     try
                     {
                         var fileName = Path.GetFileName(file);
-                        DateTime date;
-                        if (!DateTime.TryParseExact(fileName.Substring(0, 8), "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out date))
+                        if (!DateTime.TryParseExact(fileName.Substring(0, 8), "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out var date))
                         {
                             var fileInfo = new FileInfo(file);
                             date = fileInfo.CreationTime;
@@ -69,6 +74,7 @@ namespace HikConsole.Scheduler
                         {
                             this.logger.Debug($"Deleting: {file}");
                             File.Delete(file);
+                            camResult.DeletedFiles.Add(new DeletedFile() { FilePath = fileName, Extention = Path.GetExtension(file) });
                         }
                     }
                     catch (Exception ex)

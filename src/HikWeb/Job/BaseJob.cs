@@ -10,14 +10,12 @@ namespace HikWeb.Job
 {
     public abstract class BaseJob : IJob
     {
-        protected static ILogger logger;
-        protected static AppConfig appConfig;
+        protected static readonly ILogger Logger = Logger = AppBootstrapper.Container.Resolve<ILogger>();
+
+        protected static readonly AppConfig Config = AppBootstrapper.Container.Resolve<IHikConfig>().Config;
         static BaseJob()
         {
-            var container = AppBootstrapper.ConfigureIoc();
-            appConfig = container.Resolve<IHikConfig>().Config;
-            logger = container.Resolve<ILogger>();
-            logger.Info(appConfig.ToString());            
+            Logger.Info(Config.ToString());
         }
 
         public abstract Task InternalExecute(IJobExecutionContext context);
@@ -26,15 +24,15 @@ namespace HikWeb.Job
         {
             var currentJobs = await context.Scheduler.GetCurrentlyExecutingJobs();
 
-            if (currentJobs.Any(x => x.JobDetail.Key == context.JobDetail.Key && x.FireInstanceId != context.FireInstanceId))
+            if (currentJobs.Any(x => Equals(x.JobDetail.Key, context.JobDetail.Key) && x.FireInstanceId != context.FireInstanceId))
             {
-                logger.Info($"{context.JobDetail.Key} Already running. Skip!");
+                Logger.Info($"{context.JobDetail.Key} Already running. Skip!");
                 return;
             }
 
-            logger.Info($"{context.JobDetail.Key} Execution started");
+            Logger.Info($"{context.JobDetail.Key} Execution started");
             await this.InternalExecute(context);
-            logger.Info($"{context.JobDetail.Key} Execution finished");
+            Logger.Info($"{context.JobDetail.Key} Execution finished");
         }
     }
 }

@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-	  <RuntimeIdentifiers>win10-x64;</RuntimeIdentifiers>
-	  <OutputType>Exe</OutputType>
+    <RuntimeIdentifiers>win10-x64;</RuntimeIdentifiers>
+    <OutputType>Exe</OutputType>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,18 +28,21 @@
   </ItemGroup>
 
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
-		<PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0" />
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.9.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
     <PackageReference Include="Quartz" Version="3.0.7" />
     <PackageReference Include="Quartz.Plugins" Version="3.0.7" />
     <PackageReference Include="Quartz.Serialization.Json" Version="3.0.7" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.7.0" />
-	</ItemGroup>
+  </ItemGroup>
 
 
-	<ItemGroup>
-	  <ProjectReference Include="..\HikConsole\HikConsole.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HikConsole.DataAccess\HikConsole.DataAccess.csproj" />
+    <ProjectReference Include="..\HikConsole\HikConsole.csproj" />
+  </ItemGroup>
 
 </Project>

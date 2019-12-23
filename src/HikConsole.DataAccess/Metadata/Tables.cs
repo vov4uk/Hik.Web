@@ -10,5 +10,6 @@ namespace HikConsole.DataAccess.Metadata
         public const string Job = nameof(Job);
         public const string Camera = nameof(Camera);
         public const string HardDriveStatus = nameof(HardDriveStatus);
+        public const string DeletedFiles = nameof(DeletedFiles);
     }
 }

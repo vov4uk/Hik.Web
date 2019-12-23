@@ -11,7 +11,7 @@ namespace HikConsole.DataAccess
 
         Task<int> SaveChangesAsync();
 
-        Task<int> SaveChangesAsync(Job job, Camera camera);
+        Task<int> SaveChangesAsync(HikJob job, Camera camera);
     }
 
     public interface IUnitOfWork<out TContext> : IUnitOfWork where TContext : DbContext

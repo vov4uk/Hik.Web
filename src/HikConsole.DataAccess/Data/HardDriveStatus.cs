@@ -32,6 +32,6 @@ namespace HikConsole.DataAccess.Data
 
         public virtual Camera Camera { get; set; }
 
-        public virtual Job Job { get; set; }
+        public virtual HikJob Job { get; set; }
     }
 }

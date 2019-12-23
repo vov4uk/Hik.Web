@@ -42,6 +42,10 @@ namespace HikConsole.DataAccess
             return await result.ToListAsync();
         }
 
+        public virtual Task<List<T>> Last(int last)
+        {
+            return ctx.Set<T>().OrderByDescending(x=>x).Take(last).ToListAsync();
+        }
 
         public virtual async Task<List<T>> SearchBy(Expression<Func<T, bool>> searchBy,
             params Expression<Func<T, object>>[] includes)

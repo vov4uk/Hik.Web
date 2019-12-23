@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace HikConsole.DataAccess.Data
 {
     [Table("Job")]
-    public class Job
+    public class HikJob
     {
         [Key]
         public int Id { get; set; }
@@ -22,6 +22,10 @@ namespace HikConsole.DataAccess.Data
         public DateTime Started { get; set; }
 
         public DateTime Finished { get; set; }
+
+        public int PhotosCount { get; set; }
+
+        public int VideosCount { get; set; }
 
         public List<Video> Videos { get; set; } = new List<Video>();
 

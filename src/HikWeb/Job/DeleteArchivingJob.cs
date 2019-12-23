@@ -7,11 +7,11 @@ namespace HikWeb.Job
 {
     public class DeleteArchivingJob : BaseJob
     {
-        public async override Task InternalExecute(IJobExecutionContext context)
+        public override async Task InternalExecute(IJobExecutionContext context)
         {
-            var archivingJob = new DeleteArchiving(logger);
-            var result = archivingJob.Archive(appConfig.Cameras, TimeSpan.FromDays(appConfig.RetentionPeriodDays.Value));
-            var jobResultSaver = new JobResultsSaver(appConfig.ConnectionString, result, logger);
+            var archivingJob = new DeleteArchiving(Logger);
+            var result = await archivingJob.Archive(Config.Cameras, TimeSpan.FromDays(Config.RetentionPeriodDays.Value));
+            var jobResultSaver = new JobResultsSaver(Config.ConnectionString, result, Logger);
             await jobResultSaver.SaveAsync();
         }
     }

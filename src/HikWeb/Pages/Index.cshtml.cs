@@ -1,25 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using HikConsole.DataAccess;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using HikConsole.DataAccess.Data;
+using System.Linq;
 
 namespace HikWeb.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
+        private readonly DataContext dataContext;
 
-        public IndexModel(ILogger<IndexModel> logger)
+        public IndexModel(DataContext dataContext)
         {
-            _logger = logger;
+            this.dataContext = dataContext;
+            dataContext.Database.EnsureCreated();
         }
 
-        public void OnGet()
-        {
+        public IList<HikJob> Jobs { get; set; }
 
+        public void OnGetAsync()
+        {
+            var repo = dataContext.Jobs.OrderByDescending(x=>x.Id).Take(25);
+            Jobs = repo.ToList();
         }
     }
 }

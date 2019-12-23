@@ -8,7 +8,7 @@ namespace HikConsole.DataAccess
     {
         private readonly string ConnectionString;
         public DataContext(DbContextOptions<DataContext> options)
-            : base(options) { }
+            : base(options) {}
 
         public DataContext(string connection)
             : base()
@@ -16,17 +16,20 @@ namespace HikConsole.DataAccess
             ConnectionString = connection;
         }
 
-        public DbSet<Job> Jobs { get; set; }
+        public DbSet<HikJob> Jobs { get; set; }
         public DbSet<Camera> Cameras { get; set; }
         public DbSet<Video> Videos { get; set; }
         public DbSet<Photo> Photos { get; set; }
         public DbSet<HardDriveStatus> HDStatus { get; set; }
+        public DbSet<DeletedFile> DeletedFiles { get; set; }
 
-        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlServer(ConnectionString);
+            if (!string.IsNullOrEmpty(ConnectionString))
+            {
+                optionsBuilder.UseSqlServer(ConnectionString);
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,6 +38,7 @@ namespace HikConsole.DataAccess
                 .ApplyConfiguration(new VideoMapping())
                 .ApplyConfiguration(new PhotoMapping())
                 .ApplyConfiguration(new JobMapping())
+                .ApplyConfiguration(new DeletedFileMappings())
                 .ApplyConfiguration(new CameraMapping())
                 .ApplyConfiguration(new HardDriveStatusMapping());
 

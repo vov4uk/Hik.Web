@@ -11,6 +11,21 @@ namespace HikConsole.Infrastructure
     [ExcludeFromCodeCoverage]
     public static class AppBootstrapper
     {
+        private static IContainer container = null;
+
+        public static IContainer Container
+        {
+            get
+            {
+                if (container == null)
+                {
+                    container = ConfigureIoc();
+                }
+
+                return container;
+            }
+        }
+
         public static IContainer ConfigureIoc()
         {
             var builder = new ContainerBuilder();

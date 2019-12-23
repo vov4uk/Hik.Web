@@ -36,7 +36,7 @@ namespace HikConsole.DataAccess
             return Context.SaveChangesAsync();
         }
 
-        public async Task<int> SaveChangesAsync(Job job, Camera camera)
+        public async Task<int> SaveChangesAsync(HikJob job, Camera camera)
         {
             this.ProcessAuditItems(job, camera);
             var res = await this.SaveChangesAsync();
@@ -62,7 +62,7 @@ namespace HikConsole.DataAccess
             }
         }
 
-        private void ProcessAuditItems(Job job, Camera camera)
+        private void ProcessAuditItems(HikJob job, Camera camera)
         {
             foreach (var entity in this.Context.ChangeTracker
                 .Entries()
