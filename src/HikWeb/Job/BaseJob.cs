@@ -1,10 +1,14 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using HikConsole.Abstraction;
 using HikConsole.Config;
 using HikConsole.Infrastructure;
 using Quartz;
 using System.Linq;
 using System.Threading.Tasks;
+using HikConsole.DataAccess;
+using HikConsole.DataAccess.Data;
+using HikConsole.Scheduler;
 
 namespace HikWeb.Job
 {
@@ -18,7 +22,7 @@ namespace HikWeb.Job
             Logger.Info(Config.ToString());
         }
 
-        public abstract Task InternalExecute(IJobExecutionContext context);
+        public abstract Task<JobResult> InternalExecute(IJobExecutionContext context);
 
         public async Task Execute(IJobExecutionContext context)
         {
@@ -31,7 +35,27 @@ namespace HikWeb.Job
             }
 
             Logger.Info($"{context.JobDetail.Key} Execution started");
-            await this.InternalExecute(context);
+
+            var job = new HikJob
+            {
+                Started = DateTime.Now,
+                JobType = context.JobDetail.Key.Name
+            };
+
+            using (var unitOfWork = new UnitOfWorkFactory().CreateUnitOfWork(Config.ConnectionString))
+            {
+                var jobRepo = unitOfWork.GetRepository<HikJob>();
+                await jobRepo.Add(job);
+                await unitOfWork.SaveChangesAsync();
+            }
+
+            var result = await this.InternalExecute(context);
+
+            job.Finished = DateTime.Now;
+
+            var jobResultSaver = new JobResultsSaver(Config.ConnectionString, job, result, Logger);
+            await jobResultSaver.SaveAsync();
+
             Logger.Info($"{context.JobDetail.Key} Execution finished");
         }
     }

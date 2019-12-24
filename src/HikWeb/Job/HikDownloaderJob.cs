@@ -11,11 +11,10 @@ namespace HikWeb.Job
     {
         static readonly HikDownloader Downloader = AppBootstrapper.Container.Resolve<HikDownloader>(new TypedParameter(typeof(AppConfig), Config));
 
-        public override async Task InternalExecute(IJobExecutionContext context)
+        public override async Task<JobResult> InternalExecute(IJobExecutionContext context)
         {
-            var result = await Downloader.DownloadAsync();
-            var jobResultSaver = new JobResultsSaver(Config.ConnectionString, result, Logger);
-            await jobResultSaver.SaveAsync();
+            JobResult result = await Downloader.DownloadAsync();
+            return result;
         }
     }
 }

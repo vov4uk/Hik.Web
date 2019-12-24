@@ -17,8 +17,10 @@ namespace HikConsole.DataAccess.Mappings
             builder.Property(f => f.JobType)
                 .HasMaxLength(30);
             builder.Property(f => f.Started)
+                .IsRequired(true)
                 .HasColumnType("datetime2(0)"); 
             builder.Property(f => f.Finished)
+                .IsRequired(false)
                 .HasColumnType("datetime2(0)");
             builder.Property(f => f.PeriodEnd)
                 .IsRequired(false)

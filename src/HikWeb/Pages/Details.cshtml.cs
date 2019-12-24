@@ -1,9 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
 using HikConsole.DataAccess;
 using HikConsole.DataAccess.Data;
-using HikConsole.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +43,10 @@ namespace HikWeb.Pages
             }
 
             Job = await items.FirstOrDefaultAsync();
-            
+            if (Job == null)
+            {
+                return NotFound();
+            }
             return Page();
         }
     }

@@ -19,12 +19,16 @@ namespace HikConsole.DataAccess.Data
 
         public string Name { get; set; }
 
+        [Display(Name = "From")]
         public DateTime StartTime { get; set; }
 
-        public DateTime StopTime { get; set; } 
+        [Display(Name = "To")]
+        public DateTime StopTime { get; set; }
 
+        [Display(Name = "Started")]
         public DateTime DownloadStartTime { get; set; }
 
+        [Display(Name = "Finished")]
         public DateTime DownloadStopTime { get; set; }
 
         public long Size { get; set; }

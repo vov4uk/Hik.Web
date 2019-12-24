@@ -111,8 +111,8 @@ namespace HikConsole.Scheduler
             this.logger.Info($"Start.");
             DateTime periodStart = this.lastRun?.AddMinutes(-1) ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
 
-            var job = new HikJob { PeriodStart = periodStart, PeriodEnd = appStart, Started = appStart, JobType = nameof(HikDownloader) };
-            var jobResult = new JobResult(job);
+            var jobResult = new JobResult { PeriodStart = periodStart, PeriodEnd = appStart };
+
             bool failed = false;
 
             foreach (var camera in this.appConfig.Cameras)
@@ -131,7 +131,6 @@ namespace HikConsole.Scheduler
             this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString(CultureInfo.InvariantCulture)}");
             this.lastRun = failed ? periodStart : appStart;
 
-            job.Finished = DateTime.Now;
             return jobResult;
         }
 

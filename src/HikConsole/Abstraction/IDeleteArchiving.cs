@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using HikConsole.Config;
+using HikConsole.DataAccess.Data;
 using HikConsole.Scheduler;
 
 namespace HikConsole.Abstraction

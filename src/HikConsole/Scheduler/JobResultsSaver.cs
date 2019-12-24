@@ -14,10 +14,12 @@ namespace HikConsole.Scheduler
         private readonly ILogger logger;
         private readonly string connectionString;
         private readonly JobResult result;
+        private readonly HikJob job;
 
-        public JobResultsSaver(string connectionString, JobResult result, ILogger logger)
+        public JobResultsSaver(string connectionString, HikJob job, JobResult result, ILogger logger)
         {
             this.connectionString = connectionString;
+            this.job = job;
             this.result = result;
             this.logger = logger;
         }
@@ -32,7 +34,9 @@ namespace HikConsole.Scheduler
                 {
                     var jobRepo = unitOfWork.GetRepository<HikJob>();
                     var cameraRepo = unitOfWork.GetRepository<Camera>();
-                    await jobRepo.Add(this.result.Job);
+                    this.job.PeriodStart = this.result.PeriodStart;
+                    this.job.PeriodEnd = this.result.PeriodEnd;
+                    await jobRepo.Update(this.job);
 
                     foreach (var cameraResult in this.result.CameraResults)
                     {
@@ -43,17 +47,17 @@ namespace HikConsole.Scheduler
                             await cameraRepo.Add(camera);
                         }
 
-                        this.result.Job.FailsCount += cameraResult.Value.Failed ? 1 : 0;
-                        this.result.Job.PhotosCount += cameraResult.Value.DownloadedPhotos.Count;
-                        this.result.Job.VideosCount += cameraResult.Value.DownloadedVideos.Count;
-                        this.result.Job.PhotosCount += cameraResult.Value.DeletedFiles.Count(x => x.Extention == ".jpg");
-                        this.result.Job.VideosCount += cameraResult.Value.DeletedFiles.Count(x => x.Extention == ".mp4");
+                        this.job.FailsCount += cameraResult.Value.Failed ? 1 : 0;
+                        this.job.PhotosCount += cameraResult.Value.DownloadedPhotos.Count;
+                        this.job.VideosCount += cameraResult.Value.DownloadedVideos.Count;
+                        this.job.PhotosCount += cameraResult.Value.DeletedFiles.Count(x => x.Extention == ".jpg");
+                        this.job.VideosCount += cameraResult.Value.DeletedFiles.Count(x => x.Extention == ".mp4");
 
                         await this.AddEntities<Video>(cameraResult.Value.DownloadedVideos, unitOfWork);
                         await this.AddEntities<Photo>(cameraResult.Value.DownloadedPhotos, unitOfWork);
                         await this.AddEntities<DeletedFile>(cameraResult.Value.DeletedFiles, unitOfWork);
                         await this.AddEntities(cameraResult.Value.HardDriveStatus, unitOfWork);
-                        await unitOfWork.SaveChangesAsync(this.result.Job, camera);
+                        await unitOfWork.SaveChangesAsync(this.job, camera);
                     }
                 }
             }
@@ -78,7 +82,7 @@ namespace HikConsole.Scheduler
             return cam;
         }
 
-        private Task AddEntities<TEntity>(IEnumerable<TEntity> entities, IUnitOfWork unitOfWork)
+        private Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)
             where TEntity : class
         {
             if (entities != null && entities.Any())

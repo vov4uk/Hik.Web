@@ -4,6 +4,8 @@ using System.Threading;
 using Autofac;
 using HikConsole.Abstraction;
 using HikConsole.Config;
+using HikConsole.DataAccess;
+using HikConsole.DataAccess.Data;
 using HikConsole.Infrastructure;
 using HikConsole.Scheduler;
 
@@ -19,10 +21,23 @@ namespace HikConsole
             ILogger logger = container.Resolve<ILogger>();
             logger.Info(appConfig.ToString());
 
-            var downloader = container.Resolve<HikDownloader>(new TypedParameter(typeof(AppConfig), appConfig));
+            var job = new HikJob
+            {
+                Started = DateTime.Now,
+                JobType = nameof(HikDownloader),
+            };
 
+            using (var unitOfWork = new UnitOfWorkFactory().CreateUnitOfWork(appConfig.ConnectionString))
+            {
+                var jobRepo = unitOfWork.GetRepository<HikJob>();
+                jobRepo.Add(job).GetAwaiter().GetResult();
+                unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
+            }
+
+            var downloader = container.Resolve<HikDownloader>(new TypedParameter(typeof(AppConfig), appConfig));
+            job.Finished = DateTime.Now;
             var result = downloader.DownloadAsync().GetAwaiter().GetResult();
-            var jobResultSaver = new JobResultsSaver(appConfig.ConnectionString, result, logger);
+            var jobResultSaver = new JobResultsSaver(appConfig.ConnectionString, job, result, logger);
             jobResultSaver.SaveAsync().GetAwaiter().GetResult();
 
             if (appConfig.Mode == "Recurring")

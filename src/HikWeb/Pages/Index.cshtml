@@ -5,7 +5,6 @@
     ViewData["Title"] = "Index";
 }
 
-
 <table class="table">
 
     <thead>
@@ -25,6 +24,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Jobs[0].PeriodEnd)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Jobs[0].FailsCount)
+            </th> 
             <th>
                 @Html.DisplayNameFor(model => model.Jobs[0].PhotosCount)
             </th>
@@ -54,6 +56,9 @@
                     @Html.DisplayFor(modelItem => item.PeriodEnd)
                 </td>
                 <td>
+                    @Html.DisplayFor(modelItem => item.FailsCount)
+                </td>
+                <td>
                     @Html.DisplayFor(modelItem => item.PhotosCount)
                 </td>
                 <td>
@@ -66,3 +71,38 @@
         }
     </tbody>
 </table>
+
+<!-- pager -->
+@if (Model.Pager.Pages.Any())
+{
+    <nav class="table-responsive">
+        <ul class="pagination justify-content-center d-flex flex-wrap">
+            @if (Model.Pager.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="/">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="/?p=@(Model.Pager.CurrentPage - 1)">Previous</a>
+                </li>
+            }
+
+            @foreach (var p in Model.Pager.Pages)
+            {
+                <li class="page-item @(p == Model.Pager.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="/?p=@p">@p</a>
+                </li>
+            }
+
+            @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="/?p=@(Model.Pager.CurrentPage + 1)">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="/?p=@(Model.Pager.TotalPages)">Last</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

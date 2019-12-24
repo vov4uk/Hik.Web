@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace HikConsole.DataAccess.Data
 {
@@ -18,6 +15,7 @@ namespace HikConsole.DataAccess.Data
         [ForeignKey("Job")]
         public int JobId { get; set; }
 
+        [Display(Name = "Path")]
         public string FilePath { get; set; }
 
         public string Extention { get; set; }

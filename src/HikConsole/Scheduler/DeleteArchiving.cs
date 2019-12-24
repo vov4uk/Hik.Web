@@ -21,13 +21,14 @@ namespace HikConsole.Scheduler
         {
             return Task.Run(() =>
             {
-                DateTime appStart = DateTime.Now;
-
                 this.logger.Info("Start.");
                 DateTime cutOff = DateTime.Today.Subtract(time);
 
-                var job = new HikJob { PeriodStart = default, PeriodEnd = cutOff, Started = appStart, JobType = nameof(DeleteArchiving) };
-                var jobResult = new JobResult(job);
+                var jobResult = new JobResult
+                {
+                    PeriodStart = default,
+                    PeriodEnd = cutOff,
+                };
 
                 foreach (var x in cameras)
                 {
@@ -35,10 +36,9 @@ namespace HikConsole.Scheduler
                     jobResult.CameraResults.Add(x.Alias, cameraResult);
 
                     var failCount = this.ArchiveInternal(x.DestinationFolder, cutOff, cameraResult);
-                    job.FailsCount += failCount;
+                    cameraResult.Failed = failCount > 0;
                 }
 
-                job.Finished = DateTime.Now;
                 return jobResult;
             });
         }

@@ -7,13 +7,6 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Remove="configuration.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="quartz_jobs.xml" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="quartz_jobs.xml">
@@ -30,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.4" />
+    <PackageReference Include="JW.Pager" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />

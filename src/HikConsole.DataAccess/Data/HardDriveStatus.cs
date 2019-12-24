@@ -16,12 +16,15 @@ namespace HikConsole.DataAccess.Data
 
         public uint Capacity { get; set; }
 
+        [Display(Name = "Free Space")]
         public uint FreeSpace { get; set; }
 
+        [Display(Name = "Status")]
         public uint HdStatus { get; set; }
 
         public byte HDAttr { get; set; }
 
+        [Display(Name = "Type")]
         public byte HDType { get; set; }
 
         public byte Recycling { get; set; }

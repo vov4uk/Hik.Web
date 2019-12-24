@@ -1,17 +1,18 @@
-﻿using System.Collections.Generic;
-using HikConsole.DataAccess.Data;
+﻿using System;
+using System.Collections.Generic;
 
 namespace HikConsole.Scheduler
 {
     public class JobResult
     {
-        public JobResult(HikJob job)
+        public JobResult()
         {
-            this.Job = job;
             this.CameraResults = new Dictionary<string, CameraResult>();
         }
 
-        public HikJob Job { get; }
+        public DateTime? PeriodStart { get; set; }
+
+        public DateTime? PeriodEnd { get; set; }
 
         public Dictionary<string, CameraResult> CameraResults { get; }
     }
