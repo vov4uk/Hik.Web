@@ -1,181 +1,248 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using HikApi.Abstraction;
+using HikApi.Data;
 using HikConsole.Abstraction;
-using HikConsole.Data;
+using HikConsole.Config;
 using HikConsole.Helpers;
-using C = HikConsole.Helpers.ConsoleHelper;
 
 namespace HikConsole
 {
-    public class HikClient
+    public class HikClient : IHikClient
     {
         private const int ProgressBarMaximum = 100;
         private const int ProgressBarMinimum = 0;
-        private const string DateTimePrintFormat = "yyyy.MM.dd HH:mm:ss";
-        private const string TimeFormat = "HHmmss";
         private readonly CameraConfig config;
-        private readonly ISDKWrapper sdk;
+        private readonly IHikApi hikApi;
         private readonly IFilesHelper filesHelper;
         private readonly IProgressBarFactory progressFactory;
-        private int downloadHandle = -1;
-        private FindResult downloadFile;
-        private int userId = -1;
-        private int channel = -1;
+        private readonly ILogger logger;
+        private int downloadId = -1;
+        private IRemoteFile currentDownloadFile;
+        private Session session;
         private IProgressBar progress;
+        private bool disposedValue = false;
 
-        public HikClient(CameraConfig config, ISDKWrapper sdk, IFilesHelper filesHelper, IProgressBarFactory progressFactory)
+        public HikClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, IProgressBarFactory progressFactory, ILogger logger)
         {
             this.config = config;
-            this.sdk = sdk;
+            this.hikApi = hikApi;
             this.filesHelper = filesHelper;
             this.progressFactory = progressFactory;
+            this.logger = logger;
         }
 
-        public bool IsDownloading => this.downloadHandle >= 0;
+        public bool IsDownloading => this.downloadId >= 0;
 
-        public void Init()
+        public void InitializeClient()
         {
-            this.sdk.Initialize();
-            this.sdk.SetupSDKLogs(3, this.filesHelper.CombinePath(this.config.DestinationFolder, "SdkLog"), false);
-
+            string sdkLogsPath = this.filesHelper.CombinePath(Environment.CurrentDirectory, "logs", this.config.Alias + "_SdkLog");
+            this.filesHelper.FolderCreateIfNotExist(sdkLogsPath);
             this.filesHelper.FolderCreateIfNotExist(this.config.DestinationFolder);
+
+            this.hikApi.Initialize();
+            this.hikApi.SetupLogs(3, sdkLogsPath, false);
+            this.hikApi.SetConnectTime(2000, 1);
+            this.hikApi.SetReconnect(10000, 1);
         }
 
         public bool Login()
         {
-            if (this.userId < 0)
+            if (this.session == null)
             {
-                DeviceInfo deviceInfo = null;
-                this.userId = this.sdk.Login(this.config.IpAddress, this.config.PortNumber, this.config.UserName, this.config.Password, ref deviceInfo);
-                this.channel = deviceInfo.StartChannel;
-
+                this.session = this.hikApi.Login(this.config.IpAddress, this.config.PortNumber, this.config.UserName, this.config.Password);
+                this.logger.Info($"Sucessfull login to {this.config.ToString()}");
                 return true;
             }
-
-            C.WriteLine("Already logged in", ConsoleColor.Red);
-            return false;
+            else
+            {
+                this.logger.Warn("HikClient.Login : Already logged in");
+                return false;
+            }
         }
 
-        public bool StartDownload(FindResult file)
+        public bool StartVideoDownload(RemoteVideoFile remoteFile)
+        {
+            if (!this.IsDownloading)
+            {
+                string destinationFilePath = this.GetPathSafety(remoteFile);
+
+                // Local video file is 40 bytes bigger than remote
+                if (!this.filesHelper.FileExists(destinationFilePath, remoteFile.Size + 40))
+                {
+                    this.downloadId = this.hikApi.VideoService.StartDownloadFile(this.session.UserId, remoteFile.Name, destinationFilePath);
+
+                    this.logger.Info($"{remoteFile.ToUserFriendlyString()}- downloading");
+
+                    this.currentDownloadFile = remoteFile;
+                    this.progress = this.config.ShowProgress ? this.progressFactory.Create() : default(IProgressBar);
+                    return true;
+                }
+
+                this.logger.Info($"{remoteFile.ToUserFriendlyString()}- exist");
+                return false;
+            }
+            else
+            {
+                this.logger.Warn("HikClient.StartDownload : Downloading, please stop firstly!");
+                return false;
+            }
+        }
+
+        public bool PhotoDownload(RemotePhotoFile remoteFile)
+        {
+            if (!this.IsDownloading)
+            {
+                string destinationFilePath = this.GetPathSafety(remoteFile);
+
+                long fileSize = this.filesHelper.FileSize(destinationFilePath);
+
+                if ((remoteFile.Size + 70) != fileSize && (remoteFile.Size + 56) != fileSize)
+                {
+                    string tempFile = remoteFile.ToFileNameString();
+                    this.hikApi.PhotoService.DownloadFile(this.session.UserId, remoteFile, tempFile);
+
+                    this.SetDate(tempFile, destinationFilePath, remoteFile.Date);
+                    this.filesHelper.DeleteFile(tempFile);
+
+                    return true;
+                }
+
+                return false;
+            }
+            else
+            {
+                this.logger.Warn("HikClient.PhotoDownload : Downloading, please stop firstly!");
+                return false;
+            }
+        }
+
+        public void StopVideoDownload()
         {
             if (this.IsDownloading)
             {
-                C.WriteLine("Downloading, please stop firstly!");
-                return false;
-            }
-
-            string directory = this.GetWorkingDirectory(file);
-            this.filesHelper.FolderCreateIfNotExist(directory);
-
-            this.PrintFileInfo(file);
-            string fileName = this.GetFullPath(file, directory);
-
-            if (this.filesHelper.FileExists(fileName, file.FileSize))
-            {
-                C.WriteLine($"- exist ", ConsoleColor.DarkYellow);
-                return false;
-            }
-
-            this.downloadHandle = this.sdk.StartDownloadFile(this.userId, file.FileName, fileName);
-            this.downloadFile = file;
-            this.progress = this.progressFactory?.Create();
-            return true;
-        }
-
-        public void StopDownload()
-        {
-            if (this.IsDownloading)
-            {
-                this.sdk.StopDownoloadFile(this.downloadHandle);
+                this.hikApi.VideoService.StopDownloadFile(this.downloadId);
                 this.ResetDownloadStatus();
             }
-        }
-
-        public void CheckProgress()
-        {
-            if (this.IsDownloading)
+            else
             {
-                int barValue = this.sdk.GetDownloadPos(this.downloadHandle);
-
-                if (barValue > ProgressBarMinimum && barValue < ProgressBarMaximum)
-                {
-                    this.progress?.Report((double)barValue / 100);
-                }
-                else if (barValue == 100)
-                {
-                    this.StopDownload();
-                    this.downloadFile = null;
-
-                    C.WriteLine("- downloaded", ConsoleColor.Green);
-                }
-                else if (barValue == 200)
-                {
-                    C.WriteLine("The downloading is abnormal for the abnormal network!", ConsoleColor.DarkRed);
-
-                    this.ForceExit();
-                }
+                this.logger.Warn("HikClient.StopDownload : File not downloading now");
             }
         }
 
-        public void Logout()
+        public void UpdateVideoProgress()
         {
-            if (this.userId >= 0)
+            if (this.IsDownloading)
             {
-                C.WriteLine($"Logout the device", timeStamp: DateTime.Now);
-                this.sdk.Logout(this.userId);
-                this.sdk.Cleanup();
-                this.userId = -1;
+                int downloadProgress = this.hikApi.VideoService.GetDownloadPosition(this.downloadId);
+
+                this.UpdateProgressInternal(downloadProgress);
+            }
+            else
+            {
+                this.logger.Warn("HikClient.UpdateProgress : File not downloading now");
             }
         }
 
         public void ForceExit()
         {
-            C.WriteLine("\r\nForce exit", ConsoleColor.DarkRed);
-            this.StopDownload();
+            this.logger.Warn("HikClient.ForceExit");
+            this.StopVideoDownload();
             this.DeleteCurrentFile();
-            this.Logout();
         }
 
-        public async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd)
+        public HdInfo CheckHardDriveStatus()
+        {
+            return this.hikApi.GetHddStatus(this.session.UserId);
+        }
+
+        public Task<IList<RemoteVideoFile>> FindVideosAsync(DateTime periodStart, DateTime periodEnd)
+        {
+            Guard.IsValid(
+                () => periodStart,
+                periodStart,
+                start => start < periodEnd,
+                "Start period grater than end");
+
+            this.logger.Info($"Get videos from {periodStart.ToString()} to {periodEnd.ToString()}");
+
+            return this.hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, this.session);
+        }
+
+        public Task<IList<RemotePhotoFile>> FindPhotosAsync(DateTime periodStart, DateTime periodEnd)
         {
             this.ValidateDateParameters(periodStart, periodEnd);
 
-            return await this.Find(periodStart, periodEnd, this.userId, this.channel);
+            this.logger.Info($"Get photos from {periodStart.ToString()} to {periodEnd.ToString()}");
+
+            return this.hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd, this.session);
         }
 
-        private void PrintFileInfo(FindResult file)
+        public void Dispose()
         {
-            C.Write($"{file.FileName}, {file.StartTime.ToString(DateTimePrintFormat)}, {file.StopTime.ToString(DateTimePrintFormat)}, {Utils.FormatBytes(file.FileSize)} ");
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        private string GetWorkingDirectory(FindResult file)
+        protected virtual void Dispose(bool disposing)
         {
-            return this.filesHelper.CombinePath(this.config.DestinationFolder, $"{file.StartTime.Year:0000}-{file.StartTime.Month:00}-{file.StartTime.Day:00}");
+            if (!this.disposedValue)
+            {
+                if (disposing)
+                {
+                    this.progress?.Dispose();
+                }
+
+                this.logger.Info($"Logout the device");
+                if (this.session != null)
+                {
+                    this.hikApi.Logout(this.session.UserId);
+                }
+
+                this.session = null;
+                this.progress = null;
+                this.currentDownloadFile = null;
+
+                this.hikApi.Cleanup();
+                this.disposedValue = true;
+            }
         }
 
-        private string GetFullPath(FindResult file, string directory = null)
+        private string GetWorkingDirectory(IRemoteFile file)
+        {
+            return this.filesHelper.CombinePath(this.config.DestinationFolder, file.ToDirectoryNameString());
+        }
+
+        private string GetFullPath(IRemoteFile file, string directory = null)
         {
             string folder = directory ?? this.GetWorkingDirectory(file);
-            return this.filesHelper.CombinePath(folder, $"{file.StartTime.ToString(TimeFormat)}_{file.StopTime.ToString(TimeFormat)}_{file.FileName}.mp4");
+            return this.filesHelper.CombinePath(folder, file.ToFileNameString());
         }
 
         private void ResetDownloadStatus()
         {
-            this.downloadHandle = -1;
+            this.downloadId = -1;
             this.progress?.Dispose();
             this.progress = null;
         }
 
         private void DeleteCurrentFile()
         {
-            if (this.downloadFile != null)
+            if (this.currentDownloadFile != null)
             {
-                string path = this.GetFullPath(this.downloadFile);
-                C.WriteLine($"Removing file {path}", ConsoleColor.DarkRed);
+                string path = this.GetFullPath(this.currentDownloadFile);
+                this.logger.Warn($"Removing file {path}");
                 this.filesHelper.DeleteFile(path);
 
-                this.downloadFile = null;
+                this.currentDownloadFile = null;
+            }
+            else
+            {
+                this.logger.Warn("HikClient.DeleteCurrentFile : Nothing to delete");
             }
         }
 
@@ -183,13 +250,50 @@ namespace HikConsole
         {
             if (end <= start)
             {
-                throw new ArgumentException("Start period grather than end");
+                throw new ArgumentException("Start period grater than end");
             }
         }
 
-        private async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd, int userId, int channel)
+        private void UpdateProgressInternal(int progressValue)
         {
-            return await this.sdk.Find(periodStart, periodEnd, userId, channel);
+            if (progressValue >= ProgressBarMinimum && progressValue < ProgressBarMaximum)
+            {
+                this.progress?.Report((double)progressValue / ProgressBarMaximum);
+            }
+            else if (progressValue == ProgressBarMaximum)
+            {
+                this.StopVideoDownload();
+                this.currentDownloadFile = null;
+
+                this.logger.Info("- downloaded");
+            }
+            else
+            {
+                this.StopVideoDownload();
+                throw new InvalidOperationException($"HikClient.UpdateDownloadProgress failed, progress value = {progressValue}");
+            }
+        }
+
+        private string GetPathSafety(IRemoteFile remoteFile)
+        {
+            string workingDirectory = this.GetWorkingDirectory(remoteFile);
+            this.filesHelper.FolderCreateIfNotExist(workingDirectory);
+
+            string destinationFilePath = this.GetFullPath(remoteFile, workingDirectory);
+            return destinationFilePath;
+        }
+
+        private void SetDate(string path, string newPath, DateTime date)
+        {
+            using (Image image = Image.FromFile(path))
+            {
+                var newItem = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
+                newItem.Value = System.Text.Encoding.ASCII.GetBytes(date.ToString("yyyy':'MM':'dd' 'HH':'mm':'ss"));
+                newItem.Type = 2;
+                newItem.Id = 306;
+                image.SetPropertyItem(newItem);
+                image.Save(newPath, image.RawFormat);
+            }
         }
     }
 }

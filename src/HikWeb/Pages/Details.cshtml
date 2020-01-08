@@ -1,0 +1,266 @@
+﻿@page
+@model HikWeb.Pages.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Job.Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Job.JobType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Job.PeriodStart)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Job.PeriodEnd)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Job.Started)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Job.Finished)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => Model.Job.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => Model.Job.JobType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => Model.Job.PeriodStart)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => Model.Job.PeriodEnd)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => Model.Job.Started)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => Model.Job.Finished)
+            </td>
+        </tr>
+
+    </tbody>
+</table>
+
+@if (Model.Job.JobType == "HikDownloader")
+{
+    @if (Model.Job.HardDriveStatuses != null && Model.Job.HardDriveStatuses.Any())
+    {
+        <h2>HardDriveStatuses</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].Camera.Alias)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].HdStatus)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].HDType)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].Capacity)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].FreeSpace)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Job.HardDriveStatuses)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Camera.Alias)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.HdStatus)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.HDType)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Capacity)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FreeSpace)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    @if (Model.Job.Videos != null && Model.Job.Videos.Any())
+    {
+        <h2>Videos</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Videos[0].Camera.Alias)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Videos[0].Name)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Videos[0].StartTime)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Videos[0].StopTime)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Videos[0].Size)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Videos[0].DownloadStartTime)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Videos[0].DownloadStopTime)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Job.Videos)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Camera.Alias)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StartTime)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StopTime)
+                        </td>
+                        <td>
+                            @{
+                                double? megaByte = (@item.Size / 1024.0) / 1024.0;
+                                string NewSize = megaByte?.ToString("0.00") + " MB";
+                            }
+                            @NewSize
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DownloadStartTime)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DownloadStopTime)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    @if (Model.Job.Photos != null && Model.Job.Photos.Any())
+    {
+        <h2>Photos</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Photos[0].Camera.Alias)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Photos[0].Name)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Photos[0].DateTaken)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Photos[0].Size)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Photos[0].DownloadStartTime)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.Photos[0].DownloadStopTime)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Job.Photos)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Camera.Alias)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DateTaken)
+                        </td>
+                        <td>
+                            @{
+                                double? KiloByte = @item.Size / 1024.0;
+                                string NewSize = KiloByte?.ToString("0.00") + " KB";
+                            }
+                            @NewSize
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DownloadStartTime)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DownloadStopTime)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+}
+else
+{
+    if (Model.Job.DeletedFiles != null && Model.Job.DeletedFiles.Any())
+    {
+        <h2>DeletedFiles</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.DeletedFiles[0].Camera.Alias)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.DeletedFiles[0].FilePath)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Job.DeletedFiles[0].Extention)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Job.DeletedFiles)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Camera.Alias)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FilePath)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Extention)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
