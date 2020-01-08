@@ -2,6 +2,6 @@
 {
     public interface IUnitOfWorkFactory
     {
-        public IUnitOfWork CreateUnitOfWork(string connectionString);
+        public IUnitOfWork CreateUnitOfWork();
     }
 }

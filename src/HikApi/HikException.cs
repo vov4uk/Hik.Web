@@ -26,7 +26,11 @@ namespace HikApi
 
         private static string ModifyMessage(string method, uint errorCode)
         {
-            return $"{method} failed, error code = {errorCode.ToString()}{Environment.NewLine}{GetEnumDescription((HikError)errorCode)}";
+            return @$"Error code = {errorCode.ToString()}
+{GetEnumDescription((HikError)errorCode)}
+at 
+{method}
+";
         }
 
         private static string GetEnumDescription(HikError value)

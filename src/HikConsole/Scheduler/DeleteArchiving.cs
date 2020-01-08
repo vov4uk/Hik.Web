@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using HikConsole.Abstraction;
 using HikConsole.Config;
-using HikConsole.DataAccess.Data;
+using HikConsole.DTO;
+using HikConsole.DTO.Contracts;
 
 namespace HikConsole.Scheduler
 {
@@ -30,12 +31,19 @@ namespace HikConsole.Scheduler
                     PeriodEnd = cutOff,
                 };
 
-                foreach (var x in cameras)
+                foreach (var cameraConf in cameras)
                 {
-                    var cameraResult = new CameraResult(x);
-                    jobResult.CameraResults.Add(x.Alias, cameraResult);
+                    var cameraResult = new CameraResult(new CameraDTO
+                    {
+                        Alias = cameraConf.Alias,
+                        DestinationFolder = cameraConf.DestinationFolder,
+                        IpAddress = cameraConf.IpAddress,
+                        PortNumber = cameraConf.PortNumber,
+                        UserName = cameraConf.UserName,
+                    });
+                    jobResult.CameraResults.Add(cameraConf.Alias, cameraResult);
 
-                    var failCount = this.ArchiveInternal(x.DestinationFolder, cutOff, cameraResult);
+                    var failCount = this.ArchiveInternal(cameraConf.DestinationFolder, cutOff, cameraResult);
                     cameraResult.Failed = failCount > 0;
                 }
 
@@ -74,7 +82,7 @@ namespace HikConsole.Scheduler
                         {
                             this.logger.Debug($"Deleting: {file}");
                             File.Delete(file);
-                            camResult.DeletedFiles.Add(new DeletedFile() { FilePath = fileName, Extention = Path.GetExtension(file) });
+                            camResult.DeletedFiles.Add(new DeletedFileDTO() { FilePath = fileName, Extention = Path.GetExtension(file) });
                         }
                     }
                     catch (Exception ex)

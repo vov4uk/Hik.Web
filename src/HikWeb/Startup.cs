@@ -20,7 +20,12 @@ namespace HikWeb
         {
             services.AddRazorPages();
             services.AddDbContext<DataContext>(options =>
-              options.UseSqlServer(Configuration.GetConnectionString("HikConnectionString")));
+              {
+                  options.UseSqlite(Configuration.GetConnectionString("HikConnectionString"), options =>
+                  {
+                      options.MigrationsAssembly("HikConsole.DataAccess.dll");
+                  });
+              });
         }
 
         public void Configure(IApplicationBuilder app, 

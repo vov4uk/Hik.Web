@@ -2,9 +2,16 @@
 {
     public class UnitOfWorkFactory : IUnitOfWorkFactory
     {
-        public IUnitOfWork CreateUnitOfWork(string connectionString)
+        private readonly string connectionString;
+
+        public UnitOfWorkFactory(string connectionString)
         {
-            return new UnitOfWork<DataContext>(new DataContext(connectionString));
+            this.connectionString = connectionString;
+        }
+
+        public IUnitOfWork CreateUnitOfWork()
+        {
+            return new UnitOfWork<DataContext>(new DataContext(this.connectionString));
         }
     }
 }

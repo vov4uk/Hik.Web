@@ -1,4 +1,5 @@
-﻿using HikConsole.Scheduler;
+﻿using HikConsole.DTO;
+using HikConsole.Scheduler;
 using Quartz;
 using System;
 using System.Threading.Tasks;

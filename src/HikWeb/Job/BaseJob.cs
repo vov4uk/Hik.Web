@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HikConsole.DataAccess;
 using HikConsole.DataAccess.Data;
+using HikConsole.DTO;
 using HikConsole.Scheduler;
 
 namespace HikWeb.Job
@@ -17,6 +18,7 @@ namespace HikWeb.Job
         protected static readonly ILogger Logger = Logger = AppBootstrapper.Container.Resolve<ILogger>();
 
         protected static readonly AppConfig Config = AppBootstrapper.Container.Resolve<IHikConfig>().Config;
+
         static BaseJob()
         {
             Logger.Info(Config.ToString());
@@ -42,7 +44,9 @@ namespace HikWeb.Job
                 JobType = context.JobDetail.Key.Name
             };
 
-            using (var unitOfWork = new UnitOfWorkFactory().CreateUnitOfWork(Config.ConnectionString))
+            var unitOfWorkFactory = new UnitOfWorkFactory(Config.ConnectionString);
+
+            using (var unitOfWork = unitOfWorkFactory.CreateUnitOfWork())
             {
                 var jobRepo = unitOfWork.GetRepository<HikJob>();
                 await jobRepo.Add(job);
@@ -52,9 +56,10 @@ namespace HikWeb.Job
             var result = await this.InternalExecute(context);
 
             job.Finished = DateTime.Now;
-
-            var jobResultSaver = new JobResultsSaver(Config.ConnectionString, job, result, Logger);
+            Logger.Info("Save to DB...");
+            var jobResultSaver = new JobService(unitOfWorkFactory, job, result);
             await jobResultSaver.SaveAsync();
+            Logger.Info("Save to DB. Done");
 
             Logger.Info($"{context.JobDetail.Key} Execution finished");
         }

@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HikApi\HikApi.csproj" />
-    <ProjectReference Include="..\HikConsole.DataAccess\HikConsole.DataAccess.csproj" />
+    <ProjectReference Include="..\HikConsole.DTO\HikConsole.DTO.csproj" />
   </ItemGroup>
 
   <ItemGroup>

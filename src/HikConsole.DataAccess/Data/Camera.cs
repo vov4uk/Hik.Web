@@ -7,7 +7,8 @@ namespace HikConsole.DataAccess.Data
     [Table("Camera")]
     public class Camera
     {
-        [Key] public int Id { get; set; }
+        [Key] 
+        public int Id { get; set; }
 
         public string Alias { get; set; }
 

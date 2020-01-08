@@ -3,10 +3,10 @@
   "Mode": "Recurring",
   "IntervalMinutes": 120,
   "RetentionPeriodDays": 14,
-  "ConnectionString": "Data Source=(LocalDB)\\MSSQLLocalDB;database=HikConsole;Integrated Security=True;Connect Timeout=30",
+  "ConnectionString": "Filename=TestHikDatabase.db",
   "Cameras": [
     {
-      "Allias": "Camera1",
+      "Alias": "Camera1",
       "IPAddress": "192.168.1.64",
       "PortNumber": 8000,
       "UserName": "admin",
@@ -16,7 +16,7 @@
       "DownloadPhotos": false
     },
     {
-      "Allias": "Camera2",
+      "Alias": "Camera2",
       "IPAddress": "192.168.1.65",
       "PortNumber": 8000,
       "UserName": "admin",

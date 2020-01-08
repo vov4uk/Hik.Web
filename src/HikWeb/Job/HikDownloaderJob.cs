@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using HikConsole.Config;
+using HikConsole.DTO;
 using HikConsole.Infrastructure;
 using HikConsole.Scheduler;
 using Quartz;

@@ -6,7 +6,8 @@ namespace HikConsole.DataAccess.Data
     [Table("HardDriveStatus")]
     public class HardDriveStatus : IAuditable
     {
-        [Key] public int Id { get; set; }
+        [Key] 
+        public int Id { get; set; }
 
         [ForeignKey("Camera")]
         public int CameraId { get; set; }

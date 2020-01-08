@@ -1,6 +1,7 @@
 ﻿using HikConsole.DataAccess.Data;
 using HikConsole.DataAccess.Mappings;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace HikConsole.DataAccess
 {
@@ -28,7 +29,10 @@ namespace HikConsole.DataAccess
             base.OnConfiguring(optionsBuilder);
             if (!string.IsNullOrEmpty(ConnectionString))
             {
-                optionsBuilder.UseSqlServer(ConnectionString);
+                optionsBuilder.UseSqlite(ConnectionString, options =>
+                {
+                    options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
+                });
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HikConsole.Scheduler
+namespace HikConsole.DTO
 {
     public class JobResult
     {
