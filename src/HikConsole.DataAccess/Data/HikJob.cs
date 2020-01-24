@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HikConsole.DataAccess.Metadata;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,14 +17,16 @@ namespace HikConsole.DataAccess.Data
         [Display(Name = "Failed")]
         public int FailsCount { get; set; }
 
-        [Display(Name = "From")]
+        [Display(Name = "From"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public  DateTime? PeriodStart { get; set; }
 
-        [Display(Name = "To")]
+        [Display(Name = "To"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? PeriodEnd { get; set; }
 
+        [DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime Started { get; set; }
 
+        [DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? Finished { get; set; }
 
         [Display(Name = "Photo")]

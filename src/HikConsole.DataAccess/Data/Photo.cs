@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HikConsole.DataAccess.Metadata;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,17 +19,17 @@ namespace HikConsole.DataAccess.Data
 
         public string Name { get; set; }
 
-        [Display(Name = "Taken")]
+        [Display(Name = "Taken"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime DateTaken { get; set; }
 
         public long Size { get; set; }
 
         public long? LocalSize { get; set; }
 
-        [Display(Name = "Started")]
+        [Display(Name = "Started"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime DownloadStartTime { get; set; }
 
-        [Display(Name = "Finished")]
+        [Display(Name = "Finished"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime DownloadStopTime { get; set; }
 
         public virtual Camera Camera { get; set; }
