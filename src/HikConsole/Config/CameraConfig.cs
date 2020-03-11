@@ -34,9 +34,28 @@ namespace HikConsole.Config
             return sb.ToString();
         }
 
+        public string ToHtmlTable()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine();
+            sb.AppendLine("<table>");
+            sb.AppendLine(this.GetHtmlRow("Alias", this.Alias));
+            sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
+            sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.IpAddress}:{this.PortNumber.ToString()}"));
+            sb.AppendLine(this.GetHtmlRow("User name", this.UserName));
+            sb.AppendLine("</table>");
+
+            return sb.ToString();
+        }
+
         private string GetRow(string field, string value)
         {
             return $"{field,-24}: {value}";
+        }
+
+        private string GetHtmlRow(string field, string value)
+        {
+            return $"<tr><td>{field}</td><td>{value}</td></tr>";
         }
     }
 }

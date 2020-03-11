@@ -4,6 +4,7 @@
   "IntervalMinutes": 120,
   "RetentionPeriodDays": 14,
   "ConnectionString": "Filename=TestHikDatabase.db",
+  "FilesToDelete": [ "*.mp4", "*.jpg", "*.ini" ],
   "Cameras": [
     {
       "Alias": "Camera1",

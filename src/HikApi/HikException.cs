@@ -12,9 +12,10 @@ namespace HikApi
     public class HikException : Exception
     {
         public uint ErrorCode { get; }
+        public string ErrorMessage { get { return GetEnumDescription((HikError)ErrorCode); } }
 
         public HikException(string method, uint errorCode)
-            : base(ModifyMessage(method, errorCode))
+            : base(method)
         {
             this.ErrorCode = errorCode;  
         }
@@ -22,15 +23,6 @@ namespace HikApi
         protected HikException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-        }
-
-        private static string ModifyMessage(string method, uint errorCode)
-        {
-            return @$"Error code = {errorCode.ToString()}
-{GetEnumDescription((HikError)errorCode)}
-at 
-{method}
-";
         }
 
         private static string GetEnumDescription(HikError value)

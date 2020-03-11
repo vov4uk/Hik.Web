@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace HikConsole.Scheduler
             this.logger = log;
         }
 
-        public Task<JobResult> Archive(CameraConfig[] cameras, TimeSpan time)
+        public Task<JobResult> Archive(CameraConfig[] cameras, TimeSpan time, string[] extentions)
         {
             return Task.Run(() =>
             {
@@ -33,40 +34,35 @@ namespace HikConsole.Scheduler
 
                 foreach (var cameraConf in cameras)
                 {
-                    var cameraResult = new CameraResult(new CameraDTO
-                    {
-                        Alias = cameraConf.Alias,
-                        DestinationFolder = cameraConf.DestinationFolder,
-                        IpAddress = cameraConf.IpAddress,
-                        PortNumber = cameraConf.PortNumber,
-                        UserName = cameraConf.UserName,
-                    });
+                    var cameraResult = this.ArchiveInternal(cameraConf.DestinationFolder, cutOff, cameraConf, extentions);
                     jobResult.CameraResults.Add(cameraConf.Alias, cameraResult);
-
-                    var failCount = this.ArchiveInternal(cameraConf.DestinationFolder, cutOff, cameraResult);
-                    cameraResult.Failed = failCount > 0;
                 }
 
                 return jobResult;
             });
         }
 
-        private int ArchiveInternal(string destination, DateTime cutOff, CameraResult camResult)
+        private CameraResult ArchiveInternal(string destination, DateTime cutOff, CameraConfig camera, string[] extentions)
         {
-            int failCount = 0;
             if (!Directory.Exists(destination))
             {
                 this.logger.Warn($"Output doesn't exist: {destination}");
-                return 0;
+                return default;
             }
 
-            var files = Directory.EnumerateFiles(destination, "*.mp4", SearchOption.AllDirectories).ToList();
-            files.AddRange(Directory.EnumerateFiles(destination, "*.jpg", SearchOption.AllDirectories).ToList());
+            var result = this.CreateCameraResult(camera);
+
+            List<string> files = new List<string>();
+            foreach (var ext in extentions)
+            {
+                var filesToDelete = Directory.EnumerateFiles(destination, ext, SearchOption.AllDirectories);
+                files.AddRange(filesToDelete);
+            }
+
             this.logger.Info($"Destination: {destination}");
             this.logger.Info($"Found: {files.Count} files");
 
-            Parallel.ForEach(
-                files,
+            files.ForEach(
                 file =>
                 {
                     try
@@ -82,13 +78,13 @@ namespace HikConsole.Scheduler
                         {
                             this.logger.Debug($"Deleting: {file}");
                             File.Delete(file);
-                            camResult.DeletedFiles.Add(new DeletedFileDTO() { FilePath = fileName, Extention = Path.GetExtension(file) });
+                            result.DeletedFiles.Add(new DeletedFileDTO() { FilePath = fileName, Extention = Path.GetExtension(file) });
                         }
                     }
                     catch (Exception ex)
                     {
                         this.logger.Error(ex.ToString(), ex);
-                        failCount++;
+                        result.Failed = true;
                     }
                 });
 
@@ -107,10 +103,22 @@ namespace HikConsole.Scheduler
             catch (Exception ex)
             {
                 this.logger.Error("Error hapened", ex);
-                failCount++;
+                result.Failed = true;
             }
 
-            return failCount;
+            return result;
+        }
+
+        private CameraResult CreateCameraResult(CameraConfig cameraConf)
+        {
+            return new CameraResult(new CameraDTO
+            {
+                Alias = cameraConf.Alias,
+                DestinationFolder = cameraConf.DestinationFolder,
+                IpAddress = cameraConf.IpAddress,
+                PortNumber = cameraConf.PortNumber,
+                UserName = cameraConf.UserName,
+            });
         }
     }
 }

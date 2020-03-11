@@ -89,7 +89,7 @@ namespace HikConsole.Tests
             this.SetupClientInitialize();
             this.clientMock.Setup(x => x.ForceExit());
             this.clientMock.Setup(x => x.Login()).Throws(new HikException("Login", 7));
-            this.emailMock.Setup(x => x.SendEmail(appConfig.EmailConfig, It.IsAny<string>()));
+            this.emailMock.Setup(x => x.SendEmail(appConfig.EmailConfig, It.IsAny<Exception>()));
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
@@ -99,7 +99,7 @@ namespace HikConsole.Tests
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.loggerMock.Verify(x => x.Error(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
-            this.emailMock.Verify(x => x.SendEmail(appConfig.EmailConfig, It.IsAny<string>()), Times.Once);
+            this.emailMock.Verify(x => x.SendEmail(appConfig.EmailConfig, It.IsAny<Exception>()), Times.Once);
             this.clientMock.Verify(x => x.ForceExit(), Times.Once);
         }
 

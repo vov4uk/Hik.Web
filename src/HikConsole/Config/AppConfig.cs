@@ -14,6 +14,8 @@ namespace HikConsole.Config
         [JsonProperty("IntervalMinutes")]
         public int Interval { get; set; }
 
+        public string[] FilesToDelete { get; set; }
+
         public CameraConfig[] Cameras { get; set; }
 
         [JsonProperty("EmailSettings")]

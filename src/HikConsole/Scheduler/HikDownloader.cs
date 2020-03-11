@@ -177,13 +177,13 @@ namespace HikConsole.Scheduler
             }
             catch (OperationCanceledException ex)
             {
-                ex.Data.Add("Camera", cameraConf.ToString());
+                ex.Data.Add("Camera", cameraConf);
                 throw;
             }
             catch (Exception ex)
             {
                 result.Failed = true;
-                ex.Data.Add("Camera", cameraConf.ToString());
+                ex.Data.Add("Camera", cameraConf);
                 this.HandleException(ex);
             }
 
@@ -352,10 +352,10 @@ namespace HikConsole.Scheduler
 
         private string GetExceptionMessage(Exception ex)
         {
-            StringBuilder msgBuilder = new StringBuilder("Exception happened : ");
-            if (ex.Data.Contains("Camera"))
+            StringBuilder msgBuilder = new StringBuilder();
+            if (ex.Data.Contains("Camera") && ex.Data["Camera"] is CameraConfig)
             {
-                msgBuilder.AppendLine(ex.Data["Camera"] as string);
+                msgBuilder.AppendLine((ex.Data["Camera"] as CameraConfig).ToString());
             }
 
             msgBuilder.AppendLine(ex.ToString());
@@ -368,7 +368,7 @@ namespace HikConsole.Scheduler
 
             this.logger.Error(msg, ex);
 
-            this.emailHelper.SendEmail(this.appConfig.EmailConfig, msg);
+            this.emailHelper.SendEmail(this.appConfig.EmailConfig, ex);
             this.ForceExit();
         }
     }

@@ -19,9 +19,9 @@ namespace HikApi.Abstraction
 
         Session Login(string ipAddress, int port, string userName, string password);
 
-        void Logout(int userId);
-
         HdInfo GetHddStatus(int userId);
+
+        void Logout(int userId);
 
         void Cleanup();
     }

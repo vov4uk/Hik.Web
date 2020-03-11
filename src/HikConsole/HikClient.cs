@@ -71,8 +71,7 @@ namespace HikConsole
             {
                 string destinationFilePath = this.GetPathSafety(remoteFile);
 
-                // Local video file is 40 bytes bigger than remote
-                if (!this.filesHelper.FileExists(destinationFilePath, remoteFile.Size + 40))
+                if (!this.CheckLocalVideoExist(destinationFilePath, remoteFile.Size))
                 {
                     this.downloadId = this.hikApi.VideoService.StartDownloadFile(this.session.UserId, remoteFile.Name, destinationFilePath);
 
@@ -99,9 +98,7 @@ namespace HikConsole
             {
                 string destinationFilePath = this.GetPathSafety(remoteFile);
 
-                long fileSize = this.filesHelper.FileSize(destinationFilePath);
-
-                if ((remoteFile.Size + 70) != fileSize && (remoteFile.Size + 56) != fileSize)
+                if (!this.CheckLocalPhotoExist(destinationFilePath, remoteFile.Size))
                 {
                     string tempFile = remoteFile.ToFileNameString();
                     this.hikApi.PhotoService.DownloadFile(this.session.UserId, remoteFile, tempFile);
@@ -294,6 +291,23 @@ namespace HikConsole
                 image.SetPropertyItem(newItem);
                 image.Save(newPath, image.RawFormat);
             }
+        }
+
+        private bool CheckLocalVideoExist(string path, long size)
+        {
+            // Downloaded video file is 40 bytes bigger than remote file
+            // This const was taken on debug
+            return this.filesHelper.FileExists(path, size + 40);
+        }
+
+        private bool CheckLocalPhotoExist(string path, long size)
+        {
+            // Downloaded video file is bigger than remote file
+            // 56 bytes for 2MP camera
+            // 70 bytes for 4MP camera
+            // This const was taken on debug
+            long fileSize = this.filesHelper.FileSize(path);
+            return (size + 70) == fileSize || (size + 56) == fileSize;
         }
     }
 }
