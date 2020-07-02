@@ -30,7 +30,7 @@ namespace HikWeb
             };
 
             var schedulerFactory = new StdSchedulerFactory(properties);
-            scheduler = schedulerFactory.GetScheduler().Result;
+            scheduler = schedulerFactory.GetScheduler().GetAwaiter().GetResult();
             scheduler.Start().Wait();
         }
 

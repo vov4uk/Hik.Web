@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -9,10 +10,11 @@ namespace HikConsole.Config
     {
         public int ProcessingPeriodHours { get; set; }
 
-        public string Mode { get; set; }
-
         [JsonProperty("IntervalMinutes")]
         public int Interval { get; set; }
+
+        [JsonProperty("JobTimeoutMinutes")]
+        public int JobTimeout { get; set; } = 45;
 
         public string[] FilesToDelete { get; set; }
 
@@ -21,19 +23,31 @@ namespace HikConsole.Config
         [JsonProperty("EmailSettings")]
         public EmailConfig EmailConfig { get; set; }
 
-        public int? RetentionPeriodDays { get; set; } = 30;
-
         public string ConnectionString { get; set; }
 
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine();
-            sb.AppendLine($"{"Mode",-24}: {this.Mode}");
-            sb.AppendLine($"{"Interval",-24}: {this.Interval.ToString()}m");
-            sb.AppendLine($"{"Period",-24}: {this.ProcessingPeriodHours.ToString()}h");
+            sb.AppendLine($"{"Interval",-24}: {this.Interval}m");
+            sb.AppendLine($"{"JobTimeout",-24}: {this.JobTimeout}m");
+            sb.AppendLine($"{"Period",-24}: {this.ProcessingPeriodHours}h");
 
             return sb.ToString();
+        }
+
+        public AppConfig Copy(CameraConfig camera)
+        {
+            return new AppConfig
+            {
+                ProcessingPeriodHours = this.ProcessingPeriodHours,
+                JobTimeout = this.JobTimeout,
+                Interval = this.Interval,
+                FilesToDelete = this.FilesToDelete,
+                Cameras = new[] { camera },
+                EmailConfig = this.EmailConfig,
+                ConnectionString = this.ConnectionString,
+            };
         }
     }
 }

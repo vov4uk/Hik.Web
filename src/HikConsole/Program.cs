@@ -15,23 +15,8 @@ namespace HikConsole
         public static void Main()
         {
             var container = AppBootstrapper.ConfigureIoc();
-            AppConfig appConfig = container.Resolve<IHikConfig>().Config;
-            ILogger logger = container.Resolve<ILogger>();
-            logger.Info(appConfig.ToString());
-
-            var downloader = container.Resolve<HikDownloader>(new TypedParameter(typeof(AppConfig), appConfig));
-            downloader.DownloadAsync().GetAwaiter().GetResult();
-
-            if (appConfig.Mode == "Recurring")
-            {
-                logger.Info("Starting Recurring");
-                var interval = appConfig.Interval * 60 * 1000;
-                using (Timer timer = new Timer(async (o) => await downloader.DownloadAsync(), null, interval, interval))
-                {
-                    WaitForExit();
-                    downloader?.Cancel();
-                }
-            }
+            var downloader = container.Resolve<HikDownloader>();
+            downloader.DownloadAsync("configuration.json").GetAwaiter().GetResult();
 
             WaitForExit();
         }

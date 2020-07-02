@@ -4,6 +4,6 @@ namespace HikConsole.Abstraction
 {
     public interface IHikConfig
     {
-        AppConfig Config { get; }
+        AppConfig GetConfig(string configFileName);
     }
 }

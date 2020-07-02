@@ -2,6 +2,7 @@
   "ProcessingPeriodHours": 4,
   "Mode": "Recurring",
   "IntervalMinutes": 120,
+  "JobTimeoutMinutes": 50,
   "RetentionPeriodDays": 14,
   "ConnectionString": "Filename=TestHikDatabase.db",
   "FilesToDelete": [ "*.mp4", "*.jpg", "*.ini" ],

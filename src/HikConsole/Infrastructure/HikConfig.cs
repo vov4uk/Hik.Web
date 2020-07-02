@@ -11,25 +11,25 @@ namespace HikConsole.Infrastructure
     [ExcludeFromCodeCoverage]
     public class HikConfig : IHikConfig
     {
-        private readonly Lazy<AppConfig> lazyAppConfig;
+        private readonly IFilesHelper fileHelper;
 
         public HikConfig(IFilesHelper fileHelper)
         {
-            string configPath = fileHelper.CombinePath(AssemblyDirectory, "configuration.json");
-            this.lazyAppConfig = new Lazy<AppConfig>(() => JsonConvert.DeserializeObject<AppConfig>(fileHelper.ReadAllText(configPath)));
+            this.fileHelper = fileHelper;
         }
 
-        public AppConfig Config => this.lazyAppConfig.Value;
-
-        private static string AssemblyDirectory
+        public AppConfig GetConfig(string configFileName = "configuration.json")
         {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
+            string configPath = this.fileHelper.CombinePath(GetAssemblyDirectory(), configFileName);
+            return JsonConvert.DeserializeObject<AppConfig>(this.fileHelper.ReadAllText(configPath));
+        }
+
+        private static string GetAssemblyDirectory()
+        {
+            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+            UriBuilder uri = new UriBuilder(codeBase);
+            string path = Uri.UnescapeDataString(uri.Path);
+            return Path.GetDirectoryName(path);
         }
     }
 }

@@ -7,41 +7,66 @@
 
   <schedule>
     <job>
-      <name>HikDownloader</name>
-      <group>DEFAULT</group>
-      <description>Download files from Hikvision Cameras</description>
-      <job-type>HikWeb.Job.HikDownloaderJob, HikWeb</job-type>
+      <name>Launcher</name>
+      <group></group>
+      <description></description>
+      <job-type>HikWeb.CronTrigger, HikWeb</job-type>
       <durable>true</durable>
       <recover>false</recover>
-      <job-data-map>
-        <entry>
-          <key>key0</key><value>value0</value>
-        </entry>
-      </job-data-map>
     </job>
+
     <trigger>
       <cron>
-        <name>HikDownloaderTrigger</name>
-        <job-name>HikDownloader</job-name>
-        <cron-expression>0 0/30 * 1/1 * ? *</cron-expression>
+        <name>HikDownloader</name>
+        <group></group>
+        <description>Download videos</description>
+        <job-name>Launcher</job-name>
+        <job-group></job-group>
+        <job-data-map>
+          <entry>
+            <key>Job</key>
+            <value>Job.Impl.HikDownloaderJob, Job</value>
+          </entry>
+          <entry>
+            <key>JobType</key>
+            <value>HikDownloader</value>
+          </entry>
+          <entry>
+            <key>ConfigPath</key>
+            <value>configuration.json</value>
+          </entry>
+        </job-data-map>
+        <misfire-instruction>DoNothing</misfire-instruction>
+        <cron-expression>0 0/1 * * * ?</cron-expression>
       </cron>
     </trigger>
     
-    <job>
-      <name>DeleteArchivingJob</name>
-      <group>DEFAULT</group>
-      <description>Download files from Hikvision Cameras</description>
-      <job-type>HikWeb.Job.DeleteArchivingJob, HikWeb</job-type>
-      <durable>true</durable>
-      <recover>false</recover>
-    </job>
     <trigger>
       <cron>
-        <name>DeleteArchivingJobTrigger</name>
-        <job-name>DeleteArchivingJob</job-name>
-        <cron-expression>0 15 4 1/1 * ? *</cron-expression>
+        <name>DeleteArchiving</name>
+        <group></group>
+        <description>Delete videos</description>
+        <job-name>Launcher</job-name>
+        <job-group></job-group>
+        <job-data-map>
+          <entry>
+            <key>Job</key>
+            <value>Job.Impl.DeleteArchivingJob, Job</value>
+          </entry>
+          <entry>
+            <key>JobType</key>
+            <value>DeleteArchiving</value>
+          </entry>
+          <entry>
+            <key>ConfigPath</key>
+            <value>configuration.json</value>
+          </entry>
+        </job-data-map>
+        <misfire-instruction>DoNothing</misfire-instruction>
+        <cron-expression>0 0/5 * * * ?</cron-expression>
       </cron>
     </trigger>
+
   </schedule>
 
 </job-scheduling-data>

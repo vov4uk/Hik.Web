@@ -40,10 +40,11 @@ namespace HikConsole
 
         public void InitializeClient()
         {
-            string sdkLogsPath = this.filesHelper.CombinePath(Environment.CurrentDirectory, "logs", this.config.Alias + "_SdkLog");
+            string sdkLogsPath = this.filesHelper.CombinePath(DirectoryHelper.AssemblyDirectory, "logs", this.config.Alias + "_SdkLog");
             this.filesHelper.FolderCreateIfNotExist(sdkLogsPath);
             this.filesHelper.FolderCreateIfNotExist(this.config.DestinationFolder);
 
+            this.logger.Info($"SDK Logs : {sdkLogsPath}");
             this.hikApi.Initialize();
             this.hikApi.SetupLogs(3, sdkLogsPath, false);
             this.hikApi.SetConnectTime(2000, 1);
@@ -55,7 +56,7 @@ namespace HikConsole
             if (this.session == null)
             {
                 this.session = this.hikApi.Login(this.config.IpAddress, this.config.PortNumber, this.config.UserName, this.config.Password);
-                this.logger.Info($"Sucessfull login to {this.config.ToString()}");
+                this.logger.Info($"Sucessfull login to {this.config}");
                 return true;
             }
             else
@@ -165,7 +166,7 @@ namespace HikConsole
                 start => start < periodEnd,
                 "Start period grater than end");
 
-            this.logger.Info($"Get videos from {periodStart.ToString()} to {periodEnd.ToString()}");
+            this.logger.Info($"Get videos from {periodStart} to {periodEnd}");
 
             return this.hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, this.session);
         }
@@ -174,7 +175,7 @@ namespace HikConsole
         {
             this.ValidateDateParameters(periodStart, periodEnd);
 
-            this.logger.Info($"Get photos from {periodStart.ToString()} to {periodEnd.ToString()}");
+            this.logger.Info($"Get photos from {periodStart} to {periodEnd}");
 
             return this.hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd, this.session);
         }
@@ -305,7 +306,7 @@ namespace HikConsole
             // Downloaded video file is bigger than remote file
             // 56 bytes for 2MP camera
             // 70 bytes for 4MP camera
-            // This const was taken on debug
+            // This const was taken on runtime
             long fileSize = this.filesHelper.FileSize(path);
             return (size + 70) == fileSize || (size + 56) == fileSize;
         }

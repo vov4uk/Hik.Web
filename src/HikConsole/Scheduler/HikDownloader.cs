@@ -10,6 +10,7 @@ using HikConsole.Abstraction;
 using HikConsole.Config;
 using HikConsole.DTO;
 using HikConsole.DTO.Contracts;
+using HikConsole.Events;
 using HikConsole.Helpers;
 
 namespace HikConsole.Scheduler
@@ -17,9 +18,8 @@ namespace HikConsole.Scheduler
     public class HikDownloader
     {
         private const string DurationFormat = "h'h 'm'm 's's'";
-        private readonly AppConfig appConfig;
+        private readonly IHikConfig hikConfig;
         private readonly ILogger logger;
-        private readonly IEmailHelper emailHelper;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IHikClientFactory clientFactory;
         private readonly IProgressBarFactory progressFactory;
@@ -28,28 +28,29 @@ namespace HikConsole.Scheduler
         private DateTime? lastRun;
 
         public HikDownloader(
-            AppConfig appConfig,
+            IHikConfig hikConfig,
             ILogger logger,
-            IEmailHelper emailHelper,
             IDirectoryHelper directoryHelper,
             IHikClientFactory clientFactory,
             IProgressBarFactory progressFactory)
         {
-            this.appConfig = appConfig;
-
+            this.hikConfig = hikConfig;
             this.logger = logger;
-            this.emailHelper = emailHelper;
             this.directoryHelper = directoryHelper;
             this.clientFactory = clientFactory;
             this.progressFactory = progressFactory;
         }
 
+        public event EventHandler<ExceptionEventArgs> ExceptionFired;
+
         public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
 
-        public async Task<JobResult> DownloadAsync()
+        public async Task<JobResult> DownloadAsync(string configFileName)
         {
+            var appConfig = this.hikConfig.GetConfig(configFileName);
+
             JobResult jobResult = null;
-            using (this.cancelTokenSource = new CancellationTokenSource())
+            using (this.cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(appConfig.JobTimeout)))
             {
                 TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
 
@@ -60,7 +61,7 @@ namespace HikConsole.Scheduler
 
                 try
                 {
-                    Task<JobResult> downloadTask = this.InternalDownload();
+                    Task<JobResult> downloadTask = this.InternalDownload(appConfig);
                     Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
 
                     if (completedTask == downloadTask)
@@ -70,11 +71,6 @@ namespace HikConsole.Scheduler
                     }
 
                     await taskCompletionSource.Task;
-                }
-                catch (OperationCanceledException ex)
-                {
-                    this.logger.Error("Task was cancelled", ex);
-                    this.ForceExit();
                 }
                 catch (Exception ex)
                 {
@@ -88,7 +84,9 @@ namespace HikConsole.Scheduler
 
         public void Cancel()
         {
-            if (this.cancelTokenSource != null && this.cancelTokenSource.Token.CanBeCanceled)
+            if (this.cancelTokenSource != null
+                && this.cancelTokenSource.Token != null
+                && this.cancelTokenSource.Token.CanBeCanceled)
             {
                 this.cancelTokenSource.Cancel();
                 this.logger.Warn("Cancel signal was sent");
@@ -99,24 +97,29 @@ namespace HikConsole.Scheduler
             }
         }
 
+        protected virtual void OnExceptionFired(ExceptionEventArgs e)
+        {
+            this.ExceptionFired?.Invoke(this, e);
+        }
+
         private void ForceExit()
         {
             this.client?.ForceExit();
             this.client = null;
         }
 
-        private async Task<JobResult> InternalDownload()
+        private async Task<JobResult> InternalDownload(AppConfig appConfig)
         {
             DateTime appStart = DateTime.Now;
 
             this.logger.Info($"Start.");
-            DateTime periodStart = this.lastRun?.AddMinutes(-1) ?? appStart.AddHours(-1 * this.appConfig.ProcessingPeriodHours);
+            DateTime periodStart = this.lastRun?.AddMinutes(-1) ?? appStart.AddHours(-1 * appConfig.ProcessingPeriodHours);
 
             var jobResult = new JobResult { PeriodStart = periodStart, PeriodEnd = appStart };
 
             bool failed = false;
 
-            foreach (var camera in this.appConfig.Cameras)
+            foreach (var camera in appConfig.Cameras)
             {
                 var result = await this.ProcessCameraAsync(camera, periodStart, appStart);
                 jobResult.CameraResults[camera.Alias] = result;
@@ -129,7 +132,7 @@ namespace HikConsole.Scheduler
 
             string duration = (DateTime.Now - appStart).ToString(DurationFormat);
             this.logger.Info($"End. Duration  : {duration}");
-            this.logger.Info($"Next execution at {appStart.AddMinutes(this.appConfig.Interval).ToString(CultureInfo.InvariantCulture)}");
+            this.logger.Info($"Next execution at {appStart.AddMinutes(appConfig.Interval).ToString(CultureInfo.InvariantCulture)}");
             this.lastRun = failed ? periodStart : appStart;
 
             return jobResult;
@@ -151,13 +154,13 @@ namespace HikConsole.Scheduler
                 using (this.client = this.clientFactory.Create(cameraConf))
                 {
                     this.client.InitializeClient();
-                    this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+                    this.ThrowIfCancellationRequested();
 
                     if (this.client.Login())
                     {
                         this.CheckClientHardDriveStatus(result);
 
-                        this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+                        this.ThrowIfCancellationRequested();
                         var videos = await this.DownloadVideos(periodStart, periodEnd);
                         result.DownloadedVideos.AddRange(videos);
 
@@ -174,11 +177,6 @@ namespace HikConsole.Scheduler
                         this.logger.Warn("Unable to login");
                     }
                 }
-            }
-            catch (OperationCanceledException ex)
-            {
-                ex.Data.Add("Camera", cameraConf);
-                throw;
             }
             catch (Exception ex)
             {
@@ -223,7 +221,7 @@ namespace HikConsole.Scheduler
                 foreach (RemotePhotoFile photo in photos)
                 {
                     DateTime start = DateTime.Now;
-                    this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+                    this.ThrowIfCancellationRequested();
                     bool isDownloaded = this.client.PhotoDownload(photo);
                     DateTime finish = DateTime.Now;
                     photoDownloadResults[isDownloaded]++;
@@ -265,8 +263,8 @@ namespace HikConsole.Scheduler
             var videoResult = new List<VideoDTO>();
             foreach (RemoteVideoFile video in videos)
             {
-                this.cancelTokenSource.Token.ThrowIfCancellationRequested();
-                this.logger.Info($"{(j++).ToString(),2}/{videos.Count} : ");
+                this.ThrowIfCancellationRequested();
+                this.logger.Info($"{j++,2}/{videos.Count} : ");
                 var videoDownloadResult = await this.DownloadRemoteVideoFileAsync(video);
                 if (videoDownloadResult != null)
                 {
@@ -328,7 +326,7 @@ namespace HikConsole.Scheduler
                 do
                 {
                     await Task.Delay(this.ProgressCheckPeriodMilliseconds);
-                    this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+                    this.ThrowIfCancellationRequested();
                     this.client.UpdateVideoProgress();
                 }
                 while (this.client.IsDownloading);
@@ -347,7 +345,7 @@ namespace HikConsole.Scheduler
                 };
             }
 
-            return default(VideoDTO);
+            return default;
         }
 
         private string GetExceptionMessage(Exception ex)
@@ -368,8 +366,24 @@ namespace HikConsole.Scheduler
 
             this.logger.Error(msg, ex);
 
-            this.emailHelper.SendEmail(this.appConfig.EmailConfig, ex);
+            this.OnExceptionFired(new ExceptionEventArgs()
+            {
+                Exception = ex,
+            });
+
             this.ForceExit();
+        }
+
+        private void ThrowIfCancellationRequested()
+        {
+            if (this.cancelTokenSource != null && this.cancelTokenSource.Token != null)
+            {
+                this.cancelTokenSource.Token.ThrowIfCancellationRequested();
+            }
+            else
+            {
+                throw new OperationCanceledException();
+            }
         }
     }
 }

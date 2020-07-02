@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Autofac;
 using HikConsole.Helpers;
-using HikConsole.Scheduler;
 
 namespace HikConsole.Infrastructure
 {
@@ -41,7 +40,6 @@ namespace HikConsole.Infrastructure
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();
             builder.RegisterType<HikConfig>().SingleInstance();
             builder.RegisterType<Logger>().SingleInstance();
-            builder.RegisterType<HikDownloader>().SingleInstance();
             IContainer container = builder.Build();
 
             return container;

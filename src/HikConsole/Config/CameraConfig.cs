@@ -22,14 +22,17 @@ namespace HikConsole.Config
 
         public bool DownloadPhotos { get; set; }
 
+        public int? RetentionPeriodDays { get; set; } = 7;
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine();
             sb.AppendLine(this.GetRow("Alias", this.Alias));
             sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetRow("IP Address", $"{this.IpAddress}:{this.PortNumber.ToString()}"));
+            sb.AppendLine(this.GetRow("IP Address", $"{this.IpAddress}:{this.PortNumber}"));
             sb.AppendLine(this.GetRow("User name", this.UserName));
+            sb.AppendLine(this.GetRow("Retention Period", this.RetentionPeriodDays.ToString()));
 
             return sb.ToString();
         }
@@ -41,8 +44,9 @@ namespace HikConsole.Config
             sb.AppendLine("<table>");
             sb.AppendLine(this.GetHtmlRow("Alias", this.Alias));
             sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.IpAddress}:{this.PortNumber.ToString()}"));
+            sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.IpAddress}:{this.PortNumber}"));
             sb.AppendLine(this.GetHtmlRow("User name", this.UserName));
+            sb.AppendLine(this.GetHtmlRow("Retention Period", this.RetentionPeriodDays.ToString()));
             sb.AppendLine("</table>");
 
             return sb.ToString();

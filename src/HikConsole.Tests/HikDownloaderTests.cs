@@ -45,11 +45,11 @@ namespace HikConsole.Tests
         public async Task DownloadAsync_EmptyConfig_NothingToDo()
         {
             var appConfig = this.fixture.Build<AppConfig>()
-                    .With(x => x.Cameras, new CameraConfig[] { })
+                    .With(x => x.Cameras, Array.Empty<CameraConfig>())
                     .Create();
             var downloader = this.CreateHikDownloader(appConfig);
 
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             this.clientMock.Verify(x => x.InitializeClient(), Times.Never);
         }
@@ -69,7 +69,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -93,7 +93,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -116,11 +116,11 @@ namespace HikConsole.Tests
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
 
-            this.clientMock.Setup(x => x.FindVideosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new RemoteVideoFile[] { });
+            this.clientMock.Setup(x => x.FindVideosAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(Array.Empty<RemoteVideoFile>());
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -152,7 +152,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -188,7 +188,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -227,7 +227,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -264,7 +264,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             // assert
             this.clientMock.Verify();
@@ -300,7 +300,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             // assert
             this.clientMock.Verify();
@@ -342,7 +342,7 @@ namespace HikConsole.Tests
 
             this.clientMock.Setup(x => x.InitializeClient()).Callback(downloader.Cancel);
 
-            await downloader.DownloadAsync();
+            await downloader.DownloadAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -387,7 +387,7 @@ namespace HikConsole.Tests
         {
             this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>())).Returns(this.clientMock.Object);
 
-            return new HikDownloader(appConfig, this.loggerMock.Object, this.emailMock.Object, this.directoryMock.Object, this.clientFactoryMock.Object, this.progressMock.Object)
+            return new HikDownloader(null, this.loggerMock.Object, this.directoryMock.Object, this.clientFactoryMock.Object, this.progressMock.Object)
             {
                 ProgressCheckPeriodMilliseconds = 100,
             };

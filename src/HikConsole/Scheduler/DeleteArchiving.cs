@@ -13,28 +13,34 @@ namespace HikConsole.Scheduler
     public class DeleteArchiving : IDeleteArchiving
     {
         private readonly ILogger logger;
+        private readonly IHikConfig hikConfig;
 
-        public DeleteArchiving(ILogger log)
+        public DeleteArchiving(ILogger log, IHikConfig hikConfig)
         {
             this.logger = log;
+            this.hikConfig = hikConfig;
         }
 
-        public Task<JobResult> Archive(CameraConfig[] cameras, TimeSpan time, string[] extentions)
+        public Task<JobResult> Archive(string configFilePath)
         {
+            var appConfig = this.hikConfig.GetConfig(configFilePath);
+
             return Task.Run(() =>
             {
                 this.logger.Info("Start.");
-                DateTime cutOff = DateTime.Today.Subtract(time);
 
                 var jobResult = new JobResult
                 {
                     PeriodStart = default,
-                    PeriodEnd = cutOff,
+                    PeriodEnd = default,
                 };
 
-                foreach (var cameraConf in cameras)
+                foreach (var cameraConf in appConfig.Cameras)
                 {
-                    var cameraResult = this.ArchiveInternal(cameraConf.DestinationFolder, cutOff, cameraConf, extentions);
+                    var period = TimeSpan.FromDays(cameraConf.RetentionPeriodDays.Value);
+                    DateTime cutOff = DateTime.Today.Subtract(period);
+
+                    var cameraResult = this.ArchiveInternal(cameraConf.DestinationFolder, cutOff, cameraConf, appConfig.FilesToDelete);
                     jobResult.CameraResults.Add(cameraConf.Alias, cameraResult);
                 }
 

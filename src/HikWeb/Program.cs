@@ -51,7 +51,7 @@ namespace HikWeb
                 .UseKestrel()
                 .UseEnvironment(env)
                 .UseConfiguration(config)
-                .UseIISIntegration()                
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .ConfigureLogging(logging =>
                 {
