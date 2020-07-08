@@ -1,31 +1,32 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 
 namespace Job
 {
     public class Parameters
     {
-        public readonly string Operator = "Scheduler";
-
-        public int JobEventId { get; private set; }
-
         public string ClassName { get; private set; }
 
         public Guid ActivityId { get; set; }
 
-        public string Description { get; set; }
+        public string TriggerKey { get; set; }
 
         public string ConfigFilePath { get; set; }
 
+        public string ConnectionString { get; set; }
+
         public override string ToString()
         {
-            return $"\"{SingletonKey}\" \"{ActivityId}\" \"{ConfigFilePath}\"";
+            return $"\"{ClassName}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigFilePath}\" \"{ConnectionString}\"";
         }
 
-        public Parameters(string className, string description, string configFilePath)
+        public Parameters(string className, string description, string configFilePath, string connectionString)
         {
-            Description = description;
+            TriggerKey = description;
             ClassName = className;
-            ConfigFilePath = configFilePath;
+            ConfigFilePath = Path.Combine(AssemblyDirectory, configFilePath);
+            ConnectionString = connectionString;
         }
 
 
@@ -33,18 +34,25 @@ namespace Job
         {
         }
 
-        public string SingletonKey
-        {
-            get { return ClassName; }
-        }
-
         public static Parameters Parse(string[] args)
         {
             var parameters = new Parameters();
             parameters.ClassName = args[0];
-            parameters.ActivityId = Guid.Parse(args[1]);
-            parameters.ConfigFilePath = args[2];
+            parameters.TriggerKey = args[1];
+            parameters.ActivityId = Guid.Parse(args[2]);
+            parameters.ConfigFilePath = args[3];
+            parameters.ConnectionString = args[4];
             return parameters;
+        }
+        private static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
         }
     }
 }

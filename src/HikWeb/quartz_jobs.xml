@@ -17,9 +17,9 @@
 
     <trigger>
       <cron>
-        <name>HikDownloader</name>
+        <name>Street</name>
         <group></group>
-        <description>Download videos</description>
+        <description>Download videos from street camera</description>
         <job-name>Launcher</job-name>
         <job-group></job-group>
         <job-data-map>
@@ -33,7 +33,33 @@
           </entry>
           <entry>
             <key>ConfigPath</key>
-            <value>configuration.json</value>
+            <value>configuration.street.json</value>
+          </entry>
+        </job-data-map>
+        <misfire-instruction>DoNothing</misfire-instruction>
+        <cron-expression>0 0/1 * * * ?</cron-expression>
+      </cron>
+    </trigger>
+
+    <trigger>
+      <cron>
+        <name>Internal</name>
+        <group></group>
+        <description>Download videos from internal camera</description>
+        <job-name>Launcher</job-name>
+        <job-group></job-group>
+        <job-data-map>
+          <entry>
+            <key>Job</key>
+            <value>Job.Impl.HikDownloaderJob, Job</value>
+          </entry>
+          <entry>
+            <key>JobType</key>
+            <value>HikDownloader</value>
+          </entry>
+          <entry>
+            <key>ConfigPath</key>
+            <value>configuration.internal.json</value>
           </entry>
         </job-data-map>
         <misfire-instruction>DoNothing</misfire-instruction>

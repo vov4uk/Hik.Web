@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace HikConsole.Config
+namespace Job.Email
 {
     [ExcludeFromCodeCoverage]
     public class EmailConfig

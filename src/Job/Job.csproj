@@ -5,6 +5,14 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\HikWeb\bin\Debug\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath></OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Quartz" Version="3.0.7" />
   </ItemGroup>
@@ -12,6 +20,12 @@
   <ItemGroup>
     <ProjectReference Include="..\HikConsole.DataAccess\HikConsole.DataAccess.csproj" />
     <ProjectReference Include="..\HikConsole\HikConsole.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="email.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

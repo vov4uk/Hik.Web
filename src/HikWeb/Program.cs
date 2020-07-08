@@ -47,6 +47,10 @@ namespace HikWeb
             .AddCommandLine(args)
             .Build();
 
+            AutofacConfig.RegisterConfiguration(config);
+
+            var port = config.GetSection("Hosting:Port").Value;
+
             return new WebHostBuilder()
                 .UseKestrel()
                 .UseEnvironment(env)
@@ -59,7 +63,7 @@ namespace HikWeb
                     logging.AddEventLog();
                     logging.AddConsole();
                 })
-                .UseUrls(isService ? "http://+:5000" : "http://+:4000");
+                .UseUrls($"http://+:{port}");
         }
 
         private static string AssemblyDirectory

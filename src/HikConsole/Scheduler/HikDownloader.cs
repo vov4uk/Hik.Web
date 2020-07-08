@@ -132,7 +132,6 @@ namespace HikConsole.Scheduler
 
             string duration = (DateTime.Now - appStart).ToString(DurationFormat);
             this.logger.Info($"End. Duration  : {duration}");
-            this.logger.Info($"Next execution at {appStart.AddMinutes(appConfig.Interval).ToString(CultureInfo.InvariantCulture)}");
             this.lastRun = failed ? periodStart : appStart;
 
             return jobResult;

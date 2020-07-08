@@ -13,7 +13,7 @@ namespace Job.Impl
     public abstract class JobProcessBase
     {
         protected static readonly ILogger Logger = Logger = AppBootstrapper.Container.Resolve<ILogger>();
-        public string Description { get; private set; }
+        public string TriggerKey { get; private set; }
         public string ConfigPath { get; private set; }
         public string ConnectionString { get; private set; }
 
@@ -23,19 +23,19 @@ namespace Job.Impl
 
         public abstract Task<JobResult> Run();
 
-        public JobProcessBase(string description, string path, string connectionString)
+        public JobProcessBase(string trigger, string path, string connectionString)
         {
-            Description = description;
+            TriggerKey = trigger;
             ConfigPath = path;
             ConnectionString = connectionString;
         }
 
-        public async Task Execute()
+        public async Task ExecuteAsync()
         {
             var job = new HikJob
             {
                 Started = DateTime.Now,
-                JobType = JobType.ToString(),
+                JobType = TriggerKey,
             };
 
             var unitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
