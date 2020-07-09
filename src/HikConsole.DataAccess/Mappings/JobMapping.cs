@@ -24,7 +24,7 @@ namespace HikConsole.DataAccess.Mappings
                 .HasColumnType("datetime2(0)");
             builder.Property(f => f.PeriodEnd)
                 .IsRequired(false)
-                .HasColumnType("datetime2(0)");    
+                .HasColumnType("datetime2(0)");
             builder.Property(f => f.PeriodStart)
                 .IsRequired(false)
                 .HasColumnType("datetime2(0)");

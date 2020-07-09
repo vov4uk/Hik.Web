@@ -29,11 +29,11 @@ namespace HikConsole.Scheduler
             {
                 var jobRepo = unitOfWork.GetRepository<HikJob>();
                 var cameraRepo = unitOfWork.GetRepository<Camera>();
-                this.job.PeriodStart = this.result.PeriodStart;
-                this.job.PeriodEnd = this.result.PeriodEnd;
+                this.job.PeriodStart = this.result?.PeriodStart;
+                this.job.PeriodEnd = this.result?.PeriodEnd;
                 await jobRepo.Update(this.job);
 
-                foreach (var cameraResult in this.result.CameraResults)
+                foreach (var cameraResult in this.result?.CameraResults)
                 {
                     var camera = await cameraRepo.FindBy(x => x.Alias == cameraResult.Key);
                     if (camera == null)
@@ -42,7 +42,13 @@ namespace HikConsole.Scheduler
                         await cameraRepo.Add(camera);
                     }
 
+                    if (!cameraResult.Value.Failed)
+                    {
+                        camera.LastSync = this.result.PeriodEnd; 
+                    }
+
                     this.job.FailsCount += cameraResult.Value.Failed ? 1 : 0;
+
                     this.job.PhotosCount += cameraResult.Value.DownloadedPhotos.Count;
                     this.job.VideosCount += cameraResult.Value.DownloadedVideos.Count;
                     this.job.PhotosCount += cameraResult.Value.DeletedFiles.Count(x => x.Extention == ".jpg");

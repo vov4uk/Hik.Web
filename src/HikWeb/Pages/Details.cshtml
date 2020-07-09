@@ -86,16 +86,32 @@
                         @Html.DisplayFor(modelItem => item.Camera.Alias)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.HdStatus)
+                        @{
+                            HikConsole.DataAccess.Data.HdStatus status = (HikConsole.DataAccess.Data.HdStatus)item.HdStatus;
+                            string NewStatus = DetailsModel.GetEnumDescription(status);
+                        }
+                        @NewStatus
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.HDType)
+                        @{
+                            HikConsole.DataAccess.Data.HdTypes hdType = (HikConsole.DataAccess.Data.HdTypes)item.HDType;
+                            string NewType = DetailsModel.GetEnumDescription(hdType);
+                        }
+                        @NewType
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Capacity)
+                        @{
+                            double? gByte = (@item.Capacity / 1024.0);
+                            string NewSize = gByte?.ToString("0.00") + " GB";
+                        }
+                        @NewSize
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.FreeSpace)
+                        @{
+                            double? freeGByte = (@item.FreeSpace / 1024.0);
+                            string NewFree = freeGByte?.ToString("0.00") + " GB";
+                        }
+                        @NewFree
                     </td>
                 </tr>
             }

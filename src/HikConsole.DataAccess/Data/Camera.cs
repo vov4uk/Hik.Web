@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -28,10 +29,6 @@ namespace HikConsole.DataAccess.Data
 
         public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();
 
-        // public int LastJob { get; set; }
-
-        // public int LastVideo { get; set; }
-
-        // public int? LastPhoto { get; set; }
+        public DateTime? LastSync { get; set; }
     }
 }
