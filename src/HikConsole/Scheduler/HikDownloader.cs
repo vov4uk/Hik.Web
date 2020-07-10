@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -12,6 +11,7 @@ using HikConsole.DTO;
 using HikConsole.DTO.Contracts;
 using HikConsole.Events;
 using HikConsole.Helpers;
+using NLog;
 
 namespace HikConsole.Scheduler
 {
@@ -19,23 +19,21 @@ namespace HikConsole.Scheduler
     {
         private const string DurationFormat = "h'h 'm'm 's's'";
         private readonly IHikConfig hikConfig;
-        private readonly ILogger logger;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IHikClientFactory clientFactory;
         private readonly IProgressBarFactory progressFactory;
+        private ILogger logger = LogManager.GetCurrentClassLogger();
         private CancellationTokenSource cancelTokenSource;
         private IHikClient client;
         private DateTime? lastRun;
 
         public HikDownloader(
             IHikConfig hikConfig,
-            ILogger logger,
             IDirectoryHelper directoryHelper,
             IHikClientFactory clientFactory,
             IProgressBarFactory progressFactory)
         {
             this.hikConfig = hikConfig;
-            this.logger = logger;
             this.directoryHelper = directoryHelper;
             this.clientFactory = clientFactory;
             this.progressFactory = progressFactory;
@@ -363,7 +361,7 @@ namespace HikConsole.Scheduler
         {
             string msg = this.GetExceptionMessage(ex);
 
-            this.logger.Error(msg, ex);
+            this.logger.Error(ex, msg);
 
             this.OnExceptionFired(new ExceptionEventArgs()
             {

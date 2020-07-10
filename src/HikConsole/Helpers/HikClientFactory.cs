@@ -2,6 +2,7 @@
 using HikApi.Abstraction;
 using HikConsole.Abstraction;
 using HikConsole.Config;
+using NLog;
 
 namespace HikConsole.Helpers
 {
@@ -11,14 +12,13 @@ namespace HikConsole.Helpers
         private readonly IHikApi hikApi;
         private readonly IFilesHelper filesHelper;
         private readonly IProgressBarFactory progressFactory;
-        private readonly ILogger logger;
+        private readonly ILogger logger = LogManager.GetCurrentClassLogger();
 
-        public HikClientFactory(IHikApi hikApi, IFilesHelper filesHelper, IProgressBarFactory progressFactory, ILogger logger)
+        public HikClientFactory(IHikApi hikApi, IFilesHelper filesHelper, IProgressBarFactory progressFactory)
         {
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
             this.progressFactory = progressFactory;
-            this.logger = logger;
         }
 
         public IHikClient Create(CameraConfig camera)

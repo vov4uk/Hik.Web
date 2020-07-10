@@ -9,6 +9,7 @@ using HikApi.Data;
 using HikConsole.Abstraction;
 using HikConsole.Config;
 using HikConsole.Helpers;
+using NLog;
 
 namespace HikConsole
 {
@@ -20,7 +21,7 @@ namespace HikConsole
         private readonly IHikApi hikApi;
         private readonly IFilesHelper filesHelper;
         private readonly IProgressBarFactory progressFactory;
-        private readonly ILogger logger;
+        private ILogger logger = LogManager.GetCurrentClassLogger();
         private int downloadId = -1;
         private IRemoteFile currentDownloadFile;
         private Session session;

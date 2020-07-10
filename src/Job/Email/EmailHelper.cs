@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Net;
 using System.Net.Mail;
 using System.Reflection;
-using Autofac;
-using HikConsole.Abstraction;
 using HikConsole.Config;
-using HikConsole.Infrastructure;
 using Newtonsoft.Json;
+using NLog;
 
 namespace Job.Email
 {
@@ -17,7 +14,7 @@ namespace Job.Email
     {
 
         static EmailConfig Settings { get;}
-        static readonly ILogger Logger = Logger = AppBootstrapper.Container.Resolve<ILogger>();
+        static readonly ILogger logger = LogManager.GetCurrentClassLogger();
 
         static EmailHelper()
         {
@@ -55,8 +52,8 @@ namespace Job.Email
                     mail.IsBodyHtml = true;
 
 #if DEBUG
-                    Logger.Info("Send");
-                    Logger.Info(msg);
+                    logger.Info("Send");
+                    logger.Info(msg);
 #elif RELEASE
                     using var smtp = new SmtpClient(Settings.Server, Settings.Port)
                     {
@@ -69,7 +66,7 @@ namespace Job.Email
             }
             catch (Exception e)
             {
-                Logger.Error("Send failed", e);
+                logger.Error(e, "Send failed");
             }
         }
 

@@ -7,17 +7,17 @@ using HikConsole.Abstraction;
 using HikConsole.Config;
 using HikConsole.DTO;
 using HikConsole.DTO.Contracts;
+using NLog;
 
 namespace HikConsole.Scheduler
 {
     public class DeleteArchiving : IDeleteArchiving
     {
-        private readonly ILogger logger;
+        private readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private readonly IHikConfig hikConfig;
 
-        public DeleteArchiving(ILogger log, IHikConfig hikConfig)
+        public DeleteArchiving(IHikConfig hikConfig)
         {
-            this.logger = log;
             this.hikConfig = hikConfig;
         }
 
@@ -89,7 +89,7 @@ namespace HikConsole.Scheduler
                     }
                     catch (Exception ex)
                     {
-                        this.logger.Error(ex.ToString(), ex);
+                        this.logger.Error(ex, ex.ToString());
                         result.Failed = true;
                     }
                 });
@@ -108,7 +108,7 @@ namespace HikConsole.Scheduler
             }
             catch (Exception ex)
             {
-                this.logger.Error("Error hapened", ex);
+                this.logger.Error(ex, "Error hapened");
                 result.Failed = true;
             }
 

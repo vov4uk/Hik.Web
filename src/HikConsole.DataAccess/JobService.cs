@@ -24,6 +24,10 @@ namespace HikConsole.Scheduler
 
         public async Task SaveAsync()
         {
+            if (result == null)
+            {
+                return;
+            }
 
             using (var unitOfWork = factory.CreateUnitOfWork())
             {

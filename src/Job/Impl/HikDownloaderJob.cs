@@ -26,7 +26,7 @@ namespace Job.Impl
 
         private void Downloader_ExceptionFired(object sender, HikConsole.Events.ExceptionEventArgs e)
         {
-            Logger.Error(e.Exception.Message, e.Exception);
+            base.Logger.Error(e.Exception, e.Exception.Message);
             EmailHelper.Send(e.Exception);
             System.Console.WriteLine(e.ToString());
         }

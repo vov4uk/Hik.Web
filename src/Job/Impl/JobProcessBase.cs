@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Autofac;
-using HikConsole.Abstraction;
 using HikConsole.DataAccess;
 using HikConsole.DataAccess.Data;
 using HikConsole.DTO;
-using HikConsole.Infrastructure;
 using HikConsole.Scheduler;
+using NLog;
 
 namespace Job.Impl
 {
     public abstract class JobProcessBase
     {
-        protected static readonly ILogger Logger = Logger = AppBootstrapper.Container.Resolve<ILogger>();
+        protected readonly Logger Logger;
         public string TriggerKey { get; private set; }
         public string ConfigPath { get; private set; }
         public string ConnectionString { get; private set; }
@@ -28,6 +26,7 @@ namespace Job.Impl
             TriggerKey = trigger;
             ConfigPath = path;
             ConnectionString = connectionString;
+            this.Logger = LogManager.GetLogger(TriggerKey);
         }
 
         public async Task ExecuteAsync()

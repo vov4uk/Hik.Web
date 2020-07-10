@@ -40,7 +40,6 @@ namespace HikConsole.Infrastructure
 
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();
             builder.RegisterType<HikConfig>().SingleInstance();
-            builder.RegisterType<Logger>().SingleInstance();
             builder.RegisterType<HikDownloader>();
             builder.RegisterType<DeleteArchiving>();
             IContainer container = builder.Build();

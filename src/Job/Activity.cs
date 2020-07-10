@@ -2,15 +2,13 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
-using HikConsole.Abstraction;
-using HikConsole.Infrastructure;
+using NLog;
 
 namespace Job
 {
     public class Activity
     {
-        protected static readonly ILogger Logger = Logger = AppBootstrapper.Container.Resolve<ILogger>();
+        protected static readonly ILogger logger = LogManager.GetCurrentClassLogger();
 
         public readonly Guid Id;
         public Parameters Parameters { get; private set; }
