@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Autofac;
 using HikConsole.DTO;
 using HikConsole.Infrastructure;
@@ -8,7 +9,7 @@ namespace Job.Impl
 {
     public class DeleteArchivingJob : JobProcessBase
     {
-        public DeleteArchivingJob(string description, string path, string connectionString) : base(description, path, connectionString)
+        public DeleteArchivingJob(string description, string path, string connectionString, Guid activityId) : base(description, path, connectionString, activityId)
         {
         }
 

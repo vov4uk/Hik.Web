@@ -10,7 +10,9 @@ namespace Job.Impl
 {
     public abstract class JobProcessBase
     {
-        protected readonly Logger Logger;
+        protected readonly UnitOfWorkFactory UnitOfWorkFactory;
+
+        protected readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public string TriggerKey { get; private set; }
         public string ConfigPath { get; private set; }
         public string ConnectionString { get; private set; }
@@ -21,12 +23,13 @@ namespace Job.Impl
 
         public abstract Task<JobResult> Run();
 
-        public JobProcessBase(string trigger, string path, string connectionString)
+        public JobProcessBase(string trigger, string configFilePath, string connectionString, Guid activityId)
         {
             TriggerKey = trigger;
-            ConfigPath = path;
+            ConfigPath = configFilePath;
             ConnectionString = connectionString;
-            this.Logger = LogManager.GetLogger(TriggerKey);
+            System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
+            this.UnitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
         }
 
         public async Task ExecuteAsync()
@@ -37,12 +40,10 @@ namespace Job.Impl
                 JobType = TriggerKey,
             };
 
-            var unitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
-
-            using (var unitOfWork = unitOfWorkFactory.CreateUnitOfWork())
+            using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
             {
                 var jobRepo = unitOfWork.GetRepository<HikJob>();
-                await jobRepo.Add(job);
+                await jobRepo.AddAsync(job);
                 await unitOfWork.SaveChangesAsync();
             }
 
@@ -50,7 +51,7 @@ namespace Job.Impl
 
             job.Finished = DateTime.Now;
             Logger.Info("Save to DB...");
-            var jobResultSaver = new JobService(unitOfWorkFactory, job, result);
+            var jobResultSaver = new JobService(this.UnitOfWorkFactory, job, result);
             await jobResultSaver.SaveAsync();
             Logger.Info("Save to DB. Done");
 

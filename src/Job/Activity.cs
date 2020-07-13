@@ -31,21 +31,22 @@ namespace Job
             Parameters.ActivityId = Id;
             hostProcess = new Process();
 
+            Log("Activity created with parameters {0}.", parameters.ToString());
         }
 
         public async Task Start()
         {
             bool singleInstance;
-            var instance = new Mutex(true, $@"Global\{Parameters.ClassName}_{Parameters.TriggerKey}", out singleInstance);
-
-            if (singleInstance)
+            using (var instance = new Mutex(true, $@"Global\{Parameters.ClassName}_{Parameters.TriggerKey}", out singleInstance))
             {
-                await StartProcess();
-                instance.Dispose();
-            }
-            else
-            {
-                instance.Dispose();
+                if (singleInstance)
+                {
+                    await StartProcess();
+                }
+                else
+                {
+                    Log("Cannot start, {0} is already running.", Parameters.TriggerKey);
+                }
             }
         }
 
@@ -53,6 +54,7 @@ namespace Job
         {
             if (!hostProcess.HasExited)
             {
+                Log("Killing process manualy");
                 hostProcess.Kill();
             }
         }
@@ -63,7 +65,7 @@ namespace Job
 #if DEBUG
             Type jobType = Type.GetType(Parameters.ClassName);
 
-            Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(jobType, Parameters.TriggerKey, Parameters.ConfigFilePath, Parameters.ConnectionString);
+            Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(jobType, Parameters.TriggerKey, Parameters.ConfigFilePath, Parameters.ConnectionString, Parameters.ActivityId);
             job.Parameters = Parameters;
             job.ExecuteAsync().GetAwaiter().GetResult();
             return Task.CompletedTask;
@@ -78,15 +80,16 @@ namespace Job
             hostProcess.StartInfo.RedirectStandardOutput = true;
             hostProcess.StartInfo.RedirectStandardError = true;
 
-            hostProcess.OutputDataReceived += (sender, data) => Logger.Info(data.Data);
-            hostProcess.ErrorDataReceived += (sender, data) => Logger.Error(data.Data);
-            Logger.Info($"Starting : {Parameters}");
+            hostProcess.OutputDataReceived += (sender, data) => logger.Info(data.Data);
+            hostProcess.ErrorDataReceived += (sender, data) => logger.Error(data.Data);
+            logger.Info($"Starting : {Parameters}");
             hostProcess.Start();
 
             hostProcess.EnableRaisingEvents = true;
             hostProcess.Exited += (object sender, EventArgs e) =>
             {
                 tcs.SetResult(null);
+                Log("Process exit with code: {0}", hostProcess.ExitCode.ToString());
             };
 
             hostProcess.BeginOutputReadLine();
@@ -94,6 +97,16 @@ namespace Job
 
             return tcs.Task;
 #endif
+        }
+
+        private void Log(string format, params string[] args)
+        {
+            Guid prevId = Trace.CorrelationManager.ActivityId;
+            Trace.CorrelationManager.ActivityId = this.Id;
+
+            logger.Info(string.Format(format, args));
+
+            Trace.CorrelationManager.ActivityId = prevId;
         }
     }
 }

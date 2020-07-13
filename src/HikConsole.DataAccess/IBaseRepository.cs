@@ -8,25 +8,25 @@ namespace HikConsole.DataAccess
 {
     public interface IBaseRepository<T> where T : class
     {
-        ValueTask<EntityEntry<T>> Add(T entity);
+        ValueTask<EntityEntry<T>> AddAsync(T entity);
 
-        Task AddRange(IEnumerable<T> entities);
+        Task AddRangeAsync(IEnumerable<T> entities);
 
-        Task<List<T>> GetAll();
+        Task<List<T>> GetAllAsync();
 
-        Task<List<T>> GetAll(params Expression<Func<T, object>>[] includes);
+        Task<List<T>> GetAllAsync(params Expression<Func<T, object>>[] includes);
 
-        Task<List<T>> Last(int last);
+        Task<List<T>> LastAsync(int last);
 
-        Task<List<T>> SearchBy(Expression<Func<T, bool>> searchBy, params Expression<Func<T, object>>[] includes);
+        Task<List<T>> SearchByAsync(Expression<Func<T, bool>> searchBy, params Expression<Func<T, object>>[] includes);
 
-        Task<T> FindBy(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
+        Task<T> FindByAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
 
-        Task<bool> Update(T entity);
+        Task<bool> UpdateAsync(T entity);
 
-        Task<bool> Delete(Expression<Func<T, bool>> identity, params Expression<Func<T, object>>[] includes);
+        Task<bool> DeleteAsync(Expression<Func<T, bool>> identity, params Expression<Func<T, object>>[] includes);
 
-        Task<bool> Delete(T entity);
+        Task<bool> DeleteAsync(T entity);
 
     }
 }

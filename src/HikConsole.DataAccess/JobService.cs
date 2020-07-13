@@ -35,20 +35,20 @@ namespace HikConsole.Scheduler
                 var cameraRepo = unitOfWork.GetRepository<Camera>();
                 this.job.PeriodStart = this.result?.PeriodStart;
                 this.job.PeriodEnd = this.result?.PeriodEnd;
-                await jobRepo.Update(this.job);
+                await jobRepo.UpdateAsync(this.job);
 
                 foreach (var cameraResult in this.result?.CameraResults)
                 {
-                    var camera = await cameraRepo.FindBy(x => x.Alias == cameraResult.Key);
+                    var camera = await cameraRepo.FindByAsync(x => x.Alias == cameraResult.Key);
                     if (camera == null)
                     {
                         camera = this.GetCamera(cameraResult.Value.Config);
-                        await cameraRepo.Add(camera);
+                        await cameraRepo.AddAsync(camera);
                     }
 
                     if (!cameraResult.Value.Failed)
                     {
-                        camera.LastSync = this.result.PeriodEnd; 
+                        camera.LastSync = this.result.PeriodEnd;
                     }
 
                     this.job.FailsCount += cameraResult.Value.Failed ? 1 : 0;
@@ -92,7 +92,7 @@ namespace HikConsole.Scheduler
             if (entities != null && entities.Any())
             {
                 var repo = unitOfWork.GetRepository<TEntity>();
-                return repo.AddRange(entities);
+                return repo.AddRangeAsync(entities);
             }
 
             return Task.CompletedTask;
@@ -104,7 +104,7 @@ namespace HikConsole.Scheduler
             if (entity != null)
             {
                 var repo = unitOfWork.GetRepository<TEntity>();
-                return repo.Add(entity).AsTask();
+                return repo.AddAsync(entity).AsTask();
             }
 
             return Task.CompletedTask;

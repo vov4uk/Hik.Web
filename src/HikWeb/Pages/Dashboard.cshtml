@@ -6,3 +6,43 @@
 
 <h1>Dashboard</h1>
 
+@if (Model.Cameras != null && Model.Cameras.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().Alias)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().IpAddress)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().UserName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().LastSync)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Cameras)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Alias)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.IpAddress)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.LastSync)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

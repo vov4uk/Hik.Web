@@ -17,22 +17,22 @@ namespace HikConsole.DataAccess
             ctx = context;
         }
 
-        public virtual ValueTask<EntityEntry<T>> Add(T entity)
+        public virtual ValueTask<EntityEntry<T>> AddAsync(T entity)
         {
             return ctx.Set<T>().AddAsync(entity);
         }
 
-        public virtual Task AddRange(IEnumerable<T> entities)
+        public virtual Task AddRangeAsync(IEnumerable<T> entities)
         {
             return ctx.Set<T>().AddRangeAsync(entities);
         }
 
-        public virtual Task<List<T>> GetAll()
+        public virtual Task<List<T>> GetAllAsync()
         {
             return ctx.Set<T>().ToListAsync();
         }
 
-        public virtual async Task<List<T>> GetAll(params Expression<Func<T, object>>[] includes)
+        public virtual async Task<List<T>> GetAllAsync(params Expression<Func<T, object>>[] includes)
         {
             var result = ctx.Set<T>().Where(i => true);
 
@@ -42,12 +42,12 @@ namespace HikConsole.DataAccess
             return await result.ToListAsync();
         }
 
-        public virtual Task<List<T>> Last(int last)
+        public virtual Task<List<T>> LastAsync(int last)
         {
             return ctx.Set<T>().OrderByDescending(x=>x).Take(last).ToListAsync();
         }
 
-        public virtual async Task<List<T>> SearchBy(Expression<Func<T, bool>> searchBy,
+        public virtual async Task<List<T>> SearchByAsync(Expression<Func<T, bool>> searchBy,
             params Expression<Func<T, object>>[] includes)
         {
             var result = ctx.Set<T>().Where(searchBy);
@@ -65,7 +65,7 @@ namespace HikConsole.DataAccess
         /// <param name="predicate">The predicate.</param>
         /// <param name="includes">The includes.</param>
         /// <returns></returns>
-        public virtual async Task<T> FindBy(Expression<Func<T, bool>> predicate,
+        public virtual async Task<T> FindByAsync(Expression<Func<T, bool>> predicate,
             params Expression<Func<T, object>>[] includes)
         {
             var result = ctx.Set<T>().Where(predicate);
@@ -76,7 +76,7 @@ namespace HikConsole.DataAccess
             return await result.FirstOrDefaultAsync();
         }
 
-        public virtual async Task<bool> Update(T entity)
+        public virtual async Task<bool> UpdateAsync(T entity)
         {
             try
             {
@@ -91,7 +91,7 @@ namespace HikConsole.DataAccess
             }
         }
 
-        public virtual async Task<bool> Delete(Expression<Func<T, bool>> identity,
+        public virtual async Task<bool> DeleteAsync(Expression<Func<T, bool>> identity,
             params Expression<Func<T, object>>[] includes)
         {
             var results = ctx.Set<T>().Where(identity);
@@ -109,7 +109,7 @@ namespace HikConsole.DataAccess
             }
         }
 
-        public virtual async Task<bool> Delete(T entity)
+        public virtual async Task<bool> DeleteAsync(T entity)
         {
             ctx.Set<T>().Remove(entity);
             return await Task.FromResult(true);

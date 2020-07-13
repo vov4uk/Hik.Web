@@ -25,7 +25,7 @@ namespace HikConsole.Scheduler
         private ILogger logger = LogManager.GetCurrentClassLogger();
         private CancellationTokenSource cancelTokenSource;
         private IHikClient client;
-        private DateTime? lastRun;
+        private Dictionary<string, DateTime?> lastRunList;
 
         public HikDownloader(
             IHikConfig hikConfig,
@@ -95,6 +95,11 @@ namespace HikConsole.Scheduler
             }
         }
 
+        public void SetLastSyncDates(Dictionary<string, DateTime?> lastRun)
+        {
+            this.lastRunList = lastRun;
+        }
+
         protected virtual void OnExceptionFired(ExceptionEventArgs e)
         {
             this.ExceptionFired?.Invoke(this, e);
@@ -111,14 +116,19 @@ namespace HikConsole.Scheduler
             DateTime appStart = DateTime.Now;
 
             this.logger.Info($"Start.");
-            DateTime periodStart = this.lastRun?.AddMinutes(-1) ?? appStart.AddHours(-1 * appConfig.ProcessingPeriodHours);
-
-            var jobResult = new JobResult { PeriodStart = periodStart, PeriodEnd = appStart };
+            var jobResult = new JobResult { PeriodEnd = appStart };
 
             bool failed = false;
 
             foreach (var camera in appConfig.Cameras)
             {
+                DateTime? lastRunDate = null;
+
+                this.lastRunList?.TryGetValue(camera.Alias, out lastRunDate);
+                DateTime periodStart = lastRunDate?.AddMinutes(-1) ?? appStart.AddHours(-1 * appConfig.ProcessingPeriodHours);
+
+                jobResult.PeriodStart = periodStart;
+
                 var result = await this.ProcessCameraAsync(camera, periodStart, appStart);
                 jobResult.CameraResults[camera.Alias] = result;
 
@@ -130,8 +140,6 @@ namespace HikConsole.Scheduler
 
             string duration = (DateTime.Now - appStart).ToString(DurationFormat);
             this.logger.Info($"End. Duration  : {duration}");
-            this.lastRun = failed ? periodStart : appStart;
-
             return jobResult;
         }
 

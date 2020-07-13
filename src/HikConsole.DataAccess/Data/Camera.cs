@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using HikConsole.DataAccess.Metadata;
 
 namespace HikConsole.DataAccess.Data
 {
@@ -29,6 +30,7 @@ namespace HikConsole.DataAccess.Data
 
         public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();
 
+        [DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastSync { get; set; }
     }
 }
