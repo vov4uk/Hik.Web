@@ -5,6 +5,14 @@ namespace HikConsole.Events
 {
     public class VideoEventArgs : EventArgs
     {
-        public VideoDTO Video { get; set; }
+        public VideoEventArgs(VideoDTO video, CameraDTO camera)
+        {
+            this.Video = video;
+            this.Camera = camera;
+        }
+
+        public VideoDTO Video { get; }
+
+        public CameraDTO Camera { get; }
     }
 }

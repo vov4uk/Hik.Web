@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using HikConsole.DataAccess;
 using HikConsole.DataAccess.Data;
 using HikConsole.DTO;
@@ -12,17 +14,24 @@ namespace HikConsole.Scheduler
     {
 
         private readonly IUnitOfWorkFactory factory;
-        private readonly JobResult result;
         private readonly HikJob job;
+        private readonly IMapper mapper;
 
-        public JobService(IUnitOfWorkFactory factory, HikJob job, JobResult result)
+        public JobService(IUnitOfWorkFactory factory, HikJob job)
         {
             this.factory = factory;
             this.job = job;
-            this.result = result;
+
+            Action<IMapperConfigurationExpression> configureAutoMapper = x =>
+            {
+                x.AddProfile<AutoMapperProfile>();
+            };
+
+            var mapperConfig = new MapperConfiguration(configureAutoMapper);
+            this.mapper = mapperConfig.CreateMapper();
         }
 
-        public async Task SaveAsync()
+        public async Task SaveJobResultAsync(JobResult result)
         {
             if (result == null)
             {
@@ -33,22 +42,23 @@ namespace HikConsole.Scheduler
             {
                 var jobRepo = unitOfWork.GetRepository<HikJob>();
                 var cameraRepo = unitOfWork.GetRepository<Camera>();
-                this.job.PeriodStart = this.result?.PeriodStart;
-                this.job.PeriodEnd = this.result?.PeriodEnd;
+                this.job.PeriodStart = result?.PeriodStart;
+                this.job.PeriodEnd = result?.PeriodEnd;
                 await jobRepo.UpdateAsync(this.job);
 
-                foreach (var cameraResult in this.result?.CameraResults)
+                foreach (var cameraResult in result?.CameraResults)
                 {
                     var camera = await cameraRepo.FindByAsync(x => x.Alias == cameraResult.Key);
                     if (camera == null)
                     {
-                        camera = this.GetCamera(cameraResult.Value.Config);
-                        await cameraRepo.AddAsync(camera);
+                        camera = this.mapper.Map<Camera>(cameraResult.Value.Config);
+                        camera = (await cameraRepo.AddAsync(camera)).Entity;
+                        await unitOfWork.SaveChangesAsync();
                     }
 
                     if (!cameraResult.Value.Failed)
                     {
-                        camera.LastSync = this.result.PeriodEnd;
+                        camera.LastSync = result.PeriodEnd;
                     }
 
                     this.job.FailsCount += cameraResult.Value.Failed ? 1 : 0;
@@ -58,14 +68,14 @@ namespace HikConsole.Scheduler
                     this.job.PhotosCount += cameraResult.Value.DeletedFiles.Count(x => x.Extention == ".jpg");
                     this.job.VideosCount += cameraResult.Value.DeletedFiles.Count(x => x.Extention == ".mp4");
 
-                    await this.AddEntities(cameraResult.Value.DownloadedVideos.Select(x => new Video { DownloadStartTime = x.DownloadStartTime, DownloadStopTime = x.DownloadStopTime, Name = x.Name, Size = x.Size, StartTime = x.StartTime, StopTime = x.StopTime }).ToList(), unitOfWork);
-                    await this.AddEntities(cameraResult.Value.DownloadedPhotos.Select(x => new Photo { Name = x.Name, Size = x.Size, DateTaken = x.DateTaken, DownloadStartTime = x.DownloadStartTime, DownloadStopTime = x.DownloadStopTime }).ToList(), unitOfWork);
-                    await this.AddEntities(cameraResult.Value.DeletedFiles.Select(x => new DeletedFile { FilePath = x.FilePath, Extention = x.Extention }).ToList(), unitOfWork);
+                    // await this.AddEntities(cameraResult.Value.DownloadedVideos.Select(x => this.mapper.Map<Video>(x)).ToList(), unitOfWork);
+                    await this.AddEntities(cameraResult.Value.DownloadedPhotos.Select(x => this.mapper.Map<Photo>(x)).ToList(), unitOfWork);
+                    await this.AddEntities(cameraResult.Value.DeletedFiles.Select(x => this.mapper.Map<DeletedFile>(x)).ToList(), unitOfWork);
 
                     var status = cameraResult.Value.HardDriveStatus;
                     if (status != null)
                     {
-                        await this.AddEntities(new HardDriveStatus { Capacity = status.Capacity, FreePictureSpace = status.FreePictureSpace, FreeSpace = status.FreeSpace, HDAttr = status.HDAttr, HdStatus = status.HdStatus, HDType = status.HDType, PictureCapacity = status.PictureCapacity, Recycling = status.Recycling }, unitOfWork);
+                        await this.AddEntities(this.mapper.Map<HardDriveStatus>(status), unitOfWork);
                     }
 
                     await unitOfWork.SaveChangesAsync(this.job, camera);
@@ -73,17 +83,19 @@ namespace HikConsole.Scheduler
             }
         }
 
-        public Camera GetCamera(CameraDTO cameraConf)
+        public async Task SaveVideoAsync(VideoDTO videoDTO, string cameraAllias)
         {
-            var cam = new Camera
+            using (var unitOfWork = this.factory.CreateUnitOfWork())
             {
-                Alias = cameraConf.Alias,
-                DestinationFolder = cameraConf.DestinationFolder,
-                IpAddress = cameraConf.IpAddress,
-                PortNumber = cameraConf.PortNumber,
-                UserName = cameraConf.UserName,
-            };
-            return cam;
+                var cameraRepo = unitOfWork.GetRepository<Camera>();
+                var camera = await cameraRepo.FindByAsync(x => x.Alias == cameraAllias);
+
+                var video = this.mapper.Map<Video>(videoDTO);
+
+                await this.AddEntities(video, unitOfWork);
+
+                await unitOfWork.SaveChangesAsync(job, camera);
+            }
         }
 
         private Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)

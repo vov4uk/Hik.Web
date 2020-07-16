@@ -10,6 +10,8 @@ namespace Job.Impl
 {
     public abstract class JobProcessBase
     {
+        protected HikJob JobInstance { get; private set; }
+
         protected readonly UnitOfWorkFactory UnitOfWorkFactory;
 
         protected readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -34,7 +36,7 @@ namespace Job.Impl
 
         public async Task ExecuteAsync()
         {
-            var job = new HikJob
+            this.JobInstance = new HikJob
             {
                 Started = DateTime.Now,
                 JobType = TriggerKey,
@@ -43,16 +45,16 @@ namespace Job.Impl
             using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
             {
                 var jobRepo = unitOfWork.GetRepository<HikJob>();
-                await jobRepo.AddAsync(job);
+                await jobRepo.AddAsync(JobInstance);
                 await unitOfWork.SaveChangesAsync();
             }
 
             var result = await Run();
 
-            job.Finished = DateTime.Now;
+            JobInstance.Finished = DateTime.Now;
             Logger.Info("Save to DB...");
-            var jobResultSaver = new JobService(this.UnitOfWorkFactory, job, result);
-            await jobResultSaver.SaveAsync();
+            var jobResultSaver = new JobService(this.UnitOfWorkFactory, JobInstance);
+            await jobResultSaver.SaveJobResultAsync(result);
             Logger.Info("Save to DB. Done");
 
             Logger.Info($"{JobType} Execution finished");

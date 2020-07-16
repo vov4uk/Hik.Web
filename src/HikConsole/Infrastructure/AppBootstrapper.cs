@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Autofac;
+using AutoMapper;
 using HikConsole.Helpers;
 using HikConsole.Scheduler;
 
@@ -37,7 +39,7 @@ namespace HikConsole.Infrastructure
                 .ToList();
 
             hikAssemblies.Add(Assembly.GetExecutingAssembly());
-
+            RegisterAutoMapper(builder);
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();
             builder.RegisterType<HikConfig>().SingleInstance();
             builder.RegisterType<HikDownloader>();
@@ -46,5 +48,23 @@ namespace HikConsole.Infrastructure
 
             return container;
         }
+
+        private static void RegisterAutoMapper(ContainerBuilder builder)
+        {
+            Action<IMapperConfigurationExpression> configureAutoMapper = x =>
+            {
+                x.AddProfile<HikConsoleProfile>();
+            };
+
+            builder.Register(context => new MapperConfiguration(configureAutoMapper))
+                .SingleInstance()
+                .AutoActivate()
+                .AsSelf();
+
+            builder.Register(ctx => ctx.Resolve<MapperConfiguration>().CreateMapper())
+                .As<IMapper>()
+                .InstancePerDependency();
+        }
+
     }
 }

@@ -38,7 +38,6 @@ namespace HikWeb.Pages
             .Include(x => x.DeletedFiles)
             .Include("DeletedFiles.Camera");
 
-
             Job = await items.FirstOrDefaultAsync();
             if (Job == null)
             {

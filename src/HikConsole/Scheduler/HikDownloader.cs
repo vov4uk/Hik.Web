@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using HikApi.Data;
 using HikConsole.Abstraction;
 using HikConsole.Config;
@@ -21,7 +22,7 @@ namespace HikConsole.Scheduler
         private readonly IHikConfig hikConfig;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IHikClientFactory clientFactory;
-        private readonly IProgressBarFactory progressFactory;
+        private readonly IMapper mapper;
         private ILogger logger = LogManager.GetCurrentClassLogger();
         private CancellationTokenSource cancelTokenSource;
         private IHikClient client;
@@ -31,15 +32,17 @@ namespace HikConsole.Scheduler
             IHikConfig hikConfig,
             IDirectoryHelper directoryHelper,
             IHikClientFactory clientFactory,
-            IProgressBarFactory progressFactory)
+            IMapper mapper)
         {
             this.hikConfig = hikConfig;
             this.directoryHelper = directoryHelper;
             this.clientFactory = clientFactory;
-            this.progressFactory = progressFactory;
+            this.mapper = mapper;
         }
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
+
+        public event EventHandler<VideoEventArgs> VideoDownloaded;
 
         public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
 
@@ -105,6 +108,11 @@ namespace HikConsole.Scheduler
             this.ExceptionFired?.Invoke(this, e);
         }
 
+        protected virtual void OnVideoDownloaded(VideoEventArgs e)
+        {
+            this.VideoDownloaded?.Invoke(this, e);
+        }
+
         private void ForceExit()
         {
             this.client?.ForceExit();
@@ -145,15 +153,8 @@ namespace HikConsole.Scheduler
 
         private async Task<CameraResult> ProcessCameraAsync(CameraConfig cameraConf, DateTime periodStart, DateTime periodEnd)
         {
-            var result = new CameraResult(
-                new CameraDTO
-                {
-                    Alias = cameraConf.Alias,
-                    DestinationFolder = cameraConf.DestinationFolder,
-                    IpAddress = cameraConf.IpAddress,
-                    PortNumber = cameraConf.PortNumber,
-                    UserName = cameraConf.UserName,
-                });
+            var cameraDto = this.mapper.Map<CameraDTO>(cameraConf);
+            var result = new CameraResult(cameraDto);
             try
             {
                 using (this.client = this.clientFactory.Create(cameraConf))
@@ -166,13 +167,28 @@ namespace HikConsole.Scheduler
                         this.CheckClientHardDriveStatus(result);
 
                         this.ThrowIfCancellationRequested();
-                        var videos = await this.DownloadVideos(periodStart, periodEnd);
-                        result.DownloadedVideos.AddRange(videos);
+
+                        var remoteVideoFiles = await this.GetRemoteVideoFilesList(periodStart, periodEnd);
+
+                        int j = 1;
+                        foreach (RemoteVideoFile video in remoteVideoFiles)
+                        {
+                            this.ThrowIfCancellationRequested();
+                            this.logger.Info($"{j++,2}/{remoteVideoFiles.Count} : ");
+                            var videoDownloadResult = await this.DownloadRemoteVideoFileAsync(video);
+                            if (videoDownloadResult != null)
+                            {
+                                this.OnVideoDownloaded(new VideoEventArgs(videoDownloadResult, cameraDto));
+                                result.DownloadedVideos.Add(videoDownloadResult);
+                            }
+                        }
 
                         if (cameraConf.DownloadPhotos)
                         {
-                            var photos = await this.DownloadPhotos(periodStart, periodEnd);
-                            result.DownloadedPhotos.AddRange(photos);
+                            var remotePhotoFiles = await this.GetRemotePhotosFilesList(periodStart, periodEnd);
+
+                            var downloadedPhotos = this.DownloadPhotosFromClient(remotePhotoFiles);
+                            result.DownloadedPhotos.AddRange(downloadedPhotos);
                         }
 
                         this.PrintStatistic(cameraConf.DestinationFolder);
@@ -193,25 +209,7 @@ namespace HikConsole.Scheduler
             return result;
         }
 
-        private async Task<IEnumerable<PhotoDTO>> DownloadPhotos(
-            DateTime periodStart,
-            DateTime periodEnd)
-        {
-            var photos = await this.GetRemotePhotosFilesList(periodStart, periodEnd);
-
-            return this.DownloadPhotosFromClient(photos);
-        }
-
-        private async Task<IEnumerable<VideoDTO>> DownloadVideos(
-            DateTime periodStart,
-            DateTime periodEnd)
-        {
-            var videos = await this.GetRemoteVideoFilesList(periodStart, periodEnd);
-
-            return await this.DownloadVideoFilesFromClient(videos);
-        }
-
-        private List<PhotoDTO> DownloadPhotosFromClient(List<RemotePhotoFile> photos)
+        private IReadOnlyCollection<PhotoDTO> DownloadPhotosFromClient(IReadOnlyCollection<RemotePhotoFile> photos)
         {
             var photoDownloadResults = new Dictionary<bool, int>
             {
@@ -221,29 +219,24 @@ namespace HikConsole.Scheduler
 
             int j = 0;
             var photosFromClient = new List<PhotoDTO>();
-            using (var progressBar = this.progressFactory.Create())
-            {
-                foreach (RemotePhotoFile photo in photos)
-                {
-                    DateTime start = DateTime.Now;
-                    this.ThrowIfCancellationRequested();
-                    bool isDownloaded = this.client.PhotoDownload(photo);
-                    DateTime finish = DateTime.Now;
-                    photoDownloadResults[isDownloaded]++;
-                    j++;
-                    progressBar.Report((double)j / photos.Count);
 
-                    if (isDownloaded)
-                    {
-                        photosFromClient.Add(new PhotoDTO
-                        {
-                            Size = photo.Size,
-                            Name = photo.Name,
-                            DateTaken = photo.Date,
-                            DownloadStartTime = start,
-                            DownloadStopTime = finish,
-                        });
-                    }
+            foreach (RemotePhotoFile photo in photos)
+            {
+                DateTime start = DateTime.Now;
+                this.ThrowIfCancellationRequested();
+                bool isDownloaded = this.client.PhotoDownload(photo);
+                DateTime finish = DateTime.Now;
+                photoDownloadResults[isDownloaded]++;
+                j++;
+
+                // TODO report downloading progress via event
+                if (isDownloaded)
+                {
+                    var photoDto = this.mapper.Map<PhotoDTO>(photo);
+                    photoDto.DownloadStartTime = start;
+                    photoDto.DownloadStopTime = finish;
+
+                    photosFromClient.Add(photoDto);
                 }
             }
 
@@ -262,25 +255,7 @@ namespace HikConsole.Scheduler
             return photos;
         }
 
-        private async Task<IEnumerable<VideoDTO>> DownloadVideoFilesFromClient(List<RemoteVideoFile> videos)
-        {
-            int j = 1;
-            var videoResult = new List<VideoDTO>();
-            foreach (RemoteVideoFile video in videos)
-            {
-                this.ThrowIfCancellationRequested();
-                this.logger.Info($"{j++,2}/{videos.Count} : ");
-                var videoDownloadResult = await this.DownloadRemoteVideoFileAsync(video);
-                if (videoDownloadResult != null)
-                {
-                    videoResult.Add(videoDownloadResult);
-                }
-            }
-
-            return videoResult;
-        }
-
-        private async Task<List<RemoteVideoFile>> GetRemoteVideoFilesList(DateTime periodStart, DateTime periodEnd)
+        private async Task<IReadOnlyCollection<RemoteVideoFile>> GetRemoteVideoFilesList(DateTime periodStart, DateTime periodEnd)
         {
             List<RemoteVideoFile> videos = (await this.client.FindVideosAsync(periodStart, periodEnd)).SkipLast(1).ToList();
 
@@ -292,17 +267,7 @@ namespace HikConsole.Scheduler
         {
             var status = this.client.CheckHardDriveStatus();
 
-            cameraResult.HardDriveStatus = new HardDriveStatusDTO
-            {
-                Capacity = status.Capacity,
-                FreeSpace = status.FreeSpace,
-                PictureCapacity = status.PictureCapacity,
-                FreePictureSpace = status.FreePictureSpace,
-                HDAttr = status.HDAttr,
-                HdStatus = status.HdStatus,
-                HDType = status.HDType,
-                Recycling = status.Recycling,
-            };
+            cameraResult.HardDriveStatus = this.mapper.Map<HardDriveStatusDTO>(status);
             this.logger.Info(status.ToString());
 
             if (status.IsErrorStatus)
@@ -339,15 +304,10 @@ namespace HikConsole.Scheduler
                 TimeSpan duration = DateTime.Now - downloadStarted;
                 this.logger.Info($"Download duration {duration.ToString(DurationFormat)}, avg speed {Utils.FormatBytes((long)(file.Size / duration.TotalSeconds))}/s");
 
-                return new VideoDTO
-                {
-                    Size = file.Size,
-                    Name = file.Name,
-                    StartTime = file.StartTime,
-                    StopTime = file.StopTime,
-                    DownloadStartTime = downloadStarted,
-                    DownloadStopTime = DateTime.Now,
-                };
+                VideoDTO result = this.mapper.Map<VideoDTO>(file);
+                result.DownloadStartTime = downloadStarted;
+                result.DownloadStopTime = DateTime.Now;
+                return result;
             }
 
             return default;
@@ -371,10 +331,7 @@ namespace HikConsole.Scheduler
 
             this.logger.Error(ex, msg);
 
-            this.OnExceptionFired(new ExceptionEventArgs()
-            {
-                Exception = ex,
-            });
+            this.OnExceptionFired(new ExceptionEventArgs(ex));
 
             this.ForceExit();
         }

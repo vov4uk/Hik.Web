@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace HikConsole.DataAccess
     public class UnitOfWork<TContext> : IRepositoryFactory, IUnitOfWork<TContext>
         where TContext : DbContext, IDisposable
     {
-        private Dictionary<Type, object> repositories;
+        private ConcurrentDictionary<Type, object> repositories;
         private bool disposedValue;
 
         public UnitOfWork(TContext context)
@@ -21,10 +22,13 @@ namespace HikConsole.DataAccess
 
         public IBaseRepository<TEntity> GetRepository<TEntity>() where TEntity : class
         {
-            if (repositories == null) repositories = new Dictionary<Type, object>();
+            if (repositories == null) repositories = new ConcurrentDictionary<Type, object>();
 
             var type = typeof(TEntity);
-            if (!repositories.ContainsKey(type)) repositories[type] = new BaseRepository<TEntity>(Context);
+            if (!repositories.ContainsKey(type))
+            {
+                repositories[type] = new BaseRepository<TEntity>(Context);
+            }
             return (IBaseRepository<TEntity>)repositories[type];
         }
 
@@ -69,8 +73,8 @@ namespace HikConsole.DataAccess
                 .Select(e => e.Entity)
                 .OfType<IAuditable>())
             {
-                entity.Job = job;
-                entity.Camera = camera;
+                entity.JobId = job.Id;
+                entity.CameraId = camera.Id;
             }
         }
     }

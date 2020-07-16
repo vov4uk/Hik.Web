@@ -1,6 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Autofac;
 using Job;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +11,6 @@ namespace HikWeb
         {
             string className = context.MergedJobDataMap["Job"].ToString();
             string configPath = context.MergedJobDataMap["ConfigPath"].ToString();
-            var jobType = (JobType)Enum.Parse(typeof(JobType), context.MergedJobDataMap["JobType"].ToString());
 
             var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
 

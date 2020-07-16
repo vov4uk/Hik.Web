@@ -35,7 +35,16 @@ namespace Job.Impl
             var downloader = AppBootstrapper.Container.Resolve<HikDownloader>();
             downloader.SetLastSyncDates(lastSync);
             downloader.ExceptionFired += Downloader_ExceptionFired;
+            downloader.VideoDownloaded += Downloader_VideoDownloaded;
             return await downloader.DownloadAsync(this.ConfigPath);
+        }
+
+        private async void Downloader_VideoDownloaded(object sender, HikConsole.Events.VideoEventArgs e)
+        {
+            Logger.Info("Save Video to DB...");
+            var jobResultSaver = new JobService(this.UnitOfWorkFactory, JobInstance);
+            await jobResultSaver.SaveVideoAsync(e.Video, e.Camera.Alias);
+            Logger.Info("Save Video to DB. Done");
         }
 
         private void Downloader_ExceptionFired(object sender, HikConsole.Events.ExceptionEventArgs e)
