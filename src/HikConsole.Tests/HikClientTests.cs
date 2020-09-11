@@ -7,6 +7,7 @@ using HikApi.Data;
 using HikApi.Services;
 using HikConsole.Abstraction;
 using Moq;
+using NLog;
 using Xunit;
 
 namespace HikConsole.Tests

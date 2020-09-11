@@ -6,7 +6,7 @@ namespace HikConsole.Events
     {
         public ExceptionEventArgs(Exception exception)
         {
-            Exception = exception;
+            this.Exception = exception;
         }
 
         public Exception Exception { get; set; }

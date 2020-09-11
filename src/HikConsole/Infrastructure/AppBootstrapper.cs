@@ -65,6 +65,5 @@ namespace HikConsole.Infrastructure
                 .As<IMapper>()
                 .InstancePerDependency();
         }
-
     }
 }

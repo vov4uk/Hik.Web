@@ -3,31 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
+using AutoMapper;
 using HikApi;
 using HikApi.Data;
 using HikConsole.Abstraction;
 using HikConsole.Config;
+using HikConsole.Infrastructure;
 using HikConsole.Scheduler;
 using Moq;
+using NLog;
 using Xunit;
 
 namespace HikConsole.Tests
 {
     public class HikDownloaderTests
     {
-        private readonly Mock<ILogger> loggerMock;
         private readonly Mock<IDirectoryHelper> directoryMock;
-        private readonly Mock<IEmailHelper> emailMock;
         private readonly Fixture fixture;
         private readonly Mock<IHikClient> clientMock;
         private readonly Mock<IHikClientFactory> clientFactoryMock;
         private readonly Mock<IProgressBarFactory> progressMock;
+        private readonly Mock<IHikConfig> configMock;
+        private readonly IMapper mapper;
 
         public HikDownloaderTests()
         {
-            this.loggerMock = new Mock<ILogger>();
             this.directoryMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
-            this.emailMock = new Mock<IEmailHelper>(MockBehavior.Strict);
             this.clientMock = new Mock<IHikClient>(MockBehavior.Strict);
             this.clientFactoryMock = new Mock<IHikClientFactory>(MockBehavior.Strict);
             this.progressMock = new Mock<IProgressBarFactory>();
@@ -39,6 +40,15 @@ namespace HikConsole.Tests
             this.fixture = new Fixture();
             var status = this.fixture.Build<HdInfo>().With(x => x.HdStatus, 0U).Create();
             this.clientMock.Setup(x => x.CheckHardDriveStatus()).Returns(status);
+            this.configMock = new Mock<IHikConfig>();
+
+            Action<IMapperConfigurationExpression> configureAutoMapper = x =>
+            {
+                x.AddProfile<HikConsoleProfile>();
+            };
+
+            var mapperConfig = new MapperConfiguration(configureAutoMapper);
+            this.mapper = mapperConfig.CreateMapper();
         }
 
         [Fact]
@@ -74,7 +84,6 @@ namespace HikConsole.Tests
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
-            this.loggerMock.Verify(x => x.Warn(It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -89,7 +98,6 @@ namespace HikConsole.Tests
             this.SetupClientInitialize();
             this.clientMock.Setup(x => x.ForceExit());
             this.clientMock.Setup(x => x.Login()).Throws(new HikException("Login", 7));
-            this.emailMock.Setup(x => x.SendEmail(appConfig.EmailConfig, It.IsAny<Exception>()));
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
@@ -98,8 +106,6 @@ namespace HikConsole.Tests
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
-            this.loggerMock.Verify(x => x.Error(It.IsAny<string>(), It.IsAny<Exception>()), Times.Once);
-            this.emailMock.Verify(x => x.SendEmail(appConfig.EmailConfig, It.IsAny<Exception>()), Times.Once);
             this.clientMock.Verify(x => x.ForceExit(), Times.Once);
         }
 
@@ -314,23 +320,12 @@ namespace HikConsole.Tests
         }
 
         [Fact]
-        public void Cancel_ClientNotCreated_LogWarning()
-        {
-            var appConfig = this.fixture.Build<AppConfig>()
-                .Create();
-
-            // act
-            var downloader = this.CreateHikDownloader(appConfig);
-            downloader.Cancel();
-
-            // assert
-            this.loggerMock.Verify(x => x.Warn(It.IsAny<string>()), Times.Once);
-        }
-
-        [Fact]
         public async Task Cancel_CancelationOnClintItitialize_ClientForceExited()
         {
+            var cameraConfig = this.fixture.Build<CameraConfig>()
+                .Create();
             var appConfig = this.fixture.Build<AppConfig>()
+                    .With(x => x.Cameras, new CameraConfig[] { cameraConfig })
                     .Create();
 
             this.clientMock.Setup(x => x.InitializeClient());
@@ -347,7 +342,6 @@ namespace HikConsole.Tests
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.ForceExit(), Times.Once);
-            this.loggerMock.Verify(x => x.Warn(It.IsAny<string>()), Times.Once);
         }
 
         private void SetupDirectoryHelper()
@@ -386,8 +380,9 @@ namespace HikConsole.Tests
         private HikDownloader CreateHikDownloader(AppConfig appConfig)
         {
             this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>())).Returns(this.clientMock.Object);
+            this.configMock.Setup(x => x.GetConfig(It.IsAny<string>())).Returns(appConfig);
 
-            return new HikDownloader(null, this.loggerMock.Object, this.directoryMock.Object, this.clientFactoryMock.Object, this.progressMock.Object)
+            return new HikDownloader(this.configMock.Object, this.directoryMock.Object, this.clientFactoryMock.Object, this.mapper)
             {
                 ProgressCheckPeriodMilliseconds = 100,
             };
