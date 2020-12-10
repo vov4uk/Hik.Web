@@ -18,7 +18,7 @@ namespace Job.Impl
         public async override Task<JobResult> Run()
         {
             var worker = AppBootstrapper.Container.Resolve<DeleteArchiving>();
-            return await worker.Archive(this.ConfigPath);
+            return await worker.ExecuteAsync(this.ConfigPath);
         }
     }
 }

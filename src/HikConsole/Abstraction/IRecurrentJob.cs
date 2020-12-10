@@ -5,8 +5,8 @@ using HikConsole.DTO;
 
 namespace HikConsole.Abstraction
 {
-    public interface IDeleteArchiving
+    public interface IRecurrentJob
     {
-        Task<JobResult> Archive(string configFilePath);
+        Task<JobResult> ExecuteAsync(string configFilePath);
     }
 }

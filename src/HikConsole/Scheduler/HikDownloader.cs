@@ -46,7 +46,7 @@ namespace HikConsole.Scheduler
 
         public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
 
-        public async Task<JobResult> DownloadAsync(string configFileName)
+        public async Task<JobResult> ExecuteAsync(string configFileName)
         {
             var appConfig = this.hikConfig.GetConfig(configFileName);
 
@@ -86,7 +86,6 @@ namespace HikConsole.Scheduler
         public void Cancel()
         {
             if (this.cancelTokenSource != null
-                && this.cancelTokenSource.Token != null
                 && this.cancelTokenSource.Token.CanBeCanceled)
             {
                 this.cancelTokenSource.Cancel();
@@ -338,7 +337,7 @@ namespace HikConsole.Scheduler
 
         private void ThrowIfCancellationRequested()
         {
-            if (this.cancelTokenSource != null && this.cancelTokenSource.Token != null)
+            if (this.cancelTokenSource != null)
             {
                 this.cancelTokenSource.Token.ThrowIfCancellationRequested();
             }

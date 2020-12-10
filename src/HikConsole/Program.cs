@@ -16,7 +16,7 @@ namespace HikConsole
         {
             var container = AppBootstrapper.ConfigureIoc();
             var downloader = container.Resolve<HikDownloader>();
-            downloader.DownloadAsync("configuration.json").GetAwaiter().GetResult();
+            downloader.ExecuteAsync("configuration.json").GetAwaiter().GetResult();
 
             WaitForExit();
         }

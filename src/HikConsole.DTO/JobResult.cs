@@ -15,5 +15,10 @@ namespace HikConsole.DTO
         public DateTime? PeriodEnd { get; set; }
 
         public Dictionary<string, CameraResult> CameraResults { get; }
+
+        public void StoreCameraResult(string alias, CameraResult result)
+        {
+            this.CameraResults.Add(alias, result);
+        }
     }
 }

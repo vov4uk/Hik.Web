@@ -2,13 +2,17 @@
 {
     public class DeletedFileDTO
     {
-        public int Id { get; set; }
+        public DeletedFileDTO()
+        {
+        }
+        
+        public DeletedFileDTO(string fileName, string extention)
+        {
+            this.FileName = fileName;
+            this.Extention = extention;
+        }
 
-        public int CameraId { get; set; }
-
-        public int JobId { get; set; }
-
-        public string FilePath { get; set; }
+        public string FileName { get; set; }
 
         public string Extention { get; set; }
     }

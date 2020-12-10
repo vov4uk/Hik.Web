@@ -17,6 +17,10 @@ namespace HikApi.Data
             this.Size = findData.dwFileSize;
         }
 
+        public RemotePhotoFile()
+        {
+        }
+
         public string Name { get; }
 
         public DateTime Date { get; set; }

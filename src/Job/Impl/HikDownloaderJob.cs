@@ -36,7 +36,7 @@ namespace Job.Impl
             downloader.SetLastSyncDates(lastSync);
             downloader.ExceptionFired += Downloader_ExceptionFired;
             downloader.VideoDownloaded += Downloader_VideoDownloaded;
-            return await downloader.DownloadAsync(this.ConfigPath);
+            return await downloader.ExecuteAsync(this.ConfigPath);
         }
 
         private async void Downloader_VideoDownloaded(object sender, HikConsole.Events.VideoEventArgs e)

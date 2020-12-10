@@ -8,7 +8,7 @@ namespace HikConsole.DataAccess
     {
         public AutoMapperProfile()
         {
-            this.CreateMap<CameraDTO, Camera>(MemberList.None);
+            this.CreateMap<CameraDTO, Camera>(MemberList.None);            
             this.CreateMap<DeletedFileDTO, DeletedFile>(MemberList.None);
             this.CreateMap<HardDriveStatusDTO, HardDriveStatus>(MemberList.None);
             this.CreateMap<PhotoDTO, Photo>(MemberList.None);

@@ -59,7 +59,7 @@ namespace HikConsole.Tests
                     .Create();
             var downloader = this.CreateHikDownloader(appConfig);
 
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             this.clientMock.Verify(x => x.InitializeClient(), Times.Never);
         }
@@ -79,7 +79,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -101,7 +101,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -126,7 +126,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -158,7 +158,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -194,7 +194,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -233,7 +233,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
@@ -270,7 +270,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             // assert
             this.clientMock.Verify();
@@ -306,7 +306,7 @@ namespace HikConsole.Tests
 
             // act
             var downloader = this.CreateHikDownloader(appConfig);
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             // assert
             this.clientMock.Verify();
@@ -337,7 +337,7 @@ namespace HikConsole.Tests
 
             this.clientMock.Setup(x => x.InitializeClient()).Callback(downloader.Cancel);
 
-            await downloader.DownloadAsync(string.Empty);
+            await downloader.ExecuteAsync(string.Empty);
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
