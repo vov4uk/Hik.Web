@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace HikConsole.Config
+namespace HikConsole.DTO.Config
 {
     [ExcludeFromCodeCoverage]
     public class AppConfig
@@ -15,7 +14,7 @@ namespace HikConsole.Config
 
         public string[] FilesToDelete { get; set; }
 
-        public CameraConfig[] Cameras { get; set; }
+        public CameraConfig Camera { get; set; }
 
         public override string ToString()
         {

@@ -31,8 +31,7 @@ namespace HikWeb.Pages
 
             var items = dataContext.Jobs.Where(x => x.Id == id);
 
-            items = items.Include(x => x.HardDriveStatuses)
-            .Include("HardDriveStatuses.Camera")
+            items = items
             .Include(x => x.Photos)
             .Include(x => x.Videos)
             .Include(x => x.DeletedFiles)

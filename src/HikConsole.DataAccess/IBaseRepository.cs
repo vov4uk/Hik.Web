@@ -18,9 +18,9 @@ namespace HikConsole.DataAccess
 
         Task<List<T>> LastAsync(int last);
 
-        Task<List<T>> SearchByAsync(Expression<Func<T, bool>> searchBy, params Expression<Func<T, object>>[] includes);
-
         Task<T> FindByAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
+
+        Task<List<T>> FindManyAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
 
         Task<bool> UpdateAsync(T entity);
 

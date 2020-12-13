@@ -9,6 +9,6 @@ namespace HikConsole.Events
             this.Exception = exception;
         }
 
-        public Exception Exception { get; set; }
+        public Exception Exception { get; }
     }
 }

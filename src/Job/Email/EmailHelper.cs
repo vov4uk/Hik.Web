@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Net;
 using System.Net.Mail;
 using System.Reflection;
-using HikConsole.Config;
+using HikConsole.DTO.Config;
 using Newtonsoft.Json;
 using NLog;
 
@@ -53,12 +52,12 @@ namespace Job.Email
                     mail.IsBodyHtml = true;
 
 #if DEBUG
-                    logger.Info("Send");
+                    logger.Info("Dummy Email");
                     logger.Info(msg);
 #elif RELEASE
                     using var smtp = new SmtpClient(Settings.Server, Settings.Port)
                     {
-                        Credentials = new NetworkCredential(Settings.UserName, Settings.Password),
+                        Credentials = new System.Net.NetworkCredential(Settings.UserName, Settings.Password),
                         EnableSsl = true,
                     };
                     smtp.Send(mail);
@@ -67,7 +66,9 @@ namespace Job.Email
             }
             catch (Exception e)
             {
-                logger.Error(e, "Send failed");
+                logger.Error("Failed to Sent Email");
+                logger.Error($"Parent exeption {ex}");
+                logger.Error($"Local exeption {e}");
             }
         }
 

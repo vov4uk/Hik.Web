@@ -39,8 +39,6 @@ namespace HikConsole.DataAccess.Data
 
         public List<Photo> Photos { get; set; } = new List<Photo>();
 
-        public List<HardDriveStatus> HardDriveStatuses { get; set; } = new List<HardDriveStatus>();
-
         public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();
     }
 }

@@ -15,13 +15,13 @@
                     @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().Alias)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().IpAddress)
+                    @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().LastVideoSync)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().UserName)
+                    @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().LastPhotoSync)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().LastSync)
+                    Latest video
                 </th>
             </tr>
         </thead>
@@ -29,17 +29,17 @@
             @foreach (var item in Model.Cameras)
             {
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Alias)
+                    <td>                        
+                        <a asp-page="./Statistic" asp-route-cameraId="@item.Id">@Html.DisplayFor(modelItem => item.Alias)</a>
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.IpAddress)
+                        @Html.DisplayFor(modelItem => item.LastVideoSync)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.UserName)
+                        @Html.DisplayFor(modelItem => item.LastPhotoSync)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.LastSync)
+                        @Html.DisplayFor(modelItem => Model.Videos.FirstOrDefault(x => x.CameraId == item.Id).StopTime)
                     </td>
                 </tr>
             }

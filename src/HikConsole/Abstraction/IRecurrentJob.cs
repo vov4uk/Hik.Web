@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using HikConsole.Config;
-using HikConsole.DTO;
+using HikConsole.DTO.Config;
+using HikConsole.Events;
 
 namespace HikConsole.Abstraction
 {
-    public interface IRecurrentJob
+    public interface IRecurrentJob<T>
     {
-        Task<JobResult> ExecuteAsync(string configFilePath);
+        event EventHandler<ExceptionEventArgs> ExceptionFired;
+
+        Task<IReadOnlyCollection<T>> ExecuteAsync(CameraConfig config, DateTime from, DateTime to);
     }
 }

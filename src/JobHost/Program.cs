@@ -13,14 +13,20 @@ namespace JobHost
             {
                 var parameters = Parameters.Parse(args);
                 System.Diagnostics.Trace.CorrelationManager.ActivityId = parameters.ActivityId;
-                logger.Info("Parameters resolved. Activity started execution.");
+                logger.Info($"JobHost. Parameters resolved. {parameters}");
+                logger.Info("JobHost. Activity started execution.");
 
                 Type jobType = Type.GetType(parameters.ClassName);
 
-                Job.Impl.JobProcessBase job = (Job.Impl.JobProcessBase)Activator.CreateInstance(jobType, parameters.TriggerKey, parameters.ConfigFilePath, parameters.ConnectionString, parameters.ActivityId);
+                Job.Impl.JobProcessBase job = (Job.Impl.JobProcessBase)Activator.CreateInstance(
+                    jobType, 
+                    $"{parameters.Group}.{parameters.TriggerKey}", 
+                    parameters.ConfigFilePath, 
+                    parameters.ConnectionString, 
+                    parameters.ActivityId);
                 job.Parameters = parameters;
                 job.ExecuteAsync().GetAwaiter().GetResult();
-                logger.Info("Activity completed execution.");
+                logger.Info("JobHost. Activity completed execution.");
             }
             catch (Exception exception)
             {

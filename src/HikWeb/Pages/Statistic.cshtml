@@ -1,0 +1,96 @@
+﻿@page
+@model HikWeb.Pages.StatisticModel
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Statistics[0].CameraId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Statistics[0].Period)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Statistics[0].PhotosCount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Statistics[0].PhotosSize)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Statistics[0].VideosCount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Statistics[0].VideosSize)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Statistics)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CameraId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Period)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PhotosCount)
+                </td>
+                <td>
+                    @{
+                        double? megaByte = (@item.PhotosSize / 1024.0) / 1024.0;
+                        string MbPhotoSize = megaByte?.ToString("0.00") + " MB";
+                    }
+                    @MbPhotoSize                    
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.VideosCount)
+                </td>
+                <td>
+                    @{
+                        double? gigaByte = (@item.VideosSize / 1024.0) / 1024.0 / 1024.0;
+                        string MGbVideoSize = gigaByte?.ToString("0.00") + " GB";
+                    }
+                    @MGbVideoSize
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- pager -->
+@if (Model.Pager.Pages.Any())
+{
+    <nav class="table-responsive">
+        <ul class="pagination justify-content-center d-flex flex-wrap">
+            @if (Model.Pager.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="/">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="/?p=@(Model.Pager.CurrentPage - 1)">Previous</a>
+                </li>
+            }
+
+            @foreach (var p in Model.Pager.Pages)
+            {
+                <li class="page-item @(p == Model.Pager.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="/?p=@p">@p</a>
+                </li>
+            }
+
+            @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="/?p=@(Model.Pager.CurrentPage + 1)">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="/?p=@(Model.Pager.TotalPages)">Last</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

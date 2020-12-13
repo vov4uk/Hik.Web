@@ -3,52 +3,42 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using HikConsole.Abstraction;
-using HikConsole.Config;
-using HikConsole.DTO;
+using HikConsole.DTO.Config;
 using HikConsole.DTO.Contracts;
+using HikConsole.Events;
 using NLog;
 
 namespace HikConsole.Scheduler
 {
-    public class DeleteArchiving : IRecurrentJob
+    public class DeleteArchiveSevice : IRecurrentJob<DeletedFileDTO>
     {
         private const string AllFilter = "*";
         private const string DateFormat = "yyyyMMdd";
+        private readonly string[] filesToDelete = new[] { "*.mp4", "*.jpg", "*.ini" };
         private readonly ILogger logger = LogManager.GetCurrentClassLogger();
-        private readonly IHikConfig hikConfig;
-        private readonly IMapper mapper;
 
-        public DeleteArchiving(
-            IHikConfig hikConfig,
-            IMapper mapper)
+        public DeleteArchiveSevice()
         {
-            this.hikConfig = hikConfig;
-            this.mapper = mapper;
         }
 
-        public async Task<JobResult> ExecuteAsync(string configFilePath)
-        {
-            var appConfig = this.hikConfig.GetConfig(configFilePath);
+        public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
+        public async Task<IReadOnlyCollection<DeletedFileDTO>> ExecuteAsync(CameraConfig config, DateTime from, DateTime to)
+        {
             this.logger.Info("Start.");
 
-            var jobResult = new JobResult();
+            var cameraResult = await this.ArchiveInternal(to, config, this.filesToDelete);
 
-            foreach (var cameraConf in appConfig.Cameras)
-            {
-                var period = TimeSpan.FromDays(cameraConf.RetentionPeriodDays.Value);
-                DateTime cutOff = DateTime.Today.Subtract(period);
-
-                var cameraResult = await this.ArchiveInternal(cutOff, cameraConf, appConfig.FilesToDelete);
-                jobResult.StoreCameraResult(cameraConf.Alias, cameraResult);
-            }
-
-            return jobResult;
+            return cameraResult;
         }
 
-        private Task<CameraResult> ArchiveInternal(DateTime cutOff, CameraConfig camera, string[] extensions)
+        protected virtual void OnExceptionFired(ExceptionEventArgs e)
+        {
+            this.ExceptionFired?.Invoke(this, e);
+        }
+
+        private async Task<IReadOnlyCollection<DeletedFileDTO>> ArchiveInternal(DateTime cutOff, CameraConfig camera, string[] extensions)
         {
             var destination = camera.DestinationFolder;
 
@@ -58,29 +48,29 @@ namespace HikConsole.Scheduler
                 return default;
             }
 
-            var result = new CameraResult(this.mapper.Map<CameraDTO>(camera));
             var filesToDelete = Directory.EnumerateFiles(destination, AllFilter, SearchOption.AllDirectories)
                     .Where(s => extensions.Any(ext => ext == Path.GetExtension(s)))
                     .ToList();
 
             this.logger.Info($"Destination: {destination}");
             this.logger.Info($"Found: {filesToDelete.Count} files");
+            List<DeletedFileDTO> deleteFilesResult = new List<DeletedFileDTO>();
 
-            return Task.Run(() =>
+            return await Task.Run(() =>
             {
                 try
                 {
-                    var deleteFilesResult = this.DeleteFiles(filesToDelete, cutOff);
+                    deleteFilesResult.AddRange(this.DeleteFiles(filesToDelete, cutOff));
                     this.DeleteEmptyFolders(destination);
-                    result.DeletedFiles.AddRange(deleteFilesResult);
                 }
                 catch (Exception ex)
                 {
                     this.logger.Error(ex, ex.ToString());
-                    result.Failed = true;
+                    ex.Data.Add("Camera", camera.Alias);
+                    this.OnExceptionFired(new ExceptionEventArgs(ex));
                 }
 
-                return result;
+                return deleteFilesResult;
             });
         }
 

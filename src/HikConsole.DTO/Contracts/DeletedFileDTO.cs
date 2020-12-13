@@ -1,6 +1,6 @@
 ﻿namespace HikConsole.DTO.Contracts
 {
-    public class DeletedFileDTO
+    public class DeletedFileDTO : MediaFileBase
     {
         public DeletedFileDTO()
         {

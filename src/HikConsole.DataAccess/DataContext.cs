@@ -21,8 +21,9 @@ namespace HikConsole.DataAccess
         public DbSet<Camera> Cameras { get; set; }
         public DbSet<Video> Videos { get; set; }
         public DbSet<Photo> Photos { get; set; }
-        public DbSet<HardDriveStatus> HDStatus { get; set; }
         public DbSet<DeletedFile> DeletedFiles { get; set; }
+
+        public DbSet<DailyStatistic> DailyStatistics { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -38,13 +39,12 @@ namespace HikConsole.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder
+            modelBuilder.ApplyConfiguration(new CameraMapping())
                 .ApplyConfiguration(new VideoMapping())
                 .ApplyConfiguration(new PhotoMapping())
                 .ApplyConfiguration(new JobMapping())
                 .ApplyConfiguration(new DeletedFileMappings())
-                .ApplyConfiguration(new CameraMapping())
-                .ApplyConfiguration(new HardDriveStatusMapping());
+                .ApplyConfiguration(new DailyStatisticMapping());
 
             base.OnModelCreating(modelBuilder);
         }

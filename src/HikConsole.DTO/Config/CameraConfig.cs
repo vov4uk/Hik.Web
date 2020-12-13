@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace HikConsole.Config
+namespace HikConsole.DTO.Config
 {
     [ExcludeFromCodeCoverage]
     public class CameraConfig

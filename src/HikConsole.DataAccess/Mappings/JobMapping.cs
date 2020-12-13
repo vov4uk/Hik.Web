@@ -11,7 +11,7 @@ namespace HikConsole.DataAccess.Mappings
     {
         public void Configure(EntityTypeBuilder<HikJob> builder)
         {
-            builder.ToTable(Tables.Job, Schemas.Dbo);
+            builder.ToTable(Tables.Job);
             builder.HasKey(job => job.Id);
 
             builder.Property(f => f.JobType)

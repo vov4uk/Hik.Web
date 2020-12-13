@@ -34,8 +34,6 @@ namespace HikConsole.DataAccess.Data
 
         public long Size { get; set; }
 
-        public long LocalSize { get; set; }
-
         public virtual Camera Camera { get; set; }
 
         public virtual HikJob Job { get; set; }

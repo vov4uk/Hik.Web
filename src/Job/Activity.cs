@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Job.Email;
 using NLog;
 
 namespace Job
@@ -31,22 +32,31 @@ namespace Job
             Parameters.ActivityId = Id;
             hostProcess = new Process();
 
-            Log("Activity created with parameters {0}.", parameters.ToString());
+            Log("Activity. Activity created with parameters {0}.", parameters.ToString());
         }
 
         public async Task Start()
         {
-            bool singleInstance;
-            using (var instance = new Mutex(true, $@"Global\{Parameters.ClassName}_{Parameters.TriggerKey}", out singleInstance))
+            try
             {
-                if (singleInstance)
+                bool singleInstance;
+                using (var instance = new Mutex(true, $@"Global\{Parameters.Group}", out singleInstance))
                 {
-                    await StartProcess();
+                    if (singleInstance)
+                    {
+                        Log("Activity. StartProcess...");
+                        await StartProcess();
+                        Log("Activity. StartProcess. Done.");
+                    }
+                    else
+                    {
+                        Log("Activity. Cannot start, {0} is already running.", Parameters.TriggerKey);
+                    }
                 }
-                else
-                {
-                    Log("Cannot start, {0} is already running.", Parameters.TriggerKey);
-                }
+            }
+            catch (Exception ex) {
+                logger.Error(ex);
+                EmailHelper.Send(ex);
             }
         }
 
@@ -65,7 +75,7 @@ namespace Job
 #if DEBUG
             Type jobType = Type.GetType(Parameters.ClassName);
 
-            Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(jobType, Parameters.TriggerKey, Parameters.ConfigFilePath, Parameters.ConnectionString, Parameters.ActivityId);
+            Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(jobType, $"{Parameters.Group}.{Parameters.TriggerKey}", Parameters.ConfigFilePath, Parameters.ConnectionString, Parameters.ActivityId);
             job.Parameters = Parameters;
             job.ExecuteAsync().GetAwaiter().GetResult();
             return Task.CompletedTask;
@@ -73,7 +83,7 @@ namespace Job
 #elif RELEASE
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
 
-            hostProcess.StartInfo.FileName = $"{Parameters.TriggerKey}\\JobHost.exe";
+            hostProcess.StartInfo.FileName = $"{Parameters.Group}\\JobHost.exe";
             hostProcess.StartInfo.Arguments = Parameters.ToString();
             hostProcess.StartInfo.CreateNoWindow = true;
             hostProcess.StartInfo.UseShellExecute = false;
@@ -81,15 +91,18 @@ namespace Job
             hostProcess.StartInfo.RedirectStandardError = true;
 
             hostProcess.OutputDataReceived += (sender, data) => logger.Info(data.Data);
-            hostProcess.ErrorDataReceived += (sender, data) => logger.Error(data.Data);
-            logger.Info($"Starting : {Parameters}");
+            hostProcess.ErrorDataReceived += (sender, data) => { 
+                logger.Error($"Error {data.Data}");
+                EmailHelper.Send(new Exception(data.Data));
+            };
+            logger.Info($"Activity. Starting : {Parameters}");
             hostProcess.Start();
 
             hostProcess.EnableRaisingEvents = true;
             hostProcess.Exited += (object sender, EventArgs e) =>
             {
                 tcs.SetResult(null);
-                Log("Process exit with code: {0}", hostProcess.ExitCode.ToString());
+                Log("Activity. Process exit with code: {0}", hostProcess.ExitCode.ToString());
             };
 
             hostProcess.BeginOutputReadLine();

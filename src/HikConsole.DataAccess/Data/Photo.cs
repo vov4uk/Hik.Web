@@ -24,8 +24,6 @@ namespace HikConsole.DataAccess.Data
 
         public long Size { get; set; }
 
-        public long? LocalSize { get; set; }
-
         [Display(Name = "Started"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime DownloadStartTime { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using HikApi.Abstraction;
 using HikConsole.Abstraction;
-using HikConsole.Config;
+using HikConsole.DTO.Config;
 using NLog;
 
 namespace HikConsole.Helpers

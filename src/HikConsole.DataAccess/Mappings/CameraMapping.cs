@@ -11,7 +11,7 @@ namespace HikConsole.DataAccess.Mappings
     {
         public void Configure(EntityTypeBuilder<Camera> builder)
         {
-            builder.ToTable(Tables.Camera, Schemas.Dbo);
+            builder.ToTable(Tables.Camera);
             builder.HasKey(camera => camera.Id);
 
             builder.Property(f => f.Alias)
@@ -22,7 +22,7 @@ namespace HikConsole.DataAccess.Mappings
                 .HasMaxLength(30);
             builder.Property(f => f.UserName)
                 .HasMaxLength(30);
-            builder.Property(f => f.LastSync)
+            builder.Property(f => f.LastVideoSync)
                 .IsRequired(false)
                 .HasColumnType("datetime2(0)");
         }

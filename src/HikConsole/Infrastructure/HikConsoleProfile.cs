@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using HikApi.Data;
-using HikConsole.Config;
+using HikConsole.DTO.Config;
 using HikConsole.DTO.Contracts;
 
 namespace HikConsole.Infrastructure

@@ -55,78 +55,12 @@
     </tbody>
 </table>
 
-@if (Model.Job.HardDriveStatuses != null && Model.Job.HardDriveStatuses.Any())
-{
-    <h2>HardDriveStatuses</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].Camera.Alias)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].HdStatus)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].HDType)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].Capacity)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Job.HardDriveStatuses[0].FreeSpace)
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Job.HardDriveStatuses)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Camera.Alias)
-                    </td>
-                    <td>
-                        @{
-                            HikConsole.DataAccess.Data.HdStatus status = (HikConsole.DataAccess.Data.HdStatus)item.HdStatus;
-                            string NewStatus = DetailsModel.GetEnumDescription(status);
-                        }
-                        @NewStatus
-                    </td>
-                    <td>
-                        @{
-                            HikConsole.DataAccess.Data.HdTypes hdType = (HikConsole.DataAccess.Data.HdTypes)item.HDType;
-                            string NewType = DetailsModel.GetEnumDescription(hdType);
-                        }
-                        @NewType
-                    </td>
-                    <td>
-                        @{
-                            double? gByte = (@item.Capacity / 1024.0);
-                            string NewSize = gByte?.ToString("0.00") + " GB";
-                        }
-                        @NewSize
-                    </td>
-                    <td>
-                        @{
-                            double? freeGByte = (@item.FreeSpace / 1024.0);
-                            string NewFree = freeGByte?.ToString("0.00") + " GB";
-                        }
-                        @NewFree
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
 @if (Model.Job.Videos != null && Model.Job.Videos.Any())
 {
     <h2>Videos</h2>
     <table class="table">
         <thead>
             <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Job.Videos[0].Camera.Alias)
-                </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Job.Videos[0].Name)
                 </th>
@@ -151,9 +85,6 @@
             @foreach (var item in Model.Job.Videos)
             {
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Camera.Alias)
-                    </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Name)
                     </td>

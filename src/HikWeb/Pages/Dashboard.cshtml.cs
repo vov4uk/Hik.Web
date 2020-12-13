@@ -13,6 +13,8 @@ namespace HikWeb.Pages
 
         public IReadOnlyCollection<Camera> Cameras { get; private set; }
 
+        public IReadOnlyCollection<Video> Videos { get; private set; }
+
         public DashboardModel(DataContext dataContext)
         {
             this.dataContext = dataContext;
@@ -21,6 +23,17 @@ namespace HikWeb.Pages
         public async Task OnGet()
         {
             Cameras = await this.dataContext.Cameras.ToListAsync();
+            Videos = await this.dataContext.Videos.FromSqlRaw(@"SELECT *
+FROM Video
+WHERE ID IN (
+	SELECT m.ID
+	FROM (
+	SELECT id
+	,      MAX(StopTime)
+	FROM Video
+	GROUP By CameraId
+	) m )").ToListAsync();
+
         }
     }
 }

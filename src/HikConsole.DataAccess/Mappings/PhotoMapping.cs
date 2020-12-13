@@ -11,7 +11,7 @@ namespace HikConsole.DataAccess.Mappings
     {
         public void Configure(EntityTypeBuilder<Photo> builder)
         {
-            builder.ToTable(Tables.Photo, Schemas.Dbo);
+            builder.ToTable(Tables.Photo);
             builder.HasKey(video => video.Id);
 
             builder

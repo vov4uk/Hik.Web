@@ -26,11 +26,14 @@ namespace HikConsole.DataAccess.Data
 
         public List<Photo> Photos { get; set; } = new List<Photo>();
 
-        public List<HardDriveStatus> HardDriveStatuses { get; set; } = new List<HardDriveStatus>();
-
         public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();
 
-        [DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
-        public DateTime? LastSync { get; set; }
+        public List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
+
+        [Display(Name = "Video Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
+        public DateTime? LastVideoSync { get; set; }
+
+        [Display(Name = "Photo Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
+        public DateTime? LastPhotoSync { get; set; }
     }
 }

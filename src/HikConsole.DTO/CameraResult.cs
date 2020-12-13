@@ -15,8 +15,6 @@ namespace HikConsole.DTO
 
         public CameraDTO Config { get; }
 
-        public bool Failed { get; set; }
-
         public List<VideoDTO> DownloadedVideos { get; }
 
         public List<PhotoDTO> DownloadedPhotos { get; }

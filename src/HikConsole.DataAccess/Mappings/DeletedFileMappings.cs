@@ -11,7 +11,7 @@ namespace HikConsole.DataAccess.Mappings
     {
         public void Configure(EntityTypeBuilder<DeletedFile> builder)
         {
-            builder.ToTable(Tables.DeletedFiles, Schemas.Dbo);
+            builder.ToTable(Tables.DeletedFiles);
             builder.HasKey(video => video.Id);
 
             builder.Property(f => f.Extention)

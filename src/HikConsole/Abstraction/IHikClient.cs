@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using HikApi.Abstraction;
 using HikApi.Data;
 
 namespace HikConsole.Abstraction
@@ -17,7 +18,7 @@ namespace HikConsole.Abstraction
 
         bool PhotoDownload(RemotePhotoFile remoteFile);
 
-        bool StartVideoDownload(RemoteVideoFile remoteFile);
+        bool StartVideoDownload(IRemoteFile remoteFile);
 
         void StopVideoDownload();
 

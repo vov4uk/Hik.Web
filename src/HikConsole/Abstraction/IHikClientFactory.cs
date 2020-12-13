@@ -1,4 +1,4 @@
-﻿using HikConsole.Config;
+﻿using HikConsole.DTO.Config;
 
 namespace HikConsole.Abstraction
 {

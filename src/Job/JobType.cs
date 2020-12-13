@@ -3,6 +3,7 @@
     public enum JobType
     {
         DeleteArchiving,
-        HikDownloader
+        HikVideoDownloader,
+        HikPhotoDownloader
     }
 }

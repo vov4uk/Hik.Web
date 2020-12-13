@@ -18,8 +18,9 @@ namespace HikWeb
             string defaultConnection = connStrings.GetSection("HikConnectionString").Value;
 
             var trigger = context.Trigger.Key.Name;
+            var group = context.Trigger.Key.Group;
 
-            var parameters = new Parameters(className, trigger, configPath, defaultConnection);
+            var parameters = new Parameters(className, group, trigger, configPath, defaultConnection);
             var activity = new Activity(parameters);
             await activity.Start();
         }

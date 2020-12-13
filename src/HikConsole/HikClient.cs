@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using HikApi.Abstraction;
 using HikApi.Data;
 using HikConsole.Abstraction;
-using HikConsole.Config;
+using HikConsole.DTO.Config;
 using HikConsole.Helpers;
 using NLog;
 
@@ -67,7 +67,7 @@ namespace HikConsole
             }
         }
 
-        public bool StartVideoDownload(RemoteVideoFile remoteFile)
+        public bool StartVideoDownload(IRemoteFile remoteFile)
         {
             if (!this.IsDownloading)
             {

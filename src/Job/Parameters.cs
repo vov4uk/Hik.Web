@@ -12,19 +12,22 @@ namespace Job
 
         public string TriggerKey { get; set; }
 
+        public string Group { get; set; }
+
         public string ConfigFilePath { get; set; }
 
         public string ConnectionString { get; set; }
 
         public override string ToString()
         {
-            return $"\"{ClassName}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigFilePath}\" \"{ConnectionString}\"";
+            return $"\"{ClassName}\" \"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigFilePath}\" \"{ConnectionString}\"";
         }
 
-        public Parameters(string className, string description, string configFilePath, string connectionString)
+        public Parameters(string className, string group, string description, string configFilePath, string connectionString)
         {
             TriggerKey = description;
             ClassName = className;
+            Group = group;
             ConfigFilePath = Path.Combine(AssemblyDirectory, configFilePath);
             ConnectionString = connectionString;
         }
@@ -38,10 +41,11 @@ namespace Job
         {
             var parameters = new Parameters();
             parameters.ClassName = args[0];
-            parameters.TriggerKey = args[1];
-            parameters.ActivityId = Guid.Parse(args[2]);
-            parameters.ConfigFilePath = args[3];
-            parameters.ConnectionString = args[4];
+            parameters.Group = args[1];
+            parameters.TriggerKey = args[2];
+            parameters.ActivityId = Guid.Parse(args[3]);
+            parameters.ConfigFilePath = args[4];
+            parameters.ConnectionString = args[5];
             return parameters;
         }
         private static string AssemblyDirectory

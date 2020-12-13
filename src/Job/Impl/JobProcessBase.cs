@@ -1,15 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using HikConsole.DataAccess;
 using HikConsole.DataAccess.Data;
-using HikConsole.DTO;
+using HikConsole.DTO.Config;
+using HikConsole.DTO.Contracts;
 using HikConsole.Scheduler;
+using Job.Email;
 using NLog;
 
 namespace Job.Impl
 {
     public abstract class JobProcessBase
     {
+        private AppConfig appConfig;
         protected HikJob JobInstance { get; private set; }
 
         protected readonly UnitOfWorkFactory UnitOfWorkFactory;
@@ -19,11 +24,17 @@ namespace Job.Impl
         public string ConfigPath { get; private set; }
         public string ConnectionString { get; private set; }
 
+        public AppConfig AppConfig => appConfig ?? (appConfig = HikConfig.GetConfig(this.ConfigPath));
+
         public Parameters Parameters;
 
         public abstract JobType JobType { get; }
 
-        public abstract Task<JobResult> Run();
+        public abstract Task InitializeProcessingPeriod();
+
+        public abstract Task<IReadOnlyCollection<MediaFileBase>> Run();
+
+        public abstract Task SaveResults(IReadOnlyCollection<MediaFileBase> files, JobService service);
 
         public JobProcessBase(string trigger, string configFilePath, string connectionString, Guid activityId)
         {
@@ -36,29 +47,55 @@ namespace Job.Impl
 
         public async Task ExecuteAsync()
         {
+            await InitializeJobInstance();
+
+            var result = await Run();
+            await SaveResultsInternal(result);
+
+            Logger.Info($"{JobType} Execution finished");
+        }
+
+        private async Task InitializeJobInstance()
+        {
             this.JobInstance = new HikJob
             {
                 Started = DateTime.Now,
                 JobType = TriggerKey,
             };
 
+            await InitializeProcessingPeriod();
+
+            await SaveJobInstanceToDB();
+        }
+
+        private async Task SaveJobInstanceToDB()
+        {
             using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
             {
                 var jobRepo = unitOfWork.GetRepository<HikJob>();
                 await jobRepo.AddAsync(JobInstance);
                 await unitOfWork.SaveChangesAsync();
             }
-
-            var result = await Run();
-
-            JobInstance.Finished = DateTime.Now;
-            Logger.Info("Save to DB...");
-            var jobResultSaver = new JobService(this.UnitOfWorkFactory, JobInstance);
-            await jobResultSaver.SaveJobResultAsync(result);
-            Logger.Info("Save to DB. Done");
-
-            Logger.Info($"{JobType} Execution finished");
         }
 
+
+        protected virtual void ExceptionFired(object sender, HikConsole.Events.ExceptionEventArgs e)
+        {
+            this.JobInstance.FailsCount++;
+            Logger.Error(e.Exception, e.Exception.Message);
+            EmailHelper.Send(e.Exception);
+        }
+
+        public async Task SaveResultsInternal(IReadOnlyCollection<MediaFileBase> files)
+        {
+            Logger.Info("Save to DB...");
+            var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
+            if (files.Any())
+            {
+                await SaveResults(files, jobResultSaver);
+            }
+            await jobResultSaver.SaveJobResultAsync(AppConfig.Camera);
+            Logger.Info("Save to DB. Done");
+        }
     }
 }

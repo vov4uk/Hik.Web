@@ -47,17 +47,6 @@ namespace HikConsole.DataAccess
             return ctx.Set<T>().OrderByDescending(x=>x).Take(last).ToListAsync();
         }
 
-        public virtual async Task<List<T>> SearchByAsync(Expression<Func<T, bool>> searchBy,
-            params Expression<Func<T, object>>[] includes)
-        {
-            var result = ctx.Set<T>().Where(searchBy);
-
-            foreach (var includeExpression in includes)
-                result = result.Include(includeExpression);
-
-            return await result.ToListAsync();
-        }
-
         /// <summary>
         ///     Finds by predicate.
         ///     http://appetere.com/post/passing-include-statements-into-a-repository
@@ -73,7 +62,25 @@ namespace HikConsole.DataAccess
             foreach (var includeExpression in includes)
                 result = result.Include(includeExpression);
 
-            return await result.FirstOrDefaultAsync();
+            return await result?.FirstOrDefaultAsync();
+        }   
+        
+        /// <summary>
+        ///     Finds by predicate.
+        ///     http://appetere.com/post/passing-include-statements-into-a-repository
+        /// </summary>
+        /// <param name="predicate">The predicate.</param>
+        /// <param name="includes">The includes.</param>
+        /// <returns></returns>
+        public virtual async Task<List<T>> FindManyAsync(Expression<Func<T, bool>> predicate,
+            params Expression<Func<T, object>>[] includes)
+        {
+            var result = ctx.Set<T>().Where(predicate);
+
+            foreach (var includeExpression in includes)
+                result = result.Include(includeExpression);
+
+            return await result?.ToListAsync();
         }
 
         public virtual async Task<bool> UpdateAsync(T entity)

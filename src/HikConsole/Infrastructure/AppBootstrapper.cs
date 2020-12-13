@@ -6,6 +6,7 @@ using System.Reflection;
 using Autofac;
 using AutoMapper;
 using HikConsole.Scheduler;
+using HikConsole.Service;
 
 namespace HikConsole.Infrastructure
 {
@@ -40,9 +41,9 @@ namespace HikConsole.Infrastructure
             hikAssemblies.Add(Assembly.GetExecutingAssembly());
             RegisterAutoMapper(builder);
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();
-            builder.RegisterType<HikConfig>().SingleInstance();
-            builder.RegisterType<HikDownloader>();
-            builder.RegisterType<DeleteArchiving>();
+            builder.RegisterType<HikVideoDownloaderService>();
+            builder.RegisterType<HikPhotoDownloaderService>();
+            builder.RegisterType<DeleteArchiveSevice>();
             IContainer container = builder.Build();
 
             return container;

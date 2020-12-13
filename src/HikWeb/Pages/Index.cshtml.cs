@@ -37,7 +37,6 @@ namespace HikWeb.Pages
 
         public async Task OnGetAsync (int p = 1)
         {
-
             TotalItems = await dataContext.Jobs.CountAsync();
             Pager = new Pager(TotalItems, p, PageSize, MaxPages);
 
