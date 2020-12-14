@@ -14,6 +14,8 @@ namespace HikConsole.DataAccess.Mappings
             builder.ToTable(Tables.Job);
             builder.HasKey(job => job.Id);
 
+            builder.Property(f => f.Success)
+                .HasDefaultValue("true");
             builder.Property(f => f.JobType)
                 .HasMaxLength(30);
             builder.Property(f => f.Started)

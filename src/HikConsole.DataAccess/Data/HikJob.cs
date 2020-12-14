@@ -14,8 +14,8 @@ namespace HikConsole.DataAccess.Data
 
         public string JobType { get; set; }
 
-        [Display(Name = "Failed")]
-        public int FailsCount { get; set; }
+        [Display(Name = "Success")]
+        public bool Success { get; set; }
 
         [Display(Name = "From"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public  DateTime? PeriodStart { get; set; }

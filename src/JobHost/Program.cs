@@ -18,6 +18,11 @@ namespace JobHost
 
                 Type jobType = Type.GetType(parameters.ClassName);
 
+                if (jobType == null)
+                {
+                    throw new ArgumentException($"No such type exist '{parameters.ClassName}'");
+                }
+
                 Job.Impl.JobProcessBase job = (Job.Impl.JobProcessBase)Activator.CreateInstance(
                     jobType, 
                     $"{parameters.Group}.{parameters.TriggerKey}", 

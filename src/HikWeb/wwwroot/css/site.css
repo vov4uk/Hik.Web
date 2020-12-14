@@ -27,11 +27,11 @@ a {
 /* Sticky footer styles
 -------------------------------------------------- */
 html {
-  font-size: 14px;
+  font-size: 12px;
 }
 @media (min-width: 768px) {
   html {
-    font-size: 16px;
+    font-size: 14px;
   }
 }
 
@@ -68,4 +68,13 @@ body {
   width: 100%;
   white-space: nowrap;
   line-height: 60px; /* Vertically center the text there */
+}
+
+.failed[data-status="False"] {
+    background-color: #ffe6e6
+}
+
+.failed td {
+    vertical-align: middle;
+    border-top: 1px solid #dee2e6;
 }

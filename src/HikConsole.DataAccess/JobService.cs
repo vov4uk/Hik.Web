@@ -43,7 +43,7 @@ namespace HikConsole.Scheduler
 
                 Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
 
-                if (job.FailsCount == 0)
+                if (job.Success)
                 {
                     if(job.JobType.Contains("Photo"))
                     {

@@ -76,6 +76,11 @@ namespace Job
 #if DEBUG
             Type jobType = Type.GetType(Parameters.ClassName);
 
+            if (jobType == null)
+            {
+                throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
+            }
+
             Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(jobType, $"{Parameters.Group}.{Parameters.TriggerKey}", Parameters.ConfigFilePath, Parameters.ConnectionString, Parameters.ActivityId);
             job.Parameters = Parameters;
             job.ExecuteAsync().GetAwaiter().GetResult();

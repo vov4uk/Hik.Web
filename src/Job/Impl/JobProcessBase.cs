@@ -82,7 +82,7 @@ namespace Job.Impl
 
         protected virtual void ExceptionFired(object sender, ExceptionEventArgs e)
         {
-            this.JobInstance.FailsCount++;
+            this.JobInstance.Success = false;
             Logger.Error(e.Exception, e.Exception.Message);            
             LogExceptionToDB(e);
             EmailHelper.Send(e.Exception);

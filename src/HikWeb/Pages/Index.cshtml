@@ -25,9 +25,6 @@
                 @Html.DisplayNameFor(model => model.Jobs[0].PeriodEnd)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Jobs[0].FailsCount)
-            </th> 
-            <th>
                 @Html.DisplayNameFor(model => model.Jobs[0].PhotosCount)
             </th>
             <th>
@@ -38,7 +35,8 @@
     <tbody>
         @foreach (var item in Model.Jobs)
         {
-        <tr>
+
+        <tr data-status="@item.Success" class="failed">
             <td>
                 <a asp-page="./Details" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.JobType)</a>
             </td> 
@@ -46,22 +44,19 @@
                 @{
                     string relativeDate = IndexModel.GetRelativeTime(item.Started);
                 }
-                <p title="@item.Started">@Html.DisplayFor(modelItem => @relativeDate)</p>
+                <span title="@item.Started">@Html.DisplayFor(modelItem => @relativeDate)</span>
             </td>
             <td>
                 @{
                     string relativeFinishedDate = item.Finished != null ? IndexModel.GetRelativeTime(item.Finished.Value) : "";
                 }
-                <p title="@item.Finished">@Html.DisplayFor(modelItem => relativeFinishedDate)</p>
+                <span title="@item.Finished">@Html.DisplayFor(modelItem => relativeFinishedDate)</span>
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.PeriodStart)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.PeriodEnd)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FailsCount)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.PhotosCount)
