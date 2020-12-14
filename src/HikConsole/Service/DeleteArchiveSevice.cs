@@ -15,7 +15,7 @@ namespace HikConsole.Scheduler
     {
         private const string AllFilter = "*";
         private const string DateFormat = "yyyyMMdd";
-        private readonly string[] filesToDelete = new[] { "*.mp4", "*.jpg", "*.ini" };
+        private readonly string[] filesToDelete = new[] { ".mp4", ".jpg", ".ini" };
         private readonly ILogger logger = LogManager.GetCurrentClassLogger();
 
         public DeleteArchiveSevice()
@@ -104,7 +104,7 @@ namespace HikConsole.Scheduler
             {
                 if (!Directory.EnumerateFileSystemEntries(directory).Any())
                 {
-                    this.logger.Debug($"Deleting: {directory}");
+                    this.logger.Info($"Deleting: {directory}");
                     Directory.Delete(directory);
                 }
             }

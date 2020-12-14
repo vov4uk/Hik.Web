@@ -25,6 +25,8 @@ namespace HikConsole.DataAccess
 
         public DbSet<DailyStatistic> DailyStatistics { get; set; }
 
+        public DbSet<ExceptionLog> Exceptions { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
@@ -44,6 +46,7 @@ namespace HikConsole.DataAccess
                 .ApplyConfiguration(new PhotoMapping())
                 .ApplyConfiguration(new JobMapping())
                 .ApplyConfiguration(new DeletedFileMappings())
+                .ApplyConfiguration(new ExceptionLogMapping())
                 .ApplyConfiguration(new DailyStatisticMapping());
 
             base.OnModelCreating(modelBuilder);

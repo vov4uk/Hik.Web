@@ -37,6 +37,8 @@ namespace HikConsole.DataAccess.Data
 
         public List<Video> Videos { get; set; } = new List<Video>();
 
+        public ExceptionLog ExceptionLog { get; set; }
+
         public List<Photo> Photos { get; set; } = new List<Photo>();
 
         public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();

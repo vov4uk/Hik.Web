@@ -6,6 +6,7 @@ using HikConsole.DataAccess;
 using HikConsole.DataAccess.Data;
 using HikConsole.DTO.Config;
 using HikConsole.DTO.Contracts;
+using HikConsole.Events;
 using HikConsole.Scheduler;
 using Job.Email;
 using NLog;
@@ -79,11 +80,32 @@ namespace Job.Impl
         }
 
 
-        protected virtual void ExceptionFired(object sender, HikConsole.Events.ExceptionEventArgs e)
+        protected virtual void ExceptionFired(object sender, ExceptionEventArgs e)
         {
             this.JobInstance.FailsCount++;
-            Logger.Error(e.Exception, e.Exception.Message);
+            Logger.Error(e.Exception, e.Exception.Message);            
+            LogExceptionToDB(e);
             EmailHelper.Send(e.Exception);
+        }
+
+        private void LogExceptionToDB(ExceptionEventArgs e)
+        {
+            try
+            {
+                using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
+                {
+                    var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
+                    jobRepo.AddAsync(new ExceptionLog
+                    {
+                        CallStack = e.Exception.StackTrace,
+                        JobId = JobInstance.Id,
+                        Message = (e.Exception as HikApi.HikException)?.ErrorMessage ?? e.Exception.Message,
+                        HikErrorCode = (e.Exception as HikApi.HikException)?.ErrorCode
+                    }).GetAwaiter().GetResult();
+                    unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
+                }
+            }
+            catch (Exception ex) { Logger.Error(ex, ex.Message); }
         }
 
         public async Task SaveResultsInternal(IReadOnlyCollection<MediaFileBase> files)

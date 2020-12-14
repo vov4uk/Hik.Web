@@ -55,7 +55,8 @@ namespace Job
                 }
             }
             catch (Exception ex) {
-                logger.Error(ex);
+                logger.Error($"Activity.Start - catch exception : {ex.Message}");
+                logger.Error($"Activity.Start - catch exception : {ex.StackTrace}");
                 EmailHelper.Send(ex);
             }
         }
@@ -90,11 +91,8 @@ namespace Job
             hostProcess.StartInfo.RedirectStandardOutput = true;
             hostProcess.StartInfo.RedirectStandardError = true;
 
-            hostProcess.OutputDataReceived += (sender, data) => logger.Info(data.Data);
-            hostProcess.ErrorDataReceived += (sender, data) => { 
-                logger.Error($"Error {data.Data}");
-                EmailHelper.Send(new Exception(data.Data));
-            };
+            hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
+            hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
             logger.Info($"Activity. Starting : {Parameters}");
             hostProcess.Start();
 
@@ -110,6 +108,32 @@ namespace Job
 
             return tcs.Task;
 #endif
+        }
+
+        private static void LogErrorData(object sender, DataReceivedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                logger.Error($"ErrorDataReceived : {e.Data}");
+                logger.Error($"ErrorDataReceived : {sender}");
+                logger.Error($"ErrorDataReceived : HasExited : {(sender as Process)?.HasExited}");
+                EmailHelper.Send(new Exception(e.Data));
+            }
+            else
+            {
+                logger.Warn("ErrorDataReceived no data");
+            }
+        }
+        private void LogData(object sender, DataReceivedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                Log(e.Data);
+            }
+            else
+            {
+                logger.Warn("OutputDataReceived no data");
+            }
         }
 
         private void Log(string format, params string[] args)

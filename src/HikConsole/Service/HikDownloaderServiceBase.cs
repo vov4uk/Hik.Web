@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using HikApi.Abstraction;
 using HikConsole.Abstraction;
-using HikConsole.DTO;
 using HikConsole.DTO.Config;
 using HikConsole.DTO.Contracts;
 using HikConsole.Events;

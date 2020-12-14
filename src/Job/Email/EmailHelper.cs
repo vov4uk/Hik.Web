@@ -38,7 +38,7 @@ namespace Job.Email
 </ul>";
                 }
 
-                var msg = BuildBody(errorDetails, camera.ToHtmlTable(), ex.Message, ex.StackTrace);
+                var msg = BuildBody(errorDetails, camera?.ToHtmlTable(), ex.Message, ex.StackTrace);
 
                 if (Settings != null)
                 {
@@ -47,7 +47,7 @@ namespace Job.Email
                         From = new MailAddress(Settings.UserName),
                     };
                     mail.To.Add(Settings.Receiver);
-                    mail.Subject = $"{camera.Alias} error";
+                    mail.Subject = $"{camera?.Alias ?? "HikWeb"} error";
                     mail.Body = msg;
                     mail.IsBodyHtml = true;
 
@@ -67,7 +67,8 @@ namespace Job.Email
             catch (Exception e)
             {
                 logger.Error("Failed to Sent Email");
-                logger.Error($"Parent exeption {ex}");
+                logger.Error($"Parent exeption {ex.Message}");
+                logger.Error($"Parent exeption {ex.StackTrace}");
                 logger.Error($"Local exeption {e}");
             }
         }
@@ -78,8 +79,7 @@ namespace Job.Email
             {
                 return ex.Data["Camera"] as CameraConfig;
             }
-
-            throw new ArgumentNullException("Camera config not found");
+            return default;
         }
 
         private static string BuildBody(string details, string cameraConfig, string message, string callStack)

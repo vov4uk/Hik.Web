@@ -30,7 +30,7 @@ namespace JobHost
             }
             catch (Exception exception)
             {
-                logger.Error(exception);
+                logger.Error($"JobHost. Exception : {exception}");
                 Environment.ExitCode = -1;
             }
         }
