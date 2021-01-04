@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HikConsole.DataAccess\HikConsole.DataAccess.csproj" />
-    <ProjectReference Include="..\HikConsole\HikConsole.csproj" />
+    <ProjectReference Include="..\Hik.Client\Hik.Client.csproj" />
+    <ProjectReference Include="..\Hik.DataAccess\Hik.DataAccess.csproj" />
   </ItemGroup>
 
   <ItemGroup>

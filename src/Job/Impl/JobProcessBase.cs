@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HikConsole.DataAccess;
-using HikConsole.DataAccess.Data;
-using HikConsole.DTO.Config;
-using HikConsole.DTO.Contracts;
-using HikConsole.Events;
+using Hik.Api;
+using Hik.DataAccess;
+using Hik.DataAccess.Data;
+using Hik.DTO.Config;
+using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
 using Job.Email;
 using NLog;
+using Hik.Client.Events;
 
 namespace Job.Impl
 {
@@ -99,8 +100,8 @@ namespace Job.Impl
                     {
                         CallStack = e.Exception.StackTrace,
                         JobId = JobInstance.Id,
-                        Message = (e.Exception as HikApi.HikException)?.ErrorMessage ?? e.Exception.Message,
-                        HikErrorCode = (e.Exception as HikApi.HikException)?.ErrorCode
+                        Message = (e.Exception as HikException)?.ErrorMessage ?? e.Exception.Message,
+                        HikErrorCode = (e.Exception as HikException)?.ErrorCode
                     }).GetAwaiter().GetResult();
                     unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
                 }

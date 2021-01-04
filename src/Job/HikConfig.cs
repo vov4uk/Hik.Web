@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
-using HikConsole.DTO.Config;
+using Hik.DTO.Config;
 using Newtonsoft.Json;
 
 namespace Job

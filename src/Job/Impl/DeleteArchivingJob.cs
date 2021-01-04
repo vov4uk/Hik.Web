@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
-using HikConsole.DTO.Contracts;
-using HikConsole.Infrastructure;
+using Hik.Client.Infrastructure;
+using Hik.Client.Scheduler;
+using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
 
 namespace Job.Impl

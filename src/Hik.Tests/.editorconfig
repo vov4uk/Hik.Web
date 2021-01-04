@@ -1,0 +1,14 @@
+# NOTE: Requires **VS2019 16.3** or later
+
+# UnitTestsRules
+# Description: Extension of BaseAndSonarLintRules for unit tests
+
+# Code files
+[*.{cs,vb}]
+
+
+dotnet_diagnostic.CA1707.severity = none
+
+dotnet_diagnostic.CA1822.severity = none
+
+dotnet_diagnostic.SA1633.severity = none

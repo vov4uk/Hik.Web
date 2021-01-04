@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
-using HikConsole.DataAccess.Data;
-using HikConsole.DTO.Contracts;
-using HikConsole.Infrastructure;
+using Hik.DataAccess.Data;
+using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
-using HikConsole.Service;
+using Hik.Client.Infrastructure;
+using Hik.Client.Service;
 
 namespace Job.Impl
 {

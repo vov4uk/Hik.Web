@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac;
-using HikConsole.DataAccess.Data;
-using HikConsole.DTO.Contracts;
-using HikConsole.Infrastructure;
+using Hik.DataAccess.Data;
+using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
-using HikConsole.Service;
+using Hik.Client.Service;
+using Hik.Client.Infrastructure;
 
 namespace Job.Impl
 {
@@ -52,7 +52,7 @@ namespace Job.Impl
             return Task.CompletedTask;
         }
 
-        private async void Downloader_VideoDownloaded(object sender, HikConsole.Events.FileDownloadedEventArgs e)
+        private async void Downloader_VideoDownloaded(object sender, Hik.Client.Events.FileDownloadedEventArgs e)
         {
             base.Logger.Info("Save Video to DB...");
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, JobInstance);

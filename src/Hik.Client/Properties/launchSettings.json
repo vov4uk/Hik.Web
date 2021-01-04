@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Hik.Client": {
+      "commandName": "Project",
+      "commandLineArgs": "--console"
+    }
+  }
+}

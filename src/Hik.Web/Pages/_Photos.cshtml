@@ -1,0 +1,28 @@
+﻿
+@model List<Hik.DataAccess.Data.Photo>
+
+<h2>Photos</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model[0].Name)</th>
+            <th>@Html.DisplayNameFor(model => model[0].DateTaken)</th>
+            <th>@Html.DisplayNameFor(model => model[0].Size)</th>
+            <th>@Html.DisplayNameFor(model => model[0].DownloadStartTime)</th>
+            <th>@Html.DisplayNameFor(model => model[0].DownloadStopTime)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            string photoSize = Hik.Client.Helpers.Utils.FormatBytes(item.Size);
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                <td>@Html.DisplayFor(modelItem => item.DateTaken)</td>
+                <td>@photoSize</td>
+                <td>@Html.DisplayFor(modelItem => item.DownloadStartTime)</td>
+                <td>@Html.DisplayFor(modelItem => item.DownloadStopTime)</td>
+            </tr>
+        }
+    </tbody>
+</table>

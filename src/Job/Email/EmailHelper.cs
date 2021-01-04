@@ -3,7 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Mail;
 using System.Reflection;
-using HikConsole.DTO.Config;
+using Hik.Api;
+using Hik.DTO.Config;
 using Newtonsoft.Json;
 using NLog;
 
@@ -29,9 +30,9 @@ namespace Job.Email
                 var camera = GetCameraConfig(ex);
                 string errorDetails = string.Empty;
 
-                if (ex is HikApi.HikException)
+                if (ex is HikException)
                 {
-                    var hikEx = ex as HikApi.HikException;
+                    var hikEx = ex as HikException;
                     errorDetails = $@"<ul>
   <li>Error Code : {hikEx.ErrorCode}</li>
   <li>{hikEx.ErrorMessage}</li>
@@ -47,7 +48,7 @@ namespace Job.Email
                         From = new MailAddress(Settings.UserName),
                     };
                     mail.To.Add(Settings.Receiver);
-                    mail.Subject = $"{camera?.Alias ?? "HikWeb"} error";
+                    mail.Subject = $"{camera?.Alias ?? "Hik.Web"} error";
                     mail.Body = msg;
                     mail.IsBodyHtml = true;
 
