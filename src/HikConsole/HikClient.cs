@@ -20,20 +20,22 @@ namespace HikConsole
         private readonly CameraConfig config;
         private readonly IHikApi hikApi;
         private readonly IFilesHelper filesHelper;
-        private readonly IProgressBarFactory progressFactory;
         private ILogger logger = LogManager.GetCurrentClassLogger();
         private int downloadId = -1;
         private IRemoteFile currentDownloadFile;
         private Session session;
-        private IProgressBar progress;
         private bool disposedValue = false;
 
-        public HikClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, IProgressBarFactory progressFactory, ILogger logger)
+        public HikClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, ILogger logger)
         {
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
             this.config = config;
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
-            this.progressFactory = progressFactory;
             this.logger = logger;
         }
 
@@ -80,7 +82,6 @@ namespace HikConsole
                     this.logger.Info($"{remoteFile.ToUserFriendlyString()}- downloading");
 
                     this.currentDownloadFile = remoteFile;
-                    this.progress = this.config.ShowProgress ? this.progressFactory.Create() : default(IProgressBar);
                     return true;
                 }
 
@@ -191,11 +192,6 @@ namespace HikConsole
         {
             if (!this.disposedValue)
             {
-                if (disposing)
-                {
-                    this.progress?.Dispose();
-                }
-
                 this.logger.Info($"Logout the device");
                 if (this.session != null)
                 {
@@ -203,7 +199,6 @@ namespace HikConsole
                 }
 
                 this.session = null;
-                this.progress = null;
                 this.currentDownloadFile = null;
 
                 this.hikApi.Cleanup();
@@ -225,8 +220,6 @@ namespace HikConsole
         private void ResetDownloadStatus()
         {
             this.downloadId = -1;
-            this.progress?.Dispose();
-            this.progress = null;
         }
 
         private void DeleteCurrentFile()
@@ -255,18 +248,14 @@ namespace HikConsole
 
         private void UpdateProgressInternal(int progressValue)
         {
-            if (progressValue >= ProgressBarMinimum && progressValue < ProgressBarMaximum)
-            {
-                this.progress?.Report((double)progressValue / ProgressBarMaximum);
-            }
-            else if (progressValue == ProgressBarMaximum)
+            if (progressValue == ProgressBarMaximum)
             {
                 this.StopVideoDownload();
                 this.currentDownloadFile = null;
 
                 this.logger.Info("- downloaded");
             }
-            else
+            else if (progressValue < ProgressBarMinimum || progressValue > ProgressBarMaximum)
             {
                 this.StopVideoDownload();
                 throw new InvalidOperationException($"HikClient.UpdateDownloadProgress failed, progress value = {progressValue}");

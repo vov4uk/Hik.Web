@@ -18,8 +18,6 @@ namespace HikConsole.DTO.Config
 
         public string Password { get; set; }
 
-        public bool ShowProgress { get; set; } = true;
-
         public bool DownloadPhotos { get; set; }
 
         public int? RetentionPeriodDays { get; set; } = 7;

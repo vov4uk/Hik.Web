@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using HikConsole.DataAccess;
 using HikConsole.DataAccess.Data;
@@ -35,8 +32,7 @@ namespace HikWeb.Pages
             .Include(x => x.Photos)
             .Include(x => x.Videos)
             .Include(x => x.DeletedFiles)
-            .Include(x => x.ExceptionLog)
-            .Include("DeletedFiles.Camera");
+            .Include(x => x.ExceptionLog);
 
             Job = await items.FirstOrDefaultAsync();
             if (Job == null)
@@ -44,20 +40,6 @@ namespace HikWeb.Pages
                 return NotFound();
             }
             return Page();
-        }
-
-        public static string GetEnumDescription(Enum value)
-        {
-            FieldInfo fi = value.GetType().GetField(value.ToString());
-
-            DescriptionAttribute[] attributes = fi.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
-
-            if (attributes != null && attributes.Any())
-            {
-                return attributes.First().Description;
-            }
-
-            return value.ToString();
         }
     }
 }

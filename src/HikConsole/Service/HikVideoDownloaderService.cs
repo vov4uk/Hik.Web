@@ -61,13 +61,14 @@ namespace HikConsole.Service
                 }
                 while (this.Client.IsDownloading);
 
-                TimeSpan duration = DateTime.Now - downloadStarted;
-                this.Logger.Info($"Download duration {duration.ToString(DurationFormat)}, avg speed {Utils.FormatBytes((long)(file.Size / duration.TotalSeconds))}/s");
-
-                VideoDTO result = this.Mapper.Map<VideoDTO>(file);
-                result.DownloadStartTime = downloadStarted;
-                result.DownloadStopTime = DateTime.Now;
-                return result;
+                VideoDTO video = this.Mapper.Map<VideoDTO>(file);
+                video.DownloadStartTime = downloadStarted;
+                video.DownloadStopTime = DateTime.Now;
+                TimeSpan duration = video.DownloadStopTime - downloadStarted;
+                TimeSpan videoDutation = video.StopTime - video.StartTime;
+                this.Logger.Info($"Duration {duration.ToString(DurationFormat)}, avg speed {Utils.FormatBytes((long)(file.Size / duration.TotalSeconds))}/s");
+                this.Logger.Info($"Video    {videoDutation.ToString(DurationFormat)}, avg rate {Utils.FormatBytes((long)(file.Size / videoDutation.TotalSeconds))}/s");
+                return video;
             }
 
             return default;

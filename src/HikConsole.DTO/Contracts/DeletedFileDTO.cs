@@ -8,11 +8,11 @@
         
         public DeletedFileDTO(string fileName, string extention)
         {
-            this.FileName = fileName;
+            this.FilePath = fileName;
             this.Extention = extention;
         }
 
-        public string FileName { get; set; }
+        public string FilePath { get; set; }
 
         public string Extention { get; set; }
     }

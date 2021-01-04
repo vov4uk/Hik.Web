@@ -1,0 +1,21 @@
+﻿
+@model List<HikConsole.DataAccess.Data.DeletedFile>
+
+<h2>DeletedFiles</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model[0].FilePath)</th>
+            <th>@Html.DisplayNameFor(model => model[0].Extention)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.FilePath)</td>
+                <td>@Html.DisplayFor(modelItem => item.Extention)</td>
+            </tr>
+        }
+    </tbody>
+</table>

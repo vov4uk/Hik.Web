@@ -42,9 +42,9 @@ namespace HikConsole.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new CameraMapping())
+                .ApplyConfiguration(new JobMapping())
                 .ApplyConfiguration(new VideoMapping())
                 .ApplyConfiguration(new PhotoMapping())
-                .ApplyConfiguration(new JobMapping())
                 .ApplyConfiguration(new DeletedFileMappings())
                 .ApplyConfiguration(new ExceptionLogMapping())
                 .ApplyConfiguration(new DailyStatisticMapping());

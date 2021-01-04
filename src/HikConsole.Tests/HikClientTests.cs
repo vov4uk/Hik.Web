@@ -6,6 +6,7 @@ using HikApi.Abstraction;
 using HikApi.Data;
 using HikApi.Services;
 using HikConsole.Abstraction;
+using HikConsole.DTO.Config;
 using Moq;
 using NLog;
 using Xunit;
@@ -19,7 +20,6 @@ namespace HikConsole.Tests
         private readonly Mock<HikVideoService> videoServiceMock;
         private readonly Mock<HikPhotoService> photoServiceMock;
         private readonly Mock<IFilesHelper> filesMock;
-        private readonly Mock<IProgressBarFactory> progressMock;
         private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
 
@@ -33,7 +33,6 @@ namespace HikConsole.Tests
             this.sdkMock.SetupGet(x => x.PhotoService).Returns(this.photoServiceMock.Object);
 
             this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
-            this.progressMock = new Mock<IProgressBarFactory>(MockBehavior.Strict);
             this.loggerMock = new Mock<ILogger>();
             this.fixture = new Fixture();
         }
@@ -153,7 +152,6 @@ namespace HikConsole.Tests
             this.SetupFilesMockForDownload();
 
             this.videoServiceMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(downloadHandler);
-            this.progressMock.Setup(x => x.Create()).Returns(default(IProgressBar));
 
             var client = this.GetHikClient();
             client.Login();
@@ -164,7 +162,6 @@ namespace HikConsole.Tests
             this.filesMock.Verify(x => x.FolderCreateIfNotExist(It.IsAny<string>()), Times.Once);
             this.filesMock.Verify(x => x.FileExists(It.IsAny<string>(), It.IsAny<long>()), Times.Once);
             this.videoServiceMock.Verify(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.progressMock.Verify(x => x.Create(), Times.Once);
         }
 
         [Fact]
@@ -189,7 +186,6 @@ namespace HikConsole.Tests
             this.SetupFilesMockForDownload();
             this.SetupLogin();
             this.videoServiceMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Returns(downloadHandler);
-            this.progressMock.Setup(x => x.Create()).Returns(default(IProgressBar));
 
             var client = this.GetHikClient();
             client.Login();
@@ -202,7 +198,6 @@ namespace HikConsole.Tests
             this.filesMock.Verify(x => x.FolderCreateIfNotExist(It.IsAny<string>()), Times.Once);
             this.filesMock.Verify(x => x.FileExists(It.IsAny<string>(), It.IsAny<long>()), Times.Once);
             this.videoServiceMock.Verify(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.progressMock.Verify(x => x.Create(), Times.Once);
         }
 
         [Fact]
@@ -218,7 +213,6 @@ namespace HikConsole.Tests
         [Fact]
         public void StopDownload_FileIsDownloading_DoStop()
         {
-            var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
             int downloadHandler = 1;
             this.SetupLogin();
             this.SetupFilesMockForDownload();
@@ -226,8 +220,6 @@ namespace HikConsole.Tests
             this.videoServiceMock
                 .Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(downloadHandler);
-            progressBarMock.Setup(x => x.Dispose());
-            this.progressMock.Setup(x => x.Create()).Returns(progressBarMock.Object);
             this.videoServiceMock.Setup(x => x.StopDownloadFile(downloadHandler));
 
             var client = this.GetHikClient();
@@ -238,7 +230,6 @@ namespace HikConsole.Tests
             Assert.True(isDownloadingStarted);
             this.videoServiceMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
             Assert.False(client.IsDownloading);
-            progressBarMock.Verify(x => x.Dispose(), Times.Once);
         }
 
         [Fact]
@@ -253,7 +244,6 @@ namespace HikConsole.Tests
             this.videoServiceMock
                 .Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(downloadHandler);
-            this.progressMock.Setup(x => x.Create()).Returns(default(IProgressBar));
             this.videoServiceMock.Setup(x => x.StopDownloadFile(downloadHandler));
             this.sdkMock.Setup(x => x.Logout(DefaultUserId));
             this.sdkMock.Setup(x => x.Cleanup());
@@ -306,7 +296,6 @@ namespace HikConsole.Tests
         [Fact]
         public void CheckProgress_FileIsDownloading_ReportProgress()
         {
-            var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
             int downloadHandler = 1;
 
             this.SetupFilesMockForDownload();
@@ -315,8 +304,6 @@ namespace HikConsole.Tests
                 .Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(downloadHandler);
             this.videoServiceMock.Setup(x => x.GetDownloadPosition(downloadHandler)).Returns(50);
-            progressBarMock.Setup(x => x.Report(0.5));
-            this.progressMock.Setup(x => x.Create()).Returns(progressBarMock.Object);
 
             var client = this.GetHikClient();
             client.Login();
@@ -325,13 +312,11 @@ namespace HikConsole.Tests
 
             Assert.True(downloading);
             this.videoServiceMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);
-            progressBarMock.Verify(x => x.Report(0.5), Times.Once);
         }
 
         [Fact]
         public void CheckProgress_FileDownloaded_StopDownload()
         {
-            var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
             int downloadHandler = 1;
 
             this.SetupFilesMockForDownload();
@@ -341,8 +326,6 @@ namespace HikConsole.Tests
                 .Returns(downloadHandler);
             this.videoServiceMock.Setup(x => x.GetDownloadPosition(downloadHandler)).Returns(100);
             this.videoServiceMock.Setup(x => x.StopDownloadFile(downloadHandler));
-            progressBarMock.Setup(x => x.Dispose());
-            this.progressMock.Setup(x => x.Create()).Returns(progressBarMock.Object);
 
             var client = this.GetHikClient();
             client.Login();
@@ -351,7 +334,6 @@ namespace HikConsole.Tests
 
             Assert.True(downloading);
             this.videoServiceMock.Verify(x => x.GetDownloadPosition(It.IsAny<int>()), Times.Once);
-            progressBarMock.Verify(x => x.Dispose(), Times.Once);
             this.videoServiceMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
             Assert.False(client.IsDownloading);
         }
@@ -369,7 +351,6 @@ namespace HikConsole.Tests
                 .Returns(downloadHandler);
             this.videoServiceMock.Setup(x => x.GetDownloadPosition(downloadHandler)).Returns(200);
             this.filesMock.Setup(x => x.DeleteFile(It.IsAny<string>()));
-            this.progressMock.Setup(x => x.Create()).Returns(default(IProgressBar));
             this.videoServiceMock.Setup(x => x.StopDownloadFile(downloadHandler));
             this.sdkMock.Setup(x => x.Logout(DefaultUserId));
             this.sdkMock.Setup(x => x.Cleanup());
@@ -402,7 +383,7 @@ namespace HikConsole.Tests
 
         private HikClient GetHikClient()
         {
-            return new HikClient(this.fixture.Create<HikConsole.Config.CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.progressMock.Object, this.loggerMock.Object);
+            return new HikClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.loggerMock.Object);
         }
     }
 }

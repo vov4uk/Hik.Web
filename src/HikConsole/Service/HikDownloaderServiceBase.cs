@@ -135,7 +135,7 @@ namespace HikConsole.Service
 
             var result = await this.ProcessCameraAsync(config, from, to);
 
-            this.PrintStatistic(config.DestinationFolder);
+            this.PrintStatistic(config?.DestinationFolder);
             string duration = (DateTime.Now - appStart).ToString(DurationFormat);
             this.Logger.Info($"Internal download. Done. Duration  : {duration}");
             return result;

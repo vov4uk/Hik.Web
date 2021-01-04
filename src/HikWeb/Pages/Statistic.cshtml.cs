@@ -21,6 +21,8 @@ namespace HikWeb.Pages
 
         public IList<DailyStatistic> Statistics { get; set; }
 
+        public Camera Camera { get; set; }
+
         public Pager Pager { get; set; }
 
         public int TotalItems { get; set; }
@@ -34,8 +36,14 @@ namespace HikWeb.Pages
             TotalItems = await dataContext.DailyStatistics.CountAsync(x => x.CameraId == cameraId);
             Pager = new Pager(TotalItems, p, PageSize, MaxPages);
 
-            var repo = dataContext.DailyStatistics.Where(x => x.CameraId == cameraId).OrderByDescending(x => x.Period).Skip(Math.Max(0, Pager.CurrentPage - 1) * Pager.PageSize).Take(Pager.PageSize);
-            Statistics = await repo.ToListAsync();
+            var stats = dataContext.DailyStatistics
+                .Where(x => x.CameraId == cameraId)
+                .OrderByDescending(x => x.Period)
+                .Skip(Math.Max(0, Pager.CurrentPage - 1) * Pager.PageSize)
+                .Take(Pager.PageSize);
+
+            Statistics = await stats.ToListAsync();
+            Camera = await dataContext.Cameras.FindAsync(cameraId);
         }
     }
 }

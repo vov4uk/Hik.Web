@@ -11,19 +11,17 @@ namespace HikConsole.Helpers
     {
         private readonly IHikApi hikApi;
         private readonly IFilesHelper filesHelper;
-        private readonly IProgressBarFactory progressFactory;
         private readonly ILogger logger = LogManager.GetCurrentClassLogger();
 
-        public HikClientFactory(IHikApi hikApi, IFilesHelper filesHelper, IProgressBarFactory progressFactory)
+        public HikClientFactory(IHikApi hikApi, IFilesHelper filesHelper)
         {
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
-            this.progressFactory = progressFactory;
         }
 
         public IHikClient Create(CameraConfig camera)
         {
-            return new HikClient(camera, this.hikApi, this.filesHelper, this.progressFactory, this.logger);
+            return new HikClient(camera, this.hikApi, this.filesHelper, this.logger);
         }
     }
 }
