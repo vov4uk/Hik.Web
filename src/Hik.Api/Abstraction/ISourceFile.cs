@@ -1,7 +1,7 @@
 ﻿namespace Hik.Api.Abstraction
 {
-    public interface ISourceFile
+    internal interface ISourceFile
     {
-        IRemoteFile ToRemoteFile();
+        IHikRemoteFile ToRemoteFile();
     }
 }

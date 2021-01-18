@@ -21,7 +21,6 @@
         private readonly Mock<HikVideoService> videoServiceMock;
         private readonly Mock<HikPhotoService> photoServiceMock;
         private readonly Mock<IFilesHelper> filesMock;
-        private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
 
         public HikClientTests()
@@ -34,7 +33,6 @@
             this.sdkMock.SetupGet(x => x.PhotoService).Returns(this.photoServiceMock.Object);
 
             this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
-            this.loggerMock = new Mock<ILogger>();
             this.fixture = new Fixture();
         }
 
@@ -384,7 +382,7 @@
 
         private HikClient GetHikClient()
         {
-            return new HikClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.loggerMock.Object);
+            return new HikClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object);
         }
     }
 }

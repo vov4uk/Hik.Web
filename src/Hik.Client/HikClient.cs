@@ -5,6 +5,7 @@
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Runtime.Serialization;
+    using System.Threading;
     using System.Threading.Tasks;
     using Hik.Api.Abstraction;
     using Hik.Api.Data;
@@ -22,11 +23,11 @@
         private readonly IFilesHelper filesHelper;
         private ILogger logger = LogManager.GetCurrentClassLogger();
         private int downloadId = -1;
-        private IRemoteFile currentDownloadFile;
+        private IHikRemoteFile currentDownloadFile;
         private Session session;
         private bool disposedValue = false;
 
-        public HikClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, ILogger logger)
+        public HikClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper)
         {
             if (config == null)
             {
@@ -36,7 +37,6 @@
             this.config = config;
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
-            this.logger = logger;
         }
 
         public bool IsDownloading => downloadId >= 0;
@@ -69,7 +69,7 @@
             }
         }
 
-        public bool StartVideoDownload(IRemoteFile remoteFile)
+        public bool StartVideoDownload(IHikRemoteFile remoteFile)
         {
             if (!IsDownloading)
             {
@@ -188,6 +188,11 @@
             GC.SuppressFinalize(this);
         }
 
+        public Task<bool> DownloadFileAsync(RemoteVideoFile remoteFile, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -206,12 +211,12 @@
             }
         }
 
-        private string GetWorkingDirectory(IRemoteFile file)
+        private string GetWorkingDirectory(IHikRemoteFile file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, file.ToDirectoryNameString());
         }
 
-        private string GetFullPath(IRemoteFile file, string directory = null)
+        private string GetFullPath(IHikRemoteFile file, string directory = null)
         {
             string folder = directory ?? GetWorkingDirectory(file);
             return filesHelper.CombinePath(folder, file.ToFileNameString());
@@ -262,7 +267,7 @@
             }
         }
 
-        private string GetPathSafety(IRemoteFile remoteFile)
+        private string GetPathSafety(IHikRemoteFile remoteFile)
         {
             string workingDirectory = GetWorkingDirectory(remoteFile);
             filesHelper.FolderCreateIfNotExist(workingDirectory);

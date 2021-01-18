@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using Autofac;
 using AutoMapper;
-using Hik.Client.Scheduler;
 using Hik.Client.Service;
 
 namespace Hik.Client.Infrastructure
@@ -43,7 +42,10 @@ namespace Hik.Client.Infrastructure
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();
             builder.RegisterType<HikVideoDownloaderService>();
             builder.RegisterType<HikPhotoDownloaderService>();
-            builder.RegisterType<DeleteArchiveSevice>();
+            builder.RegisterType<DeleteSevice>();
+            builder.RegisterType<ArchiveService>();
+            builder.RegisterType<CleanUpService>();
+            builder.RegisterType<YiVideoDownloaderService>();
             IContainer container = builder.Build();
 
             return container;

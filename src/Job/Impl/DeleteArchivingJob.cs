@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Hik.Client.Infrastructure;
-using Hik.Client.Scheduler;
+using Hik.Client.Service;
 using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
 
@@ -29,7 +29,7 @@ namespace Job.Impl
 
         public async override Task<IReadOnlyCollection<MediaFileBase>> Run()
         {
-            var worker = AppBootstrapper.Container.Resolve<DeleteArchiveSevice>();
+            var worker = AppBootstrapper.Container.Resolve<DeleteSevice>();
             worker.ExceptionFired += base.ExceptionFired;
 
             return await worker.ExecuteAsync(AppConfig.Camera, DateTime.MinValue, JobInstance.PeriodEnd.Value);

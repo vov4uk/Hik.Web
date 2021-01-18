@@ -13,16 +13,14 @@ using Hik.DTO.Contracts;
 
 namespace Hik.Client.Service
 {
-    public class HikVideoDownloaderService : HikDownloaderServiceBase<VideoDTO>
+    public class YiVideoDownloaderService : HikDownloaderServiceBase<VideoDTO>
     {
-        public HikVideoDownloaderService(IDirectoryHelper directoryHelper, IHikClientFactory clientFactory, IMapper mapper)
+        public YiVideoDownloaderService(IDirectoryHelper directoryHelper, IHikClientFactory clientFactory, IMapper mapper)
             : base(directoryHelper, clientFactory, mapper)
         {
         }
 
-        public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
-
-        public override async Task<IReadOnlyCollection<VideoDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<IHikRemoteFile> remoteFiles, CancellationToken token = default)
+        public override async Task<IReadOnlyCollection<VideoDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<IHikRemoteFile> remoteFiles, CancellationToken token)
         {
             int j = 1;
             var downloadedVideos = new List<VideoDTO>();
@@ -30,7 +28,8 @@ namespace Hik.Client.Service
             {
                 this.ThrowIfCancellationRequested();
                 this.Logger.Info($"{j++,2}/{remoteFiles.Count} : ");
-                var videoDownloadResult = await this.DownloadRemoteVideoFileAsync(video);
+
+                var videoDownloadResult = await this.DownloadRemoteVideoFileAsync(video, token);
                 if (videoDownloadResult != null)
                 {
                     this.OnFileDownloaded(new FileDownloadedEventArgs(videoDownloadResult));
@@ -43,25 +42,17 @@ namespace Hik.Client.Service
 
         public override async Task<IReadOnlyCollection<IHikRemoteFile>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            List<RemoteVideoFile> videos = (await this.Client.FindVideosAsync(periodStart, periodEnd)).SkipLast(1).ToList();
+            List<RemoteVideoFile> videos = (await this.Client.FindVideosAsync(periodStart, periodEnd)).ToList();
 
             this.Logger.Info($"Video searching finished. Found {videos.Count} files");
             return videos;
         }
 
-        private async Task<VideoDTO> DownloadRemoteVideoFileAsync(IHikRemoteFile file)
+        private async Task<VideoDTO> DownloadRemoteVideoFileAsync(IHikRemoteFile file, CancellationToken token)
         {
-            if (this.Client.StartVideoDownload(file))
+            DateTime downloadStarted = DateTime.Now;
+            if (await this.Client.DownloadFileAsync(file as RemoteVideoFile, token))
             {
-                DateTime downloadStarted = DateTime.Now;
-                do
-                {
-                    await Task.Delay(this.ProgressCheckPeriodMilliseconds);
-                    this.ThrowIfCancellationRequested();
-                    this.Client.UpdateVideoProgress();
-                }
-                while (this.Client.IsDownloading);
-
                 VideoDTO video = this.Mapper.Map<VideoDTO>(file);
                 video.DownloadStartTime = downloadStarted;
                 video.DownloadStopTime = DateTime.Now;

@@ -12,7 +12,7 @@ namespace Hik.Api.Services
 {
     public class HikPhotoService : FileService<RemotePhotoFile>
     {
-        public void DownloadFile(int userId, IRemoteFile remoteFile, string destinationPath)
+        public void DownloadFile(int userId, IHikRemoteFile remoteFile, string destinationPath)
         {
             if (remoteFile.Size > 0)
             {
@@ -37,7 +37,7 @@ namespace Hik.Api.Services
             return SdkHelper.InvokeSDK(() => NET_DVR_CloseFindPicture(findId));
         }
 
-        protected override int FindNext(int findId, ref ISourceFile source)
+        internal override int FindNext(int findId, ref ISourceFile source)
         {
             NET_DVR_FIND_PICTURE_V50 findData = new NET_DVR_FIND_PICTURE_V50();
 

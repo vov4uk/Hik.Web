@@ -1,5 +1,4 @@
-﻿using Hik.Api;
-using Hik.Api.Abstraction;
+﻿using Hik.Api.Abstraction;
 using Hik.Api.Data;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 namespace Hik.Api.Services
 {
     public abstract class FileService<TRemoteFile>
-        where TRemoteFile : IRemoteFile
+        where TRemoteFile : IHikRemoteFile
     {
         public virtual async Task<IList<TRemoteFile>> FindFilesAsync(DateTime periodStart, DateTime periodEnd, Session session)
         {
@@ -23,7 +22,7 @@ namespace Hik.Api.Services
 
         protected abstract int StartFind(int userId, DateTime periodStart, DateTime periodEnd, int channel);
 
-        protected abstract int FindNext(int findId, ref ISourceFile source);
+        internal abstract int FindNext(int findId, ref ISourceFile source);
 
         protected abstract bool FindClose(int findId);
         

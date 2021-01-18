@@ -7,6 +7,7 @@ namespace Hik.DataAccess.Metadata
     {
         public const string Video = nameof(Video);
         public const string Photo = nameof(Photo);
+        public const string File = nameof(File);
         public const string Job = nameof(Job);
         public const string Camera = nameof(Camera);
         public const string ExceptionLog = nameof(ExceptionLog);

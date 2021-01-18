@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>Hik.DataAccess</AssemblyName>
-    <RootNamespace>Hik.DataAccess</RootNamespace>
+	  <TargetFramework>netstandard2.1</TargetFramework>
+	  <AssemblyName>Hik.DataAccess</AssemblyName>
+	  <RootNamespace>Hik.DataAccess</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

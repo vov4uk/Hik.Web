@@ -9,7 +9,7 @@ namespace Hik.Api.Struct.Config
         public uint dwSize;
         public uint dwHDCount;
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = HikConst.MAX_DISKNUM_V30, ArraySubType = UnmanagedType.Struct)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = HikConst.MAX_DISKNUM_V30)]
         public NET_DVR_SINGLE_HD[] struHDInfo;
     }
 }

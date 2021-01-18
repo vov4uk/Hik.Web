@@ -36,7 +36,7 @@ namespace Hik.Api.Services
             return SdkHelper.InvokeSDK(() => NET_DVR_FindClose_V30(findId));
         }
 
-        protected override int FindNext(int findId, ref ISourceFile source)
+        internal override int FindNext(int findId, ref ISourceFile source)
         {
             NET_DVR_FINDDATA_V30 findData = default(NET_DVR_FINDDATA_V30);
             int res = SdkHelper.InvokeSDK(() => NET_DVR_FindNextFile_V30(findId, ref findData));

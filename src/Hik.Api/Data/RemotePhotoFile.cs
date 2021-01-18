@@ -4,7 +4,7 @@ using System;
 
 namespace Hik.Api.Data
 {
-    public class RemotePhotoFile : IRemoteFile
+    public class RemotePhotoFile : IHikRemoteFile
     {
         private const string StartDateTimePrintFormat = "yyyy.MM.dd HH:mm:ss";
         private const string DateFormat = "yyyyMMdd_HHmmss";
@@ -40,6 +40,16 @@ namespace Hik.Api.Data
         public string ToFileNameString()
         {
             return $"{this.Date.ToString(DateFormat)}_{this.Name}.jpg";
+        }
+
+        public string ToYiDirectoryNameString()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ToYiFileNameString()
+        {
+            throw new NotImplementedException();
         }
     }
 }

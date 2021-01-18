@@ -6,7 +6,7 @@ using Hik.Api.Struct.Video;
 namespace Hik.Api.Data
 {
     [ExcludeFromCodeCoverage]
-    public class RemoteVideoFile : IRemoteFile
+    public class RemoteVideoFile : IHikRemoteFile
     {
         private const string StartDateTimePrintFormat = "yyyy.MM.dd HH:mm:ss";
         private const string EndDateTimePrintFormat = "HH:mm:ss";
@@ -27,13 +27,15 @@ namespace Hik.Api.Data
             this.Size = findData.dwFileSize;
         }
 
-        public string Name { get; }
+        public string Name { get; set; }
+
+        public string FilePath { get; set; }
 
         public DateTime StartTime { get; set; }
 
         public DateTime StopTime { get; set; }
 
-        public long Size { get; }
+        public long Size { get; set; }
 
         public string ToUserFriendlyString()
         {
@@ -45,9 +47,24 @@ namespace Hik.Api.Data
             return $"{this.StartTime.Year:0000}-{this.StartTime.Month:00}\\{this.StartTime.Day:00}";
         }
         
+        public string ToYiDirectoryNameString()
+        {
+            return $"{this.StartTime.Year:0000}-{this.StartTime.Month:00}\\{this.StartTime.Day:00}\\{this.StartTime.Hour:00}";
+        }
+        
         public string ToFileNameString()
         {
             return $"{this.StartTime.ToString(DateFormat)}_{this.StopTime.ToString(TimeFormat)}_{this.Name}.mp4";
+        }
+        
+        public string ToYiFileNameString()
+        {
+            return $"{this.StartTime.ToString(DateFormat)}_{this.Name}.mp4";
+        }
+
+        public override string ToString()
+        {
+            return this.Name;
         }
     }
 }

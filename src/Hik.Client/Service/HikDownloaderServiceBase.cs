@@ -95,9 +95,9 @@ namespace Hik.Client.Service
             }
         }
 
-        public abstract Task<IReadOnlyCollection<IRemoteFile>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
+        public abstract Task<IReadOnlyCollection<IHikRemoteFile>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
 
-        public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<IRemoteFile> remoteFiles);
+        public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<IHikRemoteFile> remoteFiles, CancellationToken token);
 
         protected virtual void OnExceptionFired(ExceptionEventArgs e)
         {
@@ -134,10 +134,17 @@ namespace Hik.Client.Service
             Logger.Info($"Internal download...");
 
             var result = await ProcessCameraAsync(config, from, to);
+            if (result.Count > 0)
+            {
+                PrintStatistic(config?.DestinationFolder);
+                string duration = (DateTime.Now - appStart).ToString(DurationFormat);
+                Logger.Info($"Internal download. Done. Duration  : {duration}");
+            }
+            else
+            {
+                throw new Exception("No files downloaded");
+            }
 
-            PrintStatistic(config?.DestinationFolder);
-            string duration = (DateTime.Now - appStart).ToString(DurationFormat);
-            Logger.Info($"Internal download. Done. Duration  : {duration}");
             return result;
         }
 
@@ -161,7 +168,7 @@ namespace Hik.Client.Service
                         Logger.Info($"Reading remote files. Done");
 
                         Logger.Info($"Downloading files...");
-                        var downloadedFiles = await DownloadFilesFromClientAsync(remoteFiles);
+                        var downloadedFiles = await DownloadFilesFromClientAsync(remoteFiles, cancelTokenSource.Token);
                         result.AddRange(downloadedFiles);
                         Logger.Info($"Downloading files. Done");
                     }
@@ -184,9 +191,9 @@ namespace Hik.Client.Service
         {
             var status = Client.CheckHardDriveStatus();
 
-            Logger.Info(status.ToString());
+            Logger.Info(status?.ToString());
 
-            if (status.IsErrorStatus)
+            if (status != null && status.IsErrorStatus)
             {
                 throw new InvalidOperationException("HD error");
             }

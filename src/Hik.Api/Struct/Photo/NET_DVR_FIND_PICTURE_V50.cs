@@ -32,7 +32,7 @@ namespace Hik.Api.Struct.Photo
 
         public NET_DVR_PIC_EXTRA_INFO_UNION uPicExtraInfo;
 
-        public IRemoteFile ToRemoteFile()
+        public IHikRemoteFile ToRemoteFile()
         {
             return new RemotePhotoFile(this);
         }

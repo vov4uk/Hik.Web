@@ -20,7 +20,5 @@ namespace Hik.DTO
         public List<PhotoDTO> DownloadedPhotos { get; }
 
         public List<DeletedFileDTO> DeletedFiles { get; }
-
-        public HardDriveStatusDTO HardDriveStatus { get; set; }
     }
 }

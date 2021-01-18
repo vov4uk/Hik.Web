@@ -21,6 +21,7 @@ namespace Hik.DataAccess
         public DbSet<Camera> Cameras { get; set; }
         public DbSet<Video> Videos { get; set; }
         public DbSet<Photo> Photos { get; set; }
+        public DbSet<File> Files { get; set; }
         public DbSet<DeletedFile> DeletedFiles { get; set; }
 
         public DbSet<DailyStatistic> DailyStatistics { get; set; }
@@ -46,6 +47,7 @@ namespace Hik.DataAccess
                 .ApplyConfiguration(new VideoMapping())
                 .ApplyConfiguration(new PhotoMapping())
                 .ApplyConfiguration(new DeletedFileMappings())
+                .ApplyConfiguration(new FileMapping())
                 .ApplyConfiguration(new ExceptionLogMapping())
                 .ApplyConfiguration(new DailyStatisticMapping());
 

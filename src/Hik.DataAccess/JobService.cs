@@ -45,11 +45,11 @@ namespace HikConsole.Scheduler
 
                 if (job.Success)
                 {
-                    if(job.JobType.Contains("Photo"))
+                    if(job.JobType.Contains("photo", StringComparison.OrdinalIgnoreCase))
                     {
                         camera.LastPhotoSync = job.PeriodEnd;
                     }
-                    else if (job.JobType.Contains("Video"))
+                    else if (job.JobType.Contains("video", StringComparison.OrdinalIgnoreCase))
                     {
                         camera.LastVideoSync = job.PeriodEnd;
                     }
@@ -111,6 +111,17 @@ namespace HikConsole.Scheduler
                 Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
 
                 await this.AddEntities(files.Select(x => mapper.Map<DeletedFile>(x)).ToList(), unitOfWork);
+                await unitOfWork.SaveChangesAsync(this.job, camera);
+            }
+        }
+        
+        public async Task SaveFilesAsync(IReadOnlyCollection<FileDTO> files, CameraConfig cameraConfig)
+        {
+            using (var unitOfWork = factory.CreateUnitOfWork())
+            {
+                Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
+
+                await this.AddEntities(files.Select(x => mapper.Map<File>(x)).ToList(), unitOfWork);
                 await unitOfWork.SaveChangesAsync(this.job, camera);
             }
         }

@@ -1,6 +1,6 @@
 ﻿namespace Hik.Api.Abstraction
 {
-    public interface IRemoteFile
+    public interface IHikRemoteFile
     {
         string Name { get; }
 
@@ -10,6 +10,10 @@
 
         string ToDirectoryNameString();
 
+        string ToYiDirectoryNameString();
+
         string ToFileNameString();
+
+        string ToYiFileNameString();
     }
 }

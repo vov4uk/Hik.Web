@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Hik.Client.Abstraction;
 
@@ -9,6 +11,9 @@ namespace Hik.Client.Helpers
     [ExcludeFromCodeCoverage]
     public class DirectoryHelper : IDirectoryHelper
     {
+        private const string AllFilter = "*";
+        private readonly string[] allowedExtentions = new[] { ".mp4", ".jpg", ".ini" };
+
         public static string AssemblyDirectory
         {
             get
@@ -44,17 +49,48 @@ namespace Hik.Client.Helpers
 
         public long GetTotalFreeSpace(string destination)
         {
-            var driveName = Path.GetPathRoot(destination);
+            DriveInfo drive = GetDrive(destination);
 
-            foreach (DriveInfo drive in DriveInfo.GetDrives())
+            return drive?.TotalFreeSpace ?? -1;
+        }
+
+        public long GetTotalSpace(string destination)
+        {
+            DriveInfo drive = GetDrive(destination);
+
+            return drive?.TotalSize ?? -1;
+        }
+
+        public void DeleteEmptyFolders(string destination)
+        {
+            var directories = Directory.EnumerateDirectories(destination, AllFilter, SearchOption.AllDirectories);
+            foreach (var directory in directories)
             {
-                if (drive.IsReady && drive.Name == driveName)
+                if (!Directory.EnumerateFileSystemEntries(directory).Any())
                 {
-                    return drive.TotalFreeSpace;
+                    Directory.Delete(directory);
                 }
             }
+        }
 
-            return -1;
+        public bool DirectoryExists(string destination)
+        {
+            return Directory.Exists(destination);
+        }
+
+        public List<string> EnumerateFiles(string destination)
+        {
+            return Directory.EnumerateFiles(destination, AllFilter, SearchOption.AllDirectories)
+                    .Where(s => allowedExtentions.Any(ext => ext == Path.GetExtension(s)))
+                    .ToList();
+        }
+
+        private static DriveInfo GetDrive(string destination)
+        {
+            var driveName = Path.GetPathRoot(destination);
+
+            var drive = DriveInfo.GetDrives().Where(x => x.IsReady && x.Name.Equals(driveName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            return drive;
         }
     }
 }

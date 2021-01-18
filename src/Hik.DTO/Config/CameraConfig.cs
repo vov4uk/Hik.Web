@@ -22,6 +22,8 @@ namespace Hik.DTO.Config
 
         public int? RetentionPeriodDays { get; set; } = 7;
 
+        public ClientType ClientType { get; set; } = ClientType.HikVision; 
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

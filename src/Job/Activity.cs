@@ -40,7 +40,7 @@ namespace Job
             try
             {
                 bool singleInstance;
-                using (var instance = new Mutex(true, $@"Global\{Parameters.Group}", out singleInstance))
+                using (var instance = new Mutex(true, $@"Global\{Parameters.TriggerKey}", out singleInstance))
                 {
                     if (singleInstance)
                     {
@@ -124,20 +124,12 @@ namespace Job
                 logger.Error($"ErrorDataReceived : HasExited : {(sender as Process)?.HasExited}");
                 EmailHelper.Send(new Exception(e.Data));
             }
-            else
-            {
-                logger.Warn("ErrorDataReceived no data");
-            }
         }
         private void LogData(object sender, DataReceivedEventArgs e)
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
                 Log(e.Data);
-            }
-            else
-            {
-                logger.Warn("OutputDataReceived no data");
             }
         }
 

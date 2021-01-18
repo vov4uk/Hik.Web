@@ -6,7 +6,7 @@ using Hik.DataAccess.Metadata;
 
 namespace Hik.DataAccess.Data
 {
-    [Table("Camera")]
+    [Table(Tables.Camera)]
     public class Camera
     {
         [Key] 
@@ -25,6 +25,8 @@ namespace Hik.DataAccess.Data
         public List<Video> Videos { get; set; } = new List<Video>();
 
         public List<Photo> Photos { get; set; } = new List<Photo>();
+
+        public List<File> Files { get; set; } = new List<File>();
 
         public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();
 
