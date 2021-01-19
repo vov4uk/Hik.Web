@@ -28,36 +28,41 @@
 
 @if (Model.Job.ExceptionLog != null)
 {
-<table class="table">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Created)</th>
-            <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.HikErrorCode)</th>
-            <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Message)</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.Created)</td>
-            <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.HikErrorCode)</td>
-            <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.Message)</td>
-        </tr>
-    </tbody>
-</table>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Created)</th>
+                <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.HikErrorCode)</th>
+                <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Message)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.Created)</td>
+                <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.HikErrorCode)</td>
+                <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.Message)</td>
+            </tr>
+        </tbody>
+    </table>
 }
 
 @if (Model.Job.Videos != null && Model.Job.Videos.Any())
 {
-   @await Html.PartialAsync("_Videos.cshtml", Model.Job.Videos)
+    @await Html.PartialAsync("_Videos.cshtml", Model.Job.Videos)
 }
 
 @if (Model.Job.Photos != null && Model.Job.Photos.Any())
 {
-   @await Html.PartialAsync("_Photos.cshtml", Model.Job.Photos)
+    @await Html.PartialAsync("_Photos.cshtml", Model.Job.Photos)
 }
 
 
 @if (Model.Job.DeletedFiles != null && Model.Job.DeletedFiles.Any())
 {
-  @await Html.PartialAsync("_DeletedFiles.cshtml", Model.Job.DeletedFiles)
+    @await Html.PartialAsync("_DeletedFiles.cshtml", Model.Job.DeletedFiles)
+}
+
+@if (Model.Job.Files != null && Model.Job.Files.Any())
+{
+    @await Html.PartialAsync("_Files.cshtml", Model.Job.Files)
 }

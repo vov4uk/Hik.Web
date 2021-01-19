@@ -23,11 +23,11 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public async Task<IReadOnlyCollection<DeletedFileDTO>> ExecuteAsync(CameraConfig config, DateTime from, DateTime to)
+        public async Task<IReadOnlyCollection<DeletedFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             logger.Info("Start DeleteSevice");
 
-            var cameraResult = await DeleteInternal(to, config);
+            var cameraResult = await DeleteInternal(to, config as CameraConfig);
 
             return cameraResult;
         }

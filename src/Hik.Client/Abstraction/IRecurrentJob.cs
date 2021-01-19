@@ -10,6 +10,6 @@ namespace Hik.Client.Abstraction
     {
         event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        Task<IReadOnlyCollection<T>> ExecuteAsync(CameraConfig config, DateTime from, DateTime to);
+        Task<IReadOnlyCollection<T>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to);
     }
 }

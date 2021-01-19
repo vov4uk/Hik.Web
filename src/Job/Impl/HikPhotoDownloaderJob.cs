@@ -8,32 +8,34 @@ using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
 using Hik.Client.Infrastructure;
 using Hik.Client.Service;
+using Hik.DTO.Config;
 
 namespace Job.Impl
 {
     public class HikPhotoDownloaderJob : JobProcessBase
     {
-        public HikPhotoDownloaderJob(string description, string path, string connectionString, Guid activityId) 
-            : base(description, path, connectionString, activityId)
+        public HikPhotoDownloaderJob(string description, string configFilePath, string connectionString, Guid activityId) 
+            : base(description, configFilePath, connectionString, activityId)
         {
-
+            Config = HikConfig.GetConfig<CameraConfig>(configFilePath);
         }
 
         public override JobType JobType => JobType.HikPhotoDownloader;
 
         public override async Task InitializeProcessingPeriod()
         {
+            var config = Config as CameraConfig;
             DateTime? lastSync;
             DateTime jobStart = JobInstance.Started;
 
             using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
             {
                 var cameraRepo = unitOfWork.GetRepository<Camera>();
-                Camera camera = await cameraRepo.FindByAsync(x => x.Alias == AppConfig.Camera.Alias);
+                Camera camera = await cameraRepo.FindByAsync(x => x.Alias == config.Alias);
                 lastSync = camera?.LastPhotoSync;
             }
 
-            DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * AppConfig.ProcessingPeriodHours);
+            DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config.ProcessingPeriodHours);
 
             this.JobInstance.PeriodStart = periodStart;
             this.JobInstance.PeriodEnd = jobStart;
@@ -44,7 +46,7 @@ namespace Job.Impl
             var downloader = AppBootstrapper.Container.Resolve<HikPhotoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
 
-            return await downloader.ExecuteAsync(AppConfig.Camera, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
+            return await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
         }
 
         public override async Task SaveResults(IReadOnlyCollection<MediaFileBase> files, JobService service)
@@ -53,7 +55,7 @@ namespace Job.Impl
 
             var convertedFiles = files.OfType<PhotoDTO>().ToList();
             JobInstance.PhotosCount = convertedFiles.Count();
-            await service.SavePhotosAsync(convertedFiles, AppConfig.Camera);
+            await service.SavePhotosAsync(convertedFiles, Config);
         }
     }
 }

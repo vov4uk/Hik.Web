@@ -4,11 +4,9 @@ using System.Text;
 namespace Hik.DTO.Config
 {
     [ExcludeFromCodeCoverage]
-    public class CameraConfig
+    public class CameraConfig : BaseConfig
     {
-        public string Alias { get; set; }
-
-        public string DestinationFolder { get; set; }
+        public int ProcessingPeriodHours { get; set; }
 
         public string IpAddress { get; set; }
 
@@ -17,8 +15,6 @@ namespace Hik.DTO.Config
         public string UserName { get; set; }
 
         public string Password { get; set; }
-
-        public bool DownloadPhotos { get; set; }
 
         public int? RetentionPeriodDays { get; set; } = 7;
 

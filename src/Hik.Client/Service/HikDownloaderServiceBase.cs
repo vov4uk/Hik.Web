@@ -46,7 +46,7 @@ namespace Hik.Client.Service
 
         protected IHikClient Client { get; private set; }
 
-        public async Task<IReadOnlyCollection<T>> ExecuteAsync(CameraConfig config, DateTime from, DateTime to)
+        public async Task<IReadOnlyCollection<T>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             IReadOnlyCollection<T> jobResult = null;
             using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(JobTimeout)))
@@ -60,7 +60,7 @@ namespace Hik.Client.Service
 
                 try
                 {
-                    Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(config, from, to);
+                    Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(config as CameraConfig, from, to);
                     Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
 
                     if (completedTask == downloadTask)

@@ -32,6 +32,7 @@ namespace Hik.Web.Pages
             .Include(x => x.Photos)
             .Include(x => x.Videos)
             .Include(x => x.DeletedFiles)
+            .Include(x => x.Files)
             .Include(x => x.ExceptionLog);
 
             Job = await items.FirstOrDefaultAsync();

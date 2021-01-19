@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Hik.Client.Infrastructure;
 using Hik.Client.Service;
+using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
 using System;
@@ -15,6 +16,7 @@ namespace Job.Impl
         public CleanUpJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
+            Config = HikConfig.GetConfig<CleanupConfig>(configFilePath);
         }
 
         public override JobType JobType => JobType.CleanUp;
@@ -29,7 +31,7 @@ namespace Job.Impl
             var worker = AppBootstrapper.Container.Resolve<CleanUpService>();
             worker.ExceptionFired += base.ExceptionFired;
 
-            return await worker.ExecuteAsync(AppConfig.Camera, DateTime.MinValue, DateTime.MinValue);
+            return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
         }
 
         public override async Task SaveResults(IReadOnlyCollection<MediaFileBase> files, JobService service)
@@ -37,7 +39,7 @@ namespace Job.Impl
             var convertedFiles = files.OfType<DeletedFileDTO>().ToList();
             JobInstance.VideosCount = convertedFiles.Count(x => x.Extention == ".mp4");
             JobInstance.PhotosCount = convertedFiles.Count(x => x.Extention == ".jpg");
-            await service.SaveDeletedFilesAsync(convertedFiles, AppConfig.Camera);
+            await service.SaveDeletedFilesAsync(convertedFiles, Config);
         }
     }
 }

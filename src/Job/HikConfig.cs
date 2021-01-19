@@ -10,15 +10,15 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class HikConfig
     {
-        public static AppConfig GetConfig(string configFileName = "configuration.json")
+        public static T GetConfig<T>(string configFileName = "configuration.json")
         {
             string configPath = Path.Combine(GetAssemblyDirectory(), configFileName);
-            var appConfig = JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(configPath));
-            if(appConfig.Camera == null)
+            var config = JsonConvert.DeserializeObject<T>(File.ReadAllText(configPath));
+            if(config == null)
             {
                 throw new NullReferenceException("Camera config invalid");
             }
-            return appConfig;
+            return config;
         }
 
         private static string GetAssemblyDirectory()

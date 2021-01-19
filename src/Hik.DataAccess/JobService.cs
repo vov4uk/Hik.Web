@@ -33,7 +33,7 @@ namespace HikConsole.Scheduler
             mapper = mapperConfig.CreateMapper();
         }
 
-        public async Task SaveJobResultAsync(CameraConfig cameraConfig) 
+        public async Task SaveJobResultAsync(BaseConfig config) 
         {
             using (var unitOfWork = factory.CreateUnitOfWork())
             {
@@ -41,7 +41,7 @@ namespace HikConsole.Scheduler
                 this.job.Finished = DateTime.Now;
                 await jobRepo.UpdateAsync(this.job);
 
-                Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
+                Camera camera = await GetCameraSafe(config, unitOfWork);
 
                 if (job.Success)
                 {
@@ -59,7 +59,7 @@ namespace HikConsole.Scheduler
             }
         }
 
-        public async Task SaveVideoAsync(VideoDTO videoDTO, CameraConfig cameraConfig)
+        public async Task SaveVideoAsync(VideoDTO videoDTO, BaseConfig cameraConfig)
         {
             using (var unitOfWork = this.factory.CreateUnitOfWork())
             {
@@ -78,7 +78,7 @@ namespace HikConsole.Scheduler
             }
         }
 
-        public async Task SavePhotosAsync(IReadOnlyCollection<PhotoDTO> files, CameraConfig cameraConfig)
+        public async Task SavePhotosAsync(IReadOnlyCollection<PhotoDTO> files, BaseConfig cameraConfig)
         {
             using (var unitOfWork = factory.CreateUnitOfWork())
             {
@@ -104,7 +104,7 @@ namespace HikConsole.Scheduler
             }
         }
         
-        public async Task SaveDeletedFilesAsync(IReadOnlyCollection<DeletedFileDTO> files, CameraConfig cameraConfig)
+        public async Task SaveDeletedFilesAsync(IReadOnlyCollection<DeletedFileDTO> files, BaseConfig cameraConfig)
         {
             using (var unitOfWork = factory.CreateUnitOfWork())
             {
@@ -115,7 +115,7 @@ namespace HikConsole.Scheduler
             }
         }
         
-        public async Task SaveFilesAsync(IReadOnlyCollection<FileDTO> files, CameraConfig cameraConfig)
+        public async Task SaveFilesAsync(IReadOnlyCollection<FileDTO> files, BaseConfig cameraConfig)
         {
             using (var unitOfWork = factory.CreateUnitOfWork())
             {
@@ -126,13 +126,13 @@ namespace HikConsole.Scheduler
             }
         }
 
-        private async Task<Camera> GetCameraSafe(CameraConfig cameraConfig, IUnitOfWork unitOfWork)
+        private async Task<Camera> GetCameraSafe(BaseConfig config, IUnitOfWork unitOfWork)
         {
             var cameraRepo = unitOfWork.GetRepository<Camera>();
-            var camera = await cameraRepo.FindByAsync(x => x.Alias == cameraConfig.Alias);
+            var camera = await cameraRepo.FindByAsync(x => x.Alias == config.Alias);
             if (camera == null)
             {
-                camera = mapper.Map<Camera>(cameraConfig);
+                camera = mapper.Map<Camera>(config);
                 camera = (await cameraRepo.AddAsync(camera)).Entity;
                 await unitOfWork.SaveChangesAsync();
             }

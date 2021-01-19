@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
+using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using NLog;
@@ -25,9 +26,10 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public Task<IReadOnlyCollection<FileDTO>> ExecuteAsync(CameraConfig config, DateTime from, DateTime to)
+        public Task<IReadOnlyCollection<FileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            var source = "c:\\FTP";
+            var archiveConfig = config as ArchiveConfig;
+            var source = archiveConfig.SourceFolder;
             var destination = config.DestinationFolder;
 
             this.logger.Info("Start ArchiveService");
@@ -81,7 +83,7 @@ namespace Hik.Client.Service
 
         private string GetWorkingDirectory(string destinationFolder, DateTime date)
         {
-            return filesHelper.CombinePath(destinationFolder, ToDirectoryNameString(date));
+            return filesHelper.CombinePath(destinationFolder, date.ToDirectoryNameString());
         }
 
         private string GetPathSafety(string file, string directory)
@@ -90,11 +92,6 @@ namespace Hik.Client.Service
 
             string destinationFilePath = filesHelper.CombinePath(directory, file);
             return destinationFilePath;
-        }
-
-        private string ToDirectoryNameString(DateTime date)
-        {
-            return $"{date.Year:0000}-{date.Month:00}\\{date.Day:00}\\{date.Hour:00}";
         }
     }
 }

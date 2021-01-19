@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Hik.Client.Infrastructure;
 using Hik.Client.Service;
+using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
 using System;
@@ -15,6 +16,7 @@ namespace Job.Impl
         public ArchiveJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
+            Config = HikConfig.GetConfig<ArchiveConfig>(configFilePath);
         }
 
         public override JobType JobType => JobType.Archive;
@@ -29,13 +31,14 @@ namespace Job.Impl
             var worker = AppBootstrapper.Container.Resolve<ArchiveService>();
             worker.ExceptionFired += base.ExceptionFired;
 
-            return await worker.ExecuteAsync(AppConfig.Camera, DateTime.MinValue, DateTime.MinValue);
+            return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
         }
 
         public override async Task SaveResults(IReadOnlyCollection<MediaFileBase> files, JobService service)
         {
             var convertedFiles = files.OfType<FileDTO>().ToList();
-            await service.SaveFilesAsync(convertedFiles, AppConfig.Camera);
+            JobInstance.PhotosCount = convertedFiles.Count();
+            await service.SaveFilesAsync(convertedFiles, Config);
         }
     }
 }

@@ -16,7 +16,6 @@ namespace Job.Impl
 {
     public abstract class JobProcessBase
     {
-        private AppConfig appConfig;
         protected HikJob JobInstance { get; private set; }
 
         protected readonly UnitOfWorkFactory UnitOfWorkFactory;
@@ -26,7 +25,7 @@ namespace Job.Impl
         public string ConfigPath { get; private set; }
         public string ConnectionString { get; private set; }
 
-        public AppConfig AppConfig => appConfig ?? (appConfig = HikConfig.GetConfig(this.ConfigPath));
+        public BaseConfig Config { get; protected set; }
 
         public Parameters Parameters;
 
@@ -117,7 +116,7 @@ namespace Job.Impl
             {
                 await SaveResults(files, jobResultSaver);
             }
-            await jobResultSaver.SaveJobResultAsync(AppConfig.Camera);
+            await jobResultSaver.SaveJobResultAsync(Config);
             Logger.Info("Save to DB. Done");
         }
     }

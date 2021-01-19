@@ -25,9 +25,10 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public Task<IReadOnlyCollection<DeletedFileDTO>> ExecuteAsync(CameraConfig config, DateTime from, DateTime to)
+        public Task<IReadOnlyCollection<DeletedFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            var destination = config.DestinationFolder;
+            var cleanupConfig = config as CleanupConfig;
+            var destination = cleanupConfig.DestinationFolder;
             this.logger.Info("Start CleanUpService");
             if (!this.directoryHelper.DirectoryExists(destination))
             {
@@ -43,7 +44,7 @@ namespace Hik.Client.Service
 
             double freePercentage = 0.0;
             int page = 0;
-            int pageSize = 100;
+            int pageSize = cleanupConfig.BatchSize;
             do
             {
                 var totalSpace = this.directoryHelper.GetTotalSpace(destination) / Gb;
@@ -52,7 +53,7 @@ namespace Hik.Client.Service
                 freePercentage = 100 * freeSpace / totalSpace;
                 this.logger.Info($"Free Percentage: {freePercentage,2}");
 
-                if (freePercentage < 10.0)
+                if (freePercentage < cleanupConfig.FreeSpacePercentage)
                 {
                     var filesToDelete = allFiles.SkipLast(page * pageSize).TakeLast(pageSize).ToList();
 
