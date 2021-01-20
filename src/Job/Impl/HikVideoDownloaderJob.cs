@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac;
-using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
 using Hik.Client.Service;
@@ -24,15 +23,10 @@ namespace Job.Impl
         public override async Task InitializeProcessingPeriod()
         {
             var config = Config as CameraConfig;
-            DateTime? lastSync = null;
             DateTime jobStart = DateTime.Now;
 
-            using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
-            {
-                var cameraRepo = unitOfWork.GetRepository<Camera>();
-                Camera camera = await cameraRepo.FindByAsync(x => x.Alias == Config.Alias);
-                lastSync = camera?.LastVideoSync;
-            }
+            var camera = await GetCamera(Config.Alias);
+            DateTime?  lastSync = camera?.LastVideoSync;
 
             DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config.ProcessingPeriodHours);
 
@@ -59,7 +53,7 @@ namespace Job.Impl
             base.Logger.Info("Save Video to DB...");
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, JobInstance);
             JobInstance.VideosCount++;
-            await jobResultSaver.SaveVideoAsync(e.File as VideoDTO, Config);
+            await jobResultSaver.SaveVideoAsync(e.File as FileDTO, Config);
             
             base.Logger.Info("Save Video to DB. Done");
         }

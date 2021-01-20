@@ -46,14 +46,14 @@ namespace Job.Email
                     using var mail = new MailMessage
                     {
                         From = new MailAddress(Settings.UserName),
+                        Subject = $"{camera?.Alias ?? "Hik.Web"} error",
+                        Body = msg,
+                        IsBodyHtml = true,
                     };
+
                     mail.To.Add(Settings.Receiver);
-                    mail.Subject = $"{camera?.Alias ?? "Hik.Web"} error";
-                    mail.Body = msg;
-                    mail.IsBodyHtml = true;
 
 #if DEBUG
-                    logger.Info("Dummy Email");
                     logger.Info(msg);
 #elif RELEASE
                     using var smtp = new SmtpClient(Settings.Server, Settings.Port)

@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Hik.DataAccess.Data
 {
     [Table(Tables.File)]
-    public class File : IAuditable
+    public class MediaFile : IAuditable
     {
         [Key]
         public int Id { get; set; }

@@ -1,7 +1,7 @@
 ﻿
-@model List<Hik.DataAccess.Data.File>
+@model List<Hik.DataAccess.Data.MediaFile>
 
-<h2>Videos</h2>
+<h2>Files</h2>
 <table class="table">
     <thead>
         <tr>
@@ -17,10 +17,11 @@
         @foreach (var item in Model)
         {
             string videoSize = Hik.Client.Helpers.Utils.FormatBytes(item.Size);
+            string videoduration = Hik.Client.Helpers.Utils.FormatSeconds(item.Duration);
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>
-                <td>@Html.DisplayFor(modelItem => item.Duration)</td>
+                <td>@videoduration</td>
                 <td>@videoSize</td>
                 <td>@Html.DisplayFor(modelItem => item.DownloadStartTime)</td>
                 <td>@Html.DisplayFor(modelItem => item.DownloadStopTime)</td>

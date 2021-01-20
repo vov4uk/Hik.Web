@@ -108,16 +108,29 @@ namespace Job.Impl
             catch (Exception ex) { Logger.Error(ex, ex.Message); }
         }
 
-        public async Task SaveResultsInternal(IReadOnlyCollection<MediaFileBase> files)
+        internal async Task SaveResultsInternal(IReadOnlyCollection<MediaFileBase> files)
         {
             Logger.Info("Save to DB...");
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
-            if (files.Any())
+            if (files?.Any() == true)
             {
                 await SaveResults(files, jobResultSaver);
             }
+            else
+            {
+                Logger.Warn("Results Empty");
+            }
             await jobResultSaver.SaveJobResultAsync(Config);
             Logger.Info("Save to DB. Done");
+        }
+
+        protected async Task<Camera> GetCamera(string allias)
+        {
+            using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
+            {
+                var cameraRepo = unitOfWork.GetRepository<Camera>();
+                return await cameraRepo.FindByAsync(x => x.Alias == allias);
+            }
         }
     }
 }

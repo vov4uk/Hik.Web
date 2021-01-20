@@ -26,7 +26,7 @@ namespace Hik.DataAccess.Data
 
         public List<Photo> Photos { get; set; } = new List<Photo>();
 
-        public List<File> Files { get; set; } = new List<File>();
+        public List<MediaFile> Files { get; set; } = new List<MediaFile>();
 
         public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();
 

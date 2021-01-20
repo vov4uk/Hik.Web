@@ -1,6 +1,4 @@
-﻿using Hik.Api;
-using Hik.Api.Abstraction;
-using Hik.Api.Data;
+﻿using Hik.Api.Abstraction;
 using Hik.Api.Helpers;
 using Hik.Api.Struct;
 using Hik.Api.Struct.Video;
@@ -10,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace Hik.Api.Services
 {
-    public class HikVideoService : FileService<RemoteVideoFile>
+    public class HikVideoService : FileService
     {
         public virtual int StartDownloadFile(int userId, string sourceFile, string destinationPath)
         {

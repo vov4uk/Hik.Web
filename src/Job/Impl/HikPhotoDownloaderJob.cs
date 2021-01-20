@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
-using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using HikConsole.Scheduler;
 using Hik.Client.Infrastructure;
@@ -25,15 +24,10 @@ namespace Job.Impl
         public override async Task InitializeProcessingPeriod()
         {
             var config = Config as CameraConfig;
-            DateTime? lastSync;
             DateTime jobStart = JobInstance.Started;
 
-            using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
-            {
-                var cameraRepo = unitOfWork.GetRepository<Camera>();
-                Camera camera = await cameraRepo.FindByAsync(x => x.Alias == config.Alias);
-                lastSync = camera?.LastPhotoSync;
-            }
+            var camera = await GetCamera(Config.Alias);
+            DateTime? lastSync = camera?.LastPhotoSync;
 
             DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config.ProcessingPeriodHours);
 
@@ -53,7 +47,7 @@ namespace Job.Impl
         {
             JobInstance.PhotosCount += files.Count;
 
-            var convertedFiles = files.OfType<PhotoDTO>().ToList();
+            var convertedFiles = files.OfType<FileDTO>().ToList();
             JobInstance.PhotosCount = convertedFiles.Count();
             await service.SavePhotosAsync(convertedFiles, Config);
         }

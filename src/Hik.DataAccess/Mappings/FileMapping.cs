@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Hik.DataAccess.Mappings
 {
     [ExcludeFromCodeCoverage]
-    public sealed class FileMapping : IEntityTypeConfiguration<File>
+    public sealed class FileMapping : IEntityTypeConfiguration<MediaFile>
     {
-        public void Configure(EntityTypeBuilder<File> builder)
+        public void Configure(EntityTypeBuilder<MediaFile> builder)
         {
             builder.ToTable(Tables.File);
             builder.HasKey(file => file.Id);

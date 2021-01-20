@@ -28,7 +28,6 @@ namespace Hik.DTO.Config
             sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
             sb.AppendLine(this.GetRow("IP Address", $"{this.IpAddress}:{this.PortNumber}"));
             sb.AppendLine(this.GetRow("User name", this.UserName));
-            sb.AppendLine(this.GetRow("Retention Period", this.RetentionPeriodDays.ToString()));
 
             return sb.ToString();
         }
@@ -42,7 +41,6 @@ namespace Hik.DTO.Config
             sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
             sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.IpAddress}:{this.PortNumber}"));
             sb.AppendLine(this.GetHtmlRow("User name", this.UserName));
-            sb.AppendLine(this.GetHtmlRow("Retention Period", this.RetentionPeriodDays.ToString()));
             sb.AppendLine("</table>");
 
             return sb.ToString();

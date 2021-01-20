@@ -1,5 +1,4 @@
 ﻿using Hik.Api.Abstraction;
-using Hik.Api.Data;
 using Hik.Api.Helpers;
 using Hik.Api.Struct;
 using Hik.Api.Struct.Photo;
@@ -10,17 +9,17 @@ using System.Runtime.InteropServices;
 
 namespace Hik.Api.Services
 {
-    public class HikPhotoService : FileService<RemotePhotoFile>
+    public class HikPhotoService : FileService
     {
-        public void DownloadFile(int userId, IHikRemoteFile remoteFile, string destinationPath)
+        public void DownloadFile(int userId, string remoteFileName, long size, string destinationPath)
         {
-            if (remoteFile.Size > 0)
+            if (size > 0)
             {
                 NET_DVR_PIC_PARAM temp = new NET_DVR_PIC_PARAM
                 {
-                    pDVRFileName = remoteFile.Name,
-                    pSavedFileBuf = Marshal.AllocHGlobal((int)remoteFile.Size),
-                    dwBufLen = (uint) remoteFile.Size
+                    pDVRFileName = remoteFileName,
+                    pSavedFileBuf = Marshal.AllocHGlobal((int)size),
+                    dwBufLen = (uint)size
                 };
 
                 if (SdkHelper.InvokeSDK(() => NET_DVR_GetPicture_V50(userId, ref temp)))

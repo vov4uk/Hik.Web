@@ -1,7 +1,9 @@
-﻿namespace Hik.Api.Abstraction
+﻿using Hik.Api.Data;
+
+namespace Hik.Api.Abstraction
 {
     internal interface ISourceFile
     {
-        IHikRemoteFile ToRemoteFile();
+        HikRemoteFile ToRemoteFile();
     }
 }

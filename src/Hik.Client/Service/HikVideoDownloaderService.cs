@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using Hik.Api.Abstraction;
-using Hik.Api.Data;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.Client.Helpers;
@@ -13,66 +11,55 @@ using Hik.DTO.Contracts;
 
 namespace Hik.Client.Service
 {
-    public class HikVideoDownloaderService : HikDownloaderServiceBase<VideoDTO>
+    public class HikVideoDownloaderService : HikDownloaderServiceBase<FileDTO>
     {
-        public HikVideoDownloaderService(IDirectoryHelper directoryHelper, IHikClientFactory clientFactory, IMapper mapper)
+        public HikVideoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory, IMapper mapper)
             : base(directoryHelper, clientFactory, mapper)
         {
         }
 
         public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
 
-        public override async Task<IReadOnlyCollection<VideoDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<IHikRemoteFile> remoteFiles, CancellationToken token = default)
+        public override async Task<IReadOnlyCollection<FileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<FileDTO> remoteFiles, CancellationToken token = default)
         {
             int j = 1;
-            var downloadedVideos = new List<VideoDTO>();
-            foreach (IHikRemoteFile video in remoteFiles)
+            foreach (var video in remoteFiles)
             {
                 this.ThrowIfCancellationRequested();
                 this.Logger.Info($"{j++,2}/{remoteFiles.Count} : ");
-                var videoDownloadResult = await this.DownloadRemoteVideoFileAsync(video);
-                if (videoDownloadResult != null)
+                if (await this.DownloadRemoteVideoFileAsync(video, token))
                 {
-                    this.OnFileDownloaded(new FileDownloadedEventArgs(videoDownloadResult));
-                    downloadedVideos.Add(videoDownloadResult);
+                    this.OnFileDownloaded(new FileDownloadedEventArgs(video));
                 }
             }
 
-            return downloadedVideos;
+            return remoteFiles;
         }
 
-        public override async Task<IReadOnlyCollection<IHikRemoteFile>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<FileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            List<RemoteVideoFile> videos = (await this.Client.FindVideosAsync(periodStart, periodEnd)).SkipLast(1).ToList();
+            List<FileDTO> videos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
 
             this.Logger.Info($"Video searching finished. Found {videos.Count} files");
             return videos;
         }
 
-        private async Task<VideoDTO> DownloadRemoteVideoFileAsync(IHikRemoteFile file)
+        private async Task<bool> DownloadRemoteVideoFileAsync(FileDTO file, CancellationToken token)
         {
-            if (this.Client.StartVideoDownload(file))
-            {
-                DateTime downloadStarted = DateTime.Now;
-                do
-                {
-                    await Task.Delay(this.ProgressCheckPeriodMilliseconds);
-                    this.ThrowIfCancellationRequested();
-                    this.Client.UpdateVideoProgress();
-                }
-                while (this.Client.IsDownloading);
+            DateTime downloadStarted = DateTime.Now;
 
-                VideoDTO video = this.Mapper.Map<VideoDTO>(file);
-                video.DownloadStartTime = downloadStarted;
-                video.DownloadStopTime = DateTime.Now;
-                TimeSpan duration = video.DownloadStopTime - downloadStarted;
-                TimeSpan videoDutation = video.StopTime - video.StartTime;
+            if (await this.Client.DownloadFileAsync(file, token))
+            {
+                file.DownloadStartTime = downloadStarted;
+                file.DownloadStopTime = DateTime.Now;
+                TimeSpan duration = file.DownloadStopTime - downloadStarted;
+                int videoDutation = file.Duration;
                 this.Logger.Info($"Duration {duration.ToString(DurationFormat)}, avg speed {Utils.FormatBytes((long)(file.Size / duration.TotalSeconds))}/s");
-                this.Logger.Info($"Video    {videoDutation.ToString(DurationFormat)}, avg rate {Utils.FormatBytes((long)(file.Size / videoDutation.TotalSeconds))}/s");
-                return video;
+                this.Logger.Info($"Video    {videoDutation.ToString(DurationFormat)}, avg rate {Utils.FormatBytes((long)(file.Size / videoDutation))}/s");
+                return true;
             }
 
-            return default;
+            return false;
         }
     }
 }

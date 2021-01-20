@@ -4,23 +4,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using Hik.Api.Abstraction;
-using Hik.Api.Data;
 using Hik.Client.Abstraction;
 using Hik.DTO.Contracts;
 
 namespace Hik.Client.Service
 {
-    public class HikPhotoDownloaderService : HikDownloaderServiceBase<PhotoDTO>
+    public class HikPhotoDownloaderService : HikDownloaderServiceBase<FileDTO>
     {
-        public HikPhotoDownloaderService(IDirectoryHelper directoryHelper, IHikClientFactory clientFactory, IMapper mapper)
+        public HikPhotoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory, IMapper mapper)
             : base(directoryHelper, clientFactory, mapper)
         {
         }
 
-        public override async Task<IReadOnlyCollection<IHikRemoteFile>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<FileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            List<RemotePhotoFile> photos = (await this.Client.FindPhotosAsync(periodStart, periodEnd)).ToList();
+            List<FileDTO> photos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).ToList();
             var resultCountString = photos.Count.ToString();
 
             this.Logger.Info("Photos searching finished.");
@@ -28,7 +26,7 @@ namespace Hik.Client.Service
             return photos;
         }
 
-        public override async Task<IReadOnlyCollection<PhotoDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<IHikRemoteFile> remoteFiles, CancellationToken token = default)
+        public override async Task<IReadOnlyCollection<FileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<FileDTO> remoteFiles, CancellationToken token = default)
         {
             var photoDownloadResults = new Dictionary<bool, int>
             {
@@ -37,34 +35,27 @@ namespace Hik.Client.Service
             };
 
             int j = 0;
-            var photosFromClient = new List<PhotoDTO>();
 
-            return await Task.Run(() =>
+            foreach (var photo in remoteFiles)
             {
-                foreach (RemotePhotoFile photo in remoteFiles)
+                DateTime start = DateTime.Now;
+                this.ThrowIfCancellationRequested();
+                bool isDownloaded = await this.Client.DownloadFileAsync(photo, token);
+                DateTime finish = DateTime.Now;
+                photoDownloadResults[isDownloaded]++;
+                j++;
+
+                // TODO report downloading progress via event
+                if (isDownloaded)
                 {
-                    DateTime start = DateTime.Now;
-                    this.ThrowIfCancellationRequested();
-                    bool isDownloaded = this.Client.PhotoDownload(photo);
-                    DateTime finish = DateTime.Now;
-                    photoDownloadResults[isDownloaded]++;
-                    j++;
-
-                    // TODO report downloading progress via event
-                    if (isDownloaded)
-                    {
-                        var photoDto = this.Mapper.Map<PhotoDTO>(photo);
-                        photoDto.DownloadStartTime = start;
-                        photoDto.DownloadStopTime = finish;
-
-                        photosFromClient.Add(photoDto);
-                    }
+                    photo.DownloadStartTime = start;
+                    photo.DownloadStopTime = finish;
                 }
+            }
 
-                this.Logger.Info($"Exist {photoDownloadResults[false]} photos");
-                this.Logger.Info($"Downloaded {photoDownloadResults[true]} photos");
-                return photosFromClient;
-            });
+            this.Logger.Info($"Exist {photoDownloadResults[false]} photos");
+            this.Logger.Info($"Downloaded {photoDownloadResults[true]} photos");
+            return remoteFiles;
         }
     }
 }

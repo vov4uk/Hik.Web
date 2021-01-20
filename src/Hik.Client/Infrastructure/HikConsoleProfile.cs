@@ -9,10 +9,9 @@ namespace Hik.Client.Infrastructure
     {
         public HikConsoleProfile()
         {
-            this.CreateMap<RemoteVideoFile, VideoDTO>(MemberList.None);
-            this.CreateMap<RemotePhotoFile, PhotoDTO>()
-                .ForMember(dest => dest.DateTaken, opt => opt.MapFrom(src => src.Date));
             this.CreateMap<CameraConfig, CameraDTO>(MemberList.None);
+            this.CreateMap<HikRemoteFile, FileDTO>(MemberList.None);
+            this.CreateMap<FileDTO, HikRemoteFile>(MemberList.None);
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using Hik.Api.Abstraction;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.Client.Helpers;
@@ -20,12 +19,12 @@ namespace Hik.Client.Service
         protected const string DurationFormat = "h'h 'm'm 's's'";
         protected const int JobTimeout = 30;
         private readonly IDirectoryHelper directoryHelper;
-        private readonly IHikClientFactory clientFactory;
+        private readonly IClientFactory clientFactory;
         private CancellationTokenSource cancelTokenSource;
 
         public HikDownloaderServiceBase(
             IDirectoryHelper directoryHelper,
-            IHikClientFactory clientFactory,
+            IClientFactory clientFactory,
             IMapper mapper)
         {
             this.directoryHelper = directoryHelper;
@@ -44,7 +43,7 @@ namespace Hik.Client.Service
             get { return LogManager.GetCurrentClassLogger(); }
         }
 
-        protected IHikClient Client { get; private set; }
+        protected IClient Client { get; private set; }
 
         public async Task<IReadOnlyCollection<T>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
@@ -95,9 +94,9 @@ namespace Hik.Client.Service
             }
         }
 
-        public abstract Task<IReadOnlyCollection<IHikRemoteFile>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
+        public abstract Task<IReadOnlyCollection<FileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
 
-        public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<IHikRemoteFile> remoteFiles, CancellationToken token);
+        public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<FileDTO> remoteFiles, CancellationToken token);
 
         protected virtual void OnExceptionFired(ExceptionEventArgs e)
         {
@@ -142,7 +141,7 @@ namespace Hik.Client.Service
             }
             else
             {
-                throw new Exception("No files downloaded");
+               Logger.Warn("No files downloaded");
             }
 
             return result;
@@ -160,15 +159,13 @@ namespace Hik.Client.Service
 
                     if (Client.Login())
                     {
-                        CheckClientHardDriveStatus();
-
                         ThrowIfCancellationRequested();
                         Logger.Info($"Reading remote files...");
                         var remoteFiles = await GetRemoteFilesList(periodStart, periodEnd);
                         Logger.Info($"Reading remote files. Done");
 
                         Logger.Info($"Downloading files...");
-                        var downloadedFiles = await DownloadFilesFromClientAsync(remoteFiles, cancelTokenSource.Token);
+                        var downloadedFiles = await DownloadFilesFromClientAsync(remoteFiles, cancelTokenSource?.Token ?? CancellationToken.None);
                         result.AddRange(downloadedFiles);
                         Logger.Info($"Downloading files. Done");
                     }
@@ -185,18 +182,6 @@ namespace Hik.Client.Service
             }
 
             return result;
-        }
-
-        private void CheckClientHardDriveStatus()
-        {
-            var status = Client.CheckHardDriveStatus();
-
-            Logger.Info(status?.ToString());
-
-            if (status != null && status.IsErrorStatus)
-            {
-                throw new InvalidOperationException("HD error");
-            }
         }
 
         private void PrintStatistic(string destinationFolder)

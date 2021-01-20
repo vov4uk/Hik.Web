@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 
 namespace Hik.Api.Services
 {
-    public abstract class FileService<TRemoteFile>
-        where TRemoteFile : IHikRemoteFile
+    public abstract class FileService
     {
-        public virtual async Task<IList<TRemoteFile>> FindFilesAsync(DateTime periodStart, DateTime periodEnd, Session session)
+        public virtual async Task<IList<HikRemoteFile>> FindFilesAsync(DateTime periodStart, DateTime periodEnd, Session session)
         {
             int findId = this.StartFind(session.UserId, periodStart, periodEnd, session.Device.ChannelNumber);
 
-            IEnumerable<TRemoteFile> results = await this.GetFindResults(findId);
+            IEnumerable<HikRemoteFile> results = await this.GetFindResults(findId);
 
             this.FindClose(findId);
             return results.ToList();
@@ -26,9 +25,9 @@ namespace Hik.Api.Services
 
         protected abstract bool FindClose(int findId);
         
-        protected async Task<IEnumerable<TRemoteFile>> GetFindResults(int findId)
+        protected async Task<IEnumerable<HikRemoteFile>> GetFindResults(int findId)
         {
-            var results = new List<TRemoteFile>();
+            var results = new List<HikRemoteFile>();
             ISourceFile sourceFile = default(ISourceFile);
             while (true)
             {
@@ -40,7 +39,7 @@ namespace Hik.Api.Services
                 }
                 else if (findStatus == HikConst.NET_DVR_FILE_SUCCESS)
                 {
-                    results.Add((TRemoteFile)sourceFile.ToRemoteFile());
+                    results.Add((HikRemoteFile)sourceFile.ToRemoteFile());
                 }
                 else
                 {

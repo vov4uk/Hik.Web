@@ -59,17 +59,17 @@ namespace HikConsole.Scheduler
             }
         }
 
-        public async Task SaveVideoAsync(VideoDTO videoDTO, BaseConfig cameraConfig)
+        public async Task SaveVideoAsync(FileDTO videoDTO, BaseConfig cameraConfig)
         {
             using (var unitOfWork = this.factory.CreateUnitOfWork())
             {
                 var camera = await this.GetCameraSafe(cameraConfig, unitOfWork);
 
-                var video = mapper.Map<Video>(videoDTO);
+                var video = mapper.Map<MediaFile>(videoDTO);
                 await this.AddEntities(video, unitOfWork);
 
-                var dailyStat = await GetDailyStatisticSafe(camera.Id, videoDTO.StartTime, videoDTO.StopTime, unitOfWork);
-                var stat = dailyStat.FirstOrDefault(x => x.Period == videoDTO.StartTime.Date);
+                var dailyStat = await GetDailyStatisticSafe(camera.Id, videoDTO.Date, videoDTO.Date.AddSeconds(videoDTO.Duration), unitOfWork);
+                var stat = dailyStat.FirstOrDefault(x => x.Period == videoDTO.Date.Date);
 
                 stat.VideosCount++;
                 stat.VideosSize += videoDTO.Size;
@@ -78,18 +78,18 @@ namespace HikConsole.Scheduler
             }
         }
 
-        public async Task SavePhotosAsync(IReadOnlyCollection<PhotoDTO> files, BaseConfig cameraConfig)
+        public async Task SavePhotosAsync(IReadOnlyCollection<FileDTO> files, BaseConfig cameraConfig)
         {
             using (var unitOfWork = factory.CreateUnitOfWork())
             {
                 Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
 
-                var from = files.Min(x => x.DateTaken).Date;
-                var to = files.Max(x => x.DateTaken).Date;
+                var from = files.Min(x => x.Date).Date;
+                var to = files.Max(x => x.Date).Date;
 
                 var dailyStat = (await GetDailyStatisticSafe(camera.Id, from, to, unitOfWork)).ToDictionary(k => k.Period, v => v);
 
-                var group = files.GroupBy(x => x.DateTaken.Date)
+                var group = files.GroupBy(x => x.Date.Date)
                     .Select(x => new { date = x.Key, cnt = x.Count(), size = x.Sum(p => p.Size) } );
 
                 foreach (var item in group)
@@ -99,7 +99,7 @@ namespace HikConsole.Scheduler
                     day.PhotosSize += item.size;
                 }
 
-                await this.AddEntities(files.Select(x => mapper.Map<Photo>(x)).ToList(), unitOfWork);
+                await this.AddEntities(files.Select(x => mapper.Map<MediaFile>(x)).ToList(), unitOfWork);
                 await unitOfWork.SaveChangesAsync(this.job, camera);
             }
         }
@@ -121,7 +121,7 @@ namespace HikConsole.Scheduler
             {
                 Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
 
-                await this.AddEntities(files.Select(x => mapper.Map<File>(x)).ToList(), unitOfWork);
+                await this.AddEntities(files.Select(x => mapper.Map<MediaFile>(x)).ToList(), unitOfWork);
                 await unitOfWork.SaveChangesAsync(this.job, camera);
             }
         }

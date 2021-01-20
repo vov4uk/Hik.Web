@@ -1,5 +1,6 @@
 ﻿using System;
 using Job;
+using Job.Email;
 using NLog;
 
 namespace JobHost
@@ -36,6 +37,7 @@ namespace JobHost
             catch (Exception exception)
             {
                 logger.Error($"JobHost. Exception : {exception}");
+                EmailHelper.Send(exception);
                 Environment.ExitCode = -1;
             }
         }

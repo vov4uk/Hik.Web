@@ -25,9 +25,9 @@ namespace Hik.Api.Struct.Video
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2, ArraySubType = UnmanagedType.I1)]
         public byte[] byRes;
 
-        public IHikRemoteFile ToRemoteFile()
+        public HikRemoteFile ToRemoteFile()
         {
-            return new RemoteVideoFile(this);
+            return new HikRemoteFile(this);
         }
     }
 }

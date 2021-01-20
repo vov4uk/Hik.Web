@@ -83,7 +83,7 @@ namespace Hik.Client.Service
 
         private string GetWorkingDirectory(string destinationFolder, DateTime date)
         {
-            return filesHelper.CombinePath(destinationFolder, date.ToDirectoryNameString());
+            return filesHelper.CombinePath(destinationFolder, date.ToPhotoDirectoryNameString());
         }
 
         private string GetPathSafety(string file, string directory)

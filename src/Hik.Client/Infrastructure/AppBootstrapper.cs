@@ -45,7 +45,6 @@ namespace Hik.Client.Infrastructure
             builder.RegisterType<DeleteSevice>();
             builder.RegisterType<ArchiveService>();
             builder.RegisterType<CleanUpService>();
-            builder.RegisterType<YiVideoDownloaderService>();
             IContainer container = builder.Build();
 
             return container;

@@ -5,7 +5,6 @@
         DeleteArchiving,
         HikVideoDownloader,
         HikPhotoDownloader,
-        YiVideoDownloader,
         CleanUp,
         Archive
     }

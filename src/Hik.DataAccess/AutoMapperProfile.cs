@@ -13,7 +13,7 @@ namespace Hik.DataAccess
             this.CreateMap<DeletedFileDTO, DeletedFile>(MemberList.None);
             this.CreateMap<PhotoDTO, Photo>(MemberList.None);
             this.CreateMap<VideoDTO, Video>(MemberList.None);
-            this.CreateMap<FileDTO, File>(MemberList.None);
+            this.CreateMap<FileDTO, MediaFile>(MemberList.None);
         }
     }
 }
