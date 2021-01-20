@@ -10,6 +10,8 @@ namespace Hik.DataAccess
     {
         ValueTask<EntityEntry<T>> AddAsync(T entity);
 
+        EntityEntry<T> Add(T entity);
+
         Task AddRangeAsync(IEnumerable<T> entities);
 
         Task<List<T>> GetAllAsync();

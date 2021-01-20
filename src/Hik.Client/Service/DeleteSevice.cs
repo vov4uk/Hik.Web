@@ -9,7 +9,7 @@ using NLog;
 
 namespace Hik.Client.Service
 {
-    public class DeleteSevice : IRecurrentJob<DeletedFileDTO>
+    public class DeleteSevice : IRecurrentJob<FileDTO>
     {
         private readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private readonly IDirectoryHelper directoryHelper;
@@ -23,7 +23,7 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public async Task<IReadOnlyCollection<DeletedFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public async Task<IReadOnlyCollection<FileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             logger.Info("Start DeleteSevice");
 
@@ -37,7 +37,7 @@ namespace Hik.Client.Service
             ExceptionFired?.Invoke(this, e);
         }
 
-        private async Task<IReadOnlyCollection<DeletedFileDTO>> DeleteInternal(DateTime cutOff, CameraConfig camera)
+        private async Task<IReadOnlyCollection<FileDTO>> DeleteInternal(DateTime cutOff, CameraConfig camera)
         {
             var destination = camera.DestinationFolder;
 
@@ -51,14 +51,14 @@ namespace Hik.Client.Service
 
             logger.Info($"Destination: {destination}");
             logger.Info($"Found: {filesToDelete.Count} files");
-            List<DeletedFileDTO> deleteFilesResult = new List<DeletedFileDTO>();
 
             return await Task.Run(() =>
             {
                 try
                 {
-                    deleteFilesResult.AddRange(DeleteFiles(filesToDelete, cutOff));
+                    var result = DeleteFiles(filesToDelete, cutOff, destination);
                     directoryHelper.DeleteEmptyFolders(destination);
+                    return result;
                 }
                 catch (Exception ex)
                 {
@@ -67,13 +67,13 @@ namespace Hik.Client.Service
                     OnExceptionFired(new ExceptionEventArgs(ex));
                 }
 
-                return deleteFilesResult;
+                return default;
             });
         }
 
-        private List<DeletedFileDTO> DeleteFiles(List<string> filesToDelete, DateTime cutOff)
+        private List<FileDTO> DeleteFiles(List<string> filesToDelete, DateTime cutOff, string basePath)
         {
-            List<DeletedFileDTO> deletedFiles = new List<DeletedFileDTO>();
+            List<FileDTO> result = new List<FileDTO>();
             filesToDelete.ForEach(
                     file =>
                     {
@@ -82,11 +82,13 @@ namespace Hik.Client.Service
                         if (date < cutOff)
                         {
                             logger.Debug($"Deleting: {file}");
-                            filesHelper.DeleteFile(file);
-                            deletedFiles.Add(new DeletedFileDTO(filesHelper.GetFileNameWithoutExtension(file), filesHelper.GetExtension(file)));
+                            var size = filesHelper.FileSize(file);
+                            var dateCreated = filesHelper.GetCreationDate(file);
+                            this.filesHelper.DeleteFile(file);
+                            result.Add(new FileDTO { Date = date, Name = file.Remove(0, basePath.Length), Size = size });
                         }
                     });
-            return deletedFiles;
+            return result;
         }
     }
 }

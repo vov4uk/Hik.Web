@@ -55,7 +55,7 @@ namespace Hik.Web.Pages
             else
             {
                 var latestJobs = await dataContext.Jobs.GroupBy(x => x.JobType).Select(x => x.Max(y => y.Id)).ToArrayAsync();
-                Jobs = await dataContext.Jobs.Where(x => latestJobs.Contains(x.Id)).ToListAsync();
+                Jobs = await dataContext.Jobs.Where(x => latestJobs.Contains(x.Id)).OrderBy(x => x.JobType).ToListAsync();
             }
         }
 

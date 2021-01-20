@@ -46,16 +46,18 @@ namespace Hik.Client.Service
 
         private async Task<bool> DownloadRemoteVideoFileAsync(FileDTO file, CancellationToken token)
         {
-            DateTime downloadStarted = DateTime.Now;
+            DateTime start = DateTime.Now;
 
             if (await this.Client.DownloadFileAsync(file, token))
             {
-                file.DownloadStartTime = downloadStarted;
-                file.DownloadStopTime = DateTime.Now;
-                TimeSpan duration = file.DownloadStopTime - downloadStarted;
-                int videoDutation = file.Duration;
-                this.Logger.Info($"Duration {duration.ToString(DurationFormat)}, avg speed {Utils.FormatBytes((long)(file.Size / duration.TotalSeconds))}/s");
-                this.Logger.Info($"Video    {videoDutation.ToString(DurationFormat)}, avg rate {Utils.FormatBytes((long)(file.Size / videoDutation))}/s");
+                file.DownloadStarted = start;
+                var finish = DateTime.Now;
+                var duration = (int?)(finish - start).TotalSeconds;
+                file.DownloadDuration = duration;
+
+                int? videoDutation = file.Duration;
+                this.Logger.Info($"Duration {duration.FormatSeconds()}, avg speed {Utils.FormatBytes((long)(file.Size / duration))}/s");
+                this.Logger.Info($"Video    {videoDutation.FormatSeconds()}, avg rate {Utils.FormatBytes((long)(file.Size / videoDutation))}/s");
                 return true;
             }
 

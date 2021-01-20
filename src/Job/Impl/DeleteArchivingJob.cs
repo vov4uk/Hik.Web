@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Hik.Client.Infrastructure;
 using Hik.Client.Service;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using HikConsole.Scheduler;
 
 namespace Job.Impl
 {
@@ -30,20 +28,12 @@ namespace Job.Impl
             return Task.CompletedTask;
         }
 
-        public async override Task<IReadOnlyCollection<MediaFileBase>> Run()
+        public async override Task<IReadOnlyCollection<FileDTO>> Run()
         {
             var worker = AppBootstrapper.Container.Resolve<DeleteSevice>();
             worker.ExceptionFired += base.ExceptionFired;
 
             return await worker.ExecuteAsync(Config, DateTime.MinValue, JobInstance.PeriodEnd.Value);
-        }
-
-        public override async Task SaveResults(IReadOnlyCollection<MediaFileBase> files, JobService service)
-        {
-            var convertedFiles = files.OfType<DeletedFileDTO>().ToList();
-            JobInstance.VideosCount = convertedFiles.Count(x => x.Extention == ".mp4");
-            JobInstance.PhotosCount = convertedFiles.Count(x => x.Extention == ".jpg");
-            await service.SaveDeletedFilesAsync(convertedFiles, Config);
         }
     }
 }

@@ -25,12 +25,13 @@ namespace Hik.DataAccess.Mappings
                 .HasForeignKey(v => v.CameraId);
             builder.Property(f => f.Date)
                 .HasColumnType("datetime2(0)");
-            builder.Property(f => f.DownloadStartTime)
+            builder.Property(f => f.DownloadStarted)
                 .IsRequired(false)
                 .HasColumnType("datetime2(0)");
-            builder.Property(f => f.DownloadStopTime)
-                .IsRequired(false)
-                .HasColumnType("datetime2(0)");
+            builder.Property(f => f.DownloadDuration)
+                .IsRequired(false);
+            builder.Property(f => f.Duration)
+                .IsRequired(false);
             builder.Property(f => f.Name)
                 .HasMaxLength(30);
         }

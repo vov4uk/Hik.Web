@@ -7,7 +7,6 @@ using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using HikConsole.Scheduler;
 using Job.Email;
 using NLog;
 using Hik.Client.Events;
@@ -31,11 +30,27 @@ namespace Job.Impl
 
         public abstract JobType JobType { get; }
 
-        public abstract Task InitializeProcessingPeriod();
+        public abstract Task<IReadOnlyCollection<FileDTO>> Run();
 
-        public abstract Task<IReadOnlyCollection<MediaFileBase>> Run();
+        public virtual async Task InitializeProcessingPeriod()
+        {
+            var config = Config as CameraConfig;
+            DateTime jobStart = DateTime.Now;
 
-        public abstract Task SaveResults(IReadOnlyCollection<MediaFileBase> files, JobService service);
+            var camera = await GetCamera(Config.Alias);
+            DateTime? lastSync = camera?.LastSync;
+
+            DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config.ProcessingPeriodHours);
+
+            this.JobInstance.PeriodStart = periodStart;
+            this.JobInstance.PeriodEnd = jobStart;
+        }
+
+        public virtual async Task SaveResults(IReadOnlyCollection<FileDTO> files, JobService service)
+        {
+            JobInstance.FilesCount = files.Count;
+            await service.SaveFilesAsync(files, Config);
+        }
 
         public JobProcessBase(string trigger, string configFilePath, string connectionString, Guid activityId)
         {
@@ -71,12 +86,10 @@ namespace Job.Impl
 
         private async Task SaveJobInstanceToDB()
         {
-            using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
-            {
-                var jobRepo = unitOfWork.GetRepository<HikJob>();
-                await jobRepo.AddAsync(JobInstance);
-                await unitOfWork.SaveChangesAsync();
-            }
+            using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
+            var jobRepo = unitOfWork.GetRepository<HikJob>();
+            await jobRepo.AddAsync(JobInstance);
+            await unitOfWork.SaveChangesAsync();
         }
 
 
@@ -92,23 +105,22 @@ namespace Job.Impl
         {
             try
             {
-                using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
+                using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
+                var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
+
+                jobRepo.Add(new ExceptionLog
                 {
-                    var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
-                    jobRepo.AddAsync(new ExceptionLog
-                    {
-                        CallStack = e.Exception.StackTrace,
-                        JobId = JobInstance.Id,
-                        Message = (e.Exception as HikException)?.ErrorMessage ?? e.Exception.Message,
-                        HikErrorCode = (e.Exception as HikException)?.ErrorCode
-                    }).GetAwaiter().GetResult();
-                    unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
-                }
+                    CallStack = e.Exception.StackTrace,
+                    JobId = JobInstance.Id,
+                    Message = (e.Exception as HikException)?.ErrorMessage ?? e.Exception.Message,
+                    HikErrorCode = (e.Exception as HikException)?.ErrorCode
+                });
+                unitOfWork.SaveChanges();
             }
             catch (Exception ex) { Logger.Error(ex, ex.Message); }
         }
 
-        internal async Task SaveResultsInternal(IReadOnlyCollection<MediaFileBase> files)
+        internal async Task SaveResultsInternal(IReadOnlyCollection<FileDTO> files)
         {
             Logger.Info("Save to DB...");
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
@@ -118,7 +130,7 @@ namespace Job.Impl
             }
             else
             {
-                Logger.Warn("Results Empty");
+                Logger.Warn($"{Config.Alias} - {JobType} - Results Empty");
             }
             await jobResultSaver.SaveJobResultAsync(Config);
             Logger.Info("Save to DB. Done");
@@ -126,11 +138,9 @@ namespace Job.Impl
 
         protected async Task<Camera> GetCamera(string allias)
         {
-            using (var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork())
-            {
-                var cameraRepo = unitOfWork.GetRepository<Camera>();
-                return await cameraRepo.FindByAsync(x => x.Alias == allias);
-            }
+            using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
+            var cameraRepo = unitOfWork.GetRepository<Camera>();
+            return await cameraRepo.FindByAsync(x => x.Alias == allias);
         }
     }
 }

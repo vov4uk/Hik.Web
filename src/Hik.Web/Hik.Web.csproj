@@ -11,8 +11,15 @@
     <RootNamespace>Hik.Web</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="quartz_jobs.debug.xml" />
+  </ItemGroup>
+
  
   <ItemGroup>
+    <Content Include="quartz_jobs.debug.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="quartz_jobs.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

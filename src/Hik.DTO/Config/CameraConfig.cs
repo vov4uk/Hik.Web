@@ -45,15 +45,5 @@ namespace Hik.DTO.Config
 
             return sb.ToString();
         }
-
-        private string GetRow(string field, string value)
-        {
-            return $"{field,-24}: {value}";
-        }
-
-        private string GetHtmlRow(string field, string value)
-        {
-            return $"<tr><td>{field}</td><td>{value}</td></tr>";
-        }
     }
 }

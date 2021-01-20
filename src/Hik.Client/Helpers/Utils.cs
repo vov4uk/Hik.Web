@@ -33,7 +33,7 @@ namespace Hik.Client.Helpers
         {
             TimeSpan time = TimeSpan.FromSeconds(seconds);
 
-            string str;
+            string str = string.Empty;
 
             if (seconds > 0 && seconds < 60)
             {
@@ -43,12 +43,18 @@ namespace Hik.Client.Helpers
             {
                 str = time.ToString(@"mm'm 'ss's'");
             }
-            else
+            else if (seconds > 3600)
             {
                 str = time.ToString(@"hh'h 'mm'm 'ss's'");
             }
 
             return str;
+        }
+
+        public static string FormatSeconds(this int? seconds)
+        {
+            var sec = (double)(seconds ?? -1);
+            return sec.FormatSeconds();
         }
 
         public static string ToPhotoDirectoryNameString(this DateTime date)

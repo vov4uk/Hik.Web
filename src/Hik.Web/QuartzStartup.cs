@@ -2,6 +2,7 @@
 using Quartz.Impl;
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
@@ -26,7 +27,8 @@ namespace Hik.Web
                 ["quartz.threadPool.threadCount"] = "3",
                 ["quartz.jobStore.type"] = "Quartz.Simpl.RAMJobStore, Quartz",
                 ["quartz.plugin.xml.type"] = "Quartz.Plugin.Xml.XMLSchedulingDataProcessorPlugin, Quartz.Plugins",
-                ["quartz.plugin.xml.fileNames"] = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location), "quartz_jobs.xml"),
+                ["quartz.plugin.xml.fileNames"] = 
+                Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location), Debugger.IsAttached ? "quartz_jobs.debug.xml" : "quartz_jobs.xml"),
             };
 
             var schedulerFactory = new StdSchedulerFactory(properties);

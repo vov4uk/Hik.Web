@@ -11,6 +11,8 @@ namespace Hik.DataAccess
 
         Task<int> SaveChangesAsync();
 
+        void SaveChanges();
+
         Task<int> SaveChangesAsync(HikJob job, Camera camera);
     }
 

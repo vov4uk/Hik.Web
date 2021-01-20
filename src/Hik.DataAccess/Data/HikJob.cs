@@ -29,20 +29,11 @@ namespace Hik.DataAccess.Data
         [DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? Finished { get; set; }
 
-        [Display(Name = "Photo")]
-        public int PhotosCount { get; set; }
-
-        [Display(Name = "Video")]
-        public int VideosCount { get; set; }
-
-        public List<Video> Videos { get; set; } = new List<Video>();
+        [Display(Name = "Files")]
+        public int FilesCount { get; set; }
 
         public ExceptionLog ExceptionLog { get; set; }
 
-        public List<Photo> Photos { get; set; } = new List<Photo>();
-
         public List<MediaFile> Files { get; set; } = new List<MediaFile>();
-
-        public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();
     }
 }

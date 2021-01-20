@@ -8,23 +8,18 @@
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(model => model.Statistics[0].Period)</th>
-            <th>@Html.DisplayNameFor(model => model.Statistics[0].PhotosCount)</th>
-            <th>@Html.DisplayNameFor(model => model.Statistics[0].PhotosSize)</th>
-            <th>@Html.DisplayNameFor(model => model.Statistics[0].VideosCount)</th>
-            <th>@Html.DisplayNameFor(model => model.Statistics[0].VideosSize)</th>
+            <th>@Html.DisplayNameFor(model => model.Statistics[0].FilesCount)</th>
+            <th>@Html.DisplayNameFor(model => model.Statistics[0].FilesSize)</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.Statistics)
         {
-           string GbVideoSize = Hik.Client.Helpers.Utils.FormatBytes(item.VideosSize);
-           string MbPhotoSize = Hik.Client.Helpers.Utils.FormatBytes(item.PhotosSize);
+            string size = Hik.Client.Helpers.Utils.FormatBytes(item.FilesSize);
         <tr>
             <td>@Html.DisplayFor(modelItem => item.Period)</td>
-            <td>@Html.DisplayFor(modelItem => item.PhotosCount)</td>
-            <td>@MbPhotoSize</td>
-            <td>@Html.DisplayFor(modelItem => item.VideosCount)</td>
-            <td>@GbVideoSize</td>
+            <td>@Html.DisplayFor(modelItem => item.FilesCount)</td>
+            <td>@size</td>
         </tr>
         }
     </tbody>

@@ -37,6 +37,11 @@ namespace Hik.DataAccess
         {
             return Context.SaveChangesAsync();
         }
+        
+        public void SaveChanges()
+        {
+            Context.SaveChanges();
+        }
 
         public async Task<int> SaveChangesAsync(HikJob job, Camera camera)
         {

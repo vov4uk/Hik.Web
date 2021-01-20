@@ -17,17 +17,11 @@ namespace Hik.DataAccess.Data
         [Display(Name = "Day"), DisplayFormat(DataFormatString = Consts.DisplayDayFormat), DataType(DataType.DateTime)]
         public DateTime Period { get; set; }
 
-        [Display(Name = "Photos Count")]
-        public int PhotosCount { get; set; }
-
-        [Display(Name = "Videos Count")]
-        public int VideosCount { get; set; }
-
-        [Display(Name = "Photos Size")]
-        public long PhotosSize { get; set; }
+        [Display(Name = "Files Count")]
+        public int FilesCount { get; set; }
 
         [Display(Name = "Video Size")]
-        public long VideosSize { get; set; }
+        public long FilesSize { get; set; }
 
         public virtual Camera Camera { get; set; }
     }

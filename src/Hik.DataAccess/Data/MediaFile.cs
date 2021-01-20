@@ -22,15 +22,15 @@ namespace Hik.DataAccess.Data
         [Display(Name = "Date"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime Date { get; set; }
 
-        public int Duration { get; set; }
+        public int? Duration { get; set; }
 
         public long Size { get; set; }
 
         [Display(Name = "Started"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
-        public DateTime? DownloadStartTime { get; set; }
+        public DateTime? DownloadStarted { get; set; }
 
-        [Display(Name = "Finished"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
-        public DateTime? DownloadStopTime { get; set; }
+        [Display(Name = "Downloaded")]
+        public int? DownloadDuration { get; set; }
 
         public virtual Camera Camera { get; set; }
 

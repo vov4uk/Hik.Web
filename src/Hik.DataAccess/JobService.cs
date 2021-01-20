@@ -3,18 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 
-namespace HikConsole.Scheduler
+namespace Hik.DataAccess
 {
     public class JobService
     {
         private readonly IUnitOfWorkFactory factory;
         private readonly HikJob job;
-        private static IMapper mapper;
+        private static readonly IMapper mapper;
 
         public JobService(IUnitOfWorkFactory factory, HikJob job)
         {
@@ -24,106 +23,54 @@ namespace HikConsole.Scheduler
 
         static JobService()
         {
-            Action<IMapperConfigurationExpression> configureAutoMapper = x =>
+            static void configureAutoMapper(IMapperConfigurationExpression x)
             {
                 x.AddProfile<AutoMapperProfile>();
-            };
+            }
 
             var mapperConfig = new MapperConfiguration(configureAutoMapper);
             mapper = mapperConfig.CreateMapper();
         }
 
-        public async Task SaveJobResultAsync(BaseConfig config) 
+        public async Task SaveJobResultAsync(BaseConfig config)
         {
-            using (var unitOfWork = factory.CreateUnitOfWork())
+            using var unitOfWork = factory.CreateUnitOfWork();
+            var jobRepo = unitOfWork.GetRepository<HikJob>();
+            job.Finished = DateTime.Now;
+            await jobRepo.UpdateAsync(job);
+
+            Camera camera = await GetCameraSafe(config, unitOfWork);
+
+            if (job.Success)
             {
-                var jobRepo = unitOfWork.GetRepository<HikJob>();
-                this.job.Finished = DateTime.Now;
-                await jobRepo.UpdateAsync(this.job);
-
-                Camera camera = await GetCameraSafe(config, unitOfWork);
-
-                if (job.Success)
-                {
-                    if(job.JobType.Contains("photo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        camera.LastPhotoSync = job.PeriodEnd;
-                    }
-                    else if (job.JobType.Contains("video", StringComparison.OrdinalIgnoreCase))
-                    {
-                        camera.LastVideoSync = job.PeriodEnd;
-                    }
-                }
-
-                await unitOfWork.SaveChangesAsync(this.job, camera);
+                camera.LastSync = job.PeriodEnd;
             }
+
+            await unitOfWork.SaveChangesAsync(job, camera);
         }
 
-        public async Task SaveVideoAsync(FileDTO videoDTO, BaseConfig cameraConfig)
-        {
-            using (var unitOfWork = this.factory.CreateUnitOfWork())
-            {
-                var camera = await this.GetCameraSafe(cameraConfig, unitOfWork);
-
-                var video = mapper.Map<MediaFile>(videoDTO);
-                await this.AddEntities(video, unitOfWork);
-
-                var dailyStat = await GetDailyStatisticSafe(camera.Id, videoDTO.Date, videoDTO.Date.AddSeconds(videoDTO.Duration), unitOfWork);
-                var stat = dailyStat.FirstOrDefault(x => x.Period == videoDTO.Date.Date);
-
-                stat.VideosCount++;
-                stat.VideosSize += videoDTO.Size;
-
-                await unitOfWork.SaveChangesAsync(job, camera);
-            }
-        }
-
-        public async Task SavePhotosAsync(IReadOnlyCollection<FileDTO> files, BaseConfig cameraConfig)
-        {
-            using (var unitOfWork = factory.CreateUnitOfWork())
-            {
-                Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
-
-                var from = files.Min(x => x.Date).Date;
-                var to = files.Max(x => x.Date).Date;
-
-                var dailyStat = (await GetDailyStatisticSafe(camera.Id, from, to, unitOfWork)).ToDictionary(k => k.Period, v => v);
-
-                var group = files.GroupBy(x => x.Date.Date)
-                    .Select(x => new { date = x.Key, cnt = x.Count(), size = x.Sum(p => p.Size) } );
-
-                foreach (var item in group)
-                {
-                    var day = dailyStat[item.date];
-                    day.PhotosCount += item.cnt ;
-                    day.PhotosSize += item.size;
-                }
-
-                await this.AddEntities(files.Select(x => mapper.Map<MediaFile>(x)).ToList(), unitOfWork);
-                await unitOfWork.SaveChangesAsync(this.job, camera);
-            }
-        }
-        
-        public async Task SaveDeletedFilesAsync(IReadOnlyCollection<DeletedFileDTO> files, BaseConfig cameraConfig)
-        {
-            using (var unitOfWork = factory.CreateUnitOfWork())
-            {
-                Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
-
-                await this.AddEntities(files.Select(x => mapper.Map<DeletedFile>(x)).ToList(), unitOfWork);
-                await unitOfWork.SaveChangesAsync(this.job, camera);
-            }
-        }
-        
         public async Task SaveFilesAsync(IReadOnlyCollection<FileDTO> files, BaseConfig cameraConfig)
         {
-            using (var unitOfWork = factory.CreateUnitOfWork())
-            {
-                Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
+            using var unitOfWork = factory.CreateUnitOfWork();
+            Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
 
-                await this.AddEntities(files.Select(x => mapper.Map<MediaFile>(x)).ToList(), unitOfWork);
-                await unitOfWork.SaveChangesAsync(this.job, camera);
+            var from = files.Min(x => x.Date).Date;
+            var to = files.Max(x => x.Date).Date;
+
+            var dailyStat = (await GetDailyStatisticSafe(camera.Id, from, to, unitOfWork)).ToDictionary(k => k.Period, v => v);
+
+            var group = files.GroupBy(x => x.Date.Date)
+                .Select(x => new { date = x.Key, cnt = x.Count(), size = x.Sum(p => p.Size) });
+
+            foreach (var item in group)
+            {
+                var day = dailyStat[item.date];
+                day.FilesCount += item.cnt;
+                day.FilesSize += item.size;
             }
+
+            await AddEntities(files.Select(x => mapper.Map<MediaFile>(x)).ToList(), unitOfWork);
+            await unitOfWork.SaveChangesAsync(job, camera);
         }
 
         private async Task<Camera> GetCameraSafe(BaseConfig config, IUnitOfWork unitOfWork)
@@ -139,7 +86,7 @@ namespace HikConsole.Scheduler
 
             return camera;
         }
-        
+
         private async Task<List<DailyStatistic>> GetDailyStatisticSafe(int cameraId, DateTime periodStart, DateTime periodEnd, IUnitOfWork unitOfWork)
         {
             var repo = unitOfWork.GetRepository<DailyStatistic>();
@@ -150,16 +97,16 @@ namespace HikConsole.Scheduler
 
             do
             {
-                if(!daily.Any(d => d.Period == from))
+                if (!daily.Any(d => d.Period == from))
                 {
                     var day = (await repo.AddAsync(
-                        new DailyStatistic { 
-                            CameraId = cameraId, 
-                            Period = from, 
-                            PhotosCount = 0, 
-                            PhotosSize = 0, 
-                            VideosCount = 0, 
-                            VideosSize = 0 })).Entity;
+                        new DailyStatistic
+                        {
+                            CameraId = cameraId,
+                            Period = from,
+                            FilesCount = 0,
+                            FilesSize = 0
+                        })).Entity;
                     daily.Add(day);
                 }
                 from = from.AddDays(1);
@@ -175,18 +122,6 @@ namespace HikConsole.Scheduler
             {
                 var repo = unitOfWork.GetRepository<TEntity>();
                 return repo.AddRangeAsync(entities);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private Task AddEntities<TEntity>(TEntity entity, IUnitOfWork unitOfWork)
-            where TEntity : class
-        {
-            if (entity != null)
-            {
-                var repo = unitOfWork.GetRepository<TEntity>();
-                return repo.AddAsync(entity).AsTask();
             }
 
             return Task.CompletedTask;

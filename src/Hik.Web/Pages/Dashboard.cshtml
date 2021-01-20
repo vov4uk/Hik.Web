@@ -12,8 +12,7 @@
         <thead>
             <tr>
                 <th>@Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().Alias)</th>
-                <th>@Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().LastVideoSync)</th>
-                <th>@Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().LastPhotoSync)</th>
+                <th>@Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().LastSync)</th>
                 <th>Latest video</th>
             </tr>
         </thead>
@@ -22,9 +21,8 @@
             {
                 <tr>
                     <td><a asp-page="./Statistic" asp-route-cameraId="@item.Id">@Html.DisplayFor(modelItem => item.Alias)</a></td>
-                    <td>@Html.DisplayFor(modelItem => item.LastVideoSync)</td>
-                    <td>@Html.DisplayFor(modelItem => item.LastPhotoSync)</td>
-                    <td>@Html.DisplayFor(modelItem => Model.Videos.FirstOrDefault(x => x.CameraId == item.Id).StopTime)</td>
+                    <td>@Html.DisplayFor(modelItem => item.LastSync)</td>
+                    <td>@Html.DisplayFor(modelItem => Model.Files.FirstOrDefault(x => x.CameraId == item.Id).Date)</td>
                 </tr>
             }
         </tbody>

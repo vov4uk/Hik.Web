@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Text;
 
 namespace Hik.DTO.Config
 {
@@ -10,5 +11,26 @@ namespace Hik.DTO.Config
         public string Alias { get; set; }
 
         public string DestinationFolder { get; set; }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine();
+            sb.AppendLine(this.GetRow("Alias", this.Alias));
+            sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
+            sb.AppendLine(this.GetRow("Timeout", this.Timeout.ToString()));
+  
+            return sb.ToString();
+        }
+
+        protected string GetRow(string field, string value)
+        {
+            return $"{field,-24}: {value}";
+        }
+
+        protected string GetHtmlRow(string field, string value)
+        {
+            return $"<tr><td>{field}</td><td>{value}</td></tr>";
+        }
     }
 }

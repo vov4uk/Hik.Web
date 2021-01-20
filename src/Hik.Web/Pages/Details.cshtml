@@ -46,23 +46,42 @@
     </table>
 }
 
-@if (Model.Job.Videos != null && Model.Job.Videos.Any())
+@if (Model.Files != null && Model.Files.Any())
 {
-    @await Html.PartialAsync("_Videos.cshtml", Model.Job.Videos)
+    @await Html.PartialAsync("_Files.cshtml", Model.Files)
 }
 
-@if (Model.Job.Photos != null && Model.Job.Photos.Any())
+<!-- pager -->
+@if (Model.Pager != null && Model.Pager.Pages.Any())
 {
-    @await Html.PartialAsync("_Photos.cshtml", Model.Job.Photos)
-}
+    <nav class="table-responsive">
+        <ul class="pagination justify-content-center d-flex flex-wrap">
+            @if (Model.Pager.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?id=@Model.JobId">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?id=@Model.JobId&p=@(Model.Pager.CurrentPage - 1)">Previous</a>
+                </li>
+            }
 
+            @foreach (var p in Model.Pager.Pages)
+            {
+                <li class="page-item @(p == Model.Pager.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="?id=@Model.JobId&p=@p">@p</a>
+                </li>
+            }
 
-@if (Model.Job.DeletedFiles != null && Model.Job.DeletedFiles.Any())
-{
-    @await Html.PartialAsync("_DeletedFiles.cshtml", Model.Job.DeletedFiles)
-}
-
-@if (Model.Job.Files != null && Model.Job.Files.Any())
-{
-    @await Html.PartialAsync("_Files.cshtml", Model.Job.Files)
+            @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?id=@Model.JobId&p=@(Model.Pager.CurrentPage + 1)">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?id=@Model.JobId&p=@(Model.Pager.TotalPages)">Last</a>
+                </li>
+            }
+        </ul>
+    </nav>
 }

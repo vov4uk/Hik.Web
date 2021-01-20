@@ -9,10 +9,8 @@ namespace Hik.DataAccess
     {
         public AutoMapperProfile()
         {
+            this.CreateMap<BaseConfig, Camera>(MemberList.None);
             this.CreateMap<CameraConfig, Camera>(MemberList.None);
-            this.CreateMap<DeletedFileDTO, DeletedFile>(MemberList.None);
-            this.CreateMap<PhotoDTO, Photo>(MemberList.None);
-            this.CreateMap<VideoDTO, Video>(MemberList.None);
             this.CreateMap<FileDTO, MediaFile>(MemberList.None);
         }
     }

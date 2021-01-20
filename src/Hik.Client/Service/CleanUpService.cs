@@ -10,7 +10,7 @@ using NLog;
 
 namespace Hik.Client.Service
 {
-    public class CleanUpService : IRecurrentJob<DeletedFileDTO>
+    public class CleanUpService : IRecurrentJob<FileDTO>
     {
         private const double Gb = 1024.0 * 1024.0 * 1024.0;
         private readonly ILogger logger = LogManager.GetCurrentClassLogger();
@@ -25,7 +25,7 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public Task<IReadOnlyCollection<DeletedFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public Task<IReadOnlyCollection<FileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var cleanupConfig = config as CleanupConfig;
             var destination = cleanupConfig.DestinationFolder;
@@ -37,7 +37,7 @@ namespace Hik.Client.Service
             }
 
             var allFiles = this.directoryHelper.EnumerateFiles(destination).OrderByDescending(file => this.filesHelper.GetCreationDate(file));
-            List<DeletedFileDTO> deleteFilesResult = new List<DeletedFileDTO>();
+            List<FileDTO> deleteFilesResult = new List<FileDTO>();
 
             this.logger.Info($"Destination: {destination}");
             this.logger.Info($"Found: {allFiles.Count()} files");
@@ -59,7 +59,7 @@ namespace Hik.Client.Service
 
                     try
                     {
-                        var deletedFiles = this.DeleteFiles(filesToDelete);
+                        var deletedFiles = this.DeleteFiles(filesToDelete, destination);
                         if (deletedFiles.Count > 0)
                         {
                             deleteFilesResult.AddRange(deletedFiles);
@@ -72,8 +72,8 @@ namespace Hik.Client.Service
                     }
                     catch (Exception ex)
                     {
-                        this.logger.Error(ex, ex.ToString());
-                        this.OnExceptionFired(new ExceptionEventArgs(ex));
+                        logger.Error(ex, ex.ToString());
+                        OnExceptionFired(new ExceptionEventArgs(ex));
                     }
                 }
                 else
@@ -83,30 +83,32 @@ namespace Hik.Client.Service
             }
             while (true);
 
-            this.directoryHelper.DeleteEmptyFolders(destination);
+            directoryHelper.DeleteEmptyFolders(destination);
 
-            return Task.FromResult(deleteFilesResult as IReadOnlyCollection<DeletedFileDTO>);
+            return Task.FromResult(deleteFilesResult as IReadOnlyCollection<FileDTO>);
         }
 
         protected virtual void OnExceptionFired(ExceptionEventArgs e)
         {
-            this.ExceptionFired?.Invoke(this, e);
+            ExceptionFired?.Invoke(this, e);
         }
 
-        private List<DeletedFileDTO> DeleteFiles(List<string> filesToDelete)
+        private List<FileDTO> DeleteFiles(List<string> filesToDelete, string basePath)
         {
-            List<DeletedFileDTO> deletedFiles = new List<DeletedFileDTO>();
+            List<FileDTO> result = new List<FileDTO>();
             filesToDelete.ForEach(
                     file =>
                     {
                         this.logger.Debug($"Deleting: {file}");
                         if (filesHelper.FileExists(file))
                         {
+                            var size = filesHelper.FileSize(file);
+                            var date = filesHelper.GetCreationDate(file);
                             this.filesHelper.DeleteFile(file);
-                            deletedFiles.Add(new DeletedFileDTO(this.filesHelper.GetFileNameWithoutExtension(file), this.filesHelper.GetExtension(file)));
+                            result.Add(new FileDTO { Date = date, Name = file.Remove(0, basePath.Length), Size = size });
                         }
                     });
-            return deletedFiles;
+            return result;
         }
     }
 }

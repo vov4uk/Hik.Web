@@ -14,9 +14,8 @@ using NLog;
 namespace Hik.Client.Service
 {
     public abstract class HikDownloaderServiceBase<T> : IRecurrentJob<T>
-        where T : MediaFileBase
+        where T : FileDTO
     {
-        protected const string DurationFormat = "h'h 'm'm 's's'";
         protected const int JobTimeout = 30;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IClientFactory clientFactory;
@@ -136,12 +135,12 @@ namespace Hik.Client.Service
             if (result.Count > 0)
             {
                 PrintStatistic(config?.DestinationFolder);
-                string duration = (DateTime.Now - appStart).ToString(DurationFormat);
-                Logger.Info($"Internal download. Done. Duration  : {duration}");
+                var duration = (DateTime.Now - appStart).TotalSeconds;
+                Logger.Info($"Internal download. Done. Duration  : {duration.FormatSeconds()}");
             }
             else
             {
-               Logger.Warn("No files downloaded");
+               Logger.Warn($"{config.Alias}, {from} - {to} : No files downloaded");
             }
 
             return result;

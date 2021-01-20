@@ -21,6 +21,11 @@ namespace Hik.DataAccess
         {
             return ctx.Set<T>().AddAsync(entity);
         }
+        
+        public virtual EntityEntry<T> Add(T entity)
+        {
+            return ctx.Set<T>().Add(entity);
+        }
 
         public virtual Task AddRangeAsync(IEnumerable<T> entities)
         {

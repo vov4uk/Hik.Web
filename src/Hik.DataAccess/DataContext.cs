@@ -19,10 +19,7 @@ namespace Hik.DataAccess
 
         public DbSet<HikJob> Jobs { get; set; }
         public DbSet<Camera> Cameras { get; set; }
-        public DbSet<Video> Videos { get; set; }
-        public DbSet<Photo> Photos { get; set; }
         public DbSet<MediaFile> Files { get; set; }
-        public DbSet<DeletedFile> DeletedFiles { get; set; }
 
         public DbSet<DailyStatistic> DailyStatistics { get; set; }
 
@@ -44,9 +41,6 @@ namespace Hik.DataAccess
         {
             modelBuilder.ApplyConfiguration(new CameraMapping())
                 .ApplyConfiguration(new JobMapping())
-                .ApplyConfiguration(new VideoMapping())
-                .ApplyConfiguration(new PhotoMapping())
-                .ApplyConfiguration(new DeletedFileMappings())
                 .ApplyConfiguration(new FileMapping())
                 .ApplyConfiguration(new ExceptionLogMapping())
                 .ApplyConfiguration(new DailyStatisticMapping());

@@ -48,8 +48,8 @@ namespace Hik.Client.Service
                 // TODO report downloading progress via event
                 if (isDownloaded)
                 {
-                    photo.DownloadStartTime = start;
-                    photo.DownloadStopTime = finish;
+                    photo.DownloadStarted = start;
+                    photo.DownloadDuration = (int)(finish - start).TotalSeconds;
                 }
             }
 

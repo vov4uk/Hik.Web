@@ -22,20 +22,11 @@ namespace Hik.DataAccess.Data
 
         public string UserName { get; set; }
 
-        public List<Video> Videos { get; set; } = new List<Video>();
-
-        public List<Photo> Photos { get; set; } = new List<Photo>();
-
         public List<MediaFile> Files { get; set; } = new List<MediaFile>();
-
-        public List<DeletedFile> DeletedFiles { get; set; } = new List<DeletedFile>();
 
         public List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
 
         [Display(Name = "Video Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
-        public DateTime? LastVideoSync { get; set; }
-
-        [Display(Name = "Photo Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
-        public DateTime? LastPhotoSync { get; set; }
+        public DateTime? LastSync { get; set; }
     }
 }

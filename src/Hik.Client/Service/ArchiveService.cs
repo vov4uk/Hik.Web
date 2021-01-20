@@ -48,13 +48,13 @@ namespace Hik.Client.Service
                 {
                     var dateString = this.filesHelper.GetFileNameWithoutExtension(oldFile).Split('_')[2];
                     var ext = filesHelper.GetExtension(oldFile);
-                    DateTime date;
+
                     if (!DateTime.TryParseExact(
                         dateString,
                         FileNameDateTimeFormat,
                         System.Globalization.CultureInfo.InvariantCulture,
                         System.Globalization.DateTimeStyles.None,
-                        out date))
+                        out var date))
                     {
                         date = filesHelper.GetCreationDate(oldFile);
                     }

@@ -22,7 +22,7 @@ namespace Hik.DataAccess.Mappings
                 .HasMaxLength(30);
             builder.Property(f => f.UserName)
                 .HasMaxLength(30);
-            builder.Property(f => f.LastVideoSync)
+            builder.Property(f => f.LastSync)
                 .IsRequired(false)
                 .HasColumnType("datetime2(0)");
         }

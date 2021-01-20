@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac;
 using Hik.DTO.Contracts;
-using HikConsole.Scheduler;
 using Hik.Client.Service;
 using Hik.Client.Infrastructure;
 using Hik.DTO.Config;
+using Hik.DataAccess;
 
 namespace Job.Impl
 {
@@ -20,21 +20,7 @@ namespace Job.Impl
 
         public override JobType JobType => JobType.HikVideoDownloader;
 
-        public override async Task InitializeProcessingPeriod()
-        {
-            var config = Config as CameraConfig;
-            DateTime jobStart = DateTime.Now;
-
-            var camera = await GetCamera(Config.Alias);
-            DateTime?  lastSync = camera?.LastVideoSync;
-
-            DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config.ProcessingPeriodHours);
-
-            this.JobInstance.PeriodStart = periodStart;
-            this.JobInstance.PeriodEnd = jobStart;
-        }
-
-        public async override Task<IReadOnlyCollection<MediaFileBase>> Run()
+        public async override Task<IReadOnlyCollection<FileDTO>> Run()
         { 
             var downloader = AppBootstrapper.Container.Resolve<HikVideoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
@@ -43,7 +29,7 @@ namespace Job.Impl
             return await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
         }
 
-        public override Task SaveResults(IReadOnlyCollection<MediaFileBase> files, JobService service)
+        public override Task SaveResults(IReadOnlyCollection<FileDTO> files, JobService service)
         {
             return Task.CompletedTask;
         }
@@ -52,8 +38,8 @@ namespace Job.Impl
         {
             base.Logger.Info("Save Video to DB...");
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, JobInstance);
-            JobInstance.VideosCount++;
-            await jobResultSaver.SaveVideoAsync(e.File as FileDTO, Config);
+            JobInstance.FilesCount++;
+            await jobResultSaver.SaveFilesAsync(new[] { e.File }, Config);
             
             base.Logger.Info("Save Video to DB. Done");
         }

@@ -9,22 +9,23 @@
             <th>@Html.DisplayNameFor(model => model[0].Date)</th>
             <th>@Html.DisplayNameFor(model => model[0].Duration)</th>
             <th>@Html.DisplayNameFor(model => model[0].Size)</th>
-            <th>@Html.DisplayNameFor(model => model[0].DownloadStartTime)</th>
-            <th>@Html.DisplayNameFor(model => model[0].DownloadStopTime)</th>
+            <th>@Html.DisplayNameFor(model => model[0].DownloadStarted)</th>
+            <th>@Html.DisplayNameFor(model => model[0].DownloadDuration)</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            string videoSize = Hik.Client.Helpers.Utils.FormatBytes(item.Size);
-            string videoduration = Hik.Client.Helpers.Utils.FormatSeconds(item.Duration);
+            string size = Hik.Client.Helpers.Utils.FormatBytes(item.Size);
+            string duration = Hik.Client.Helpers.Utils.FormatSeconds(item.Duration);
+            string downloaded = Hik.Client.Helpers.Utils.FormatSeconds(item.DownloadDuration);
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>
-                <td>@videoduration</td>
-                <td>@videoSize</td>
-                <td>@Html.DisplayFor(modelItem => item.DownloadStartTime)</td>
-                <td>@Html.DisplayFor(modelItem => item.DownloadStopTime)</td>
+                <td>@duration</td>
+                <td>@size</td>
+                <td>@Html.DisplayFor(modelItem => item.DownloadStarted)</td>
+                <td>@downloaded</td>
             </tr>
         }
     </tbody>

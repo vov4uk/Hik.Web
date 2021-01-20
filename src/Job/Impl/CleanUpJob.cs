@@ -1,9 +1,9 @@
 ﻿using Autofac;
 using Hik.Client.Infrastructure;
 using Hik.Client.Service;
+using Hik.DataAccess;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using HikConsole.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +26,7 @@ namespace Job.Impl
             return Task.CompletedTask;
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileBase>> Run()
+        public override async Task<IReadOnlyCollection<FileDTO>> Run()
         {
             var worker = AppBootstrapper.Container.Resolve<CleanUpService>();
             worker.ExceptionFired += base.ExceptionFired;
@@ -34,12 +34,11 @@ namespace Job.Impl
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
         }
 
-        public override async Task SaveResults(IReadOnlyCollection<MediaFileBase> files, JobService service)
+        public override Task SaveResults(IReadOnlyCollection<FileDTO> files, JobService service)
         {
-            var convertedFiles = files.OfType<DeletedFileDTO>().ToList();
-            JobInstance.VideosCount = convertedFiles.Count(x => x.Extention == ".mp4");
-            JobInstance.PhotosCount = convertedFiles.Count(x => x.Extention == ".jpg");
-            await service.SaveDeletedFilesAsync(convertedFiles, Config);
+            JobInstance.PeriodStart = files.Min(x=>x.Date);
+            JobInstance.PeriodEnd = files.Max(x => x.Date);
+            return base.SaveResults(files, service);
         }
     }
 }
