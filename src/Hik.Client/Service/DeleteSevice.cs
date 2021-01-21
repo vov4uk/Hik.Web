@@ -9,7 +9,7 @@ using NLog;
 
 namespace Hik.Client.Service
 {
-    public class DeleteSevice : IRecurrentJob<FileDTO>
+    public class DeleteSevice : IRecurrentJob<MediaFileDTO>
     {
         private readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private readonly IDirectoryHelper directoryHelper;
@@ -23,7 +23,7 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public async Task<IReadOnlyCollection<FileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public async Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             logger.Info("Start DeleteSevice");
 
@@ -37,7 +37,7 @@ namespace Hik.Client.Service
             ExceptionFired?.Invoke(this, e);
         }
 
-        private async Task<IReadOnlyCollection<FileDTO>> DeleteInternal(DateTime cutOff, CameraConfig camera)
+        private async Task<IReadOnlyCollection<MediaFileDTO>> DeleteInternal(DateTime cutOff, CameraConfig camera)
         {
             var destination = camera.DestinationFolder;
 
@@ -71,9 +71,9 @@ namespace Hik.Client.Service
             });
         }
 
-        private List<FileDTO> DeleteFiles(List<string> filesToDelete, DateTime cutOff, string basePath)
+        private List<MediaFileDTO> DeleteFiles(List<string> filesToDelete, DateTime cutOff, string basePath)
         {
-            List<FileDTO> result = new List<FileDTO>();
+            List<MediaFileDTO> result = new List<MediaFileDTO>();
             filesToDelete.ForEach(
                     file =>
                     {
@@ -85,7 +85,7 @@ namespace Hik.Client.Service
                             var size = filesHelper.FileSize(file);
                             var dateCreated = filesHelper.GetCreationDate(file);
                             this.filesHelper.DeleteFile(file);
-                            result.Add(new FileDTO { Date = date, Name = file.Remove(0, basePath.Length), Size = size });
+                            result.Add(new MediaFileDTO { Date = date, Name = file.Remove(0, basePath.Length), Size = size });
                         }
                     });
             return result;

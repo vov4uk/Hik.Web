@@ -49,7 +49,7 @@ namespace Hik.DataAccess
             await unitOfWork.SaveChangesAsync(job, camera);
         }
 
-        public async Task SaveFilesAsync(IReadOnlyCollection<FileDTO> files, BaseConfig cameraConfig)
+        public async Task SaveFilesAsync(IReadOnlyCollection<MediaFileDTO> files, BaseConfig cameraConfig)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
             Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);

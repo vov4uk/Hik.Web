@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
@@ -14,6 +16,8 @@ namespace Hik.Web.Pages
         public IReadOnlyCollection<Camera> Cameras { get; private set; }
 
         public IReadOnlyCollection<MediaFile> Files { get; private set; }
+
+        public IReadOnlyCollection<DailyStatistic> Statistics { get; private set; }
 
         public DashboardModel(DataContext dataContext)
         {
@@ -33,6 +37,7 @@ WHERE ID IN (
 	FROM File
 	GROUP By CameraId
 	) m )").ToListAsync();
+            Statistics = await this.dataContext.DailyStatistics.Where(x => x.Period == DateTime.Now.Date).ToListAsync();
 
         }
     }

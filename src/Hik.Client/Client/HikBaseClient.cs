@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using AutoMapper;
 using Hik.Api.Abstraction;
 using Hik.Api.Data;
@@ -21,7 +19,7 @@ namespace Hik.Client
         protected readonly IFilesHelper filesHelper;
         protected ILogger logger = LogManager.GetCurrentClassLogger();
         protected int downloadId = -1;
-        protected FileDTO currentDownloadFile;
+        protected MediaFileDTO currentDownloadFile;
         protected Session session;
         private bool disposedValue = false;
 
@@ -119,9 +117,9 @@ namespace Hik.Client
             }
         }
 
-        protected abstract string ToFileNameString(FileDTO file);
+        protected abstract string ToFileNameString(MediaFileDTO file);
 
-        protected abstract string ToDirectoryNameString(FileDTO file);
+        protected abstract string ToDirectoryNameString(MediaFileDTO file);
 
         protected abstract void StopDownload();
 
@@ -133,7 +131,7 @@ namespace Hik.Client
             }
         }
 
-        protected string GetPathSafety(FileDTO remoteFile)
+        protected string GetPathSafety(MediaFileDTO remoteFile)
         {
             string workingDirectory = GetWorkingDirectory(remoteFile);
             filesHelper.FolderCreateIfNotExist(workingDirectory);
@@ -147,12 +145,12 @@ namespace Hik.Client
             downloadId = -1;
         }
 
-        private string GetWorkingDirectory(FileDTO file)
+        private string GetWorkingDirectory(MediaFileDTO file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, ToDirectoryNameString(file));
         }
 
-        private string GetFullPath(FileDTO file, string directory = null)
+        private string GetFullPath(MediaFileDTO file, string directory = null)
         {
             string folder = directory ?? GetWorkingDirectory(file);
             return filesHelper.CombinePath(folder, ToFileNameString(file));

@@ -5,11 +5,11 @@ namespace Hik.Client.Events
 {
     public class FileDownloadedEventArgs : EventArgs
     {
-        public FileDownloadedEventArgs(FileDTO file)
+        public FileDownloadedEventArgs(MediaFileDTO file)
         {
             this.File = file;
         }
 
-        public FileDTO File { get; }
+        public MediaFileDTO File { get; }
     }
 }

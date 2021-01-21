@@ -20,7 +20,7 @@ namespace Job.Impl
 
         public override JobType JobType => JobType.HikVideoDownloader;
 
-        public async override Task<IReadOnlyCollection<FileDTO>> Run()
+        public async override Task<IReadOnlyCollection<MediaFileDTO>> Run()
         { 
             var downloader = AppBootstrapper.Container.Resolve<HikVideoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
@@ -29,7 +29,7 @@ namespace Job.Impl
             return await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
         }
 
-        public override Task SaveResults(IReadOnlyCollection<FileDTO> files, JobService service)
+        public override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             return Task.CompletedTask;
         }

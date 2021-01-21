@@ -28,7 +28,7 @@ namespace Job.Impl
             return Task.CompletedTask;
         }
 
-        public async override Task<IReadOnlyCollection<FileDTO>> Run()
+        public async override Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var worker = AppBootstrapper.Container.Resolve<DeleteSevice>();
             worker.ExceptionFired += base.ExceptionFired;

@@ -26,7 +26,7 @@ namespace Job.Impl
             return Task.CompletedTask;
         }
 
-        public override async Task<IReadOnlyCollection<FileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var worker = AppBootstrapper.Container.Resolve<CleanUpService>();
             worker.ExceptionFired += base.ExceptionFired;
@@ -34,7 +34,7 @@ namespace Job.Impl
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
         }
 
-        public override Task SaveResults(IReadOnlyCollection<FileDTO> files, JobService service)
+        public override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.PeriodStart = files.Min(x=>x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);

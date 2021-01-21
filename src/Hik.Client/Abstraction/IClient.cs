@@ -14,10 +14,10 @@ namespace Hik.Client.Abstraction
 
         bool Login();
 
-        Task<bool> DownloadFileAsync(FileDTO remoteFile, CancellationToken token);
+        Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token);
 
         void ForceExit();
 
-        Task<IList<FileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
+        Task<IList<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
     }
 }

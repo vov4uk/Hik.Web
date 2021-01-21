@@ -10,7 +10,7 @@ using NLog;
 
 namespace Hik.Client.Service
 {
-    public class CleanUpService : IRecurrentJob<FileDTO>
+    public class CleanUpService : IRecurrentJob<MediaFileDTO>
     {
         private const double Gb = 1024.0 * 1024.0 * 1024.0;
         private readonly ILogger logger = LogManager.GetCurrentClassLogger();
@@ -25,7 +25,7 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public Task<IReadOnlyCollection<FileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var cleanupConfig = config as CleanupConfig;
             var destination = cleanupConfig.DestinationFolder;
@@ -37,7 +37,7 @@ namespace Hik.Client.Service
             }
 
             var allFiles = this.directoryHelper.EnumerateFiles(destination).OrderByDescending(file => this.filesHelper.GetCreationDate(file));
-            List<FileDTO> deleteFilesResult = new List<FileDTO>();
+            List<MediaFileDTO> deleteFilesResult = new List<MediaFileDTO>();
 
             this.logger.Info($"Destination: {destination}");
             this.logger.Info($"Found: {allFiles.Count()} files");
@@ -85,7 +85,7 @@ namespace Hik.Client.Service
 
             directoryHelper.DeleteEmptyFolders(destination);
 
-            return Task.FromResult(deleteFilesResult as IReadOnlyCollection<FileDTO>);
+            return Task.FromResult(deleteFilesResult as IReadOnlyCollection<MediaFileDTO>);
         }
 
         protected virtual void OnExceptionFired(ExceptionEventArgs e)
@@ -93,9 +93,9 @@ namespace Hik.Client.Service
             ExceptionFired?.Invoke(this, e);
         }
 
-        private List<FileDTO> DeleteFiles(List<string> filesToDelete, string basePath)
+        private List<MediaFileDTO> DeleteFiles(List<string> filesToDelete, string basePath)
         {
-            List<FileDTO> result = new List<FileDTO>();
+            List<MediaFileDTO> result = new List<MediaFileDTO>();
             filesToDelete.ForEach(
                     file =>
                     {
@@ -105,7 +105,7 @@ namespace Hik.Client.Service
                             var size = filesHelper.FileSize(file);
                             var date = filesHelper.GetCreationDate(file);
                             this.filesHelper.DeleteFile(file);
-                            result.Add(new FileDTO { Date = date, Name = file.Remove(0, basePath.Length), Size = size });
+                            result.Add(new MediaFileDTO { Date = date, Name = file.Remove(0, basePath.Length), Size = size });
                         }
                     });
             return result;

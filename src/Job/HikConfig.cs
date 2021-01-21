@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
-using Hik.DTO.Config;
 using Newtonsoft.Json;
 
 namespace Job
@@ -12,11 +11,15 @@ namespace Job
     {
         public static T GetConfig<T>(string configFileName = "configuration.json")
         {
+#if DEBUG
+            configFileName = configFileName.Replace(".json", ".debug.json");
+#endif
+
             string configPath = Path.Combine(GetAssemblyDirectory(), configFileName);
             var config = JsonConvert.DeserializeObject<T>(File.ReadAllText(configPath));
             if(config == null)
             {
-                throw new NullReferenceException("Camera config invalid");
+                throw new NullReferenceException($"Config {configFileName} invalid");
             }
             return config;
         }

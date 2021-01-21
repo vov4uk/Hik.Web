@@ -11,7 +11,7 @@ namespace Hik.DataAccess
         {
             this.CreateMap<BaseConfig, Camera>(MemberList.None);
             this.CreateMap<CameraConfig, Camera>(MemberList.None);
-            this.CreateMap<FileDTO, MediaFile>(MemberList.None);
+            this.CreateMap<MediaFileDTO, MediaFile>(MemberList.None);
         }
     }
 }

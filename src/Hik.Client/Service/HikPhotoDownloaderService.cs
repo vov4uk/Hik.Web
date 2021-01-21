@@ -9,16 +9,16 @@ using Hik.DTO.Contracts;
 
 namespace Hik.Client.Service
 {
-    public class HikPhotoDownloaderService : HikDownloaderServiceBase<FileDTO>
+    public class HikPhotoDownloaderService : HikDownloaderServiceBase<MediaFileDTO>
     {
         public HikPhotoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory, IMapper mapper)
             : base(directoryHelper, clientFactory, mapper)
         {
         }
 
-        public override async Task<IReadOnlyCollection<FileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            List<FileDTO> photos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).ToList();
+            List<MediaFileDTO> photos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).ToList();
             var resultCountString = photos.Count.ToString();
 
             this.Logger.Info("Photos searching finished.");
@@ -26,7 +26,7 @@ namespace Hik.Client.Service
             return photos;
         }
 
-        public override async Task<IReadOnlyCollection<FileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<FileDTO> remoteFiles, CancellationToken token = default)
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token = default)
         {
             var photoDownloadResults = new Dictionary<bool, int>
             {

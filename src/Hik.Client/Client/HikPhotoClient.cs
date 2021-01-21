@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hik.Api.Abstraction;
-using Hik.Api.Data;
 using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
@@ -23,18 +22,18 @@ namespace Hik.Client
         {
         }
 
-        public Task<bool> DownloadFileAsync(FileDTO file, CancellationToken token)
+        public Task<bool> DownloadFileAsync(MediaFileDTO file, CancellationToken token)
         {
             if (!IsDownloading)
             {
-                string destinationFilePath = GetPathSafety(file);
+                string targetFilePath = GetPathSafety(file);
 
-                if (!CheckLocalPhotoExist(destinationFilePath, file.Size))
+                if (!filesHelper.FileExists(targetFilePath))
                 {
                     string tempFile = ToFileNameString(file);
                     hikApi.PhotoService.DownloadFile(session.UserId, file.Name, file.Size, tempFile);
 
-                    SetDate(tempFile, destinationFilePath, file.Date);
+                    SetDate(tempFile, targetFilePath, file.Date);
                     filesHelper.DeleteFile(tempFile);
 
                     return Task.FromResult(true);
@@ -49,7 +48,7 @@ namespace Hik.Client
             }
         }
 
-        public async Task<IList<FileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public async Task<IList<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             ValidateDateParameters(periodStart, periodEnd);
 
@@ -57,19 +56,19 @@ namespace Hik.Client
 
             var remoteFiles = await hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd, session);
 
-            return Mapper.Map<IList<FileDTO>>(remoteFiles);
+            return Mapper.Map<IList<MediaFileDTO>>(remoteFiles);
         }
 
         protected override void StopDownload()
         {
         }
 
-        protected override string ToFileNameString(FileDTO file)
+        protected override string ToFileNameString(MediaFileDTO file)
         {
             return file.ToPhotoFileNameString();
         }
 
-        protected override string ToDirectoryNameString(FileDTO file)
+        protected override string ToDirectoryNameString(MediaFileDTO file)
         {
             return file.Date.ToPhotoDirectoryNameString();
         }
@@ -83,16 +82,6 @@ namespace Hik.Client
             newItem.Id = 306;
             image.SetPropertyItem(newItem);
             image.Save(newPath, image.RawFormat);
-        }
-
-        private bool CheckLocalPhotoExist(string path, long size)
-        {
-            // Downloaded video file is bigger than remote file
-            // 56 bytes for 2MP camera
-            // 70 bytes for 4MP camera
-            // This const was taken on runtime
-            long fileSize = filesHelper.FileSize(path);
-            return size + 70 == fileSize || size + 56 == fileSize;
         }
     }
 }

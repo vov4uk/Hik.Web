@@ -11,7 +11,7 @@ using Hik.DTO.Contracts;
 
 namespace Hik.Client.Service
 {
-    public class HikVideoDownloaderService : HikDownloaderServiceBase<FileDTO>
+    public class HikVideoDownloaderService : HikDownloaderServiceBase<MediaFileDTO>
     {
         public HikVideoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory, IMapper mapper)
             : base(directoryHelper, clientFactory, mapper)
@@ -20,7 +20,7 @@ namespace Hik.Client.Service
 
         public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
 
-        public override async Task<IReadOnlyCollection<FileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<FileDTO> remoteFiles, CancellationToken token = default)
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token = default)
         {
             int j = 1;
             foreach (var video in remoteFiles)
@@ -36,15 +36,15 @@ namespace Hik.Client.Service
             return remoteFiles;
         }
 
-        public override async Task<IReadOnlyCollection<FileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            List<FileDTO> videos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
+            List<MediaFileDTO> videos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
 
             this.Logger.Info($"Video searching finished. Found {videos.Count} files");
             return videos;
         }
 
-        private async Task<bool> DownloadRemoteVideoFileAsync(FileDTO file, CancellationToken token)
+        private async Task<bool> DownloadRemoteVideoFileAsync(MediaFileDTO file, CancellationToken token)
         {
             DateTime start = DateTime.Now;
 

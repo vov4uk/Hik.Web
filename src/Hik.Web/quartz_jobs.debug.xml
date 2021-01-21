@@ -85,8 +85,8 @@
 
     <trigger>
       <cron>
-        <name>Video</name>
-        <group>Internal</group>
+        <name>JobHost</name>
+        <group>Floor4</group>
         <description>Download videos from internal camera</description>
         <job-name>Launcher</job-name>
         <job-group></job-group>
@@ -97,7 +97,7 @@
           </entry>
           <entry>
             <key>ConfigPath</key>
-            <value>configuration.internal.json</value>
+            <value>configuration.floor4.json</value>
           </entry>
         </job-data-map>
         <misfire-instruction>DoNothing</misfire-instruction>

@@ -14,7 +14,7 @@ using NLog;
 namespace Hik.Client.Service
 {
     public abstract class HikDownloaderServiceBase<T> : IRecurrentJob<T>
-        where T : FileDTO
+        where T : MediaFileDTO
     {
         protected const int JobTimeout = 30;
         private readonly IDirectoryHelper directoryHelper;
@@ -93,9 +93,9 @@ namespace Hik.Client.Service
             }
         }
 
-        public abstract Task<IReadOnlyCollection<FileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
+        public abstract Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
 
-        public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<FileDTO> remoteFiles, CancellationToken token);
+        public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token);
 
         protected virtual void OnExceptionFired(ExceptionEventArgs e)
         {

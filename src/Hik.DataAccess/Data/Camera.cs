@@ -26,7 +26,7 @@ namespace Hik.DataAccess.Data
 
         public List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
 
-        [Display(Name = "Video Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
+        [Display(Name = "Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastSync { get; set; }
     }
 }

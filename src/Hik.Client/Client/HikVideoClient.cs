@@ -23,9 +23,11 @@ namespace Hik.Client
 
         public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
 
-        public async Task<bool> DownloadFileAsync(FileDTO remoteFile, CancellationToken token)
+        public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
         {
-            if (this.StartVideoDownload(remoteFile))
+            string targetFilePath = GetPathSafety(remoteFile);
+            string tempFile = targetFilePath + ".tmp";
+            if (this.StartVideoDownload(remoteFile, targetFilePath, targetFilePath))
             {
                 do
                 {
@@ -35,32 +37,33 @@ namespace Hik.Client
                 }
                 while (this.IsDownloading);
 
+                filesHelper.RenameFile(tempFile, targetFilePath);
+                remoteFile.Size = filesHelper.FileSize(targetFilePath);
+
                 return true;
             }
 
             return false;
         }
 
-        public async Task<IList<FileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public async Task<IList<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             ValidateDateParameters(periodStart, periodEnd);
 
             logger.Info($"Get videos from {periodStart} to {periodEnd}");
 
             var remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
-            return Mapper.Map<IList<FileDTO>>(remoteFiles);
+            return Mapper.Map<IList<MediaFileDTO>>(remoteFiles);
         }
 
-        protected bool StartVideoDownload(FileDTO file)
+        protected bool StartVideoDownload(MediaFileDTO file, string targetFilePath, string tempFile)
         {
             if (!IsDownloading)
             {
-                string destinationFilePath = GetPathSafety(file);
-
-                if (!CheckLocalVideoExist(destinationFilePath, file.Size))
+                if (!filesHelper.FileExists(targetFilePath))
                 {
-                    logger.Info($"{destinationFilePath}");
-                    downloadId = hikApi.VideoService.StartDownloadFile(session.UserId, file.Name, destinationFilePath);
+                    logger.Info($"{targetFilePath}");
+                    downloadId = hikApi.VideoService.StartDownloadFile(session.UserId, file.Name, tempFile);
 
                     logger.Info($"{file.ToVideoUserFriendlyString()}- downloading");
 
@@ -105,12 +108,12 @@ namespace Hik.Client
             }
         }
 
-        protected override string ToFileNameString(FileDTO file)
+        protected override string ToFileNameString(MediaFileDTO file)
         {
             return file.ToVideoFileNameString();
         }
 
-        protected override string ToDirectoryNameString(FileDTO file)
+        protected override string ToDirectoryNameString(MediaFileDTO file)
         {
             return file.ToVideoDirectoryNameString();
         }
@@ -129,13 +132,6 @@ namespace Hik.Client
                 StopDownload();
                 throw new InvalidOperationException($"HikClient.UpdateDownloadProgress failed, progress value = {progressValue}");
             }
-        }
-
-        private bool CheckLocalVideoExist(string path, long size)
-        {
-            // Downloaded video file is 40 bytes bigger than remote file
-            // This const was taken on debug
-            return filesHelper.FileExists(path, size + 40);
         }
     }
 }

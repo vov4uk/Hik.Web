@@ -30,7 +30,7 @@ namespace Job.Impl
 
         public abstract JobType JobType { get; }
 
-        public abstract Task<IReadOnlyCollection<FileDTO>> Run();
+        public abstract Task<IReadOnlyCollection<MediaFileDTO>> Run();
 
         public virtual async Task InitializeProcessingPeriod()
         {
@@ -46,7 +46,7 @@ namespace Job.Impl
             this.JobInstance.PeriodEnd = jobStart;
         }
 
-        public virtual async Task SaveResults(IReadOnlyCollection<FileDTO> files, JobService service)
+        public virtual async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.FilesCount = files.Count;
             await service.SaveFilesAsync(files, Config);
@@ -120,7 +120,7 @@ namespace Job.Impl
             catch (Exception ex) { Logger.Error(ex, ex.Message); }
         }
 
-        internal async Task SaveResultsInternal(IReadOnlyCollection<FileDTO> files)
+        internal async Task SaveResultsInternal(IReadOnlyCollection<MediaFileDTO> files)
         {
             Logger.Info("Save to DB...");
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);

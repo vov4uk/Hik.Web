@@ -19,7 +19,7 @@ namespace Job.Impl
 
         public override JobType JobType => JobType.HikPhotoDownloader;
 
-        public async override Task<IReadOnlyCollection<FileDTO>> Run()
+        public async override Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var downloader = AppBootstrapper.Container.Resolve<HikPhotoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;

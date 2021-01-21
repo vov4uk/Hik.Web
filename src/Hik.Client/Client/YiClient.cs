@@ -20,7 +20,7 @@ namespace Hik.Client
         private readonly IFilesHelper filesHelper;
         private FtpClient ftp;
         private ILogger logger = LogManager.GetCurrentClassLogger();
-        private FileDTO currentDownloadFile;
+        private MediaFileDTO currentDownloadFile;
         private bool disposedValue = false;
 
         public YiClient(CameraConfig config, IFilesHelper filesHelper)
@@ -36,7 +36,7 @@ namespace Hik.Client
 
         public bool IsDownloading => currentDownloadFile != null;
 
-        public async Task<bool> DownloadFileAsync(FileDTO remoteFile, CancellationToken token)
+        public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
         {
             string destinationFilePath = GetPathSafety(remoteFile);
             var filePath = remoteFile.Date.ToYiFilePathString(config.ClientType);
@@ -70,16 +70,16 @@ namespace Hik.Client
             }
         }
 
-        public Task<IList<FileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public Task<IList<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
-            var result = new List<FileDTO>();
+            var result = new List<MediaFileDTO>();
             var end = periodEnd.AddMinutes(-1);
             var seconds = periodStart.Second;
             periodStart = periodStart.AddSeconds(-seconds);
 
             while (periodStart < end)
             {
-                var file = new FileDTO()
+                var file = new MediaFileDTO()
                 {
                     Name = periodStart.ToUniversalTime().ToString(YiFileNameFormat),
                     Date = periodStart,
@@ -89,7 +89,7 @@ namespace Hik.Client
                 periodStart = periodStart.AddMinutes(1);
             }
 
-            return Task.FromResult(result as IList<FileDTO>);
+            return Task.FromResult(result as IList<MediaFileDTO>);
         }
 
         public void ForceExit()
@@ -133,7 +133,7 @@ namespace Hik.Client
             }
         }
 
-        private string GetPathSafety(FileDTO remoteFile)
+        private string GetPathSafety(MediaFileDTO remoteFile)
         {
             string workingDirectory = GetWorkingDirectory(remoteFile);
             filesHelper.FolderCreateIfNotExist(workingDirectory);
@@ -142,12 +142,12 @@ namespace Hik.Client
             return destinationFilePath;
         }
 
-        private string GetWorkingDirectory(FileDTO file)
+        private string GetWorkingDirectory(MediaFileDTO file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, file.ToYiDirectoryNameString());
         }
 
-        private string GetFullPath(FileDTO file, string directory = null)
+        private string GetFullPath(MediaFileDTO file, string directory = null)
         {
             string folder = directory ?? GetWorkingDirectory(file);
             return filesHelper.CombinePath(folder, file.ToYiFileNameString());

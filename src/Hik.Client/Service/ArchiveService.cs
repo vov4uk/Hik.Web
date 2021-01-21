@@ -10,7 +10,7 @@ using NLog;
 
 namespace Hik.Client.Service
 {
-    public class ArchiveService : IRecurrentJob<FileDTO>
+    public class ArchiveService : IRecurrentJob<MediaFileDTO>
     {
         // 2021 01 13 12 17 14 361
         private const string FileNameDateTimeFormat = "yyyyMMddHHmmssfff";
@@ -26,7 +26,7 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public Task<IReadOnlyCollection<FileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var archiveConfig = config as ArchiveConfig;
             var source = archiveConfig.SourceFolder;
@@ -39,7 +39,7 @@ namespace Hik.Client.Service
                 return default;
             }
 
-            var result = new List<FileDTO>();
+            var result = new List<MediaFileDTO>();
             var allFiles = this.directoryHelper.EnumerateFiles(source);
 
             try
@@ -64,7 +64,7 @@ namespace Hik.Client.Service
                     var newFilePath = GetPathSafety(newFilename, workingDirectory);
 
                     this.filesHelper.RenameFile(oldFile, newFilePath);
-                    result.Add(new FileDTO { Date = date, Name = newFilename, Duration = 1, Size = filesHelper.FileSize(newFilePath) });
+                    result.Add(new MediaFileDTO { Date = date, Name = newFilename, Duration = 1, Size = filesHelper.FileSize(newFilePath) });
                 }
             }
             catch (Exception ex)
@@ -73,7 +73,7 @@ namespace Hik.Client.Service
                 this.OnExceptionFired(new ExceptionEventArgs(ex));
             }
 
-            return Task.FromResult(result as IReadOnlyCollection<FileDTO>);
+            return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
         }
 
         protected virtual void OnExceptionFired(ExceptionEventArgs e)

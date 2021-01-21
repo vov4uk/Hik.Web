@@ -2,7 +2,7 @@
 
 namespace Hik.DTO.Contracts
 {
-    public class FileDTO
+    public class MediaFileDTO
     {
         public string Name { get; set; }
 

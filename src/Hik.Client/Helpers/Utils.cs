@@ -62,37 +62,37 @@ namespace Hik.Client.Helpers
             return $"{date.Year:0000}-{date.Month:00}\\{date.Day:00}\\{date.Hour:00}";
         }
 
-        public static string ToPhotoUserFriendlyString(this FileDTO file)
+        public static string ToPhotoUserFriendlyString(this MediaFileDTO file)
         {
             return $"{file.Name} | {file.Date.ToString(StartDateTimePrintFormat)} | {FormatBytes(file.Size)}";
         }
 
-        public static string ToVideoUserFriendlyString(this FileDTO file)
+        public static string ToVideoUserFriendlyString(this MediaFileDTO file)
         {
             return $"{file.Name} | {file.Date.ToString(StartDateTimePrintFormat)} - {file.Duration} | {FormatBytes(file.Size)} ";
         }
 
-        public static string ToPhotoFileNameString(this FileDTO file)
+        public static string ToPhotoFileNameString(this MediaFileDTO file)
         {
             return $"{file.Date.ToString(DateFormat)}_{file.Name}.jpg";
         }
 
-        public static string ToVideoDirectoryNameString(this FileDTO file)
+        public static string ToVideoDirectoryNameString(this MediaFileDTO file)
         {
             return $"{file.Date.Year:0000}-{file.Date.Month:00}\\{file.Date.Day:00}";
         }
 
-        public static string ToYiDirectoryNameString(this FileDTO file)
+        public static string ToYiDirectoryNameString(this MediaFileDTO file)
         {
             return $"{file.Date.Year:0000}-{file.Date.Month:00}\\{file.Date.Day:00}\\{file.Date.Hour:00}";
         }
 
-        public static string ToVideoFileNameString(this FileDTO file)
+        public static string ToVideoFileNameString(this MediaFileDTO file)
         {
             return $"{file.Date.ToString(DateFormat)}_{file.Duration}_{file.Name}.mp4";
         }
 
-        public static string ToYiFileNameString(this FileDTO file)
+        public static string ToYiFileNameString(this MediaFileDTO file)
         {
             return $"{file.Date.ToString(DateFormat)}_{file.Name}.mp4";
         }
