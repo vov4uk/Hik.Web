@@ -9,27 +9,18 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class HikConfig
     {
-        public static T GetConfig<T>(string configFileName = "configuration.json")
+        public static T GetConfig<T>(string configPath = "configuration.json")
         {
 #if DEBUG
-            configFileName = configFileName.Replace(".json", ".debug.json");
+            configPath = configPath.Replace(".json", ".debug.json");
 #endif
 
-            string configPath = Path.Combine(GetAssemblyDirectory(), configFileName);
             var config = JsonConvert.DeserializeObject<T>(File.ReadAllText(configPath));
             if(config == null)
             {
-                throw new NullReferenceException($"Config {configFileName} invalid");
+                throw new NullReferenceException($"Config {configPath} invalid");
             }
             return config;
-        }
-
-        private static string GetAssemblyDirectory()
-        {
-            string codeBase = Assembly.GetExecutingAssembly().Location;
-            UriBuilder uri = new UriBuilder(codeBase);
-            string path = Uri.UnescapeDataString(uri.Path);
-            return Path.GetDirectoryName(path);
         }
     }
 }

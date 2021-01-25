@@ -28,7 +28,7 @@ namespace Job
             TriggerKey = description;
             ClassName = className;
             Group = group;
-            ConfigFilePath = Path.Combine(AssemblyDirectory, configFilePath);
+            ConfigFilePath = Path.Combine(AssemblyDirectory, "Config", configFilePath);
             ConnectionString = connectionString;
         }
 

@@ -36,8 +36,7 @@ namespace Hik.DataAccess
         {
             using var unitOfWork = factory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<HikJob>();
-            job.Finished = DateTime.Now;
-            await jobRepo.UpdateAsync(job);
+            job.Finished = DateTime.Now;            
 
             Camera camera = await GetCameraSafe(config, unitOfWork);
 
@@ -45,7 +44,7 @@ namespace Hik.DataAccess
             {
                 camera.LastSync = job.PeriodEnd;
             }
-
+            await jobRepo.UpdateAsync(job);
             await unitOfWork.SaveChangesAsync(job, camera);
         }
 

@@ -16,18 +16,13 @@ namespace Job.Impl
     public abstract class JobProcessBase
     {
         protected HikJob JobInstance { get; private set; }
-
         protected readonly UnitOfWorkFactory UnitOfWorkFactory;
-
         protected readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public string TriggerKey { get; private set; }
         public string ConfigPath { get; private set; }
         public string ConnectionString { get; private set; }
-
         public BaseConfig Config { get; protected set; }
-
         public Parameters Parameters;
-
         public abstract JobType JobType { get; }
 
         public abstract Task<IReadOnlyCollection<MediaFileDTO>> Run();
@@ -39,11 +34,13 @@ namespace Job.Impl
 
             var camera = await GetCamera(Config.Alias);
             DateTime? lastSync = camera?.LastSync;
-
+            LogInfo($"Last sync from DB - {lastSync}");
             DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config.ProcessingPeriodHours);
 
             this.JobInstance.PeriodStart = periodStart;
             this.JobInstance.PeriodEnd = jobStart;
+
+            LogInfo($"Period - {periodStart} - {jobStart}");
         }
 
         public virtual async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
@@ -59,6 +56,7 @@ namespace Job.Impl
             ConnectionString = connectionString;
             System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
             this.UnitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
+            LogInfo(Config.ToString());
         }
 
         public async Task ExecuteAsync()
