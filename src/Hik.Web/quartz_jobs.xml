@@ -1,27 +1,24 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <job-scheduling-data xmlns="http://quartznet.sourceforge.net/JobSchedulingData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0">
-
 	<processing-directives>
 		<overwrite-existing-data>true</overwrite-existing-data>
 	</processing-directives>
-
 	<schedule>
 		<job>
 			<name>Launcher</name>
-			<group></group>
-			<description></description>
+			<group/>
+			<description/>
 			<job-type>Hik.Web.CronTrigger, Hik.Web</job-type>
 			<durable>true</durable>
 			<recover>false</recover>
 		</job>
-
 		<trigger>
 			<cron>
 				<name>CorridorVideo</name>
 				<group>JobHost</group>
 				<description>Download videos from street camera</description>
 				<job-name>Launcher</job-name>
-				<job-group></job-group>
+				<job-group/>
 				<job-data-map>
 					<entry>
 						<key>Job</key>
@@ -36,14 +33,13 @@
 				<cron-expression>0 0/3 * * * ?</cron-expression>
 			</cron>
 		</trigger>
-
 		<trigger>
 			<cron>
 				<name>KitchenVideo</name>
 				<group>JobHost</group>
 				<description>Download videos from street camera</description>
 				<job-name>Launcher</job-name>
-				<job-group></job-group>
+				<job-group/>
 				<job-data-map>
 					<entry>
 						<key>Job</key>
@@ -58,14 +54,13 @@
 				<cron-expression>0 0/5 * * * ?</cron-expression>
 			</cron>
 		</trigger>
-
 		<trigger>
 			<cron>
 				<name>LivingVideo</name>
 				<group>JobHost</group>
 				<description>Download videos from street camera</description>
 				<job-name>Launcher</job-name>
-				<job-group></job-group>
+				<job-group/>
 				<job-data-map>
 					<entry>
 						<key>Job</key>
@@ -80,14 +75,13 @@
 				<cron-expression>0 0/7 * * * ?</cron-expression>
 			</cron>
 		</trigger>
-
 		<trigger>
 			<cron>
 				<name>CleanUp</name>
 				<group>JobHost</group>
 				<description>Delete oldest files if empty psace less than 10%</description>
 				<job-name>Launcher</job-name>
-				<job-group></job-group>
+				<job-group/>
 				<job-data-map>
 					<entry>
 						<key>Job</key>
@@ -108,7 +102,7 @@
 				<group>JobHost</group>
 				<description>Move files from ftp to cloud</description>
 				<job-name>Launcher</job-name>
-				<job-group></job-group>
+				<job-group/>
 				<job-data-map>
 					<entry>
 						<key>Job</key>
@@ -123,20 +117,18 @@
 				<cron-expression>0 7 0/1 1/1 * ?</cron-expression>
 			</cron>
 		</trigger>
-
-
 		<trigger>
 			<cron>
 				<name>Floor4_Video</name>
 				<group>JobHost</group>
 				<description>Download videos from internal camera</description>
 				<job-name>Launcher</job-name>
-				<job-group></job-group>
+				<job-group/>
 				<job-data-map>
 					<entry>
 						<key>Job</key>
 						<value>Job.Impl.HikVideoDownloaderJob, Job</value>
-					</entry>	
+					</entry>
 					<entry>
 						<key>ConfigPath</key>
 						<value>configuration.floor4.json</value>
@@ -146,7 +138,6 @@
 				<cron-expression>0 17 0/3 1/1 * ? *</cron-expression>
 			</cron>
 		</trigger>
-
 		<!--<trigger>
       <cron>
         <name>StreetVideo</name>
@@ -168,9 +159,6 @@
         <cron-expression>0 0/1 * * * ?</cron-expression>
       </cron>
     </trigger>-->
-
-
-
 		<!--<trigger>
       <cron>
         <name>Video</name>
@@ -192,7 +180,6 @@
         <cron-expression>0 0/1 * * * ?</cron-expression>
       </cron>
     </trigger>-->
-
 		<!--<trigger>
       <cron>
 		  <name>Video</name>
@@ -214,7 +201,6 @@
         <cron-expression>0 0/1 * * * ?</cron-expression>
       </cron>
     </trigger>-->
-
 		<!--<trigger>
       <cron>
         <name>DeleteArchiving</name>
@@ -236,7 +222,5 @@
         <cron-expression>0 0/1 * * * ?</cron-expression>
       </cron>
     </trigger>-->
-
 	</schedule>
-
 </job-scheduling-data>

@@ -40,33 +40,35 @@ namespace Hik.Client
         {
             string destinationFilePath = GetPathSafety(remoteFile);
             var filePath = remoteFile.Date.ToYiFilePathString(config.ClientType);
-            var remoteFileExist = await ftp.FileExistsAsync(filePath);
-
-            if (remoteFileExist)
             {
                 if (!filesHelper.FileExists(destinationFilePath))
                 {
-                    logger.Info($"{remoteFile.ToVideoUserFriendlyString()}- downloading");
-                    currentDownloadFile = remoteFile;
-                    var tempFile = destinationFilePath + ".tmp";
-                    await ftp.DownloadFileAsync(tempFile, filePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
+                    var remoteFileExist = await ftp.FileExistsAsync(filePath, token);
 
-                    currentDownloadFile = null;
-                    filesHelper.RenameFile(tempFile, destinationFilePath);
-                    remoteFile.Size = filesHelper.FileSize(destinationFilePath);
+                    if (remoteFileExist)
+                    {
+                        LogInfo($"{remoteFile.ToVideoUserFriendlyString()}- downloading");
+                        currentDownloadFile = remoteFile;
+                        var tempFile = destinationFilePath + ".tmp";
+                        await ftp.DownloadFileAsync(tempFile, filePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
 
-                    return true;
+                        currentDownloadFile = null;
+                        filesHelper.RenameFile(tempFile, destinationFilePath);
+                        remoteFile.Size = filesHelper.FileSize(destinationFilePath);
+
+                        return true;
+                    }
+                    else
+                    {
+                        logger.Error($"{config.Alias} - File not found {filePath}");
+                        return false;
+                    }
                 }
                 else
                 {
-                    logger.Info($"{remoteFile.ToVideoUserFriendlyString()}- exist");
+                    LogInfo($"{remoteFile.ToVideoUserFriendlyString()}- exist");
                     return false;
                 }
-            }
-            else
-            {
-                logger.Error($"File not found {filePath}");
-                return false;
             }
         }
 
@@ -123,7 +125,7 @@ namespace Hik.Client
         {
             if (!disposedValue)
             {
-                logger.Info($"Logout the device");
+                LogInfo($"Logout the device");
 
                 ftp?.Disconnect();
                 ftp?.Dispose();
@@ -167,6 +169,11 @@ namespace Hik.Client
             {
                 logger.Warn("HikClient.DeleteCurrentFile : Nothing to delete");
             }
+        }
+
+        private void LogInfo(string msg)
+        {
+            logger.Info($"{config.Alias} - {msg}");
         }
     }
 }

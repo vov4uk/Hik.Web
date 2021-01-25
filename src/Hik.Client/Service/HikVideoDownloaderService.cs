@@ -18,15 +18,13 @@ namespace Hik.Client.Service
         {
         }
 
-        public int ProgressCheckPeriodMilliseconds { get; set; } = 5000;
-
         public override async Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token = default)
         {
             int j = 1;
             foreach (var video in remoteFiles)
             {
                 this.ThrowIfCancellationRequested();
-                this.Logger.Info($"{j++,2}/{remoteFiles.Count} : ");
+                this.logger.Info($"{j++,2}/{remoteFiles.Count} : ");
                 if (await this.DownloadRemoteVideoFileAsync(video, token))
                 {
                     this.OnFileDownloaded(new FileDownloadedEventArgs(video));
@@ -40,7 +38,7 @@ namespace Hik.Client.Service
         {
             List<MediaFileDTO> videos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
 
-            this.Logger.Info($"Video searching finished. Found {videos.Count} files");
+            this.logger.Info($"Video searching finished. Found {videos.Count} files");
             return videos;
         }
 
@@ -56,8 +54,8 @@ namespace Hik.Client.Service
                 file.DownloadDuration = duration;
 
                 int? videoDutation = file.Duration;
-                this.Logger.Info($"Duration {duration.FormatSeconds()}, avg speed {Utils.FormatBytes((long)(file.Size / duration))}/s");
-                this.Logger.Info($"Video    {videoDutation.FormatSeconds()}, avg rate {Utils.FormatBytes((long)(file.Size / videoDutation))}/s");
+                this.logger.Info($"Duration {duration.FormatSeconds()}, avg speed {Utils.FormatBytes((long)(file.Size / duration))}/s");
+                this.logger.Info($"Video    {videoDutation.FormatSeconds()}, avg rate {Utils.FormatBytes((long)(file.Size / videoDutation))}/s");
                 return true;
             }
 

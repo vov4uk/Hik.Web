@@ -55,8 +55,8 @@ namespace Job
                 }
             }
             catch (Exception ex) {
-                logger.Error($"Activity.Start - catch exception : {ex.Message}");
-                logger.Error($"Activity.Start - catch exception : {ex.StackTrace}");
+
+                logger.Error($"Activity.Start - catch exception : {ex.Message} : {ex.StackTrace}");
                 EmailHelper.Send(ex);
             }
         }
@@ -119,9 +119,7 @@ namespace Job
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                logger.Error($"ErrorDataReceived : {e.Data}");
-                logger.Error($"ErrorDataReceived : {sender}");
-                logger.Error($"ErrorDataReceived : HasExited : {(sender as Process)?.HasExited}");
+                logger.Error($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
                 EmailHelper.Send(new Exception(e.Data));
             }
         }
@@ -138,7 +136,7 @@ namespace Job
             Guid prevId = Trace.CorrelationManager.ActivityId;
             Trace.CorrelationManager.ActivityId = this.Id;
 
-            logger.Info(string.Format(format, args));
+            logger.Info($"{Parameters.TriggerKey} - {string.Format(format, args)}");
 
             Trace.CorrelationManager.ActivityId = prevId;
         }

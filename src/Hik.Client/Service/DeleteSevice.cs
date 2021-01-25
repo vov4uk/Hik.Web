@@ -9,9 +9,8 @@ using NLog;
 
 namespace Hik.Client.Service
 {
-    public class DeleteSevice : IRecurrentJob<MediaFileDTO>
+    public class DeleteSevice : RecurrentJobBase<MediaFileDTO>
     {
-        private readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private readonly IDirectoryHelper directoryHelper;
         private readonly IFilesHelper filesHelper;
 
@@ -21,20 +20,13 @@ namespace Hik.Client.Service
             this.filesHelper = filesHelper;
         }
 
-        public event EventHandler<ExceptionEventArgs> ExceptionFired;
-
-        public async Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             logger.Info("Start DeleteSevice");
 
             var cameraResult = await DeleteInternal(to, config as CameraConfig);
 
             return cameraResult;
-        }
-
-        protected virtual void OnExceptionFired(ExceptionEventArgs e)
-        {
-            ExceptionFired?.Invoke(this, e);
         }
 
         private async Task<IReadOnlyCollection<MediaFileDTO>> DeleteInternal(DateTime cutOff, CameraConfig camera)
@@ -62,9 +54,7 @@ namespace Hik.Client.Service
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, ex.ToString());
-                    ex.Data.Add("Camera", camera.Alias);
-                    OnExceptionFired(new ExceptionEventArgs(ex));
+                    OnExceptionFired(new ExceptionEventArgs(ex), camera);
                 }
 
                 return default;

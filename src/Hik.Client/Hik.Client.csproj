@@ -9,13 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="configuration.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="configuration.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

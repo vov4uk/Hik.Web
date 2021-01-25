@@ -63,12 +63,19 @@ namespace Job.Impl
 
         public async Task ExecuteAsync()
         {
-            await InitializeJobInstance();
+            try
+            {
+                await InitializeJobInstance();
 
-            var result = await Run();
-            await SaveResultsInternal(result);
+                var result = await Run();
+                await SaveResultsInternal(result);
 
-            Logger.Info($"{JobType} Execution finished");
+                LogInfo("Execution finished");
+            }
+            catch (Exception e)
+            {
+                HandleException(e);
+            }
         }
 
         private async Task InitializeJobInstance()
@@ -95,13 +102,20 @@ namespace Job.Impl
 
         protected virtual void ExceptionFired(object sender, ExceptionEventArgs e)
         {
-            this.JobInstance.Success = false;
-            Logger.Error(e.Exception, e.Exception.Message);            
-            LogExceptionToDB(e);
-            EmailHelper.Send(e.Exception);
+            HandleException(e.Exception);
         }
 
-        private void LogExceptionToDB(ExceptionEventArgs e)
+        private void HandleException(Exception e)
+        {
+            this.JobInstance.Success = false;
+            Logger.Error(e, e.Message);
+            LogExceptionToDB(e);
+            var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
+            jobResultSaver.SaveJobResultAsync(Config).GetAwaiter().GetResult();
+            EmailHelper.Send(e, Config);
+        }
+
+        private void LogExceptionToDB(Exception e)
         {
             try
             {
@@ -110,10 +124,10 @@ namespace Job.Impl
 
                 jobRepo.Add(new ExceptionLog
                 {
-                    CallStack = e.Exception.StackTrace,
+                    CallStack = e.StackTrace,
                     JobId = JobInstance.Id,
-                    Message = (e.Exception as HikException)?.ErrorMessage ?? e.Exception.Message,
-                    HikErrorCode = (e.Exception as HikException)?.ErrorCode
+                    Message = (e as HikException)?.ErrorMessage ?? e.Message,
+                    HikErrorCode = (e as HikException)?.ErrorCode
                 });
                 unitOfWork.SaveChanges();
             }
@@ -122,7 +136,7 @@ namespace Job.Impl
 
         internal async Task SaveResultsInternal(IReadOnlyCollection<MediaFileDTO> files)
         {
-            Logger.Info("Save to DB...");
+            LogInfo("Save to DB...");
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
             if (files?.Any() == true)
             {
@@ -132,8 +146,11 @@ namespace Job.Impl
             {
                 Logger.Warn($"{Config.Alias} - {JobType} - Results Empty");
             }
-            await jobResultSaver.SaveJobResultAsync(Config);
-            Logger.Info("Save to DB. Done");
+            if (this.JobInstance.Success)
+            {
+                await jobResultSaver.SaveJobResultAsync(Config);
+            }
+            LogInfo("Save to DB. Done");
         }
 
         protected async Task<Camera> GetCamera(string allias)
@@ -141,6 +158,11 @@ namespace Job.Impl
             using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
             var cameraRepo = unitOfWork.GetRepository<Camera>();
             return await cameraRepo.FindByAsync(x => x.Alias == allias);
+        }
+
+        protected void LogInfo(string msg)
+        {
+            Logger.Info($"{Config.Alias} - {JobType} - {msg}");
         }
     }
 }

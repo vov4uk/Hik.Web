@@ -57,7 +57,7 @@ namespace Hik.DataAccess
             var from = files.Min(x => x.Date).Date;
             var to = files.Max(x => x.Date).Date;
 
-            var dailyStat = (await GetDailyStatisticSafe(camera.Id, from, to, unitOfWork)).ToDictionary(k => k.Period, v => v);
+            Dictionary<DateTime, DailyStatistic> dailyStat = (await GetDailyStatisticSafe(camera.Id, from, to, unitOfWork)).ToDictionary(k => k.Period, v => v);
 
             var group = files.GroupBy(x => x.Date.Date)
                 .Select(x => new { date = x.Key, cnt = x.Count(), size = x.Sum(p => p.Size) });
@@ -70,6 +70,7 @@ namespace Hik.DataAccess
             }
 
             await AddEntities(files.Select(x => mapper.Map<MediaFile>(x)).ToList(), unitOfWork);
+            await SaveDailyStatisticSafe(camera.Id, dailyStat.Values, unitOfWork);
             await unitOfWork.SaveChangesAsync(job, camera);
         }
 
@@ -99,20 +100,39 @@ namespace Hik.DataAccess
             {
                 if (!daily.Any(d => d.Period == from))
                 {
-                    var day = (await repo.AddAsync(
-                        new DailyStatistic
+                    var day = new DailyStatistic
                         {
                             CameraId = cameraId,
                             Period = from,
                             FilesCount = 0,
                             FilesSize = 0
-                        })).Entity;
+                        };
                     daily.Add(day);
                 }
                 from = from.AddDays(1);
             } while (from <= to);
 
             return daily;
+        }
+
+        private async Task SaveDailyStatisticSafe(int cameraId, ICollection<DailyStatistic> ds, IUnitOfWork unitOfWork)
+        {
+            var repo = unitOfWork.GetRepository<DailyStatistic>();
+            var daily = await repo.FindManyAsync(x => x.CameraId == cameraId);
+
+            var itemsToAdd = new List<DailyStatistic>();
+            foreach (var day in ds)
+            {
+                if (!daily.Any(d => d.Period == day.Period) && day.FilesCount > 0 && day.FilesSize > 0)
+                {
+                    itemsToAdd.Add(day);
+                }
+            }
+
+            if (itemsToAdd.Any())
+            {
+                await repo.AddRangeAsync(itemsToAdd);
+            }
         }
 
         private Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)

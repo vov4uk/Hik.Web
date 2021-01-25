@@ -9,11 +9,10 @@ using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using NLog;
 
 namespace Hik.Client.Service
 {
-    public abstract class HikDownloaderServiceBase<T> : IRecurrentJob<T>
+    public abstract class HikDownloaderServiceBase<T> : RecurrentJobBase<T>
         where T : MediaFileDTO
     {
         protected const int JobTimeout = 30;
@@ -31,33 +30,26 @@ namespace Hik.Client.Service
             Mapper = mapper;
         }
 
-        public event EventHandler<ExceptionEventArgs> ExceptionFired;
-
         public event EventHandler<FileDownloadedEventArgs> FileDownloaded;
 
         protected IMapper Mapper { get; private set; }
 
-        protected ILogger Logger
-        {
-            get { return LogManager.GetCurrentClassLogger(); }
-        }
-
         protected IClient Client { get; private set; }
 
-        public async Task<IReadOnlyCollection<T>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public override async Task<IReadOnlyCollection<T>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             IReadOnlyCollection<T> jobResult = null;
-            using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(JobTimeout)))
+            try
             {
-                TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
-
-                cancelTokenSource.Token.Register(() =>
+                using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(JobTimeout)))
                 {
-                    taskCompletionSource.TrySetCanceled();
-                });
+                    TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
 
-                try
-                {
+                    cancelTokenSource.Token.Register(() =>
+                    {
+                        taskCompletionSource.TrySetCanceled();
+                    });
+
                     Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(config as CameraConfig, from, to);
                     Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
 
@@ -69,10 +61,10 @@ namespace Hik.Client.Service
 
                     await taskCompletionSource.Task;
                 }
-                catch (Exception ex)
-                {
-                    HandleException(ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex, config);
             }
 
             cancelTokenSource = null;
@@ -85,22 +77,17 @@ namespace Hik.Client.Service
                 && cancelTokenSource.Token.CanBeCanceled)
             {
                 cancelTokenSource.Cancel();
-                Logger.Warn("Cancel signal was sent");
+                logger.Warn("Cancel signal was sent");
             }
             else
             {
-                Logger.Warn("Nothing to Cancel");
+                logger.Warn("Nothing to Cancel");
             }
         }
 
         public abstract Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
 
         public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token);
-
-        protected virtual void OnExceptionFired(ExceptionEventArgs e)
-        {
-            ExceptionFired?.Invoke(this, e);
-        }
 
         protected virtual void OnFileDownloaded(FileDownloadedEventArgs e)
         {
@@ -129,55 +116,47 @@ namespace Hik.Client.Service
         {
             DateTime appStart = DateTime.Now;
 
-            Logger.Info($"Internal download...");
+            logger.Info($"{config.Alias} - Internal download...");
 
             var result = await ProcessCameraAsync(config, from, to);
             if (result.Count > 0)
             {
                 PrintStatistic(config?.DestinationFolder);
                 var duration = (DateTime.Now - appStart).TotalSeconds;
-                Logger.Info($"Internal download. Done. Duration  : {duration.FormatSeconds()}");
+                logger.Info($"{config.Alias} -Internal download. Done. Duration  : {duration.FormatSeconds()}");
             }
             else
             {
-               Logger.Warn($"{config.Alias}, {from} - {to} : No files downloaded");
+                logger.Warn($"{config.Alias}, {from} - {to} : No files downloaded");
             }
 
             return result;
         }
 
-        private async Task<IReadOnlyCollection<T>> ProcessCameraAsync(CameraConfig cameraConf, DateTime periodStart, DateTime periodEnd)
+        private async Task<IReadOnlyCollection<T>> ProcessCameraAsync(CameraConfig config, DateTime periodStart, DateTime periodEnd)
         {
             var result = new List<T>();
-            try
+            using (Client = clientFactory.Create(config))
             {
-                using (Client = clientFactory.Create(cameraConf))
+                Client.InitializeClient();
+                ThrowIfCancellationRequested();
+
+                if (Client.Login())
                 {
-                    Client.InitializeClient();
                     ThrowIfCancellationRequested();
+                    logger.Info($"{config.Alias} - Reading remote files...");
+                    var remoteFiles = await GetRemoteFilesList(periodStart, periodEnd);
+                    logger.Info($"{config.Alias} - Reading remote files. Done");
 
-                    if (Client.Login())
-                    {
-                        ThrowIfCancellationRequested();
-                        Logger.Info($"Reading remote files...");
-                        var remoteFiles = await GetRemoteFilesList(periodStart, periodEnd);
-                        Logger.Info($"Reading remote files. Done");
-
-                        Logger.Info($"Downloading files...");
-                        var downloadedFiles = await DownloadFilesFromClientAsync(remoteFiles, cancelTokenSource?.Token ?? CancellationToken.None);
-                        result.AddRange(downloadedFiles);
-                        Logger.Info($"Downloading files. Done");
-                    }
-                    else
-                    {
-                        Logger.Warn("Unable to login");
-                    }
+                    logger.Info($"{config.Alias} - Downloading files...");
+                    var downloadedFiles = await DownloadFilesFromClientAsync(remoteFiles, cancelTokenSource?.Token ?? CancellationToken.None);
+                    result.AddRange(downloadedFiles);
+                    logger.Info($"{config.Alias} - Downloading files. Done");
                 }
-            }
-            catch (Exception ex)
-            {
-                ex.Data.Add("Camera", cameraConf);
-                HandleException(ex);
+                else
+                {
+                    logger.Warn($"{config.Alias} - Unable to login");
+                }
             }
 
             return result;
@@ -192,28 +171,12 @@ namespace Hik.Client.Service
             statisticsSb.AppendLine($"{"Free space",-24}: {Utils.FormatBytes(directoryHelper.GetTotalFreeSpace(destinationFolder))}");
             statisticsSb.AppendLine(new string('_', 40)); // separator
 
-            Logger.Info(statisticsSb.ToString());
+            logger.Info(statisticsSb.ToString());
         }
 
-        private string GetExceptionMessage(Exception ex)
+        private void HandleException(Exception ex, BaseConfig config)
         {
-            StringBuilder msgBuilder = new StringBuilder();
-            if (ex.Data.Contains("Camera") && ex.Data["Camera"] is CameraConfig)
-            {
-                msgBuilder.AppendLine((ex.Data["Camera"] as CameraConfig).ToString());
-            }
-
-            msgBuilder.AppendLine(ex.ToString());
-            return msgBuilder.ToString();
-        }
-
-        private void HandleException(Exception ex)
-        {
-            string msg = GetExceptionMessage(ex);
-
-            Logger.Error(ex, msg);
-
-            OnExceptionFired(new ExceptionEventArgs(ex));
+            OnExceptionFired(new ExceptionEventArgs(ex), config);
 
             ForceExit();
         }

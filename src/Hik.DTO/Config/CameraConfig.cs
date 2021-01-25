@@ -32,7 +32,7 @@ namespace Hik.DTO.Config
             return sb.ToString();
         }
 
-        public string ToHtmlTable()
+        public override string ToHtmlTable()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine();

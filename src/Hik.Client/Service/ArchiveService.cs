@@ -6,15 +6,13 @@ using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using NLog;
 
 namespace Hik.Client.Service
 {
-    public class ArchiveService : IRecurrentJob<MediaFileDTO>
+    public class ArchiveService : RecurrentJobBase<MediaFileDTO>
     {
         // 2021 01 13 12 17 14 361
         private const string FileNameDateTimeFormat = "yyyyMMddHHmmssfff";
-        private readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private readonly IDirectoryHelper directoryHelper;
         private readonly IFilesHelper filesHelper;
 
@@ -24,9 +22,7 @@ namespace Hik.Client.Service
             this.filesHelper = filesHelper;
         }
 
-        public event EventHandler<ExceptionEventArgs> ExceptionFired;
-
-        public Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public override Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var archiveConfig = config as ArchiveConfig;
             var source = archiveConfig.SourceFolder;
@@ -69,16 +65,10 @@ namespace Hik.Client.Service
             }
             catch (Exception ex)
             {
-                this.logger.Error(ex, ex.ToString());
-                this.OnExceptionFired(new ExceptionEventArgs(ex));
+                this.OnExceptionFired(new ExceptionEventArgs(ex), config);
             }
 
             return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
-        }
-
-        protected virtual void OnExceptionFired(ExceptionEventArgs e)
-        {
-            this.ExceptionFired?.Invoke(this, e);
         }
 
         private string GetWorkingDirectory(string destinationFolder, DateTime date)

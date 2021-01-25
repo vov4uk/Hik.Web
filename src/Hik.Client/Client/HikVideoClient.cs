@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hik.Api.Abstraction;
-using Hik.Api.Data;
 using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
@@ -27,7 +26,7 @@ namespace Hik.Client
         {
             string targetFilePath = GetPathSafety(remoteFile);
             string tempFile = targetFilePath + ".tmp";
-            if (this.StartVideoDownload(remoteFile, targetFilePath, targetFilePath))
+            if (this.StartVideoDownload(remoteFile, targetFilePath, tempFile))
             {
                 do
                 {
@@ -50,7 +49,7 @@ namespace Hik.Client
         {
             ValidateDateParameters(periodStart, periodEnd);
 
-            logger.Info($"Get videos from {periodStart} to {periodEnd}");
+            LogInfo($"Get videos from {periodStart} to {periodEnd}");
 
             var remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
             return Mapper.Map<IList<MediaFileDTO>>(remoteFiles);
@@ -62,16 +61,16 @@ namespace Hik.Client
             {
                 if (!filesHelper.FileExists(targetFilePath))
                 {
-                    logger.Info($"{targetFilePath}");
+                    LogInfo($"{targetFilePath}");
                     downloadId = hikApi.VideoService.StartDownloadFile(session.UserId, file.Name, tempFile);
 
-                    logger.Info($"{file.ToVideoUserFriendlyString()}- downloading");
+                    LogInfo($"{file.ToVideoUserFriendlyString()}- downloading");
 
                     currentDownloadFile = file;
                     return true;
                 }
 
-                logger.Info($"{file.ToVideoUserFriendlyString()}- exist");
+                LogInfo($"{file.ToVideoUserFriendlyString()}- exist");
                 return false;
             }
             else
@@ -125,13 +124,18 @@ namespace Hik.Client
                 StopDownload();
                 currentDownloadFile = null;
 
-                logger.Info("- downloaded");
+                LogInfo("- downloaded");
             }
             else if (progressValue < ProgressBarMinimum || progressValue > ProgressBarMaximum)
             {
                 StopDownload();
                 throw new InvalidOperationException($"HikClient.UpdateDownloadProgress failed, progress value = {progressValue}");
             }
+        }
+
+        private void LogInfo(string msg)
+        {
+            logger.Info($"{config.Alias} - {msg}");
         }
     }
 }

@@ -23,6 +23,18 @@ namespace Hik.DTO.Config
             return sb.ToString();
         }
 
+        public virtual string ToHtmlTable()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("<table>");
+            sb.AppendLine(this.GetHtmlRow("Alias", this.Alias));
+            sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
+            sb.AppendLine(this.GetHtmlRow("Timeout", this.Timeout.ToString()));
+            sb.AppendLine("</table>");
+
+            return sb.ToString();
+        }
+
         protected string GetRow(string field, string value)
         {
             return $"{field,-24}: {value}";

@@ -10,10 +10,9 @@ using NLog;
 
 namespace Hik.Client.Service
 {
-    public class CleanUpService : IRecurrentJob<MediaFileDTO>
+    public class CleanUpService : RecurrentJobBase<MediaFileDTO>
     {
         private const double Gb = 1024.0 * 1024.0 * 1024.0;
-        private readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private readonly IDirectoryHelper directoryHelper;
         private readonly IFilesHelper filesHelper;
 
@@ -23,9 +22,7 @@ namespace Hik.Client.Service
             this.filesHelper = filesHelper;
         }
 
-        public event EventHandler<ExceptionEventArgs> ExceptionFired;
-
-        public Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public override Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var cleanupConfig = config as CleanupConfig;
             var destination = cleanupConfig.DestinationFolder;
@@ -60,20 +57,18 @@ namespace Hik.Client.Service
                     try
                     {
                         var deletedFiles = this.DeleteFiles(filesToDelete, destination);
-                        if (deletedFiles.Count > 0)
-                        {
-                            deleteFilesResult.AddRange(deletedFiles);
-                            page++;
-                        }
-                        else
+                        if (deletedFiles.Count <= 0)
                         {
                             break;
                         }
+
+                        deleteFilesResult.AddRange(deletedFiles);
+                        page++;
                     }
                     catch (Exception ex)
                     {
-                        logger.Error(ex, ex.ToString());
-                        OnExceptionFired(new ExceptionEventArgs(ex));
+                        OnExceptionFired(new ExceptionEventArgs(ex), config);
+                        break;
                     }
                 }
                 else
@@ -86,11 +81,6 @@ namespace Hik.Client.Service
             directoryHelper.DeleteEmptyFolders(destination);
 
             return Task.FromResult(deleteFilesResult as IReadOnlyCollection<MediaFileDTO>);
-        }
-
-        protected virtual void OnExceptionFired(ExceptionEventArgs e)
-        {
-            ExceptionFired?.Invoke(this, e);
         }
 
         private List<MediaFileDTO> DeleteFiles(List<string> filesToDelete, string basePath)

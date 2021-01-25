@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Mail;
 using System.Reflection;
+using System.Text;
 using Hik.Api;
 using Hik.DTO.Config;
 using Newtonsoft.Json;
@@ -23,11 +24,10 @@ namespace Job.Email
             Settings = JsonConvert.DeserializeObject<EmailConfig>(File.ReadAllText(configPath));
         }
 
-        public static void Send(Exception ex)
+        public static void Send(Exception ex, BaseConfig config = null)
         {
             try
             {
-                var camera = GetCameraConfig(ex);
                 string errorDetails = string.Empty;
 
                 if (ex is HikException)
@@ -39,14 +39,14 @@ namespace Job.Email
 </ul>";
                 }
 
-                var msg = BuildBody(errorDetails, camera?.ToHtmlTable(), ex.Message, ex.StackTrace);
+                var msg = BuildBody(errorDetails, config?.ToHtmlTable(), ex.Message, ex.ToString());
 
                 if (Settings != null)
                 {
                     using var mail = new MailMessage
                     {
                         From = new MailAddress(Settings.UserName),
-                        Subject = $"{camera?.Alias ?? "Hik.Web"} error",
+                        Subject = $"{config?.Alias ?? "Hik.Web"} error",
                         Body = msg,
                         IsBodyHtml = true,
                     };
@@ -67,20 +67,13 @@ namespace Job.Email
             }
             catch (Exception e)
             {
-                logger.Error("Failed to Sent Email");
-                logger.Error($"Parent exeption {ex.Message}");
-                logger.Error($"Parent exeption {ex.StackTrace}");
-                logger.Error($"Local exeption {e}");
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Failed to Sent Email");
+                sb.AppendLine($"Parent exeption {ex.Message}");
+                sb.AppendLine($"Parent exeption {ex.StackTrace}");
+                sb.AppendLine($"Local exeption {e}");
+                logger.Error(sb.ToString());
             }
-        }
-
-        private static CameraConfig GetCameraConfig(Exception ex)
-        {
-            if (ex.Data.Contains("Camera") && ex.Data["Camera"] is CameraConfig)
-            {
-                return ex.Data["Camera"] as CameraConfig;
-            }
-            return default;
         }
 
         private static string BuildBody(string details, string cameraConfig, string message, string callStack)

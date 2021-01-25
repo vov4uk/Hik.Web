@@ -33,27 +33,27 @@
         @if (Model.Pager.CurrentPage > 1)
          {
           <li class="page-item">
-              <a class="page-link" href="/">First</a>
+              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=1">First</a>
           </li>
           <li class="page-item">
-              <a class="page-link" href="/?p=@(Model.Pager.CurrentPage - 1)">Previous</a>
+              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=@(Model.Pager.CurrentPage - 1)">Previous</a>
           </li>
          }
 
         @foreach (var p in Model.Pager.Pages)
          {
           <li class="page-item @(p == Model.Pager.CurrentPage ? "active" : "")">
-              <a class="page-link" href="/?p=@p">@p</a>
+              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=@p">@p</a>
           </li>
          }
 
         @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
          {
           <li class="page-item">
-              <a class="page-link" href="/?p=@(Model.Pager.CurrentPage + 1)">Next</a>
+              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=@(Model.Pager.CurrentPage + 1)">Next</a>
           </li>
           <li class="page-item">
-              <a class="page-link" href="/?p=@(Model.Pager.TotalPages)">Last</a>
+              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=@(Model.Pager.TotalPages)">Last</a>
           </li>
          }
     </ul>

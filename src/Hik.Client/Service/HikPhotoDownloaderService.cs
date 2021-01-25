@@ -21,8 +21,8 @@ namespace Hik.Client.Service
             List<MediaFileDTO> photos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).ToList();
             var resultCountString = photos.Count.ToString();
 
-            this.Logger.Info("Photos searching finished.");
-            this.Logger.Info($"Found {resultCountString} photos");
+            this.logger.Info("Photos searching finished.");
+            this.logger.Info($"Found {resultCountString} photos");
             return photos;
         }
 
@@ -53,8 +53,8 @@ namespace Hik.Client.Service
                 }
             }
 
-            this.Logger.Info($"Exist {photoDownloadResults[false]} photos");
-            this.Logger.Info($"Downloaded {photoDownloadResults[true]} photos");
+            this.logger.Info($"Exist {photoDownloadResults[false]} photos");
+            this.logger.Info($"Downloaded {photoDownloadResults[true]} photos");
             return remoteFiles;
         }
     }
