@@ -57,9 +57,16 @@ namespace Hik.Client.Helpers
             return File.ReadAllText(path);
         }
 
-        public void RenameFile(string path, string newName)
+        public void RenameFile(string oldFileName, string newFileName)
         {
-            File.Move(path, newName);
+            if (!File.Exists(newFileName))
+            {
+                File.Move(oldFileName, newFileName);
+            }
+            else
+            {
+                File.Delete(oldFileName);
+            }
         }
 
         public DateTime GetCreationDate(string path)

@@ -39,8 +39,9 @@ namespace Hik.Web.Pages
             if (id == null) { return NotFound(); }
             JobId = id;
 
-            var items = dataContext.Jobs.Where(x => x.Id == id);
-            items = items.Include(x => x.ExceptionLog);
+            var items = dataContext.Jobs.Where(x => x.Id == id)
+                .Include(x => x.ExceptionLog)
+                .Include(x => x.JobTrigger);
 
             Job = await items.FirstOrDefaultAsync();
             if (Job == null) { return NotFound(); }

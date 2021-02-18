@@ -7,7 +7,7 @@
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(model => model.Job.Id)</th>
-            <th>@Html.DisplayNameFor(model => model.Job.JobType)</th>
+            <th>@Html.DisplayNameFor(model => model.Job.JobTrigger)</th>
             <th>@Html.DisplayNameFor(model => model.Job.PeriodStart)</th>
             <th>@Html.DisplayNameFor(model => model.Job.PeriodEnd)</th>
             <th>@Html.DisplayNameFor(model => model.Job.Started)</th>
@@ -17,7 +17,7 @@
     <tbody>
         <tr>
             <td>@Html.DisplayFor(modelItem => Model.Job.Id)</td>
-            <td>@Html.DisplayFor(modelItem => Model.Job.JobType)</td>
+            <td>@Html.DisplayFor(modelItem => Model.Job.JobTrigger.TriggerKey)</td>
             <td>@Html.DisplayFor(modelItem => Model.Job.PeriodStart)</td>
             <td>@Html.DisplayFor(modelItem => Model.Job.PeriodEnd)</td>
             <td>@Html.DisplayFor(modelItem => Model.Job.Started)</td>

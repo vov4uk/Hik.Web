@@ -11,13 +11,12 @@ namespace Job.Impl
 {
     public class HikPhotoDownloaderJob : JobProcessBase
     {
-        public HikPhotoDownloaderJob(string description, string configFilePath, string connectionString, Guid activityId) 
-            : base(description, configFilePath, connectionString, activityId)
+        public HikPhotoDownloaderJob(string trigger, string configFilePath, string connectionString, Guid activityId) 
+            : base(trigger, configFilePath, connectionString, activityId)
         {
             Config = HikConfig.GetConfig<CameraConfig>(configFilePath);
+            LogInfo(Config?.ToString());
         }
-
-        public override JobType JobType => JobType.HikPhotoDownloader;
 
         public async override Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {

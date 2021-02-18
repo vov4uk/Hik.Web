@@ -18,12 +18,14 @@ namespace Hik.DataAccess
         }
 
         public DbSet<HikJob> Jobs { get; set; }
-        public DbSet<Camera> Cameras { get; set; }
+
         public DbSet<MediaFile> Files { get; set; }
 
         public DbSet<DailyStatistic> DailyStatistics { get; set; }
 
         public DbSet<ExceptionLog> Exceptions { get; set; }
+
+        public DbSet<JobTrigger> JobTriggers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -39,8 +41,9 @@ namespace Hik.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new CameraMapping())
+            modelBuilder
                 .ApplyConfiguration(new JobMapping())
+                .ApplyConfiguration(new JobTriggerMapping())
                 .ApplyConfiguration(new FileMapping())
                 .ApplyConfiguration(new ExceptionLogMapping())
                 .ApplyConfiguration(new DailyStatisticMapping());

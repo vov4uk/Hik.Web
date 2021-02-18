@@ -17,9 +17,8 @@ namespace Job.Impl
             : base(trigger, configFilePath, connectionString, activityId)
         {
             Config = HikConfig.GetConfig<CleanupConfig>(configFilePath);
+            LogInfo(Config?.ToString());
         }
-
-        public override JobType JobType => JobType.CleanUp;
 
         public override Task InitializeProcessingPeriod()
         {

@@ -6,27 +6,26 @@ using Hik.DataAccess.Metadata;
 
 namespace Hik.DataAccess.Data
 {
-    [Table(Tables.Camera)]
-    public class Camera
+    [Table(Tables.JobTrigger)]
+    public class JobTrigger
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
 
-        public string Alias { get; set; }
+        public string TriggerKey { get; set; }
 
-        public string DestinationFolder { get; set; }
-
-        public string IpAddress { get; set; }
-
-        public int PortNumber { get; set; }
-
-        public string UserName { get; set; }
-
-        public List<MediaFile> Files { get; set; } = new List<MediaFile>();
+        public string Group { get; set; }
 
         public List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
 
+        public List<HikJob> Jobs { get; set; } = new List<HikJob>();
+
         [Display(Name = "Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastSync { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Group}.{TriggerKey}";
+        }
     }
 }

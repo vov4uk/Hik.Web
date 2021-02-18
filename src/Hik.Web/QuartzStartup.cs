@@ -27,7 +27,8 @@ namespace Hik.Web
             {
 
                 ["quartz.serializer.type"] = "json",
-                ["quartz.scheduler.instanceName"] = "Hik.Web",
+                ["quartz.scheduler.instanceName"] = "default",
+                ["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz",
                 ["quartz.threadPool.threadCount"] = "3",
                 ["quartz.jobStore.type"] = "Quartz.Simpl.RAMJobStore, Quartz",
                 ["quartz.plugin.xml.type"] = "Quartz.Plugin.Xml.XMLSchedulingDataProcessorPlugin, Quartz.Plugins",

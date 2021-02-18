@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
-using Hik.Api;
 
 namespace Hik.Api.Helpers
 {

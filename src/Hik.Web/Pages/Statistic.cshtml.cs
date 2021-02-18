@@ -21,7 +21,7 @@ namespace Hik.Web.Pages
 
         public IList<DailyStatistic> Statistics { get; set; }
 
-        public Camera Camera { get; set; }
+        public JobTrigger Trigger { get; set; }
 
         public Pager Pager { get; set; }
 
@@ -31,19 +31,19 @@ namespace Hik.Web.Pages
 
         public int MaxPages { get; set; } = 10;
 
-        public async Task OnGetAsync(int cameraId, int p = 1)
+        public async Task OnGetAsync(int triggerId, int p = 1)
         {
-            TotalItems = await dataContext.DailyStatistics.CountAsync(x => x.CameraId == cameraId);
+            TotalItems = await dataContext.DailyStatistics.CountAsync(x => x.JobTriggerId == triggerId);
             Pager = new Pager(TotalItems, p, PageSize, MaxPages);
 
             var stats = dataContext.DailyStatistics
-                .Where(x => x.CameraId == cameraId)
+                .Where(x => x.JobTriggerId == triggerId)
                 .OrderByDescending(x => x.Period)
                 .Skip(Math.Max(0, Pager.CurrentPage - 1) * Pager.PageSize)
                 .Take(Pager.PageSize);
 
             Statistics = await stats.ToListAsync();
-            Camera = await dataContext.Cameras.FindAsync(cameraId);
+            Trigger = await dataContext.JobTriggers.FindAsync(triggerId);
         }
     }
 }

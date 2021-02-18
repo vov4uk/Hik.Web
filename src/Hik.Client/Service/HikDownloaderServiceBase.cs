@@ -16,7 +16,6 @@ namespace Hik.Client.Service
         where T : MediaFileDTO
     {
         protected const int JobTimeout = 30;
-        private readonly IDirectoryHelper directoryHelper;
         private readonly IClientFactory clientFactory;
         private CancellationTokenSource cancelTokenSource;
 
@@ -24,8 +23,8 @@ namespace Hik.Client.Service
             IDirectoryHelper directoryHelper,
             IClientFactory clientFactory,
             IMapper mapper)
+            : base(directoryHelper)
         {
-            this.directoryHelper = directoryHelper;
             this.clientFactory = clientFactory;
             Mapper = mapper;
         }
@@ -36,7 +35,7 @@ namespace Hik.Client.Service
 
         protected IClient Client { get; private set; }
 
-        public override async Task<IReadOnlyCollection<T>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        protected override async Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             IReadOnlyCollection<T> jobResult = null;
             try

@@ -19,10 +19,6 @@ namespace Hik.DataAccess.Mappings
                 .WithMany(job => job.Files)
                 .HasForeignKey(v => v.JobId);
 
-            builder
-                .HasOne(v => v.Camera)
-                .WithMany(camera => camera.Files)
-                .HasForeignKey(v => v.CameraId);
             builder.Property(f => f.Date)
                 .HasColumnType("datetime2(0)");
             builder.Property(f => f.DownloadStarted)

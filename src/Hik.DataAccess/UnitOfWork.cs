@@ -43,9 +43,9 @@ namespace Hik.DataAccess
             Context.SaveChanges();
         }
 
-        public async Task<int> SaveChangesAsync(HikJob job, Camera camera)
+        public async Task<int> SaveChangesAsync(HikJob job)
         {
-            this.ProcessAuditItems(job, camera);
+            this.ProcessAuditItems(job);
             var res = await this.SaveChangesAsync();
             return res;
         }
@@ -69,7 +69,7 @@ namespace Hik.DataAccess
             }
         }
 
-        private void ProcessAuditItems(HikJob job, Camera camera)
+        private void ProcessAuditItems(HikJob job)
         {
             foreach (var entity in this.Context.ChangeTracker
                 .Entries()
@@ -78,7 +78,6 @@ namespace Hik.DataAccess
                 .OfType<IAuditable>())
             {
                 entity.JobId = job.Id;
-                entity.CameraId = camera.Id;
             }
         }
     }

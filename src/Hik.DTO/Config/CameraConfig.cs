@@ -18,7 +18,7 @@ namespace Hik.DTO.Config
 
         public int? RetentionPeriodDays { get; set; } = 7;
 
-        public ClientType ClientType { get; set; } = ClientType.HikVision; 
+        public ClientType ClientType { get; set; } = ClientType.HikVisionVideo; 
 
         public override string ToString()
         {

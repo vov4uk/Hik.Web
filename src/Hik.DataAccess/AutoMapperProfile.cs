@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Hik.DataAccess.Data;
-using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 
 namespace Hik.DataAccess
@@ -9,8 +8,6 @@ namespace Hik.DataAccess
     {
         public AutoMapperProfile()
         {
-            this.CreateMap<BaseConfig, Camera>(MemberList.None);
-            this.CreateMap<CameraConfig, Camera>(MemberList.None);
             this.CreateMap<MediaFileDTO, MediaFile>(MemberList.None);
         }
     }

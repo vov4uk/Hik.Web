@@ -16,14 +16,16 @@ namespace Job.Impl
     public abstract class JobProcessBase
     {
         protected HikJob JobInstance { get; private set; }
+
         protected readonly UnitOfWorkFactory UnitOfWorkFactory;
+
         protected readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public string TriggerKey { get; private set; }
         public string ConfigPath { get; private set; }
         public string ConnectionString { get; private set; }
+
+        public string ClassName { get; private set; }
         public BaseConfig Config { get; protected set; }
-        public Parameters Parameters;
-        public abstract JobType JobType { get; }
 
         public abstract Task<IReadOnlyCollection<MediaFileDTO>> Run();
 
@@ -32,8 +34,9 @@ namespace Job.Impl
             var config = Config as CameraConfig;
             DateTime jobStart = DateTime.Now;
 
-            var camera = await GetCamera(Config.Alias);
-            DateTime? lastSync = camera?.LastSync;
+            var trigger = await GetJobTrigger();
+
+            DateTime? lastSync = trigger.LastSync;
             LogInfo($"Last sync from DB - {lastSync}");
             DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config.ProcessingPeriodHours);
 
@@ -46,7 +49,7 @@ namespace Job.Impl
         public virtual async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.FilesCount = files.Count;
-            await service.SaveFilesAsync(files, Config);
+            await service.SaveFilesAsync(files);
         }
 
         public JobProcessBase(string trigger, string configFilePath, string connectionString, Guid activityId)
@@ -56,19 +59,22 @@ namespace Job.Impl
             ConnectionString = connectionString;
             System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
             this.UnitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
-            LogInfo(Config.ToString());
         }
 
         public async Task ExecuteAsync()
         {
             try
             {
+                LogInfo("InitializeJobInstance...");
                 await InitializeJobInstance();
-
+                LogInfo("InitializeJobInstance. Done.");
+                Config.Alias = TriggerKey;
+                LogInfo("Run...");
                 var result = await Run();
+                LogInfo("Run. Done.");
+                LogInfo("SaveResultsInternal ...");
                 await SaveResultsInternal(result);
-
-                LogInfo("Execution finished");
+                LogInfo("SaveResultsInternal. Done.");
             }
             catch (Exception e)
             {
@@ -78,10 +84,12 @@ namespace Job.Impl
 
         private async Task InitializeJobInstance()
         {
+            var trigger = await GetJobTrigger();
+
             this.JobInstance = new HikJob
             {
                 Started = DateTime.Now,
-                JobType = TriggerKey,
+                JobTriggerId = trigger.Id
             };
 
             await InitializeProcessingPeriod();
@@ -106,10 +114,10 @@ namespace Job.Impl
         private void HandleException(Exception e)
         {
             this.JobInstance.Success = false;
-            Logger.Error(e, e.Message);
+            Logger.Error(e.ToString());
             LogExceptionToDB(e);
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
-            jobResultSaver.SaveJobResultAsync(Config).GetAwaiter().GetResult();
+            jobResultSaver.SaveJobResultAsync().GetAwaiter().GetResult();
             EmailHelper.Send(e, Config);
         }
 
@@ -129,7 +137,7 @@ namespace Job.Impl
                 });
                 unitOfWork.SaveChanges();
             }
-            catch (Exception ex) { Logger.Error(ex, ex.Message); }
+            catch (Exception ex) { Logger.Error(ex.ToString()); }
         }
 
         internal async Task SaveResultsInternal(IReadOnlyCollection<MediaFileDTO> files)
@@ -142,25 +150,35 @@ namespace Job.Impl
             }
             else
             {
-                Logger.Warn($"{Config.Alias} - {JobType} - Results Empty");
+                Logger.Warn($"{TriggerKey} - Results Empty");
             }
             if (this.JobInstance.Success)
             {
-                await jobResultSaver.SaveJobResultAsync(Config);
+                await jobResultSaver.SaveJobResultAsync();
             }
             LogInfo("Save to DB. Done");
         }
-
-        protected async Task<Camera> GetCamera(string allias)
+      
+        protected async Task<JobTrigger> GetJobTrigger()
         {
+            var jobNameParts = TriggerKey.Split(".");
+            var triggerKey = jobNameParts[1];
+            var group = jobNameParts[0];
             using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
-            var cameraRepo = unitOfWork.GetRepository<Camera>();
-            return await cameraRepo.FindByAsync(x => x.Alias == allias);
+            var repo = unitOfWork.GetRepository<JobTrigger>();
+            var trigger = await repo.FindByAsync(x => x.TriggerKey == triggerKey && x.Group == group);
+            if (trigger == null)
+            {
+                var triggerResult = await repo.AddAsync(new JobTrigger { TriggerKey = triggerKey, Group = group});
+                trigger = triggerResult.Entity;
+                await unitOfWork.SaveChangesAsync();
+            }
+            return trigger;
         }
 
         protected void LogInfo(string msg)
         {
-            Logger.Info($"{Config.Alias} - {JobType} - {msg}");
+            Logger.Info($"{TriggerKey} - {msg}");
         }
     }
 }

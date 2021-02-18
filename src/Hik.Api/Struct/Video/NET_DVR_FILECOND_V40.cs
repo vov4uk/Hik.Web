@@ -1,10 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using Hik.Api;
-using Hik.Api.Struct;
-using Hik.Api.Struct.Video;
 
-namespace HikApi.Struct.Video
+namespace Hik.Api.Struct.Video
 {
     [ExcludeFromCodeCoverage]
     [StructLayout(LayoutKind.Sequential)]

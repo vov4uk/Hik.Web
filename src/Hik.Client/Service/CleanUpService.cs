@@ -13,25 +13,18 @@ namespace Hik.Client.Service
     public class CleanUpService : RecurrentJobBase<MediaFileDTO>
     {
         private const double Gb = 1024.0 * 1024.0 * 1024.0;
-        private readonly IDirectoryHelper directoryHelper;
         private readonly IFilesHelper filesHelper;
 
         public CleanUpService(IDirectoryHelper directoryHelper, IFilesHelper filesHelper)
+            : base(directoryHelper)
         {
-            this.directoryHelper = directoryHelper;
             this.filesHelper = filesHelper;
         }
 
-        public override Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var cleanupConfig = config as CleanupConfig;
             var destination = cleanupConfig.DestinationFolder;
-            this.logger.Info("Start CleanUpService");
-            if (!this.directoryHelper.DirectoryExists(destination))
-            {
-                this.logger.Error($"Output doesn't exist: {destination}");
-                return default;
-            }
 
             var allFiles = this.directoryHelper.EnumerateFiles(destination).OrderByDescending(file => this.filesHelper.GetCreationDate(file));
             List<MediaFileDTO> deleteFilesResult = new List<MediaFileDTO>();

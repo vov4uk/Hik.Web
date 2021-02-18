@@ -30,7 +30,6 @@ namespace JobHost
                     parameters.ConfigFilePath, 
                     parameters.ConnectionString, 
                     parameters.ActivityId);
-                job.Parameters = parameters;
                 job.ExecuteAsync().GetAwaiter().GetResult();
                 logger.Info("JobHost. Activity completed execution.");
             }

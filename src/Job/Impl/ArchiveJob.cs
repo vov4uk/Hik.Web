@@ -17,9 +17,8 @@ namespace Job.Impl
             : base(trigger, configFilePath, connectionString, activityId)
         {
             Config = HikConfig.GetConfig<ArchiveConfig>(configFilePath);
+            LogInfo(Config?.ToString());
         }
-
-        public override JobType JobType => JobType.Archive;
 
         public override Task InitializeProcessingPeriod()
         {

@@ -2,7 +2,6 @@
 using Hik.Api.Helpers;
 using Hik.Api.Struct;
 using Hik.Api.Struct.Video;
-using HikApi.Struct.Video;
 using System;
 using System.Runtime.InteropServices;
 

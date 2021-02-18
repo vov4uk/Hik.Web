@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
@@ -13,9 +12,7 @@ namespace Hik.Web.Pages
     {
         private readonly DataContext dataContext;
 
-        public IReadOnlyCollection<Camera> Cameras { get; private set; }
-
-        public IReadOnlyCollection<MediaFile> Files { get; private set; }
+        public IReadOnlyCollection<JobTrigger> Triggers { get; private set; }
 
         public IReadOnlyCollection<DailyStatistic> Statistics { get; private set; }
 
@@ -26,19 +23,19 @@ namespace Hik.Web.Pages
 
         public async Task OnGet()
         {
-            Cameras = await this.dataContext.Cameras.ToListAsync();
-            Files = await this.dataContext.Files.FromSqlRaw(@"SELECT *
-FROM File
-WHERE ID IN (
-	SELECT m.ID
-	FROM (
-	SELECT id
-	,      MAX(Date)
-	FROM File
-	GROUP By CameraId
-	) m )").ToListAsync();
-            Statistics = await this.dataContext.DailyStatistics.Where(x => x.Period == DateTime.Now.Date).ToListAsync();
+            Triggers = await this.dataContext.JobTriggers.ToListAsync();
+            var list = new List<DailyStatistic>();
+            foreach (var item in Triggers)
+            {
+                var last = await this.dataContext.DailyStatistics.FirstOrDefaultAsync(
+                x => x.JobTriggerId == item.Id && x.Period == (item.LastSync ?? DateTime.Now).Date);
+                if (last != null)
+                {
+                    list.Add(last);
+                }
+            }
 
+            Statistics = list;
         }
     }
 }

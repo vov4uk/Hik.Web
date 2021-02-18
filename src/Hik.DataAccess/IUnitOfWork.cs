@@ -13,7 +13,7 @@ namespace Hik.DataAccess
 
         void SaveChanges();
 
-        Task<int> SaveChangesAsync(HikJob job, Camera camera);
+        Task<int> SaveChangesAsync(HikJob job);
     }
 
     public interface IUnitOfWork<out TContext> : IUnitOfWork where TContext : DbContext

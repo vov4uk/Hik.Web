@@ -11,16 +11,15 @@ namespace Hik.Client.Service
 {
     public class DeleteSevice : RecurrentJobBase<MediaFileDTO>
     {
-        private readonly IDirectoryHelper directoryHelper;
         private readonly IFilesHelper filesHelper;
 
         public DeleteSevice(IDirectoryHelper directoryHelper, IFilesHelper filesHelper)
+            : base(directoryHelper)
         {
-            this.directoryHelper = directoryHelper;
             this.filesHelper = filesHelper;
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             logger.Info("Start DeleteSevice");
 
@@ -32,13 +31,6 @@ namespace Hik.Client.Service
         private async Task<IReadOnlyCollection<MediaFileDTO>> DeleteInternal(DateTime cutOff, CameraConfig camera)
         {
             var destination = camera.DestinationFolder;
-
-            if (!directoryHelper.DirectoryExists(destination))
-            {
-                logger.Error($"Output doesn't exist: {destination}");
-                return default;
-            }
-
             var filesToDelete = directoryHelper.EnumerateFiles(destination);
 
             logger.Info($"Destination: {destination}");

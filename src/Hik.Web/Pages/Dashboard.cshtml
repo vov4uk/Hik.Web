@@ -6,29 +6,34 @@
 
 <h2>Dashboard</h2>
 
-@if (Model.Cameras != null && Model.Cameras.Any())
+@if (Model.Triggers != null && Model.Triggers.Any())
 {
     <table class="table">
         <thead>
             <tr>
-                <th>@Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().Alias)</th>
-                <th>@Html.DisplayNameFor(model => model.Cameras.FirstOrDefault().LastSync)</th>
+                <th>@Html.DisplayNameFor(model => model.Triggers.FirstOrDefault().TriggerKey)</th>
+                <th>@Html.DisplayNameFor(model => model.Triggers.FirstOrDefault().LastSync)</th>
                 <th>Latest</th>
                 <th>Files</th>
                 <th>Size</th>
+                <th>Duration</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.Cameras)
+            @foreach (var item in Model.Triggers)
             {
-            var statSize = Model.Statistics.FirstOrDefault(x => x.CameraId == item.Id)?.FilesSize ?? 0;
-            string size = Hik.Client.Helpers.Utils.FormatBytes(statSize);
+                var statSize = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id)?.FilesSize ?? 0;
+                var statDuration = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id)?.TotalDuration ?? 0;
+                string size = Hik.Client.Helpers.Utils.FormatBytes(statSize);
+                string dur = Hik.Client.Helpers.Utils.FormatSeconds((double)statDuration);
+                string triggerString = item.ToString();
                 <tr>
-                    <td><a asp-page="./Statistic" asp-route-cameraId="@item.Id">@Html.DisplayFor(modelItem => item.Alias)</a></td>
+                    <td><a asp-page="./Statistic" asp-route-triggerId="@item.Id">@triggerString</a></td>
                     <td>@Html.DisplayFor(modelItem => item.LastSync)</td>
-                    <td>@Html.DisplayFor(modelItem => Model.Files.FirstOrDefault(x => x.CameraId == item.Id).Date)</td>
-                    <td>@Html.DisplayFor(modelItem => Model.Statistics.FirstOrDefault(x => x.CameraId == item.Id).FilesCount)</td>
+                    <td></td>
+                    <td>@Html.DisplayFor(modelItem => Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id).FilesCount)</td>
                     <td>@size</td>
+                    <td>@dur</td>
                 </tr>
             }
         </tbody>

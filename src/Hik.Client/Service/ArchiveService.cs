@@ -1,66 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using MediaToolkit;
 
 namespace Hik.Client.Service
 {
     public class ArchiveService : RecurrentJobBase<MediaFileDTO>
     {
-        // 2021 01 13 12 17 14 361
-        private const string FileNameDateTimeFormat = "yyyyMMddHHmmssfff";
-        private readonly IDirectoryHelper directoryHelper;
         private readonly IFilesHelper filesHelper;
 
         public ArchiveService(IDirectoryHelper directoryHelper, IFilesHelper filesHelper)
+            : base(directoryHelper)
         {
-            this.directoryHelper = directoryHelper;
             this.filesHelper = filesHelper;
         }
 
-        public override Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var archiveConfig = config as ArchiveConfig;
-            var source = archiveConfig.SourceFolder;
-            var destination = config.DestinationFolder;
-
-            this.logger.Info("Start ArchiveService");
-            if (!this.directoryHelper.DirectoryExists(source))
-            {
-                this.logger.Error($"Output doesn't exist: {source}");
-                return default;
-            }
 
             var result = new List<MediaFileDTO>();
-            var allFiles = this.directoryHelper.EnumerateFiles(source);
+            var allFiles = this.directoryHelper.EnumerateFiles(archiveConfig.SourceFolder).SkipLast(archiveConfig.SkipLast);
 
             try
             {
                 foreach (var oldFile in allFiles)
                 {
-                    var dateString = this.filesHelper.GetFileNameWithoutExtension(oldFile).Split('_')[2];
-                    var ext = filesHelper.GetExtension(oldFile);
+                    DateTime date = GetCreationDate(archiveConfig.FileNameDateTimeFormat, oldFile, archiveConfig.FileNamePattern);
+                    string ext = filesHelper.GetExtension(oldFile);
+                    int duration = GetMediaFileDuration(oldFile, ext);
 
-                    if (!DateTime.TryParseExact(
-                        dateString,
-                        FileNameDateTimeFormat,
-                        System.Globalization.CultureInfo.InvariantCulture,
-                        System.Globalization.DateTimeStyles.None,
-                        out var date))
-                    {
-                        date = filesHelper.GetCreationDate(oldFile);
-                    }
-
-                    var newFilename = dateString + ext;
-                    var workingDirectory = GetWorkingDirectory(destination, date);
-                    var newFilePath = GetPathSafety(newFilename, workingDirectory);
-
+                    var newFileName = date.ToArchiveFileString(duration, ext);
+                    var newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(config.DestinationFolder, date));
                     this.filesHelper.RenameFile(oldFile, newFilePath);
-                    result.Add(new MediaFileDTO { Date = date, Name = newFilename, Duration = 1, Size = filesHelper.FileSize(newFilePath) });
+                    result.Add(new MediaFileDTO { Date = date, Name = newFileName, Duration = duration, Size = filesHelper.FileSize(newFilePath) });
                 }
             }
             catch (Exception ex)
@@ -71,6 +51,56 @@ namespace Hik.Client.Service
             return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
         }
 
+        private static int GetMediaFileDuration(string oldFile, string ext)
+        {
+            int duration = 0;
+
+            if (ext == ".mp4")
+            {
+                MediaToolkit.Model.MediaFile inputFile = new MediaToolkit.Model.MediaFile { Filename = oldFile };
+
+                using (Engine engine = new Engine())
+                {
+                    engine.GetMetadata(inputFile);
+                }
+
+                duration = (int)inputFile.Metadata.Duration.TotalSeconds;
+            }
+
+            return duration;
+        }
+
+        private DateTime GetCreationDate(string dateTimeFormat, string oldFile, string nameTemplate)
+        {
+            string fileName = filesHelper.GetFileNameWithoutExtension(oldFile);
+            List<string> nameParts = ReverseStringFormat(nameTemplate, fileName);
+            DateTime date = default;
+            bool nameParsed = false;
+            if (nameParts != null && nameParts.Any())
+            {
+                foreach (var name in nameParts)
+                {
+                    if (DateTime.TryParseExact(
+                    name,
+                    dateTimeFormat,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None,
+                    out date))
+                    {
+                        nameParsed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!nameParsed || date.Year == 1970 || date.Year == 1)
+            {
+                date = filesHelper.GetCreationDate(oldFile);
+            }
+
+            return date;
+        }
+
         private string GetWorkingDirectory(string destinationFolder, DateTime date)
         {
             return filesHelper.CombinePath(destinationFolder, date.ToPhotoDirectoryNameString());
@@ -79,9 +109,28 @@ namespace Hik.Client.Service
         private string GetPathSafety(string file, string directory)
         {
             filesHelper.FolderCreateIfNotExist(directory);
+            return filesHelper.CombinePath(directory, file);
+        }
 
-            string destinationFilePath = filesHelper.CombinePath(directory, file);
-            return destinationFilePath;
+        private List<string> ReverseStringFormat(string template, string str)
+        {
+            // Handels regex special characters.
+            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => "\\"
+             + m.Value);
+
+            string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)") + "$";
+
+            Regex r = new Regex(pattern);
+            Match m = r.Match(str);
+
+            List<string> ret = new List<string>();
+
+            for (int i = 1; i < m.Groups.Count; i++)
+            {
+                ret.Add(m.Groups[i].Value);
+            }
+
+            return ret;
         }
     }
 }

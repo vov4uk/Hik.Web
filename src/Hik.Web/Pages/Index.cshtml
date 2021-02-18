@@ -6,7 +6,7 @@
 <table class="table">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.Jobs[0].JobType)</th>
+            <th>@Html.DisplayNameFor(model => model.Jobs[0].JobTrigger)</th>
             <th>@Html.DisplayNameFor(model => model.Jobs[0].Started)</th>
             <th>@Html.DisplayNameFor(model => model.Jobs[0].Finished)</th>
             <th>@Html.DisplayNameFor(model => model.Jobs[0].PeriodStart)</th>
@@ -18,12 +18,13 @@
     <tbody>
         @foreach (var item in Model.Jobs)
         {
-            string relativeDate = IndexModel.GetRelativeTime(item.Started);
-            string relativeFinishedDate = item.Finished != null ? IndexModel.GetRelativeTime(item.Finished.Value) : "";
+            string relativeDate = Hik.Client.Helpers.Utils.GetRelativeTime(item.Started);
+            string relativeFinishedDate = Hik.Client.Helpers.Utils.GetRelativeTime(item.Finished);
+            string trigger = item.JobTrigger.ToString();
         <tr data-status="@item.Success" class="failed">
-            <td><a asp-page="./Index" asp-route-jobType="@item.JobType">@Html.DisplayFor(modelItem => item.JobType)</a></td> 
-            <td><span title="@item.Started">@Html.DisplayFor(modelItem => @relativeDate)</span></td>
-            <td><span title="@item.Finished">@Html.DisplayFor(modelItem => relativeFinishedDate)</span></td>
+            <td><a asp-page="./Index" asp-route-jobTriggerId="@item.JobTriggerId">@trigger</a></td> 
+            <td><span title="@item.Started">@relativeDate</span></td>
+            <td><span title="@item.Finished">@relativeFinishedDate</span></td>
             <td>@Html.DisplayFor(modelItem => item.PeriodStart)</td>
             <td>@Html.DisplayFor(modelItem => item.PeriodEnd)</td>
             <td>@Html.DisplayFor(modelItem => item.FilesCount)</td>
@@ -41,27 +42,27 @@
             @if (Model.Pager.CurrentPage > 1)
             {
                 <li class="page-item">
-                    <a class="page-link" href="/?jobType=@Model.JobType">First</a>
+                    <a class="page-link" href="/?jobTriggerId=@Model.JobTriggerId">First</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="/?jobType=@Model.JobType&p=@(Model.Pager.CurrentPage - 1)">Previous</a>
+                    <a class="page-link" href="/?jobTriggerId=@Model.JobTriggerId&p=@(Model.Pager.CurrentPage - 1)">Previous</a>
                 </li>
             }
 
             @foreach (var p in Model.Pager.Pages)
             {
                 <li class="page-item @(p == Model.Pager.CurrentPage ? "active" : "")">
-                    <a class="page-link" href="/?jobType=@Model.JobType&p=@p">@p</a>
+                    <a class="page-link" href="/?jobTriggerId=@Model.JobTriggerId&p=@p">@p</a>
                 </li>
             }
 
             @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
             {
                 <li class="page-item">
-                    <a class="page-link" href="/?jobType=@Model.JobType&p=@(Model.Pager.CurrentPage + 1)">Next</a>
+                    <a class="page-link" href="/?jobType=@Model.JobTriggerId&p=@(Model.Pager.CurrentPage + 1)">Next</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="/?jobType=@Model.JobType&p=@(Model.Pager.TotalPages)">Last</a>
+                    <a class="page-link" href="/?jobType=@Model.JobTriggerId&p=@(Model.Pager.TotalPages)">Last</a>
                 </li>
             }
         </ul>

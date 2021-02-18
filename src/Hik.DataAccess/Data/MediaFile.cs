@@ -11,9 +11,6 @@ namespace Hik.DataAccess.Data
         [Key]
         public int Id { get; set; }
 
-        [ForeignKey("Camera")]
-        public int CameraId { get; set; }
-
         [ForeignKey("Job")]
         public int JobId { get; set; }
 
@@ -31,8 +28,6 @@ namespace Hik.DataAccess.Data
 
         [Display(Name = "Downloaded")]
         public int? DownloadDuration { get; set; }
-
-        public virtual Camera Camera { get; set; }
 
         public virtual HikJob Job { get; set; }
     }

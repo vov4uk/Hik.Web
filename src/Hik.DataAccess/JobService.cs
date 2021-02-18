@@ -32,106 +32,73 @@ namespace Hik.DataAccess
             mapper = mapperConfig.CreateMapper();
         }
 
-        public async Task SaveJobResultAsync(BaseConfig config)
+        public async Task SaveJobResultAsync()
         {
             using var unitOfWork = factory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<HikJob>();
-            job.Finished = DateTime.Now;            
-
-            Camera camera = await GetCameraSafe(config, unitOfWork);
+            job.Finished = DateTime.Now;
+            await jobRepo.UpdateAsync(job);
 
             if (job.Success)
             {
-                camera.LastSync = job.PeriodEnd;
+                var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
+                var trigger = await triggerRepo.FindByAsync(x => x.Id == job.JobTriggerId);
+                trigger.LastSync = job.PeriodEnd;
             }
-            await jobRepo.UpdateAsync(job);
-            await unitOfWork.SaveChangesAsync(job, camera);
+
+            await unitOfWork.SaveChangesAsync(job);
         }
 
-        public async Task SaveFilesAsync(IReadOnlyCollection<MediaFileDTO> files, BaseConfig cameraConfig)
+        public async Task SaveFilesAsync(IReadOnlyCollection<MediaFileDTO> files)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
-            Camera camera = await GetCameraSafe(cameraConfig, unitOfWork);
 
             var from = files.Min(x => x.Date).Date;
             var to = files.Max(x => x.Date).Date;
 
-            Dictionary<DateTime, DailyStatistic> dailyStat = (await GetDailyStatisticSafe(camera.Id, from, to, unitOfWork)).ToDictionary(k => k.Period, v => v);
+            var dailyStat = (await GetDailyStatisticSafe(job.JobTriggerId, from, to, unitOfWork)).ToDictionary(k => k.Period, v => v);
 
             var group = files.GroupBy(x => x.Date.Date)
-                .Select(x => new { date = x.Key, cnt = x.Count(), size = x.Sum(p => p.Size) });
+                .Select(x => new { date = x.Key, cnt = x.Count(), size = x.Sum(p => p.Size), dur = x.Sum(p => p.Duration) });
 
             foreach (var item in group)
             {
                 var day = dailyStat[item.date];
                 day.FilesCount += item.cnt;
                 day.FilesSize += item.size;
+                day.TotalDuration += item.dur;
             }
 
             await AddEntities(files.Select(x => mapper.Map<MediaFile>(x)).ToList(), unitOfWork);
-            await SaveDailyStatisticSafe(camera.Id, dailyStat.Values, unitOfWork);
-            await unitOfWork.SaveChangesAsync(job, camera);
+            await unitOfWork.SaveChangesAsync(job);
         }
 
-        private async Task<Camera> GetCameraSafe(BaseConfig config, IUnitOfWork unitOfWork)
-        {
-            var cameraRepo = unitOfWork.GetRepository<Camera>();
-            var camera = await cameraRepo.FindByAsync(x => x.Alias == config.Alias);
-            if (camera == null)
-            {
-                camera = mapper.Map<Camera>(config);
-                camera = (await cameraRepo.AddAsync(camera)).Entity;
-                await unitOfWork.SaveChangesAsync();
-            }
-
-            return camera;
-        }
-
-        private async Task<List<DailyStatistic>> GetDailyStatisticSafe(int cameraId, DateTime periodStart, DateTime periodEnd, IUnitOfWork unitOfWork)
+        private async Task<List<DailyStatistic>> GetDailyStatisticSafe(int triggerId, DateTime from, DateTime to, IUnitOfWork unitOfWork)
         {
             var repo = unitOfWork.GetRepository<DailyStatistic>();
-            var daily = await repo.FindManyAsync(x => x.CameraId == cameraId);
+            var daily = await repo.FindManyAsync(x => x.JobTriggerId == triggerId && x.Period >= from && x.Period <= to);
 
-            var from = periodStart.Date;
-            var to = periodEnd.Date;
-
+            var newItems = new List<DailyStatistic>();
             do
             {
                 if (!daily.Any(d => d.Period == from))
                 {
-                    var day = new DailyStatistic
+                    newItems.Add(
+                        new DailyStatistic
                         {
-                            CameraId = cameraId,
+                            JobTriggerId = triggerId,
                             Period = from,
                             FilesCount = 0,
-                            FilesSize = 0
-                        };
-                    daily.Add(day);
+                            FilesSize = 0, 
+                            TotalDuration = 0
+                        });
                 }
                 from = from.AddDays(1);
             } while (from <= to);
 
+            await repo.AddRangeAsync(newItems);
+            daily.AddRange(newItems);
             return daily;
-        }
-
-        private async Task SaveDailyStatisticSafe(int cameraId, ICollection<DailyStatistic> ds, IUnitOfWork unitOfWork)
-        {
-            var repo = unitOfWork.GetRepository<DailyStatistic>();
-            var daily = await repo.FindManyAsync(x => x.CameraId == cameraId);
-
-            var itemsToAdd = new List<DailyStatistic>();
-            foreach (var day in ds)
-            {
-                if (!daily.Any(d => d.Period == day.Period) && day.FilesCount > 0 && day.FilesSize > 0)
-                {
-                    itemsToAdd.Add(day);
-                }
-            }
-
-            if (itemsToAdd.Any())
-            {
-                await repo.AddRangeAsync(itemsToAdd);
-            }
         }
 
         private Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)

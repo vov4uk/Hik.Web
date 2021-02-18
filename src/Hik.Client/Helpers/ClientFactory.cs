@@ -22,15 +22,17 @@
             this.mapper = mapper;
         }
 
-        public IClient Create(CameraConfig camera)
+        public IClient Create(CameraConfig config)
         {
-            switch (camera.ClientType)
+            switch (config.ClientType)
             {
-                case ClientType.HikVision:
-                    return new HikVideoClient(camera, this.hikApi, this.filesHelper, this.mapper);
+                case ClientType.HikVisionVideo:
+                    return new HikVideoClient(config, this.hikApi, this.filesHelper, this.mapper);
+                case ClientType.HikVisionPhoto:
+                    return new HikPhotoClient(config, this.hikApi, this.filesHelper, this.mapper);
                 case ClientType.Yi:
                 case ClientType.Yi720p:
-                    return new YiClient(camera, this.filesHelper);
+                    return new YiClient(config, this.filesHelper);
                 default:
                     throw new NotSupportedException();
             }

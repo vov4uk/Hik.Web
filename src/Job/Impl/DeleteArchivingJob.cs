@@ -11,13 +11,12 @@ namespace Job.Impl
 {
     public class DeleteArchivingJob : JobProcessBase
     {
-        public DeleteArchivingJob(string description, string configFilePath, string connectionString, Guid activityId) 
-            : base(description, configFilePath, connectionString, activityId)
+        public DeleteArchivingJob(string trigger, string configFilePath, string connectionString, Guid activityId) 
+            : base(trigger, configFilePath, connectionString, activityId)
         {
             Config = HikConfig.GetConfig<CameraConfig>(configFilePath);
+            LogInfo(Config?.ToString());
         }
-
-        public override JobType JobType => JobType.DeleteArchiving;
 
         public override Task InitializeProcessingPeriod()
         {

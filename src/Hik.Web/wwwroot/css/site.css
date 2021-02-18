@@ -9,7 +9,7 @@ a.navbar-brand {
 
 /* Provide sufficient contrast against white background */
 a {
-  color: #0366d6;
+  color: #1b6ec2;
 }
 
 .btn-primary {
@@ -27,7 +27,9 @@ a {
 /* Sticky footer styles
 -------------------------------------------------- */
 html {
-  font-size: 12px;
+    font-size: 12px;
+    position: relative;
+    min-height: 100%;
 }
 @media (min-width: 768px) {
   html {
@@ -51,13 +53,6 @@ button.accept-policy {
   line-height: inherit;
 }
 
-/* Sticky footer styles
--------------------------------------------------- */
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
@@ -67,7 +62,6 @@ body {
   bottom: 0;
   width: 100%;
   white-space: nowrap;
-  line-height: 60px; /* Vertically center the text there */
 }
 
 .failed[data-status="False"] {
@@ -77,4 +71,139 @@ body {
 .failed td {
     vertical-align: middle;
     border-top: 1px solid #dee2e6;
+}
+
+aside {
+    display: block;
+    border: 1px;
+}
+
+#container {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div[role="main"] section {
+    margin: 0 0 1em 0;
+    padding: 1em;
+    background: #000000;
+    background: rgba(0,0,0,.75);
+}
+
+div[role="main"] aside p {
+    margin: 0 0 1em 0;
+    padding: 1em;
+    background: #000000;
+    background: rgba(0,0,0,.75);
+}
+
+@media only screen and (min-width: 100px) {
+
+    #container {
+        background: pink;
+    }
+
+    div[role="main"] aside {
+        float: left;
+        width: 100%;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 0 0 2em;
+    }
+}
+
+@media only screen and (min-width: 480px) {
+
+    #container {
+        background: yellow;
+    }
+
+    div[role="main"] aside {
+        float: left;
+        width: 50%;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 0 0 2em;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+
+
+    #container {
+        padding: 2em;
+        background: blue;
+        font-size: 1em;
+    }
+
+    header,
+    footer,
+    div[role="main"] section {
+        padding: 2em;
+    }
+
+    div[role="main"] {
+        overflow: auto;
+        background: none;
+    }
+
+        div[role="main"] aside {
+            float: left;
+            width: 33%;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            padding: 0 0 0 2em;
+        }
+}
+
+@media only screen and (min-width: 1024px) {
+
+
+    div[role="main"] aside {
+        float: left;
+        width: 25%;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 0 0 2em;
+    }
+
+
+    #container {
+        background: red;
+        max-width: 1024px;
+        margin: 0 auto;
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+
+    #container {
+        background: cyan;
+    }
+
+    div[role="main"] aside {
+        float: left;
+        width: 20%;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 0 0 2em;
+    }
+}
+
+.tri-success {
+    background-color: #A0D468;
+}
+.tri-error {
+    background-color: #FC6E51;
+}
+.tri-info {
+    background-color: #E6E9ED;
 }

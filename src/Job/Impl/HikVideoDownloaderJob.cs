@@ -12,13 +12,12 @@ namespace Job.Impl
 {
     public class HikVideoDownloaderJob : JobProcessBase
     {
-        public HikVideoDownloaderJob(string description, string configFilePath, string connectionString, Guid activityId) 
-            : base(description, configFilePath, connectionString, activityId)
+        public HikVideoDownloaderJob(string trigger, string configFilePath, string connectionString, Guid activityId) 
+            : base(trigger, configFilePath, connectionString, activityId)
         {
-            Config = HikConfig.GetConfig<CameraConfig>(configFilePath);
+            Config = HikConfig.GetConfig<CameraConfig>(configFilePath);            
+            LogInfo(Config?.ToString());
         }
-
-        public override JobType JobType => JobType.HikVideoDownloader;
 
         public async override Task<IReadOnlyCollection<MediaFileDTO>> Run()
         { 
@@ -39,7 +38,7 @@ namespace Job.Impl
             LogInfo("Save Video to DB...");
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, JobInstance);
             JobInstance.FilesCount++;
-            await jobResultSaver.SaveFilesAsync(new[] { e.File }, Config);
+            await jobResultSaver.SaveFilesAsync(new[] { e.File });
 
             LogInfo("Save Video to DB. Done");
         }

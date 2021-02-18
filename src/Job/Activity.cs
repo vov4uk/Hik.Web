@@ -10,27 +10,29 @@ namespace Job
     public class Activity
     {
         protected static readonly ILogger logger = LogManager.GetCurrentClassLogger();
+        private ActivityBag bag;
+        private DateTime started;
 
         public readonly Guid Id;
         public Parameters Parameters { get; private set; }
         public int ProcessId
         {
-            get { return hostProcess.Id; }
+            get { return hostProcess?.Id ?? -1; }
         }
 
         public DateTime StartTime
         {
-            get { return hostProcess.StartTime; }
+            get { return hostProcess?.StartTime ?? started; }
         }
 
-        private Process hostProcess;
+        private Process hostProcess = default;
 
         public Activity(Parameters parameters)
         {
             Id = Guid.NewGuid();
             Parameters = parameters;
             Parameters.ActivityId = Id;
-            hostProcess = new Process();
+            bag = new ActivityBag();
 
             Log("Activity. Activity created with parameters {0}.", parameters.ToString());
         }
@@ -56,7 +58,7 @@ namespace Job
             }
             catch (Exception ex) {
 
-                logger.Error($"Activity.Start - catch exception : {ex.Message} : {ex.StackTrace}");
+                logger.Error($"Activity.Start - catch exception : {ex}");
                 EmailHelper.Send(ex);
             }
         }
@@ -82,13 +84,23 @@ namespace Job
             }
 
             Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(jobType, $"{Parameters.Group}.{Parameters.TriggerKey}", Parameters.ConfigFilePath, Parameters.ConnectionString, Parameters.ActivityId);
-            job.Parameters = Parameters;
-            job.ExecuteAsync().GetAwaiter().GetResult();
+            started = DateTime.Now;
+            bag.Add(this);
+            try
+            {
+                job.ExecuteAsync().GetAwaiter().GetResult();
+            }
+            finally
+            {
+                bag.Remove(this);
+            }
+
+            bag.Remove(this);
             return Task.CompletedTask;
 
 #elif RELEASE
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-
+            hostProcess = new Process();
             hostProcess.StartInfo.FileName = $"{Parameters.Group}\\JobHost.exe";
             hostProcess.StartInfo.Arguments = Parameters.ToString();
             hostProcess.StartInfo.CreateNoWindow = true;
@@ -99,15 +111,23 @@ namespace Job
             hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
             hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
             logger.Info($"Activity. Starting : {Parameters}");
+            logger.Info($"{Parameters.Group}\\JobHost.exe");
+            logger.Info(hostProcess.StartInfo.FileName);
+            logger.Info(hostProcess.StartInfo.WorkingDirectory);
             hostProcess.Start();
 
             hostProcess.EnableRaisingEvents = true;
             hostProcess.Exited += (object sender, EventArgs e) =>
             {
                 tcs.SetResult(null);
-                Log("Activity. Process exit with code: {0}", hostProcess.ExitCode.ToString());
+                Log($"Activity. Process exit with code: {hostProcess.ExitCode}");
+                if (!bag.Remove(this))
+                {
+                    Log("Cannot remove activity from ActivityBag");
+                }
             };
 
+            bag.Add(this);
             hostProcess.BeginOutputReadLine();
             hostProcess.BeginErrorReadLine();
 
@@ -115,11 +135,14 @@ namespace Job
 #endif
         }
 
-        private static void LogErrorData(object sender, DataReceivedEventArgs e)
+        private void LogErrorData(object sender, DataReceivedEventArgs e)
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
+                Guid prevId = Trace.CorrelationManager.ActivityId;
+                Trace.CorrelationManager.ActivityId = this.Id;
                 logger.Error($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
+                Trace.CorrelationManager.ActivityId = prevId;
                 EmailHelper.Send(new Exception(e.Data));
             }
         }

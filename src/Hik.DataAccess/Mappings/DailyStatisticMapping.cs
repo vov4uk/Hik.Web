@@ -15,9 +15,9 @@ namespace Hik.DataAccess.Mappings
             builder.HasKey(stat => stat.Id);
 
             builder
-                .HasOne(v => v.Camera)
+                .HasOne(v => v.JobTrigger)
                 .WithMany(camera => camera.DailyStatistics)
-                .HasForeignKey(v => v.CameraId);
+                .HasForeignKey(v => v.JobTriggerId);
             builder.Property(f => f.Period)
                 .HasColumnType("datetime2(0)");
         }

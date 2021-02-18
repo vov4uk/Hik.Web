@@ -6,13 +6,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hik.DataAccess.Data
 {
-    [Table("Job")]
+    [Table(Tables.Job)]
     public class HikJob
     {
         [Key]
         public int Id { get; set; }
 
-        public string JobType { get; set; }
+        [ForeignKey("JobTrigger")]
+        public int JobTriggerId { get; set; }
 
         [Display(Name = "Success")]
         public bool Success { get; set; }
@@ -31,6 +32,8 @@ namespace Hik.DataAccess.Data
 
         [Display(Name = "Files")]
         public int FilesCount { get; set; }
+
+        public JobTrigger JobTrigger { get; set; }
 
         public ExceptionLog ExceptionLog { get; set; }
 

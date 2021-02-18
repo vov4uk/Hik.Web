@@ -1,8 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using Hik.Api;
-using Hik.Api.Struct;
 
-namespace HikApi.Struct.Photo
+namespace Hik.Api.Struct.Photo
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct NET_DVR_FIND_PICTURE_PARAM

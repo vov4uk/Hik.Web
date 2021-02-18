@@ -1,25 +1,29 @@
 ﻿@page
 @model Hik.Web.Pages.StatisticModel
 
-@{ViewData["Title"] = Model.Camera.Alias;}
+@{ViewData["Title"] = Model.Trigger;}
 
-<h2>@Model.Camera.Alias</h2>
+<h2>@Model.Trigger</h2>
 <table class="table">
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(model => model.Statistics[0].Period)</th>
             <th>@Html.DisplayNameFor(model => model.Statistics[0].FilesCount)</th>
             <th>@Html.DisplayNameFor(model => model.Statistics[0].FilesSize)</th>
+            <th>@Html.DisplayNameFor(model => model.Statistics[0].TotalDuration)</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.Statistics)
         {
             string size = Hik.Client.Helpers.Utils.FormatBytes(item.FilesSize);
+            string dur = Hik.Client.Helpers.Utils.FormatSeconds((double)(item.TotalDuration ?? 0));
+
         <tr>
             <td>@Html.DisplayFor(modelItem => item.Period)</td>
             <td>@Html.DisplayFor(modelItem => item.FilesCount)</td>
             <td>@size</td>
+            <td>@dur</td>
         </tr>
         }
     </tbody>
@@ -33,27 +37,27 @@
         @if (Model.Pager.CurrentPage > 1)
          {
           <li class="page-item">
-              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=1">First</a>
+              <a class="page-link" href="?triggerId=@Model.Trigger.Id&p=1">First</a>
           </li>
           <li class="page-item">
-              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=@(Model.Pager.CurrentPage - 1)">Previous</a>
+              <a class="page-link" href="?triggerId=@Model.Trigger.Id&p=@(Model.Pager.CurrentPage - 1)">Previous</a>
           </li>
          }
 
         @foreach (var p in Model.Pager.Pages)
          {
           <li class="page-item @(p == Model.Pager.CurrentPage ? "active" : "")">
-              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=@p">@p</a>
+              <a class="page-link" href="?triggerId=@Model.Trigger.Id&p=@p">@p</a>
           </li>
          }
 
         @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
          {
           <li class="page-item">
-              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=@(Model.Pager.CurrentPage + 1)">Next</a>
+              <a class="page-link" href="?triggerId=@Model.Trigger.Id&p=@(Model.Pager.CurrentPage + 1)">Next</a>
           </li>
           <li class="page-item">
-              <a class="page-link" href="?cameraId=@Model.Camera.Id&p=@(Model.Pager.TotalPages)">Last</a>
+              <a class="page-link" href="?triggerId=@Model.Trigger.Id&p=@(Model.Pager.TotalPages)">Last</a>
           </li>
          }
     </ul>
