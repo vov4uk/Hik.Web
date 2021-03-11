@@ -8,7 +8,7 @@ namespace Hik.Client.Helpers
     [ExcludeFromCodeCoverage]
     public static class Utils
     {
-        public const string DateFormatMilisecconds = "yyyyMMdd_HHmmss.fff";
+        public const string PhotoDateFormat = "yyyyMMdd_HHmmss";
         private const string StartDateTimePrintFormat = "yyyy.MM.dd HH:mm:ss";
         private const string DateFormat = "yyyyMMdd_HHmmss";
         private const string DefaultPath = "/tmp/sd/record/";
@@ -20,10 +20,10 @@ namespace Hik.Client.Helpers
         private const int HOUR = 60 * MINUTE;
         private const int DAY = 24 * HOUR;
         private const int MONTH = 30 * DAY;
+        private static string[] suffix = new string[] { "B", "KB", "MB", "GB", "TB" };
 
         public static string FormatBytes(this long bytes)
         {
-            string[] suffix = { "B", "KB", "MB", "GB", "TB" };
             int i;
             double dblSByte = bytes;
             for (i = 0; i < suffix.Length && bytes >= 1024; i++, bytes /= 1024)
@@ -56,6 +56,12 @@ namespace Hik.Client.Helpers
             return str;
         }
 
+        public static string FormatSeconds(this int? seconds)
+        {
+            var sec = (double)(seconds ?? -1);
+            return sec.FormatSeconds();
+        }
+
         public static string GetRelativeTime(DateTime? yourDate)
         {
             if (!yourDate.HasValue)
@@ -71,19 +77,9 @@ namespace Hik.Client.Helpers
                 return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
             }
 
-            if (delta < 2 * MINUTE)
-            {
-                return "a minute ago";
-            }
-
-            if (delta < 45 * MINUTE)
+            if (delta < 60 * MINUTE)
             {
                 return ts.Minutes + " minutes ago";
-            }
-
-            if (delta < 90 * MINUTE)
-            {
-                return "an hour ago";
             }
 
             if (delta < 24 * HOUR)
@@ -113,12 +109,6 @@ namespace Hik.Client.Helpers
             }
         }
 
-        public static string FormatSeconds(this int? seconds)
-        {
-            var sec = (double)(seconds ?? -1);
-            return sec.FormatSeconds();
-        }
-
         public static string ToPhotoDirectoryNameString(this DateTime date)
         {
             return $"{date.Year:0000}-{date.Month:00}\\{date.Day:00}\\{date.Hour:00}";
@@ -136,7 +126,7 @@ namespace Hik.Client.Helpers
 
         public static string ToPhotoFileNameString(this MediaFileDTO file)
         {
-            return $"{file.Date.ToString(DateFormatMilisecconds)}.jpg";
+            return $"{file.Date.ToString(PhotoDateFormat)}.jpg";
         }
 
         public static string ToVideoDirectoryNameString(this MediaFileDTO file)
@@ -169,6 +159,11 @@ namespace Hik.Client.Helpers
         {
             string durationString = duration > 0 ? $"_{duration}" : string.Empty;
             return $"{date.ToString(DateFormat)}{durationString}{ext}";
+        }
+
+        public static decimal SafeDivision(this decimal numerator, decimal denominator)
+        {
+            return (denominator == 0) ? 0 : numerator / denominator;
         }
 
         private static string GetFileNameformat(ClientType clientType)

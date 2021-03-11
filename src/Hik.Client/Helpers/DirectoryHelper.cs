@@ -89,8 +89,8 @@ namespace Hik.Client.Helpers
         {
             var driveName = Path.GetPathRoot(destination);
 
-            var drive = DriveInfo.GetDrives().Where(x => x.IsReady && x.Name.Equals(driveName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-            return drive;
+            return DriveInfo.GetDrives()
+                .FirstOrDefault(x => x.IsReady && x.Name.Equals(driveName, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

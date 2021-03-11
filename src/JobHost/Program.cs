@@ -5,7 +5,7 @@ using NLog;
 
 namespace JobHost
 {
-    class Program
+    static class Program
     {
         private static ILogger logger = LogManager.GetCurrentClassLogger();
         static void Main(string[] args)

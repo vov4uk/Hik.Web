@@ -8,18 +8,19 @@ using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using MediaToolkit;
 
 namespace Hik.Client.Service
 {
     public class ArchiveService : RecurrentJobBase<MediaFileDTO>
     {
         private readonly IFilesHelper filesHelper;
+        private readonly IVideoHelper videoHelper;
 
-        public ArchiveService(IDirectoryHelper directoryHelper, IFilesHelper filesHelper)
+        public ArchiveService(IDirectoryHelper directoryHelper, IFilesHelper filesHelper, IVideoHelper videoHelper)
             : base(directoryHelper)
         {
             this.filesHelper = filesHelper;
+            this.videoHelper = videoHelper;
         }
 
         protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
@@ -34,10 +35,9 @@ namespace Hik.Client.Service
                 foreach (var oldFile in allFiles)
                 {
                     DateTime date = GetCreationDate(archiveConfig.FileNameDateTimeFormat, oldFile, archiveConfig.FileNamePattern);
-                    string ext = filesHelper.GetExtension(oldFile);
-                    int duration = GetMediaFileDuration(oldFile, ext);
+                    int duration = this.videoHelper.GetDuration(oldFile);
 
-                    var newFileName = date.ToArchiveFileString(duration, ext);
+                    var newFileName = date.ToArchiveFileString(duration, filesHelper.GetExtension(oldFile));
                     var newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(config.DestinationFolder, date));
                     this.filesHelper.RenameFile(oldFile, newFilePath);
                     result.Add(new MediaFileDTO { Date = date, Name = newFileName, Duration = duration, Size = filesHelper.FileSize(newFilePath) });
@@ -49,25 +49,6 @@ namespace Hik.Client.Service
             }
 
             return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
-        }
-
-        private static int GetMediaFileDuration(string oldFile, string ext)
-        {
-            int duration = 0;
-
-            if (ext == ".mp4")
-            {
-                MediaToolkit.Model.MediaFile inputFile = new MediaToolkit.Model.MediaFile { Filename = oldFile };
-
-                using (Engine engine = new Engine())
-                {
-                    engine.GetMetadata(inputFile);
-                }
-
-                duration = (int)inputFile.Metadata.Duration.TotalSeconds;
-            }
-
-            return duration;
         }
 
         private DateTime GetCreationDate(string dateTimeFormat, string oldFile, string nameTemplate)

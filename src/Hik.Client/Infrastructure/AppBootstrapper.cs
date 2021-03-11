@@ -45,9 +45,8 @@ namespace Hik.Client.Infrastructure
             builder.RegisterType<DeleteSevice>();
             builder.RegisterType<ArchiveService>();
             builder.RegisterType<CleanUpService>();
-            IContainer container = builder.Build();
 
-            return container;
+            return builder.Build();
         }
 
         private static void RegisterAutoMapper(ContainerBuilder builder)

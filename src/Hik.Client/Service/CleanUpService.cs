@@ -3,66 +3,51 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
-using Hik.Client.Events;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using NLog;
 
 namespace Hik.Client.Service
 {
-    public class CleanUpService : RecurrentJobBase<MediaFileDTO>
+    public class CleanUpService : DeleteJobBase
     {
         private const double Gb = 1024.0 * 1024.0 * 1024.0;
-        private readonly IFilesHelper filesHelper;
 
         public CleanUpService(IDirectoryHelper directoryHelper, IFilesHelper filesHelper)
-            : base(directoryHelper)
+            : base(directoryHelper, filesHelper)
         {
-            this.filesHelper = filesHelper;
         }
 
         protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var cleanupConfig = config as CleanupConfig;
-            var destination = cleanupConfig.DestinationFolder;
+            var destination = config.DestinationFolder;
 
-            var allFiles = this.directoryHelper.EnumerateFiles(destination).OrderByDescending(file => this.filesHelper.GetCreationDate(file));
             List<MediaFileDTO> deleteFilesResult = new List<MediaFileDTO>();
-
-            this.logger.Info($"Destination: {destination}");
-            this.logger.Info($"Found: {allFiles.Count()} files");
+            var allFiles = this.directoryHelper.EnumerateFiles(destination).Select(x => KeyValuePair.Create(x, this.filesHelper.GetCreationDate(x))).OrderByDescending(file => file.Value);
 
             double freePercentage = 0.0;
             int page = 0;
             int pageSize = cleanupConfig.BatchSize;
             do
             {
-                var totalSpace = this.directoryHelper.GetTotalSpace(destination) / Gb;
-                var freeSpace = this.directoryHelper.GetTotalFreeSpace(destination) / Gb;
+                double totalSpace = this.directoryHelper.GetTotalSpace(destination) / Gb;
+                double freeSpace = this.directoryHelper.GetTotalFreeSpace(destination) / Gb;
 
                 freePercentage = 100 * freeSpace / totalSpace;
-                this.logger.Info($"Free Percentage: {freePercentage,2}");
+                this.logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2}");
 
                 if (freePercentage < cleanupConfig.FreeSpacePercentage)
                 {
                     var filesToDelete = allFiles.SkipLast(page * pageSize).TakeLast(pageSize).ToList();
 
-                    try
+                    var deletedFiles = this.DeleteFiles(filesToDelete, destination);
+                    if (deletedFiles.Count <= 0)
                     {
-                        var deletedFiles = this.DeleteFiles(filesToDelete, destination);
-                        if (deletedFiles.Count <= 0)
-                        {
-                            break;
-                        }
-
-                        deleteFilesResult.AddRange(deletedFiles);
-                        page++;
-                    }
-                    catch (Exception ex)
-                    {
-                        OnExceptionFired(new ExceptionEventArgs(ex), config);
                         break;
                     }
+
+                    deleteFilesResult.AddRange(deletedFiles);
+                    page++;
                 }
                 else
                 {
@@ -74,24 +59,6 @@ namespace Hik.Client.Service
             directoryHelper.DeleteEmptyFolders(destination);
 
             return Task.FromResult(deleteFilesResult as IReadOnlyCollection<MediaFileDTO>);
-        }
-
-        private List<MediaFileDTO> DeleteFiles(List<string> filesToDelete, string basePath)
-        {
-            List<MediaFileDTO> result = new List<MediaFileDTO>();
-            filesToDelete.ForEach(
-                    file =>
-                    {
-                        this.logger.Debug($"Deleting: {file}");
-                        if (filesHelper.FileExists(file))
-                        {
-                            var size = filesHelper.FileSize(file);
-                            var date = filesHelper.GetCreationDate(file);
-                            this.filesHelper.DeleteFile(file);
-                            result.Add(new MediaFileDTO { Date = date, Name = file.Remove(0, basePath.Length), Size = size });
-                        }
-                    });
-            return result;
         }
     }
 }

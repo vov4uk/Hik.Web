@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.Client.Helpers;
@@ -19,56 +18,17 @@ namespace Hik.Client.Service
         private readonly IClientFactory clientFactory;
         private CancellationTokenSource cancelTokenSource;
 
-        public HikDownloaderServiceBase(
+        protected HikDownloaderServiceBase(
             IDirectoryHelper directoryHelper,
-            IClientFactory clientFactory,
-            IMapper mapper)
+            IClientFactory clientFactory)
             : base(directoryHelper)
         {
             this.clientFactory = clientFactory;
-            Mapper = mapper;
         }
 
         public event EventHandler<FileDownloadedEventArgs> FileDownloaded;
 
-        protected IMapper Mapper { get; private set; }
-
         protected IClient Client { get; private set; }
-
-        protected override async Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to)
-        {
-            IReadOnlyCollection<T> jobResult = null;
-            try
-            {
-                using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(JobTimeout)))
-                {
-                    TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
-
-                    cancelTokenSource.Token.Register(() =>
-                    {
-                        taskCompletionSource.TrySetCanceled();
-                    });
-
-                    Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(config as CameraConfig, from, to);
-                    Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
-
-                    if (completedTask == downloadTask)
-                    {
-                        jobResult = await downloadTask;
-                        taskCompletionSource.TrySetResult(true);
-                    }
-
-                    await taskCompletionSource.Task;
-                }
-            }
-            catch (Exception ex)
-            {
-                HandleException(ex, config);
-            }
-
-            cancelTokenSource = null;
-            return jobResult;
-        }
 
         public void Cancel()
         {
@@ -88,6 +48,35 @@ namespace Hik.Client.Service
 
         public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token);
 
+        protected override async Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to)
+        {
+            IReadOnlyCollection<T> jobResult = null;
+
+            using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(config?.Timeout ?? JobTimeout)))
+            {
+                TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
+
+                cancelTokenSource.Token.Register(() =>
+                {
+                    taskCompletionSource.TrySetCanceled();
+                });
+
+                Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(config as CameraConfig, from, to);
+                Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
+
+                if (completedTask == downloadTask)
+                {
+                    jobResult = await downloadTask;
+                    taskCompletionSource.TrySetResult(true);
+                }
+
+                await taskCompletionSource.Task;
+            }
+
+            cancelTokenSource = null;
+            return jobResult;
+        }
+
         protected virtual void OnFileDownloaded(FileDownloadedEventArgs e)
         {
             FileDownloaded?.Invoke(this, e);
@@ -105,12 +94,6 @@ namespace Hik.Client.Service
             }
         }
 
-        private void ForceExit()
-        {
-            Client?.ForceExit();
-            Client = null;
-        }
-
         private async Task<IReadOnlyCollection<T>> InternalDownload(CameraConfig config, DateTime from, DateTime to)
         {
             DateTime appStart = DateTime.Now;
@@ -122,7 +105,7 @@ namespace Hik.Client.Service
             {
                 PrintStatistic(config?.DestinationFolder);
                 var duration = (DateTime.Now - appStart).TotalSeconds;
-                logger.Info($"{config.Alias} -Internal download. Done. Duration  : {duration.FormatSeconds()}");
+                logger.Info($"{config.Alias} - Internal download. Done. Duration  : {duration.FormatSeconds()}");
             }
             else
             {
@@ -165,19 +148,11 @@ namespace Hik.Client.Service
         {
             StringBuilder statisticsSb = new StringBuilder();
             statisticsSb.AppendLine();
-            statisticsSb.AppendLine();
             statisticsSb.AppendLine($"{"Directory Size",-24}: {Utils.FormatBytes(directoryHelper.DirSize(destinationFolder))}");
             statisticsSb.AppendLine($"{"Free space",-24}: {Utils.FormatBytes(directoryHelper.GetTotalFreeSpace(destinationFolder))}");
             statisticsSb.AppendLine(new string('_', 40)); // separator
 
             logger.Info(statisticsSb.ToString());
-        }
-
-        private void HandleException(Exception ex, BaseConfig config)
-        {
-            OnExceptionFired(new ExceptionEventArgs(ex), config);
-
-            ForceExit();
         }
     }
 }

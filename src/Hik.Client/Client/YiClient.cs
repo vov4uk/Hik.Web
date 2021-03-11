@@ -18,12 +18,11 @@ namespace Hik.Client
 
         private readonly CameraConfig config;
         private readonly IFilesHelper filesHelper;
-        private FtpClient ftp;
-        private ILogger logger = LogManager.GetCurrentClassLogger();
-        private MediaFileDTO currentDownloadFile;
+        private readonly IFtpClient ftp;
+        private readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private bool disposedValue = false;
 
-        public YiClient(CameraConfig config, IFilesHelper filesHelper)
+        public YiClient(CameraConfig config, IFilesHelper filesHelper, IFtpClient ftp)
         {
             if (config == null)
             {
@@ -32,9 +31,8 @@ namespace Hik.Client
 
             this.config = config;
             this.filesHelper = filesHelper;
+            this.ftp = ftp;
         }
-
-        public bool IsDownloading => currentDownloadFile != null;
 
         public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
         {
@@ -43,36 +41,17 @@ namespace Hik.Client
             {
                 if (!filesHelper.FileExists(destinationFilePath))
                 {
-                    var remoteFileExist = await ftp.FileExistsAsync(filePath, token);
-
-                    if (remoteFileExist)
-                    {
-                        LogInfo($"{remoteFile.ToVideoUserFriendlyString()}- downloading");
-                        currentDownloadFile = remoteFile;
-                        var tempFile = destinationFilePath + ".tmp";
-                        await ftp.DownloadFileAsync(tempFile, filePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
-
-                        currentDownloadFile = null;
-                        filesHelper.RenameFile(tempFile, destinationFilePath);
-                        remoteFile.Size = filesHelper.FileSize(destinationFilePath);
-
-                        return true;
-                    }
-                    else
-                    {
-                        logger.Error($"{config.Alias} - File not found {filePath}");
-                        return false;
-                    }
+                    return await DownloadInternalAsync(remoteFile, destinationFilePath, filePath, token);
                 }
                 else
                 {
-                    LogInfo($"{remoteFile.ToVideoUserFriendlyString()}- exist");
+                    LogInfo($"{remoteFile.ToVideoUserFriendlyString()} - exist");
                     return false;
                 }
             }
         }
 
-        public Task<IList<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             var result = new List<MediaFileDTO>();
             var end = periodEnd.AddMinutes(-1);
@@ -91,22 +70,18 @@ namespace Hik.Client
                 periodStart = periodStart.AddMinutes(1);
             }
 
-            return Task.FromResult(result as IList<MediaFileDTO>);
+            return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
         }
 
         public void ForceExit()
         {
-            ftp.Disconnect();
-            DeleteCurrentFile();
+            Dispose(true);
         }
 
         public void InitializeClient()
         {
-            ftp = new FtpClient
-            {
-                Host = config.IpAddress,
-                Credentials = new NetworkCredential(config.UserName, config.Password),
-            };
+            ftp.Host = config.IpAddress;
+            ftp.Credentials = new NetworkCredential(config.UserName, config.Password);
         }
 
         public bool Login()
@@ -130,8 +105,29 @@ namespace Hik.Client
                 ftp?.Disconnect();
                 ftp?.Dispose();
 
-                currentDownloadFile = null;
                 disposedValue = true;
+            }
+        }
+
+        private async Task<bool> DownloadInternalAsync(MediaFileDTO remoteFile, string destinationFilePath, string filePath, CancellationToken token)
+        {
+            var remoteFileExist = await ftp.FileExistsAsync(filePath, token);
+
+            if (remoteFileExist)
+            {
+                LogInfo($"{remoteFile.ToVideoUserFriendlyString()} - downloading");
+                var tempFile = destinationFilePath + ".tmp";
+                await ftp.DownloadFileAsync(tempFile, filePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
+
+                filesHelper.RenameFile(tempFile, destinationFilePath);
+                remoteFile.Size = filesHelper.FileSize(destinationFilePath);
+
+                return true;
+            }
+            else
+            {
+                logger.Error($"{config.Alias} - File not found {filePath}");
+                return false;
             }
         }
 
@@ -140,35 +136,12 @@ namespace Hik.Client
             string workingDirectory = GetWorkingDirectory(remoteFile);
             filesHelper.FolderCreateIfNotExist(workingDirectory);
 
-            string destinationFilePath = GetFullPath(remoteFile, workingDirectory);
-            return destinationFilePath;
+            return filesHelper.CombinePath(workingDirectory, remoteFile.ToYiFileNameString());
         }
 
         private string GetWorkingDirectory(MediaFileDTO file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, file.ToYiDirectoryNameString());
-        }
-
-        private string GetFullPath(MediaFileDTO file, string directory = null)
-        {
-            string folder = directory ?? GetWorkingDirectory(file);
-            return filesHelper.CombinePath(folder, file.ToYiFileNameString());
-        }
-
-        private void DeleteCurrentFile()
-        {
-            if (currentDownloadFile != null)
-            {
-                string path = GetFullPath(currentDownloadFile);
-                logger.Warn($"Removing file {path}");
-                filesHelper.DeleteFile(path);
-
-                currentDownloadFile = null;
-            }
-            else
-            {
-                logger.Warn("HikClient.DeleteCurrentFile : Nothing to delete");
-            }
         }
 
         private void LogInfo(string msg)

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.Client.Helpers;
@@ -13,12 +12,12 @@ namespace Hik.Client.Service
 {
     public class HikVideoDownloaderService : HikDownloaderServiceBase<MediaFileDTO>
     {
-        public HikVideoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory, IMapper mapper)
-            : base(directoryHelper, clientFactory, mapper)
+        public HikVideoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory)
+            : base(directoryHelper, clientFactory)
         {
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token = default)
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token)
         {
             int j = 1;
             foreach (var video in remoteFiles)
@@ -38,7 +37,7 @@ namespace Hik.Client.Service
         {
             List<MediaFileDTO> videos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
 
-            this.logger.Info($"Video searching finished. Found {videos.Count} files");
+            this.logger.Info($"Found {videos.Count} videos");
             return videos;
         }
 
@@ -54,8 +53,8 @@ namespace Hik.Client.Service
                 file.DownloadDuration = duration;
 
                 int? videoDutation = file.Duration;
-                this.logger.Info($"Duration {duration.FormatSeconds()}, avg speed {Utils.FormatBytes((long)(file.Size / duration))}/s");
-                this.logger.Info($"Video    {videoDutation.FormatSeconds()}, avg rate {Utils.FormatBytes((long)(file.Size / videoDutation))}/s");
+                this.logger.Info($"Duration {duration.FormatSeconds()}, avg speed {Utils.FormatBytes((long)Utils.SafeDivision(file.Size, duration.Value))}/s");
+                this.logger.Info($"Video    {videoDutation.FormatSeconds()}, avg rate {Utils.FormatBytes((long)Utils.SafeDivision(file.Size, videoDutation.Value))}/s");
                 return true;
             }
 

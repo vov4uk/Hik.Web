@@ -9,7 +9,7 @@ namespace Hik.Api.Services
 {
     public abstract class FileService
     {
-        public virtual async Task<IList<HikRemoteFile>> FindFilesAsync(DateTime periodStart, DateTime periodEnd, Session session)
+        public virtual async Task<IReadOnlyCollection<HikRemoteFile>> FindFilesAsync(DateTime periodStart, DateTime periodEnd, Session session)
         {
             int findId = this.StartFind(session.UserId, periodStart, periodEnd, session.Device.ChannelNumber);
 
@@ -25,7 +25,7 @@ namespace Hik.Api.Services
 
         protected abstract bool FindClose(int findId);
         
-        protected async Task<IEnumerable<HikRemoteFile>> GetFindResults(int findId)
+        protected async Task<IReadOnlyCollection<HikRemoteFile>> GetFindResults(int findId)
         {
             var results = new List<HikRemoteFile>();
             ISourceFile sourceFile = default(ISourceFile);
@@ -39,7 +39,7 @@ namespace Hik.Api.Services
                 }
                 else if (findStatus == HikConst.NET_DVR_FILE_SUCCESS)
                 {
-                    results.Add((HikRemoteFile)sourceFile.ToRemoteFile());
+                    results.Add(sourceFile.ToRemoteFile());
                 }
                 else
                 {

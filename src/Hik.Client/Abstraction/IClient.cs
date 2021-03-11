@@ -8,8 +8,6 @@ namespace Hik.Client.Abstraction
 {
     public interface IClient : IDisposable
     {
-        bool IsDownloading { get; }
-
         void InitializeClient();
 
         bool Login();
@@ -18,6 +16,6 @@ namespace Hik.Client.Abstraction
 
         void ForceExit();
 
-        Task<IList<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
+        Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
     }
 }

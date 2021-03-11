@@ -16,7 +16,7 @@ namespace Hik.Client.Abstraction
 
         void DeleteFile(string path);
 
-        void RenameFile(string path, string newName);
+        void RenameFile(string oldFileName, string newFileName);
 
         string ReadAllText(string path);
 

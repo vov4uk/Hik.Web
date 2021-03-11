@@ -11,9 +11,9 @@ namespace Hik.DataAccess
 
         Task<int> SaveChangesAsync();
 
-        void SaveChanges();
-
         Task<int> SaveChangesAsync(HikJob job);
+
+        void SaveChanges();
     }
 
     public interface IUnitOfWork<out TContext> : IUnitOfWork where TContext : DbContext

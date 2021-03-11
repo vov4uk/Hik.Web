@@ -35,7 +35,7 @@ namespace Job.Impl
 
         public override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
-            JobInstance.PeriodStart = files.Min(x=>x.Date);
+            JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
             return base.SaveResults(files, service);
         }

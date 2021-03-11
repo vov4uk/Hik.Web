@@ -10,7 +10,7 @@ using NLog;
 
 namespace Hik.Client
 {
-    public abstract class HikBaseClient
+    public abstract class HikBaseClient : IDisposable
     {
         protected const int ProgressBarMaximum = 100;
         protected const int ProgressBarMinimum = 0;
@@ -19,11 +19,10 @@ namespace Hik.Client
         protected readonly IFilesHelper filesHelper;
         protected ILogger logger = LogManager.GetCurrentClassLogger();
         protected int downloadId = -1;
-        protected MediaFileDTO currentDownloadFile;
         protected Session session;
         private bool disposedValue = false;
 
-        public HikBaseClient(
+        protected HikBaseClient(
             CameraConfig config,
             IHikApi hikApi,
             IFilesHelper filesHelper,
@@ -39,8 +38,6 @@ namespace Hik.Client
             this.filesHelper = filesHelper;
             this.Mapper = mapper;
         }
-
-        public bool IsDownloading => downloadId >= 0;
 
         protected IMapper Mapper { get; private set; }
 
@@ -63,7 +60,7 @@ namespace Hik.Client
             {
                 session = hikApi.Login(config.IpAddress, config.PortNumber, config.UserName, config.Password);
                 logger.Info($"Sucessfull login to {config}");
-                var status = CheckHardDriveStatus();
+                var status = hikApi.GetHddStatus(session.UserId);
 
                 logger.Info(status?.ToString());
 
@@ -76,21 +73,16 @@ namespace Hik.Client
             }
             else
             {
-                logger.Warn("HikClient.Login : Already logged in");
+                logger.Warn("HikBaseClient.Login : Already logged in");
                 return false;
             }
         }
 
         public void ForceExit()
         {
-            logger.Warn("HikClient.ForceExit");
+            logger.Warn("HikBaseClient.ForceExit");
             StopDownload();
-            DeleteCurrentFile();
-        }
-
-        public HdInfo CheckHardDriveStatus()
-        {
-            return hikApi.GetHddStatus(session.UserId);
+            Dispose(true);
         }
 
         public void Dispose()
@@ -110,7 +102,6 @@ namespace Hik.Client
                 }
 
                 session = null;
-                currentDownloadFile = null;
 
                 hikApi.Cleanup();
                 disposedValue = true;
@@ -136,8 +127,7 @@ namespace Hik.Client
             string workingDirectory = GetWorkingDirectory(remoteFile);
             filesHelper.FolderCreateIfNotExist(workingDirectory);
 
-            string destinationFilePath = GetFullPath(remoteFile, workingDirectory);
-            return destinationFilePath;
+            return filesHelper.CombinePath(workingDirectory, ToFileNameString(remoteFile));
         }
 
         protected void ResetDownloadStatus()
@@ -148,28 +138,6 @@ namespace Hik.Client
         private string GetWorkingDirectory(MediaFileDTO file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, ToDirectoryNameString(file));
-        }
-
-        private string GetFullPath(MediaFileDTO file, string directory = null)
-        {
-            string folder = directory ?? GetWorkingDirectory(file);
-            return filesHelper.CombinePath(folder, ToFileNameString(file));
-        }
-
-        private void DeleteCurrentFile()
-        {
-            if (currentDownloadFile != null)
-            {
-                string path = GetFullPath(currentDownloadFile);
-                logger.Warn($"Removing file {path}");
-                filesHelper.DeleteFile(path);
-
-                currentDownloadFile = null;
-            }
-            else
-            {
-                logger.Warn("HikClient.DeleteCurrentFile : Nothing to delete");
-            }
         }
     }
 }

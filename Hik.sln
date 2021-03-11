@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Client", "src\Hik.Client\Hik.Client.csproj", "{1E49A7B7-1549-4566-84AA-A073179FE013}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Tests", "src\Hik.Tests\Hik.Tests.csproj", "{941C4E4E-2898-4A78-AF93-7A7E6EB87DA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Client.Tests", "src\Hik.Tests\Hik.Client.Tests.csproj", "{941C4E4E-2898-4A78-AF93-7A7E6EB87DA3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Api", "src\Hik.Api\Hik.Api.csproj", "{A20ACAAD-3970-4224-B984-6FBD6321FB85}"
 EndProject

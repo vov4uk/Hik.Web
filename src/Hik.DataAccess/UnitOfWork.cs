@@ -38,16 +38,16 @@ namespace Hik.DataAccess
             return Context.SaveChangesAsync();
         }
         
-        public void SaveChanges()
-        {
-            Context.SaveChanges();
-        }
-
         public async Task<int> SaveChangesAsync(HikJob job)
         {
             this.ProcessAuditItems(job);
             var res = await this.SaveChangesAsync();
             return res;
+        }
+
+        public void SaveChanges()
+        {
+            Context.SaveChanges();
         }
 
         public void Dispose()

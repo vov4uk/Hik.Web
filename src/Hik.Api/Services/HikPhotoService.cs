@@ -10,7 +10,7 @@ namespace Hik.Api.Services
 {
     public class HikPhotoService : FileService
     {
-        public void DownloadFile(int userId, string remoteFileName, long size, string destinationPath)
+        public virtual void DownloadFile(int userId, string remoteFileName, long size, string destinationPath)
         {
             if (size > 0)
             {

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hik.DataAccess.Data;
-using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 
 namespace Hik.DataAccess
@@ -13,23 +12,12 @@ namespace Hik.DataAccess
     {
         private readonly IUnitOfWorkFactory factory;
         private readonly HikJob job;
-        private static readonly IMapper mapper;
+        private static readonly IMapper mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
 
         public JobService(IUnitOfWorkFactory factory, HikJob job)
         {
             this.factory = factory;
             this.job = job;
-        }
-
-        static JobService()
-        {
-            static void configureAutoMapper(IMapperConfigurationExpression x)
-            {
-                x.AddProfile<AutoMapperProfile>();
-            }
-
-            var mapperConfig = new MapperConfiguration(configureAutoMapper);
-            mapper = mapperConfig.CreateMapper();
         }
 
         public async Task SaveJobResultAsync()
@@ -39,7 +27,7 @@ namespace Hik.DataAccess
             job.Finished = DateTime.Now;
             await jobRepo.UpdateAsync(job);
 
-            if (job.Success)
+            if (job.Success && job.PeriodEnd.HasValue)
             {
                 var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
                 var trigger = await triggerRepo.FindByAsync(x => x.Id == job.JobTriggerId);
@@ -111,6 +99,11 @@ namespace Hik.DataAccess
             }
 
             return Task.CompletedTask;
+        }
+
+        static void configureAutoMapper(IMapperConfigurationExpression x)
+        {
+            x.AddProfile<AutoMapperProfile>();
         }
     }
 }

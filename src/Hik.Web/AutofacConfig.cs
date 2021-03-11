@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Hik.Web
 {
-    public class AutofacConfig
+    public static class AutofacConfig
     {
         public static IContainer Container { get; private set; }
 

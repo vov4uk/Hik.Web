@@ -52,7 +52,7 @@ namespace Job.Impl
             await service.SaveFilesAsync(files);
         }
 
-        public JobProcessBase(string trigger, string configFilePath, string connectionString, Guid activityId)
+        protected JobProcessBase(string trigger, string configFilePath, string connectionString, Guid activityId)
         {
             TriggerKey = trigger;
             ConfigPath = configFilePath;

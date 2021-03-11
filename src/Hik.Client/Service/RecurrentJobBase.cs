@@ -22,28 +22,30 @@ namespace Hik.Client.Service
 
         public async Task<IReadOnlyCollection<T>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            this.logger.Info("Start ArchiveService");
-            if (!this.directoryHelper.DirectoryExists(config.DestinationFolder))
+            try
             {
-                this.logger.Error($"Output doesn't exist: {config.DestinationFolder}");
+                this.logger.Info("Start ExecuteAsync");
+                if (!this.directoryHelper.DirectoryExists(config?.DestinationFolder))
+                {
+                    this.logger.Error($"Output doesn't exist: {config?.DestinationFolder}");
+                    return default;
+                }
+
+                return await RunAsync(config, from, to);
+            }
+            catch (Exception ex)
+            {
+                OnExceptionFired(new ExceptionEventArgs(ex), config);
                 return default;
             }
-
-            return await RunAsync(config, from, to);
         }
 
         protected abstract Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to);
 
         protected virtual void OnExceptionFired(ExceptionEventArgs e, BaseConfig config)
         {
-            if (ExceptionFired != null)
-            {
-                ExceptionFired?.Invoke(this, e);
-            }
-            else
-            {
-                logger.Error(e.ToString());
-            }
+            ExceptionFired?.Invoke(this, e);
+            logger.Error(e.ToString());
         }
     }
 }

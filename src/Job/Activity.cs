@@ -10,7 +10,7 @@ namespace Job
     public class Activity
     {
         protected static readonly ILogger logger = LogManager.GetCurrentClassLogger();
-        private ActivityBag bag;
+        private readonly ActivityBag bag;
         private DateTime started;
 
         public readonly Guid Id;

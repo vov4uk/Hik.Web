@@ -10,8 +10,7 @@ namespace Hik.Api.Struct.Video
         public int lChannel;
         public uint dwFileType;
 
-        public uint
-            dwIsLocked; //Is it locked: 0-unlocked file, 1-locked file, 0xff means all files (including locked and unlocked)
+        public uint dwIsLocked; //Is it locked: 0-unlocked file, 1-locked file, 0xff means all files (including locked and unlocked)
 
         public uint dwUseCardNo;
 

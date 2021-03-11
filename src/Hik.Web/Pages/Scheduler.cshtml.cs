@@ -21,7 +21,7 @@ namespace Hik.Web.Pages
     public class SchedulerModel : PageModel
     {
         private readonly DataContext dataContext;
-        private ActivityBag activities = new ActivityBag();
+        private readonly ActivityBag activities = new ActivityBag();
         private readonly Options options = new Options{ DayOfWeekStartIndexZero = false, Use24HourTimeFormat = true };
 
         async public static Task<IList<CronTriggerImpl>> BuildModelAsync()

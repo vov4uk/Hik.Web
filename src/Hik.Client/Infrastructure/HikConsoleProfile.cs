@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Hik.Api.Data;
-using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 
 namespace Hik.Client.Infrastructure
