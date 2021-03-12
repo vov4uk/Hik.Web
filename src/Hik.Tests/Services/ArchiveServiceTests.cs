@@ -90,10 +90,10 @@ namespace Hik.Client.Services.Tests
         }
 
         [Theory]
-        [InlineData("192.168.0.65_01_20210224210928654_MOTION_DETECTION.jpg", 0, "20210224210928654",
-            "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928.jpg")]
+        [InlineData("192.168.0.65_01_20210224210928654_MOTION_DETECTION.jpg", 60, "20210224210928654",
+            "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928_211028.jpg")]
         [InlineData("192.168.0.67_20210207230537_20210224_220227_0.mp4", 60, "20210224_220227", 
-            "192.168.0.67_{1}_{2}_0", "yyyyMMdd_HHmmss", "C:\\2021-02\\24\\22\\20210224_220227_60.mp4")]
+            "192.168.0.67_{1}_{2}_0", "yyyyMMdd_HHmmss", "C:\\2021-02\\24\\22\\20210224_220227_220327.mp4")]
         public async Task ExecuteAsync_FilesFound_ProperFilesStored(
             string sourceFileName, 
             int duration, 
@@ -140,12 +140,12 @@ namespace Hik.Client.Services.Tests
         
         
         [Theory]
-        [InlineData("192.168.0.65_01_19700224210928654_MOTION_DETECTION.jpg", 0, "20210224210928654",
-            "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928.jpg")]
-        [InlineData("192.168.0.65_01_00010224210928654_MOTION_DETECTION.jpg", 0, "20210224210928654",
-            "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928.jpg")]
+        [InlineData("192.168.0.65_01_19700224210928654_MOTION_DETECTION.jpg", 60, "20210224210928654",
+            "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928_211028.jpg")]
+        [InlineData("192.168.0.65_01_00010224210928654_MOTION_DETECTION.jpg", 60, "20210224210928654",
+            "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928_211028.jpg")]
         [InlineData("192.168.0.67_20210207230537_20210224_220227_0.mp4", 60, "20210224_220227", 
-            "192.168.0.65_{1}_{2}_0", "yyyyMMdd_HHmmss", "C:\\2021-02\\24\\22\\20210224_220227_60.mp4")]
+            "192.168.0.65_{1}_{2}_0", "yyyyMMdd_HHmmss", "C:\\2021-02\\24\\22\\20210224_220227_220327.mp4")]
         public async Task ExecuteAsync_FoundFileNamesCantBeParsed_ProperFilesStored(
             string sourceFileName, 
             int duration, 

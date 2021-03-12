@@ -212,8 +212,8 @@
         #region DownloadFileAsync
        
         [Theory]
-        [InlineData(1991, 05, 31, 60, "video", "C:\\1991-05\\31\\19910531_000000_60_video.mp4")]
-        [InlineData(2020, 12, 31, 3600, "ch000000001", "C:\\2020-12\\31\\20201231_000000_3600_ch000000001.mp4")]
+        [InlineData(1991, 05, 31, 60, "video", "C:\\1991-05\\31\\19910531_000000_000100.mp4")]
+        [InlineData(2020, 12, 31, 3600, "ch000000001", "C:\\2020-12\\31\\20201231_000000_010000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, int duration, string name, string fileName)
         {
             var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test" };

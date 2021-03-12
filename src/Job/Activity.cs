@@ -11,7 +11,7 @@ namespace Job
     {
         protected static readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private readonly ActivityBag bag;
-        private DateTime started;
+        private DateTime started = default;
 
         public readonly Guid Id;
         public Parameters Parameters { get; private set; }
@@ -111,9 +111,9 @@ namespace Job
             hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
             hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
             logger.Info($"Activity. Starting : {Parameters}");
-            logger.Info($"{Parameters.Group}\\JobHost.exe");
-            logger.Info(hostProcess.StartInfo.FileName);
-            logger.Info(hostProcess.StartInfo.WorkingDirectory);
+            logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe");
+            logger.Info($"Actual Path : {hostProcess.StartInfo.FileName}");
+            logger.Info($"Working Direktory : {hostProcess.StartInfo.WorkingDirectory}");
             hostProcess.Start();
 
             hostProcess.EnableRaisingEvents = true;

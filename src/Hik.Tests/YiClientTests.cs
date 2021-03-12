@@ -161,10 +161,10 @@
 
         #region DownloadFileAsync
         [Theory]
-        [InlineData(1991, 05, 31, ClientType.Yi,     "/tmp/sd/record/1991Y05M31D00H/00M00S.mp4", "C:\\1991-05\\31\\00\\19910531_000000_00M00S.mp4")]
-        [InlineData(1991, 05, 31, ClientType.Yi720p, "/tmp/sd/record/1991Y05M31D00H/00M00S60.mp4", "C:\\1991-05\\31\\00\\19910531_000000_00M00S.mp4")]
-        [InlineData(2020, 12, 31, ClientType.Yi,     "/tmp/sd/record/2020Y12M31D00H/00M00S.mp4", "C:\\2020-12\\31\\00\\20201231_000000_00M00S.mp4")]
-        [InlineData(2020, 12, 31, ClientType.Yi720p, "/tmp/sd/record/2020Y12M31D00H/00M00S60.mp4", "C:\\2020-12\\31\\00\\20201231_000000_00M00S.mp4")]
+        [InlineData(1991, 05, 31, ClientType.Yi,     "/tmp/sd/record/1991Y05M31D00H/00M00S.mp4", "C:\\1991-05\\31\\00\\19910531_000000.mp4")]
+        [InlineData(1991, 05, 31, ClientType.Yi720p, "/tmp/sd/record/1991Y05M31D00H/00M00S60.mp4", "C:\\1991-05\\31\\00\\19910531_000000.mp4")]
+        [InlineData(2020, 12, 31, ClientType.Yi,     "/tmp/sd/record/2020Y12M31D00H/00M00S.mp4", "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
+        [InlineData(2020, 12, 31, ClientType.Yi720p, "/tmp/sd/record/2020Y12M31D00H/00M00S60.mp4", "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, ClientType clientType, string remoteFilePath, string localFilePath)
         {
             var cameraConfig = new CameraConfig { ClientType = clientType, DestinationFolder = "C:\\", Alias = "test" };

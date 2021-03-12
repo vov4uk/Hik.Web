@@ -21,12 +21,12 @@
     <PackageReference Include="MediaToolkit" Version="1.1.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NLog" Version="4.7.8" />
-    <PackageReference Include="NLog.Targets.Seq" Version="1.2.0" />
+    <PackageReference Include="NLog.Targets.Seq" Version="2.0.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Drawing.Common" Version="5.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 

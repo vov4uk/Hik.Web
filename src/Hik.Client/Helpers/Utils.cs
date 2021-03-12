@@ -8,9 +8,9 @@ namespace Hik.Client.Helpers
     [ExcludeFromCodeCoverage]
     public static class Utils
     {
-        public const string PhotoDateFormat = "yyyyMMdd_HHmmss";
         private const string StartDateTimePrintFormat = "yyyy.MM.dd HH:mm:ss";
         private const string DateFormat = "yyyyMMdd_HHmmss";
+        private const string TimeFormat = "HHmmss";
         private const string DefaultPath = "/tmp/sd/record/";
         private const string YiFilePathFormat = "yyyy'Y'MM'M'dd'D'HH'H'";
         private const string YiFileNameFormat = "mm'M00S'";
@@ -126,7 +126,7 @@ namespace Hik.Client.Helpers
 
         public static string ToPhotoFileNameString(this MediaFileDTO file)
         {
-            return $"{file.Date.ToString(PhotoDateFormat)}.jpg";
+            return $"{file.Date.ToString(DateFormat)}.jpg";
         }
 
         public static string ToVideoDirectoryNameString(this MediaFileDTO file)
@@ -141,12 +141,12 @@ namespace Hik.Client.Helpers
 
         public static string ToVideoFileNameString(this MediaFileDTO file)
         {
-            return $"{file.Date.ToString(DateFormat)}_{file.Duration}_{file.Name}.mp4";
+            return $"{file.Date.ToString(DateFormat)}_{file.Date.AddSeconds((double)file.Duration).ToString(TimeFormat)}.mp4";
         }
 
         public static string ToYiFileNameString(this MediaFileDTO file)
         {
-            return $"{file.Date.ToString(DateFormat)}_{file.Name}.mp4";
+            return $"{file.Date.ToString(DateFormat)}.mp4";
         }
 
         public static string ToYiFilePathString(this DateTime date, ClientType clientType)
@@ -157,7 +157,7 @@ namespace Hik.Client.Helpers
 
         public static string ToArchiveFileString(this DateTime date, int duration, string ext)
         {
-            string durationString = duration > 0 ? $"_{duration}" : string.Empty;
+            string durationString = duration > 0 ? $"_{date.AddSeconds(duration).ToString(TimeFormat)}" : string.Empty;
             return $"{date.ToString(DateFormat)}{durationString}{ext}";
         }
 
