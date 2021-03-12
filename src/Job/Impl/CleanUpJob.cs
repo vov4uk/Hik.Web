@@ -16,7 +16,7 @@ namespace Job.Impl
         public CleanUpJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
-            Config = HikConfig.GetConfig<CleanupConfig>(configFilePath);
+            Config = HikConfigExtentions.GetConfig<CleanupConfig>(configFilePath);
             LogInfo(Config?.ToString());
         }
 

@@ -16,7 +16,7 @@ namespace Job.Impl
         public ArchiveJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
-            Config = HikConfig.GetConfig<ArchiveConfig>(configFilePath);
+            Config = HikConfigExtentions.GetConfig<ArchiveConfig>(configFilePath);
             LogInfo(Config?.ToString());
         }
 

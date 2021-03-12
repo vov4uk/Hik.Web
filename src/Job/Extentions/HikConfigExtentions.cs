@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Job
 {
     [ExcludeFromCodeCoverage]
-    public static class HikConfig
+    public static class HikConfigExtentions
     {
         public static T GetConfig<T>(string configPath = "configuration.json")
         {

@@ -5,7 +5,6 @@ using System.Net.Mail;
 using System.Reflection;
 using System.Text;
 using Hik.Api;
-using Hik.DTO.Config;
 using Newtonsoft.Json;
 using NLog;
 
@@ -24,7 +23,7 @@ namespace Job.Email
             Settings = JsonConvert.DeserializeObject<EmailConfig>(File.ReadAllText(configPath));
         }
 
-        public static void Send(Exception ex, BaseConfig config = null)
+        public static void Send(Exception ex, string alias = null, string hikJobDetails = null)
         {
             try
             {
@@ -39,14 +38,14 @@ namespace Job.Email
 </ul>";
                 }
 
-                var msg = BuildBody(errorDetails, config?.ToHtmlTable(), ex.Message, ex.ToString());
+                var msg = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.ToString());
 
                 if (Settings != null)
                 {
                     using var mail = new MailMessage
                     {
                         From = new MailAddress(Settings.UserName),
-                        Subject = $"{config?.Alias ?? "Hik.Web"} error",
+                        Subject = $"{alias ?? "Hik.Web"} {(ex as HikException)?.ErrorMessage ?? ex.Message}",
                         Body = msg,
                         IsBodyHtml = true,
                     };
@@ -69,14 +68,13 @@ namespace Job.Email
             {
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("Failed to Sent Email");
-                sb.AppendLine($"Parent exeption {ex.Message}");
-                sb.AppendLine($"Parent exeption {ex.StackTrace}");
+                sb.AppendLine($"Parent exeption {ex.Message} - {ex.StackTrace}");
                 sb.AppendLine($"Local exeption {e}");
                 logger.Error(sb.ToString());
             }
         }
 
-        private static string BuildBody(string details, string cameraConfig, string message, string callStack)
+        private static string BuildBody(string details, string hikJobDetails, string message, string callStack)
         {
             return $@"<!DOCTYPE html>
 <html>
@@ -101,7 +99,7 @@ tr:nth-child(even) {{
 </head>
 <body>
 
-{cameraConfig}
+{hikJobDetails}
 
 {details}
 

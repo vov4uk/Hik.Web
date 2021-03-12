@@ -26,12 +26,9 @@ namespace Hik.DTO.Config
         public virtual string ToHtmlTable()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("<table>");
             sb.AppendLine(this.GetHtmlRow("Alias", this.Alias));
             sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
             sb.AppendLine(this.GetHtmlRow("Timeout", this.Timeout.ToString()));
-            sb.AppendLine("</table>");
-
             return sb.ToString();
         }
 

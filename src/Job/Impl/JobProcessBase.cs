@@ -10,6 +10,7 @@ using Hik.DTO.Contracts;
 using Job.Email;
 using NLog;
 using Hik.Client.Events;
+using Job.Extentions;
 
 namespace Job.Impl
 {
@@ -116,9 +117,10 @@ namespace Job.Impl
             this.JobInstance.Success = false;
             Logger.Error(e.ToString());
             LogExceptionToDB(e);
-            var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
+            JobService jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
             jobResultSaver.SaveJobResultAsync().GetAwaiter().GetResult();
-            EmailHelper.Send(e, Config);
+            var details = JobInstance.ToHtmlTable(Config);
+            EmailHelper.Send(e, Config.Alias, details);
         }
 
         private void LogExceptionToDB(Exception e)

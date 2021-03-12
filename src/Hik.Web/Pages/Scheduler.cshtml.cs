@@ -7,6 +7,7 @@ using CronExpressionDescriptor;
 using Hik.DataAccess;
 using Hik.DTO.Contracts;
 using Job;
+using Job.Extentions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;

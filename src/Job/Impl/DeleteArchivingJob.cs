@@ -14,7 +14,7 @@ namespace Job.Impl
         public DeleteArchivingJob(string trigger, string configFilePath, string connectionString, Guid activityId) 
             : base(trigger, configFilePath, connectionString, activityId)
         {
-            Config = HikConfig.GetConfig<CameraConfig>(configFilePath);
+            Config = HikConfigExtentions.GetConfig<CameraConfig>(configFilePath);
             LogInfo(Config?.ToString());
         }
 
