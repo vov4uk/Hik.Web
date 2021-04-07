@@ -45,7 +45,7 @@ namespace Job.Email
                     using var mail = new MailMessage
                     {
                         From = new MailAddress(Settings.UserName),
-                        Subject = $"{alias ?? "Hik.Web"} {(ex as HikException)?.ErrorMessage ?? ex.Message}",
+                        Subject = $"{alias ?? "Hik.Web"} {(ex as HikException)?.ErrorMessage ?? ex.Message}".Replace('\r', ' ').Replace('\n', ' '),
                         Body = msg,
                         IsBodyHtml = true,
                     };

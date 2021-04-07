@@ -31,7 +31,7 @@ namespace Hik.Web
         public void Configure(IApplicationBuilder app, 
             IHostApplicationLifetime lifetime)
         {
-            var quartz = new QuartzStartup();
+            var quartz = new QuartzStartup(Configuration);
 
             lifetime.ApplicationStarted.Register(quartz.Start);
             lifetime.ApplicationStopping.Register(quartz.Stop);

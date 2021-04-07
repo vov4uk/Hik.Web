@@ -1,15 +1,19 @@
-﻿using Quartz;
+﻿using Microsoft.Extensions.Configuration;
+using Quartz;
 using Quartz.Impl;
 using System;
-using System.Collections.Specialized;
-using System.IO;
-using System.Reflection;
 
 namespace Hik.Web
 {
     public class QuartzStartup
     {
         private IScheduler scheduler;
+        private IConfiguration configuration;
+        public QuartzStartup(IConfiguration configuration)
+        {
+            this.configuration = configuration;
+        }
+
 
         public void Start()
         {
@@ -18,22 +22,7 @@ namespace Hik.Web
                 throw new InvalidOperationException("Already started.");
             }
 
-            string configFileName = "quartz_jobs.xml";
-#if DEBUG
-            configFileName = configFileName.Replace(".xml", ".debug.xml");
-#endif
-
-            var properties = new NameValueCollection
-            {
-
-                ["quartz.serializer.type"] = "json",
-                ["quartz.scheduler.instanceName"] = "default",
-                ["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz",
-                ["quartz.threadPool.threadCount"] = "3",
-                ["quartz.jobStore.type"] = "Quartz.Simpl.RAMJobStore, Quartz",
-                ["quartz.plugin.xml.type"] = "Quartz.Plugin.Xml.XMLSchedulingDataProcessorPlugin, Quartz.Plugins",
-                ["quartz.plugin.xml.fileNames"] = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location), configFileName),
-            };
+            var properties = new QuartzOption(configuration).ToProperties();
 
             var schedulerFactory = new StdSchedulerFactory(properties);
             scheduler = schedulerFactory.GetScheduler().GetAwaiter().GetResult();

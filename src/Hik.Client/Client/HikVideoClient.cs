@@ -25,7 +25,7 @@ namespace Hik.Client
         public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
         {
             string targetFilePath = GetPathSafety(remoteFile);
-            string tempFile = targetFilePath + ".tmp";
+            string tempFile = filesHelper.GetTempFileName();
             if (this.StartVideoDownload(remoteFile, targetFilePath, tempFile))
             {
                 do

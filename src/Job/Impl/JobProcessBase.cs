@@ -119,8 +119,12 @@ namespace Job.Impl
             LogExceptionToDB(e);
             JobService jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
             jobResultSaver.SaveJobResultAsync().GetAwaiter().GetResult();
-            var details = JobInstance.ToHtmlTable(Config);
-            EmailHelper.Send(e, Config.Alias, details);
+
+            if (Config.SentEmailOnError)
+            {
+                var details = JobInstance.ToHtmlTable(Config);
+                EmailHelper.Send(e, Config.Alias, details);
+            }
         }
 
         private void LogExceptionToDB(Exception e)

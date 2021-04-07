@@ -12,6 +12,8 @@ namespace Hik.DTO.Config
 
         public string DestinationFolder { get; set; }
 
+        public bool SentEmailOnError { get; set; } = true;
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

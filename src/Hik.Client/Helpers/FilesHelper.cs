@@ -90,5 +90,10 @@ namespace Hik.Client.Helpers
         {
             return Path.GetExtension(path);
         }
+
+        public string GetTempFileName()
+        {
+            return Path.GetTempFileName();
+        }
     }
 }

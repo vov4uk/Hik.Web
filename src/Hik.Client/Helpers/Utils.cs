@@ -131,11 +131,6 @@ namespace Hik.Client.Helpers
 
         public static string ToVideoDirectoryNameString(this MediaFileDTO file)
         {
-            return $"{file.Date.Year:0000}-{file.Date.Month:00}\\{file.Date.Day:00}";
-        }
-
-        public static string ToYiDirectoryNameString(this MediaFileDTO file)
-        {
             return $"{file.Date.Year:0000}-{file.Date.Month:00}\\{file.Date.Day:00}\\{file.Date.Hour:00}";
         }
 

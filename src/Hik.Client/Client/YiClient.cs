@@ -81,6 +81,11 @@ namespace Hik.Client
         public void InitializeClient()
         {
             ftp.Host = config.IpAddress;
+            ftp.ConnectTimeout = 5 * 1000;
+            ftp.DataConnectionReadTimeout = 5 * 1000;
+            ftp.ReadTimeout = 5 * 1000;
+            ftp.DataConnectionConnectTimeout = 5 * 1000;
+            ftp.RetryAttempts = 3;
             ftp.Credentials = new NetworkCredential(config.UserName, config.Password);
         }
 
@@ -141,7 +146,7 @@ namespace Hik.Client
 
         private string GetWorkingDirectory(MediaFileDTO file)
         {
-            return filesHelper.CombinePath(config.DestinationFolder, file.ToYiDirectoryNameString());
+            return filesHelper.CombinePath(config.DestinationFolder, file.ToVideoDirectoryNameString());
         }
 
         private void LogInfo(string msg)

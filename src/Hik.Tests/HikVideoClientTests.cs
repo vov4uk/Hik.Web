@@ -230,6 +230,7 @@
             this.filesMock.Setup(x => x.FileSize(targetName)).Returns(1);
             this.filesMock.Setup(x => x.RenameFile(tempName, targetName));
             this.filesMock.Setup(x => x.FileExists(targetName)).Returns(false);
+            this.filesMock.Setup(x => x.GetTempFileName()).Returns(tempName);
 
             this.videoServiceMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), remoteFile.Name, tempName)).Returns(downloadHandler);
             this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<int>())).Returns(100);
@@ -243,6 +244,7 @@
             this.filesMock.Verify(x => x.CombinePath(It.IsAny<string[]>()), Times.Exactly(2));
             this.filesMock.Verify(x => x.FolderCreateIfNotExist(It.IsAny<string>()), Times.Once);
             this.filesMock.Verify(x => x.FileExists(targetName), Times.Once);
+            this.filesMock.Verify(x => x.GetTempFileName(), Times.Once);
             this.filesMock.Verify(x => x.RenameFile(tempName, targetName), Times.Once);
             this.videoServiceMock.Verify(x => x.StartDownloadFile(It.IsAny<int>(), remoteFile.Name, tempName), Times.Once);
         }
