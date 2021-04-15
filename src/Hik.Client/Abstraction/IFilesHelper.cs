@@ -6,8 +6,6 @@ namespace Hik.Client.Abstraction
     {
         string CombinePath(params string[] args);
 
-        void FolderCreateIfNotExist(string path);
-
         bool FileExists(string path, long size);
 
         bool FileExists(string path);
@@ -23,6 +21,8 @@ namespace Hik.Client.Abstraction
         DateTime GetCreationDate(string path);
 
         string GetFileNameWithoutExtension(string path);
+
+        string GetFileName(string path);
 
         string GetExtension(string path);
 

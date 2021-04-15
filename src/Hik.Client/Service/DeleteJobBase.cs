@@ -22,7 +22,7 @@ namespace Hik.Client.Service
             List<MediaFileDTO> result = new List<MediaFileDTO>();
             foreach (var file in filesToDelete)
             {
-                this.logger.Debug($"Deleting: {file}");
+                this.logger.Debug($"Deleting: {file.Key}");
                 if (filesHelper.FileExists(file.Key))
                 {
                     var size = filesHelper.FileSize(file.Key);

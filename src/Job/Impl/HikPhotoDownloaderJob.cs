@@ -6,6 +6,8 @@ using Hik.DTO.Contracts;
 using Hik.Client.Infrastructure;
 using Hik.Client.Service;
 using Hik.DTO.Config;
+using Hik.DataAccess.Data;
+using Hik.DataAccess;
 
 namespace Job.Impl
 {
@@ -16,6 +18,11 @@ namespace Job.Impl
         {
             Config = HikConfigExtentions.GetConfig<CameraConfig>(configFilePath);
             LogInfo(Config?.ToString());
+        }
+
+        public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        {
+            await service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }
 
         public async override Task<IReadOnlyCollection<MediaFileDTO>> Run()

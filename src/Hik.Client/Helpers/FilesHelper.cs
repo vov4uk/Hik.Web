@@ -15,14 +15,6 @@ namespace Hik.Client.Helpers
             return Path.Combine(args);
         }
 
-        public void FolderCreateIfNotExist(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-        }
-
         public bool FileExists(string path, long size)
         {
             return this.FileSize(path) == size;
@@ -74,8 +66,7 @@ namespace Hik.Client.Helpers
             var fileName = Path.GetFileName(path);
             if (!DateTime.TryParseExact(fileName.Substring(0, 8), DateFormat, null, System.Globalization.DateTimeStyles.None, out var date))
             {
-                var fileInfo = new FileInfo(path);
-                date = fileInfo.CreationTime;
+                date = new FileInfo(path).CreationTime;
             }
 
             return date;
@@ -84,6 +75,11 @@ namespace Hik.Client.Helpers
         public string GetFileNameWithoutExtension(string path)
         {
             return Path.GetFileNameWithoutExtension(path);
+        }
+
+        public string GetFileName(string path)
+        {
+            return Path.GetFileName(path);
         }
 
         public string GetExtension(string path)

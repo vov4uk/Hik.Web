@@ -33,10 +33,11 @@ namespace Hik.Web.Pages
 
         public async Task OnGetAsync(int triggerId, int p = 1)
         {
-            TotalItems = await dataContext.DailyStatistics.CountAsync(x => x.JobTriggerId == triggerId);
+            TotalItems = await dataContext.DailyStatistics.AsQueryable().CountAsync(x => x.JobTriggerId == triggerId);
             Pager = new Pager(TotalItems, p, PageSize, MaxPages);
 
             var stats = dataContext.DailyStatistics
+                .AsQueryable()
                 .Where(x => x.JobTriggerId == triggerId)
                 .OrderByDescending(x => x.Period)
                 .Skip(Math.Max(0, Pager.CurrentPage - 1) * Pager.PageSize)

@@ -5,16 +5,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hik.DataAccess.Data
 {
-    [Table(Tables.File)]
-    public class MediaFile : IAuditable
+    [Table(Tables.MediaFile)]
+    public class MediaFile
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey("Job")]
-        public int JobId { get; set; }
+        [ForeignKey("JobTrigger")]
+        public int JobTriggerId { get; set; }
 
         public string Name { get; set; }
+
+        public string Path { get; set; }
 
         [Display(Name = "Date"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime Date { get; set; }
@@ -23,12 +26,13 @@ namespace Hik.DataAccess.Data
 
         public long Size { get; set; }
 
-        [Display(Name = "Started"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
-        public DateTime? DownloadStarted { get; set; }
 
-        [Display(Name = "Downloaded")]
-        public int? DownloadDuration { get; set; }
+        public JobTrigger JobTrigger { get; set; }
 
-        public virtual HikJob Job { get; set; }
+        public virtual DownloadDuration DownloadDuration { get; set; }
+
+        public virtual DownloadHistory DownloadHistory { get; set; }
+
+        public virtual DeleteHistory DeleteHistory { get; set; }
     }
 }

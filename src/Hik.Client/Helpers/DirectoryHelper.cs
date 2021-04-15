@@ -25,6 +25,14 @@ namespace Hik.Client.Helpers
             }
         }
 
+        public void CreateDirIfNotExist(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
+
         public long DirSize(string path)
         {
             var d = new DirectoryInfo(path);
@@ -47,23 +55,23 @@ namespace Hik.Client.Helpers
             return size;
         }
 
-        public long GetTotalFreeSpace(string destination)
+        public long GetTotalFreeSpace(string path)
         {
-            DriveInfo drive = GetDrive(destination);
+            DriveInfo drive = GetDrive(path);
 
             return drive?.TotalFreeSpace ?? -1;
         }
 
-        public long GetTotalSpace(string destination)
+        public long GetTotalSpace(string path)
         {
-            DriveInfo drive = GetDrive(destination);
+            DriveInfo drive = GetDrive(path);
 
             return drive?.TotalSize ?? -1;
         }
 
-        public void DeleteEmptyFolders(string destination)
+        public void DeleteEmptyDirs(string path)
         {
-            var directories = Directory.EnumerateDirectories(destination, AllFilter, SearchOption.AllDirectories);
+            var directories = Directory.EnumerateDirectories(path, AllFilter, SearchOption.AllDirectories);
             foreach (var directory in directories)
             {
                 if (!Directory.EnumerateFileSystemEntries(directory).Any())
@@ -73,21 +81,31 @@ namespace Hik.Client.Helpers
             }
         }
 
-        public bool DirectoryExists(string destination)
+        public bool DirExist(string path)
         {
-            return Directory.Exists(destination);
+            return Directory.Exists(path);
         }
 
-        public List<string> EnumerateFiles(string destination)
+        public List<string> EnumerateFiles(string path)
         {
-            return Directory.EnumerateFiles(destination, AllFilter, SearchOption.AllDirectories)
+            return Directory.EnumerateFiles(path, AllFilter, SearchOption.AllDirectories)
                     .Where(s => allowedExtentions.Any(ext => ext == Path.GetExtension(s)))
                     .ToList();
         }
 
-        private static DriveInfo GetDrive(string destination)
+        public List<string> EnumerateAllDirectories(string path)
         {
-            var driveName = Path.GetPathRoot(destination);
+            return Directory.EnumerateDirectories(path, AllFilter, SearchOption.AllDirectories).OrderBy(x => x).ToList();
+        }
+
+        public List<string> EnumerateTopDirectories(string path)
+        {
+            return Directory.EnumerateDirectories(path, AllFilter, SearchOption.TopDirectoryOnly).OrderBy(x => x).ToList();
+        }
+
+        private static DriveInfo GetDrive(string path)
+        {
+            var driveName = Path.GetPathRoot(path);
 
             return DriveInfo.GetDrives()
                 .FirstOrDefault(x => x.IsReady && x.Name.Equals(driveName, StringComparison.OrdinalIgnoreCase));

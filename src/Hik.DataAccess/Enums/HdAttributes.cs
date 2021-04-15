@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Hik.DataAccess.Data
+namespace Hik.DataAccess.Enums
 {
     public enum HdAttributes : byte
     {

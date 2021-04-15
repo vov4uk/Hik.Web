@@ -15,8 +15,8 @@ namespace Hik.Client
     {
         private readonly IImageHelper imageHelper;
 
-        public HikPhotoClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, IMapper mapper, IImageHelper imageHelper)
-            : base(config, hikApi, filesHelper, mapper)
+        public HikPhotoClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IMapper mapper, IImageHelper imageHelper)
+            : base(config, hikApi, filesHelper, directoryHelper, mapper)
         {
             this.imageHelper = imageHelper;
         }
@@ -32,6 +32,7 @@ namespace Hik.Client
 
                 this.imageHelper.SetDate(tempFile, targetFilePath, remoteFile.Date);
                 filesHelper.DeleteFile(tempFile);
+                remoteFile.Path = targetFilePath;
 
                 return Task.FromResult(true);
             }

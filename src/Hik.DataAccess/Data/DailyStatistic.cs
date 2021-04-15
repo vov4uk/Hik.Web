@@ -5,7 +5,7 @@ using Hik.DataAccess.Metadata;
 
 namespace Hik.DataAccess.Data
 {
-    [Table("DailyStatistic")]
+    [Table(Tables.DailyStatistics)]
     public class DailyStatistic
     {
         [Key]
@@ -21,7 +21,7 @@ namespace Hik.DataAccess.Data
         public int FilesCount { get; set; }
 
         [Display(Name = "Size")]
-        public long FilesSize { get; set; }    
+        public long FilesSize { get; set; }
         
         [Display(Name = "Duration")]
         public int? TotalDuration { get; set; }

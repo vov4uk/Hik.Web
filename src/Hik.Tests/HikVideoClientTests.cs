@@ -26,6 +26,7 @@
         private readonly Mock<IHikApi> sdkMock;
         private readonly Mock<HikVideoService> videoServiceMock;
         private readonly Mock<IFilesHelper> filesMock;
+        private readonly Mock<IDirectoryHelper> dirMock;
         private readonly Fixture fixture;
         private readonly IMapper mapper;
 
@@ -37,6 +38,7 @@
             this.sdkMock.SetupGet(x => x.VideoService).Returns(this.videoServiceMock.Object);
 
             this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
+            this.dirMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
             this.fixture = new Fixture();
             Action<IMapperConfigurationExpression> configureAutoMapper = x =>
             {
@@ -50,7 +52,7 @@
         [Fact]
         public void Constructor_PutEmptyConfig_ThrowsException()
         {
-            Assert.Throws<ArgumentNullException>(() => new HikVideoClient(null, this.sdkMock.Object, this.filesMock.Object, this.mapper));
+            Assert.Throws<ArgumentNullException>(() => new HikVideoClient(null, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper));
         }
 
         #region InitializeClient
@@ -58,7 +60,7 @@
         public void InitializeClient_CallInitializeClient_ClientInitialized()
         {
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
-            this.filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.sdkMock.Setup(x => x.Initialize()).Returns(true);
             this.sdkMock.Setup(x => x.SetConnectTime(It.IsAny<uint>(), It.IsAny<uint>())).Returns(true);
             this.sdkMock.Setup(x => x.SetReconnect(It.IsAny<uint>(), It.IsAny<int>())).Returns(true);
@@ -226,7 +228,7 @@
             var targetName = fileName;
 
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
-            this.filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(targetName)).Returns(1);
             this.filesMock.Setup(x => x.RenameFile(tempName, targetName));
             this.filesMock.Setup(x => x.FileExists(targetName)).Returns(false);
@@ -236,13 +238,13 @@
             this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<int>())).Returns(100);
             this.videoServiceMock.Setup(x => x.StopDownloadFile(It.IsAny<int>()));
 
-            var client = new HikVideoClient(cameraConfig, this.sdkMock.Object, this.filesMock.Object, this.mapper);
+            var client = new HikVideoClient(cameraConfig, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper);
             client.Login();
             var isDownloaded = await client.DownloadFileAsync(remoteFile, CancellationToken.None);
 
             Assert.True(isDownloaded);
             this.filesMock.Verify(x => x.CombinePath(It.IsAny<string[]>()), Times.Exactly(2));
-            this.filesMock.Verify(x => x.FolderCreateIfNotExist(It.IsAny<string>()), Times.Once);
+            this.dirMock.Verify(x => x.CreateDirIfNotExist(It.IsAny<string>()), Times.Once);
             this.filesMock.Verify(x => x.FileExists(targetName), Times.Once);
             this.filesMock.Verify(x => x.GetTempFileName(), Times.Once);
             this.filesMock.Verify(x => x.RenameFile(tempName, targetName), Times.Once);
@@ -253,7 +255,7 @@
         public async Task DownloadFileAsync_FileAlreadyExist_ReturnFalse()
         {
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
-            this.filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
 
             var client = this.GetHikClient();
@@ -354,7 +356,7 @@
         private void SetupFilesMockForDownload()
         {
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
-            this.filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>())).Returns(1);
             this.filesMock.Setup(x => x.RenameFile(It.IsAny<string>(), It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
@@ -362,7 +364,7 @@
 
         private HikVideoClient GetHikClient()
         {
-            return new HikVideoClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.mapper);
+            return new HikVideoClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper);
         }
     }
 }

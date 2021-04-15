@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Hik.DataAccess.Data;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Hik.DataAccess.Data
+namespace Hik.DataAccess.Abstractions
 {
     public interface IAuditable
     {

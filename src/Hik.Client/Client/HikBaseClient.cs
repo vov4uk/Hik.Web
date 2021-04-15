@@ -17,6 +17,7 @@ namespace Hik.Client
         protected readonly CameraConfig config;
         protected readonly IHikApi hikApi;
         protected readonly IFilesHelper filesHelper;
+        protected readonly IDirectoryHelper dirHelper;
         protected ILogger logger = LogManager.GetCurrentClassLogger();
         protected int downloadId = -1;
         protected Session session;
@@ -26,6 +27,7 @@ namespace Hik.Client
             CameraConfig config,
             IHikApi hikApi,
             IFilesHelper filesHelper,
+            IDirectoryHelper directoryHelper,
             IMapper mapper)
         {
             if (config == null)
@@ -36,6 +38,7 @@ namespace Hik.Client
             this.config = config;
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
+            this.dirHelper = directoryHelper;
             this.Mapper = mapper;
         }
 
@@ -44,8 +47,8 @@ namespace Hik.Client
         public void InitializeClient()
         {
             string sdkLogsPath = filesHelper.CombinePath(DirectoryHelper.AssemblyDirectory, "logs", config.Alias + "_SdkLog");
-            filesHelper.FolderCreateIfNotExist(sdkLogsPath);
-            filesHelper.FolderCreateIfNotExist(config.DestinationFolder);
+            dirHelper.CreateDirIfNotExist(sdkLogsPath);
+            dirHelper.CreateDirIfNotExist(config.DestinationFolder);
 
             logger.Info($"SDK Logs : {sdkLogsPath}");
             hikApi.Initialize();
@@ -125,7 +128,7 @@ namespace Hik.Client
         protected string GetPathSafety(MediaFileDTO remoteFile)
         {
             string workingDirectory = GetWorkingDirectory(remoteFile);
-            filesHelper.FolderCreateIfNotExist(workingDirectory);
+            dirHelper.CreateDirIfNotExist(workingDirectory);
 
             return filesHelper.CombinePath(workingDirectory, ToFileNameString(remoteFile));
         }

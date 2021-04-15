@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Hik.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hik.DataAccess
+namespace Hik.DataAccess.Abstractions
 {
     public interface IUnitOfWork : IDisposable
     {

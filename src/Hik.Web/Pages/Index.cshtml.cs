@@ -35,11 +35,14 @@ namespace Hik.Web.Pages
         {
             JobTriggerId = jobTriggerId;
             if (jobTriggerId != default)
-            {                
-                TotalItems = await dataContext.Jobs.CountAsync(x => x.JobTriggerId == jobTriggerId);
+            {
+                TotalItems = await dataContext.Jobs
+                    .AsQueryable()
+                    .CountAsync(x => x.JobTriggerId == jobTriggerId);
                 Pager = new Pager(TotalItems, p, PageSize, MaxPages);
 
                 var repo = dataContext.Jobs
+                    .AsQueryable()
                     .Where(x => x.JobTriggerId == jobTriggerId)
                     .Include(x => x.JobTrigger)
                     .OrderByDescending(x => x.Id)
@@ -49,10 +52,18 @@ namespace Hik.Web.Pages
             }
             else
             {
-                var latestJobs = await dataContext.Jobs.GroupBy(x => x.JobTriggerId).Select(x => x.Max(y => y.Id)).ToArrayAsync();
-                Jobs = await dataContext.Jobs.Where(x => latestJobs.Contains(x.Id))
-                    .Include(x => x.JobTrigger).OrderBy(x => x.JobTrigger.TriggerKey).ToListAsync();
+                var latestJobs = await dataContext.Jobs
+                    .AsQueryable()
+                    .GroupBy(x => x.JobTriggerId)
+                    .Select(x => x.Max(y => y.Id))
+                    .ToArrayAsync();
+                Jobs = await dataContext.Jobs
+                    .AsQueryable()
+                    .Where(x => latestJobs.Contains(x.Id))
+                    .Include(x => x.JobTrigger)
+                    .OrderBy(x => x.JobTrigger.TriggerKey)
+                    .ToListAsync();
             }
-        }       
+        }
     }
 }

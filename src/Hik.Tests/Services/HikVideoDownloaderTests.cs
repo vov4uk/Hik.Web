@@ -36,7 +36,7 @@
         public void ExecuteAsync_EmptyConfig_ExceptionThrown()
         {
             bool success = true;
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
             var downloader = CreateHikDownloader();
             downloader.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
             {
@@ -77,7 +77,7 @@
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
 
-            this.directoryMock.Setup(x => x.DirectoryExists(cameraConfig.DestinationFolder)).Returns(false);
+            this.directoryMock.Setup(x => x.DirExist(cameraConfig.DestinationFolder)).Returns(false);
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -85,7 +85,7 @@
 
             // assert
             Assert.Null(result);
-            this.directoryMock.Verify(x => x.DirectoryExists(cameraConfig.DestinationFolder), Times.Once);
+            this.directoryMock.Verify(x => x.DirExist(cameraConfig.DestinationFolder), Times.Once);
         }
 
         [Fact]
@@ -98,7 +98,7 @@
             this.clientMock.Setup(x => x.ForceExit());
             this.clientMock.Setup(x => x.Login()).Throws(new HikException("Login", 7));
             this.clientMock.Setup(x => x.Dispose());
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -233,7 +233,7 @@
                 .Create();
 
             this.clientMock.Setup(x => x.InitializeClient());
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
             this.SetupClientDispose();
 
             // act
@@ -316,7 +316,7 @@
             this.clientMock.Setup(x => x.InitializeClient());
 
             this.clientMock.Setup(x => x.Dispose());
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
             this.SetupClientDispose();
             this.clientMock.Setup(x => x.InitializeClient());
 
@@ -341,7 +341,7 @@
         {
             this.directoryMock.Setup(x => x.GetTotalFreeSpace(It.IsAny<string>())).Returns(1024);
             this.directoryMock.Setup(x => x.DirSize(It.IsAny<string>())).Returns(1024);
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
         }
 
         private void SetupClientSuccessLogin()

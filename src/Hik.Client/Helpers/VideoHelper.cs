@@ -6,22 +6,23 @@ namespace Hik.Client.Helpers
 {
     public class VideoHelper : IVideoHelper
     {
+        private readonly Engine engine = new Engine();
+
         public int GetDuration(string path)
         {
-            var ext = Path.GetExtension(path);
-            if (ext == ".mp4")
+            if (Path.GetExtension(path) == ".mp4")
             {
                 MediaToolkit.Model.MediaFile inputFile = new MediaToolkit.Model.MediaFile { Filename = path };
 
-                using (Engine engine = new Engine())
-                {
-                    engine.GetMetadata(inputFile);
-                }
+                engine.GetMetadata(inputFile);
 
-                return (int)inputFile.Metadata.Duration.TotalSeconds;
+                if (inputFile != null && inputFile.Metadata != null && inputFile.Metadata.Duration != null)
+                {
+                    return (int)inputFile.Metadata.Duration.TotalSeconds;
+                }
             }
 
-            return default;
+            return 0;
         }
     }
 }

@@ -39,18 +39,22 @@ namespace Hik.Web.Pages
             if (id == null) { return NotFound(); }
             JobId = id;
 
-            var items = dataContext.Jobs.Where(x => x.Id == id)
+            var items = dataContext.Jobs.AsQueryable().Where(x => x.Id == id)
                 .Include(x => x.ExceptionLog)
                 .Include(x => x.JobTrigger);
 
             Job = await items.FirstOrDefaultAsync();
             if (Job == null) { return NotFound(); }
 
-            TotalItems = await dataContext.Files.CountAsync(x => x.JobId == id);
+            TotalItems = await dataContext.DownloadHistory.AsQueryable().CountAsync(x => x.JobId == id);
+            TotalItems += await dataContext.DeleteHistory.AsQueryable().CountAsync(x => x.JobId == id);
             Pager = new Pager(TotalItems, p, PageSize, MaxPages);
 
-            var repo = dataContext.Files
-                .Where(x => x.JobId == id)
+            var repo = dataContext.MediaFiles
+                .Include(x => x.DownloadHistory)
+                .Include(x => x.DeleteHistory)
+                .Include(x => x.DownloadDuration)
+                .Where(x => (x.DownloadHistory == null ? 0 : x.DownloadHistory.JobId) == id || (x.DeleteHistory == null ? 0 : x.DeleteHistory.JobId) == id)
                 .OrderByDescending(x => x.Id)
                 .Skip(Math.Max(0, Pager.CurrentPage - 1) * Pager.PageSize)
                 .Take(Pager.PageSize);

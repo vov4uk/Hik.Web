@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hik.DataAccess;
@@ -24,15 +23,14 @@ namespace Hik.Web.Pages
 
         public async Task OnGet()
         {
-            Triggers = await this.dataContext.JobTriggers.ToListAsync();
+            Triggers = await this.dataContext.JobTriggers.AsQueryable().ToListAsync();
 
-            var latestStats = await this.dataContext.DailyStatistics
-                .GroupBy(x => x.JobTriggerId)
-                .Select(x => x.Max(y => y.Id))
+            Statistics = await this.dataContext.JobTriggers
+                .AsQueryable()
+                .Include(x => x.DailyStatistics)
+                .Select(x => x.DailyStatistics.OrderByDescending(x=> x.Period).FirstOrDefault())
+                .Where(x => x!= null)
                 .ToListAsync();
-            var last = this.dataContext.DailyStatistics.Where(x => latestStats.Contains(x.Id));            
-
-            Statistics = new List<DailyStatistic>(last);
         }
     }
 }

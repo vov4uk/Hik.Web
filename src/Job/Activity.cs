@@ -41,8 +41,7 @@ namespace Job
         {
             try
             {
-                bool singleInstance;
-                using (var instance = new Mutex(true, $@"Global\{Parameters.TriggerKey}", out singleInstance))
+                using (var instance = new Mutex(true, $@"Global\{Parameters.TriggerKey}", out bool singleInstance))
                 {
                     if (singleInstance)
                     {

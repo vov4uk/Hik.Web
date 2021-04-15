@@ -89,7 +89,7 @@ namespace Hik.Client.Service
 
         private string GetPathSafety(string file, string directory)
         {
-            filesHelper.FolderCreateIfNotExist(directory);
+            directoryHelper.CreateDirIfNotExist(directory);
             return filesHelper.CombinePath(directory, file);
         }
 

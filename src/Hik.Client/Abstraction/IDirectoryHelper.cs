@@ -4,16 +4,22 @@ namespace Hik.Client.Abstraction
 {
     public interface IDirectoryHelper
     {
-        long GetTotalFreeSpace(string destination);
+        void CreateDirIfNotExist(string path);
 
-        long GetTotalSpace(string destination);
+        long GetTotalFreeSpace(string path);
+
+        long GetTotalSpace(string path);
 
         long DirSize(string path);
 
-        void DeleteEmptyFolders(string destination);
+        void DeleteEmptyDirs(string path);
 
-        bool DirectoryExists(string destination);
+        bool DirExist(string path);
 
-        List<string> EnumerateFiles(string destination);
+        List<string> EnumerateFiles(string path);
+
+        List<string> EnumerateAllDirectories(string path);
+
+        List<string> EnumerateTopDirectories(string path);
     }
 }

@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Autofac;
 using Hik.Client.Infrastructure;
 using Hik.Client.Service;
+using Hik.DataAccess;
+using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 
@@ -25,6 +27,11 @@ namespace Job.Impl
             DateTime cutOff = DateTime.Today.Subtract(period);
             JobInstance.PeriodEnd = cutOff;
             return Task.CompletedTask;
+        }
+
+        public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        {
+            await service.SaveHistoryFilesAsync<DeleteHistory>(files);
         }
 
         public async override Task<IReadOnlyCollection<MediaFileDTO>> Run()

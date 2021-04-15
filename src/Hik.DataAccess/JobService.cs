@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 
@@ -37,7 +38,32 @@ namespace Hik.DataAccess
             await unitOfWork.SaveChangesAsync(job);
         }
 
-        public async Task SaveFilesAsync(IReadOnlyCollection<MediaFileDTO> files)
+        public async Task<List<MediaFile>> SaveFilesAsync(IReadOnlyCollection<MediaFileDTO> files)
+        {
+            using var unitOfWork = factory.CreateUnitOfWork();
+
+            var mediaFiles = new List<MediaFile>();
+            var mediaFileDuration = new List<DownloadDuration>();
+            foreach (var item in files)
+            {
+                MediaFile file = mapper.Map<MediaFile>(item);
+                file.JobTriggerId = job.JobTriggerId;
+                if (item.DownloadDuration != null)
+                {
+                    DownloadDuration duration = mapper.Map<DownloadDuration>(item);
+                    duration.MediaFile = file;
+                    mediaFileDuration.Add(duration);
+                }
+                mediaFiles.Add(file);
+            }
+
+            await AddEntities(mediaFiles, unitOfWork);
+            await AddEntities(mediaFileDuration, unitOfWork);
+            await unitOfWork.SaveChangesAsync(job);
+            return mediaFiles;
+        }
+
+        public async Task UpdateDailyStatistics(IReadOnlyCollection<MediaFileDTO> files)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
 
@@ -57,8 +83,17 @@ namespace Hik.DataAccess
                 day.TotalDuration += item.dur;
             }
 
-            await AddEntities(files.Select(x => mapper.Map<MediaFile>(x)).ToList(), unitOfWork);
             await unitOfWork.SaveChangesAsync(job);
+        }
+
+        public async Task SaveHistoryFilesAsync<T>(IReadOnlyCollection<MediaFile> files) where T: class, IHistory, new()
+        {
+            using var unitOfWork = factory.CreateUnitOfWork();
+            var entities = files.Select(x => new T { MediaFileId = x.Id }).ToList();
+
+            await AddEntities(entities, unitOfWork);
+            await unitOfWork.SaveChangesAsync(job);
+
         }
 
         private async Task<List<DailyStatistic>> GetDailyStatisticSafe(int triggerId, DateTime from, DateTime to, IUnitOfWork unitOfWork)
@@ -77,7 +112,7 @@ namespace Hik.DataAccess
                             JobTriggerId = triggerId,
                             Period = from,
                             FilesCount = 0,
-                            FilesSize = 0, 
+                            FilesSize = 0,
                             TotalDuration = 0
                         });
                 }

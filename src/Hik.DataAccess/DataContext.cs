@@ -19,7 +19,10 @@ namespace Hik.DataAccess
 
         public DbSet<HikJob> Jobs { get; set; }
 
-        public DbSet<MediaFile> Files { get; set; }
+        public DbSet<MediaFile> MediaFiles { get; set; }
+        public DbSet<DeleteHistory> DeleteHistory { get; set; }
+        public DbSet<DownloadHistory> DownloadHistory { get; set; }
+        public DbSet<DownloadDuration> DownloadDuration { get; set; }
 
         public DbSet<DailyStatistic> DailyStatistics { get; set; }
 
@@ -42,11 +45,14 @@ namespace Hik.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .ApplyConfiguration(new JobMapping())
+                .ApplyConfiguration(new HikJobMapping())
                 .ApplyConfiguration(new JobTriggerMapping())
-                .ApplyConfiguration(new FileMapping())
+                .ApplyConfiguration(new MediaFileMapping())
                 .ApplyConfiguration(new ExceptionLogMapping())
-                .ApplyConfiguration(new DailyStatisticMapping());
+                .ApplyConfiguration(new DailyStatisticMapping())
+                .ApplyConfiguration(new DownloadHistoryMapping())
+                .ApplyConfiguration(new DeleteHistoryMapping())
+                .ApplyConfiguration(new DownloadDurationMapping());
 
             base.OnModelCreating(modelBuilder);
         }

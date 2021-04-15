@@ -15,8 +15,8 @@ namespace Hik.Client
     {
         private const int ProgressCheckPeriodMilliseconds = 5000;
 
-        public HikVideoClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, IMapper mapper)
-            : base(config, hikApi, filesHelper, mapper)
+        public HikVideoClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IMapper mapper)
+            : base(config, hikApi, filesHelper, directoryHelper, mapper)
         {
         }
 
@@ -38,6 +38,7 @@ namespace Hik.Client
 
                 filesHelper.RenameFile(tempFile, targetFilePath);
                 remoteFile.Size = filesHelper.FileSize(targetFilePath);
+                remoteFile.Path = targetFilePath;
 
                 return true;
             }

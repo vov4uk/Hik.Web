@@ -1,4 +1,6 @@
-﻿namespace Hik.DataAccess
+﻿using Hik.DataAccess.Abstractions;
+
+namespace Hik.DataAccess
 {
     public class UnitOfWorkFactory : IUnitOfWorkFactory
     {

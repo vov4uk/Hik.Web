@@ -29,9 +29,7 @@ namespace Hik.Web
 
             if (isService)
             {
-#pragma warning disable CA1416 // Validate platform compatibility
                 host.RunAsService();
-#pragma warning restore CA1416 // Validate platform compatibility
             }
             else
             {
@@ -73,7 +71,7 @@ namespace Hik.Web
             get
             {
                 string codeBase = Assembly.GetExecutingAssembly().Location;
-                UriBuilder uri = new UriBuilder(codeBase);
+                UriBuilder uri = new(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
                 return Path.GetDirectoryName(path);
             }

@@ -27,19 +27,21 @@
         private const int DefaultUserId = 1;
         private readonly Mock<IFtpClient> ftpMock;
         private readonly Mock<IFilesHelper> filesMock;
+        private readonly Mock<IDirectoryHelper> dirMock;
         private readonly Fixture fixture;
 
         public YiClientTests()
         {
             this.ftpMock = new Mock<IFtpClient>(MockBehavior.Strict);
             this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
+            this.dirMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
             this.fixture = new Fixture();
         }
 
         [Fact]
         public void Constructor_PutEmptyConfig_ThrowsException()
         {
-            Assert.Throws<ArgumentNullException>(() => new YiClient(null, this.filesMock.Object, ftpMock.Object));
+            Assert.Throws<ArgumentNullException>(() => new YiClient(null, this.filesMock.Object, dirMock.Object, ftpMock.Object));
         }
 
         #region InitializeClient
@@ -48,7 +50,7 @@
         {
             var config = new CameraConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" };
             var ftp = new FtpClient();
-            var client = new YiClient(config, this.filesMock.Object, ftp);
+            var client = new YiClient(config, this.filesMock.Object, this.dirMock.Object, ftp);
             client.InitializeClient();
 
             Assert.Equal(ftp.Host, config.IpAddress);
@@ -90,7 +92,7 @@
         [Fact]
         public void Dispose_NoFtpClient_NothingToDispose()
         {
-            using (var client = new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, null))
+            using (var client = new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, null))
             {
                 // Do nothing
             }
@@ -161,9 +163,9 @@
 
         #region DownloadFileAsync
         [Theory]
-        [InlineData(1991, 05, 31, ClientType.Yi,     "/tmp/sd/record/1991Y05M31D00H/00M00S.mp4", "C:\\1991-05\\31\\00\\19910531_000000.mp4")]
+        [InlineData(1991, 05, 31, ClientType.Yi,     "/tmp/sd/record/1991Y05M31D00H/00M00S.mp4",   "C:\\1991-05\\31\\00\\19910531_000000.mp4")]
         [InlineData(1991, 05, 31, ClientType.Yi720p, "/tmp/sd/record/1991Y05M31D00H/00M00S60.mp4", "C:\\1991-05\\31\\00\\19910531_000000.mp4")]
-        [InlineData(2020, 12, 31, ClientType.Yi,     "/tmp/sd/record/2020Y12M31D00H/00M00S.mp4", "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
+        [InlineData(2020, 12, 31, ClientType.Yi,     "/tmp/sd/record/2020Y12M31D00H/00M00S.mp4",   "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
         [InlineData(2020, 12, 31, ClientType.Yi720p, "/tmp/sd/record/2020Y12M31D00H/00M00S60.mp4", "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, ClientType clientType, string remoteFilePath, string localFilePath)
         {
@@ -175,20 +177,21 @@
             var targetName = localFilePath;
 
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
-            this.filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(targetName)).Returns(1);
+            this.filesMock.Setup(x => x.GetTempFileName()).Returns(tempName);
             this.filesMock.Setup(x => x.RenameFile(tempName, targetName));
             this.filesMock.Setup(x => x.FileExists(targetName)).Returns(false);
             this.ftpMock.Setup(x => x.FileExistsAsync(remoteFilePath, CancellationToken.None)).ReturnsAsync(true);
             this.ftpMock.Setup(x => x.DownloadFileAsync(tempName, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
 
-            var client = new YiClient(cameraConfig, this.filesMock.Object, ftpMock.Object);
+            var client = new YiClient(cameraConfig, this.filesMock.Object, this.dirMock.Object, ftpMock.Object);
             var isDownloaded = await client.DownloadFileAsync(remoteFile, CancellationToken.None);
 
             Assert.True(isDownloaded);
             this.filesMock.Verify(x => x.CombinePath(It.IsAny<string[]>()), Times.Exactly(2));
-            this.filesMock.Verify(x => x.FolderCreateIfNotExist(It.IsAny<string>()), Times.Once);
+            this.dirMock.Verify(x => x.CreateDirIfNotExist(It.IsAny<string>()), Times.Once);
             this.filesMock.Verify(x => x.FileExists(targetName), Times.Once);
             this.filesMock.Verify(x => x.RenameFile(tempName, targetName), Times.Once);
 
@@ -198,7 +201,7 @@
         public async Task DownloadFileAsync_FileAlreadyExist_ReturnFalse()
         {
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
-            this.filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
 
             var client = this.GetClient();
@@ -212,7 +215,7 @@
         {
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
-            this.filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.ftpMock.Setup(x => x.FileExistsAsync(It.IsAny<string>(), CancellationToken.None)).ReturnsAsync(false);
 
             var client = this.GetClient();
@@ -240,7 +243,7 @@
         private void SetupFilesMockForDownload()
         {
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
-            this.filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>())).Returns(1);
             this.filesMock.Setup(x => x.RenameFile(It.IsAny<string>(), It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
@@ -248,7 +251,7 @@
 
         private YiClient GetClient()
         {
-            return new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.ftpMock.Object);
+            return new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object);
         }
     }
 }

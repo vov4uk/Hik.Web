@@ -17,7 +17,6 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="6.1.0" />
     <PackageReference Include="AutoMapper" Version="10.1.1" />
-    <PackageReference Include="FFMediaToolkit" Version="4.0.1" />
     <PackageReference Include="FluentFTP" Version="33.0.3" />
     <PackageReference Include="MediaToolKit.B" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

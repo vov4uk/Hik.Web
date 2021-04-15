@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace Hik.DataAccess
+namespace Hik.DataAccess.Abstractions
 {
     public interface IBaseRepository<T> where T : class
     {

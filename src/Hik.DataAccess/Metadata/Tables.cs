@@ -7,11 +7,13 @@ namespace Hik.DataAccess.Metadata
     {
         public const string Video = nameof(Video);
         public const string Photo = nameof(Photo);
-        public const string File = nameof(File);
+        public const string MediaFile = nameof(MediaFile);
         public const string Job = nameof(Job);
         public const string JobTrigger = nameof(JobTrigger);
         public const string ExceptionLog = nameof(ExceptionLog);
         public const string DailyStatistics = nameof(DailyStatistics);
-        public const string DeletedFiles = nameof(DeletedFiles);
+        public const string DeleteHistory = nameof(DeleteHistory);
+        public const string DownloadHistory = nameof(DownloadHistory);
+        public const string DownloadDuration = nameof(DownloadDuration);
     }
 }

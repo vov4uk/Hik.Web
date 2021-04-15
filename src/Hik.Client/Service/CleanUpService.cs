@@ -56,7 +56,7 @@ namespace Hik.Client.Service
             }
             while (true);
 
-            directoryHelper.DeleteEmptyFolders(destination);
+            directoryHelper.DeleteEmptyDirs(destination);
 
             return Task.FromResult(deleteFilesResult as IReadOnlyCollection<MediaFileDTO>);
         }

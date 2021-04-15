@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Hik.DataAccess.Mappings
 {
     [ExcludeFromCodeCoverage]
-    public sealed class JobMapping : IEntityTypeConfiguration<HikJob>
+    public sealed class HikJobMapping : IEntityTypeConfiguration<HikJob>
     {
         public void Configure(EntityTypeBuilder<HikJob> builder)
         {

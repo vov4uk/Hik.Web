@@ -30,7 +30,7 @@ namespace Hik.Client.Services.Tests
         {
             bool success = true;
 
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
 
             var service = CreateService();
             service.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
@@ -47,7 +47,7 @@ namespace Hik.Client.Services.Tests
         {
             bool isOperationCanceledException = false;
 
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
             this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>())).Returns(new List<string> { "Hello World!" });
             this.directoryMock.Setup(x => x.GetTotalSpace(It.IsAny<string>())).Throws<OperationCanceledException>();
 
@@ -65,11 +65,11 @@ namespace Hik.Client.Services.Tests
         [Fact]
         public async Task ExecuteAsync_EnoughtFreeSpace_NothingToDelete()
         {
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
             this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>())).Returns(new List<string>());
             this.directoryMock.Setup(x => x.GetTotalSpace(It.IsAny<string>())).Returns(100);
             this.directoryMock.Setup(x => x.GetTotalFreeSpace(It.IsAny<string>())).Returns(11);
-            this.directoryMock.Setup(x => x.DeleteEmptyFolders(It.IsAny<string>()));
+            this.directoryMock.Setup(x => x.DeleteEmptyDirs(It.IsAny<string>()));
             this.filesMock.Setup(x => x.DeleteFile(It.IsAny<string>()));
 
             var config = fixture.Build<CleanupConfig>()
@@ -81,7 +81,7 @@ namespace Hik.Client.Services.Tests
 
             Assert.Empty(result);
             this.filesMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Never);
-            this.directoryMock.Verify(x => x.DeleteEmptyFolders(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.DeleteEmptyDirs(It.IsAny<string>()), Times.Once);
         }
         
         [Fact]
@@ -91,13 +91,13 @@ namespace Hik.Client.Services.Tests
             int batchSize = 10;
             int fileSize = 100;
 
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
             this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>())).Returns(files);
             this.directoryMock.Setup(x => x.GetTotalSpace(It.IsAny<string>())).Returns(100);
             this.directoryMock.SetupSequence(x => x.GetTotalFreeSpace(It.IsAny<string>()))
                 .Returns(9)
                 .Returns(11);
-            this.directoryMock.Setup(x => x.DeleteEmptyFolders(It.IsAny<string>()));
+            this.directoryMock.Setup(x => x.DeleteEmptyDirs(It.IsAny<string>()));
             this.filesMock.Setup(x => x.DeleteFile(It.IsAny<string>()));
             this.filesMock.Setup(x => x.GetCreationDate(It.IsAny<string>())).Returns(DateTime.Now.Date);
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>())).Returns(fileSize);
@@ -114,7 +114,7 @@ namespace Hik.Client.Services.Tests
 
             Assert.Equal(result.Count, batchSize);
             this.filesMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Exactly(batchSize));
-            this.directoryMock.Verify(x => x.DeleteEmptyFolders(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.DeleteEmptyDirs(It.IsAny<string>()), Times.Once);
         }
         
         [Fact]
@@ -124,12 +124,12 @@ namespace Hik.Client.Services.Tests
             int batchSize = 10;
             int fileSize = 100;
 
-            this.directoryMock.Setup(x => x.DirectoryExists(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
             this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>())).Returns(files);
             this.directoryMock.Setup(x => x.GetTotalSpace(It.IsAny<string>())).Returns(100);
             this.directoryMock.Setup(x => x.GetTotalFreeSpace(It.IsAny<string>()))
                 .Returns(9);
-            this.directoryMock.Setup(x => x.DeleteEmptyFolders(It.IsAny<string>()));
+            this.directoryMock.Setup(x => x.DeleteEmptyDirs(It.IsAny<string>()));
             this.filesMock.Setup(x => x.DeleteFile(It.IsAny<string>()));
             this.filesMock.Setup(x => x.GetCreationDate(It.IsAny<string>())).Returns(DateTime.Now.Date);
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>())).Returns(fileSize);
@@ -146,7 +146,7 @@ namespace Hik.Client.Services.Tests
 
             Assert.Empty(result);
             this.filesMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Never);
-            this.directoryMock.Verify(x => x.DeleteEmptyFolders(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.DeleteEmptyDirs(It.IsAny<string>()), Times.Once);
         }
 
         private CleanUpService CreateService()

@@ -26,6 +26,7 @@
         private readonly Mock<IHikApi> sdkMock;
         private readonly Mock<HikPhotoService> photoServiceMock;
         private readonly Mock<IFilesHelper> filesMock;
+        private readonly Mock<IDirectoryHelper> dirMock;
         private readonly Mock<IImageHelper> imageMock;
         private readonly Fixture fixture;
         private readonly IMapper mapper;
@@ -38,6 +39,7 @@
             sdkMock.SetupGet(x => x.PhotoService).Returns(photoServiceMock.Object);
 
             filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
+            dirMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
             imageMock = new Mock<IImageHelper>(MockBehavior.Strict);
             fixture = new Fixture();
             Action<IMapperConfigurationExpression> configureAutoMapper = x =>
@@ -89,7 +91,7 @@
             var targetName = localFolder + localFileName;
 
             filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
-            filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             filesMock.Setup(x => x.FileSize(targetName)).Returns(1);
             filesMock.Setup(x => x.DeleteFile(localFileName));
             filesMock.Setup(x => x.FileExists(targetName)).Returns(false);
@@ -97,13 +99,13 @@
 
             photoServiceMock.Setup(x => x.DownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()));
 
-            var client = new HikPhotoClient(cameraConfig, sdkMock.Object, filesMock.Object, mapper, this.imageMock.Object);
+            var client = new HikPhotoClient(cameraConfig, sdkMock.Object, filesMock.Object, dirMock.Object, mapper, this.imageMock.Object);
             client.Login();
             var isDownloaded = await client.DownloadFileAsync(remoteFile, CancellationToken.None);
 
             Assert.True(isDownloaded);
             filesMock.Verify(x => x.CombinePath(It.IsAny<string[]>()), Times.Exactly(2));
-            filesMock.Verify(x => x.FolderCreateIfNotExist(It.IsAny<string>()), Times.Once);
+            dirMock.Verify(x => x.CreateDirIfNotExist(It.IsAny<string>()), Times.Once);
             filesMock.Verify(x => x.FileExists(targetName), Times.Once);
             photoServiceMock.Verify(x => x.DownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()), Times.Once);
         }
@@ -112,7 +114,7 @@
         public async Task DownloadFileAsync_FileAlreadyExist_ReturnFalse()
         {
             filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
-            filesMock.Setup(x => x.FolderCreateIfNotExist(It.IsAny<string>()));
+            dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
 
             var client = GetHikClient();
@@ -156,7 +158,7 @@
 
         private HikPhotoClient GetHikClient()
         {
-            return new HikPhotoClient(fixture.Create<CameraConfig>(), sdkMock.Object, filesMock.Object, mapper, imageMock.Object);
+            return new HikPhotoClient(fixture.Create<CameraConfig>(), sdkMock.Object, filesMock.Object, this.dirMock.Object, mapper, imageMock.Object);
         }
     }
 }

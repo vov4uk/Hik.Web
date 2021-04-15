@@ -16,19 +16,25 @@ namespace Job.Impl
 {
     public abstract class JobProcessBase
     {
+        private JobTrigger jobTrigger;
+
         protected HikJob JobInstance { get; private set; }
 
         protected readonly UnitOfWorkFactory UnitOfWorkFactory;
 
         protected readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         public string TriggerKey { get; private set; }
+
         public string ConfigPath { get; private set; }
+
         public string ConnectionString { get; private set; }
 
-        public string ClassName { get; private set; }
         public BaseConfig Config { get; protected set; }
 
         public abstract Task<IReadOnlyCollection<MediaFileDTO>> Run();
+
+        public abstract Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service);
 
         public virtual async Task InitializeProcessingPeriod()
         {
@@ -39,7 +45,7 @@ namespace Job.Impl
 
             DateTime? lastSync = trigger.LastSync;
             LogInfo($"Last sync from DB - {lastSync}");
-            DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config.ProcessingPeriodHours);
+            DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config?.ProcessingPeriodHours ?? 1);
 
             this.JobInstance.PeriodStart = periodStart;
             this.JobInstance.PeriodEnd = jobStart;
@@ -50,7 +56,9 @@ namespace Job.Impl
         public virtual async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.FilesCount = files.Count;
-            await service.SaveFilesAsync(files);
+            var mediaFiles = await service.SaveFilesAsync(files);
+            await service.UpdateDailyStatistics(files);
+            await SaveHistory(mediaFiles, service);
         }
 
         protected JobProcessBase(string trigger, string configFilePath, string connectionString, Guid activityId)
@@ -117,7 +125,7 @@ namespace Job.Impl
             this.JobInstance.Success = false;
             Logger.Error(e.ToString());
             LogExceptionToDB(e);
-            JobService jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
+            JobService jobResultSaver = new(this.UnitOfWorkFactory, this.JobInstance);
             jobResultSaver.SaveJobResultAsync().GetAwaiter().GetResult();
 
             if (Config.SentEmailOnError)
@@ -167,19 +175,22 @@ namespace Job.Impl
       
         protected async Task<JobTrigger> GetJobTrigger()
         {
-            var jobNameParts = TriggerKey.Split(".");
-            var triggerKey = jobNameParts[1];
-            var group = jobNameParts[0];
-            using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
-            var repo = unitOfWork.GetRepository<JobTrigger>();
-            var trigger = await repo.FindByAsync(x => x.TriggerKey == triggerKey && x.Group == group);
-            if (trigger == null)
+            if (this.jobTrigger == null)
             {
-                var triggerResult = await repo.AddAsync(new JobTrigger { TriggerKey = triggerKey, Group = group});
-                trigger = triggerResult.Entity;
-                await unitOfWork.SaveChangesAsync();
+                var jobNameParts = TriggerKey.Split(".");
+                var triggerKey = jobNameParts[1];
+                var group = jobNameParts[0];
+                using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
+                var repo = unitOfWork.GetRepository<JobTrigger>();
+                this.jobTrigger = await repo.FindByAsync(x => x.TriggerKey == triggerKey && x.Group == group);
+                if (this.jobTrigger == null)
+                {
+                    var triggerResult = await repo.AddAsync(new JobTrigger { TriggerKey = triggerKey, Group = group });
+                    jobTrigger = triggerResult.Entity;
+                    await unitOfWork.SaveChangesAsync();
+                }
             }
-            return trigger;
+            return this.jobTrigger;
         }
 
         protected void LogInfo(string msg)

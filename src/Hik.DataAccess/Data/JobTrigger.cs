@@ -23,6 +23,8 @@ namespace Hik.DataAccess.Data
         [Display(Name = "Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastSync { get; set; }
 
+        public virtual List<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
+
         public override string ToString()
         {
             return $"{Group}.{TriggerKey}";

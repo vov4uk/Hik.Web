@@ -18,19 +18,16 @@ namespace Hik.Client
 
         private readonly CameraConfig config;
         private readonly IFilesHelper filesHelper;
+        private readonly IDirectoryHelper directoryHelper;
         private readonly IFtpClient ftp;
         private readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private bool disposedValue = false;
 
-        public YiClient(CameraConfig config, IFilesHelper filesHelper, IFtpClient ftp)
+        public YiClient(CameraConfig config, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IFtpClient ftp)
         {
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
-
-            this.config = config;
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
             this.filesHelper = filesHelper;
+            this.directoryHelper = directoryHelper;
             this.ftp = ftp;
         }
 
@@ -114,24 +111,24 @@ namespace Hik.Client
             }
         }
 
-        private async Task<bool> DownloadInternalAsync(MediaFileDTO remoteFile, string destinationFilePath, string filePath, CancellationToken token)
+        private async Task<bool> DownloadInternalAsync(MediaFileDTO remoteFile, string targetFilePath, string remoteFilePath, CancellationToken token)
         {
-            var remoteFileExist = await ftp.FileExistsAsync(filePath, token);
+            var remoteFileExist = await ftp.FileExistsAsync(remoteFilePath, token);
 
             if (remoteFileExist)
             {
                 LogInfo($"{remoteFile.ToVideoUserFriendlyString()} - downloading");
-                var tempFile = destinationFilePath + ".tmp";
-                await ftp.DownloadFileAsync(tempFile, filePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
+                var tempFile = filesHelper.GetTempFileName();
+                await ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
 
-                filesHelper.RenameFile(tempFile, destinationFilePath);
-                remoteFile.Size = filesHelper.FileSize(destinationFilePath);
-
+                filesHelper.RenameFile(tempFile, targetFilePath);
+                remoteFile.Size = filesHelper.FileSize(targetFilePath);
+                remoteFile.Path = targetFilePath;
                 return true;
             }
             else
             {
-                logger.Error($"{config.Alias} - File not found {filePath}");
+                logger.Error($"{config.Alias} - File not found {remoteFilePath}");
                 return false;
             }
         }
@@ -139,7 +136,7 @@ namespace Hik.Client
         private string GetPathSafety(MediaFileDTO remoteFile)
         {
             string workingDirectory = GetWorkingDirectory(remoteFile);
-            filesHelper.FolderCreateIfNotExist(workingDirectory);
+            directoryHelper.CreateDirIfNotExist(workingDirectory);
 
             return filesHelper.CombinePath(workingDirectory, remoteFile.ToYiFileNameString());
         }

@@ -2,6 +2,7 @@
 using Hik.Client.Infrastructure;
 using Hik.Client.Service;
 using Hik.DataAccess;
+using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using System;
@@ -31,6 +32,11 @@ namespace Job.Impl
             worker.ExceptionFired += base.ExceptionFired;
 
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
+        }
+
+        public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        {
+            await service.SaveHistoryFilesAsync<DeleteHistory>(files);
         }
 
         public override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)

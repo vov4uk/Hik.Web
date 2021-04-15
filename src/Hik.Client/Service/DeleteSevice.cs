@@ -24,7 +24,7 @@ namespace Hik.Client.Service
                 .Where(x => x.Value < to)
                 .ToList();
             List<MediaFileDTO> result = DeleteFiles(filesList, destination);
-            directoryHelper.DeleteEmptyFolders(destination);
+            directoryHelper.DeleteEmptyDirs(destination);
             return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
         }
     }

@@ -14,8 +14,7 @@ namespace JobHost
             {
                 var parameters = Parameters.Parse(args);
                 System.Diagnostics.Trace.CorrelationManager.ActivityId = parameters.ActivityId;
-                logger.Info($"JobHost. Parameters resolved. {parameters}");
-                logger.Info("JobHost. Activity started execution.");
+                logger.Info($"JobHost. Parameters resolved. {parameters}. Activity started execution.");
 
                 Type jobType = Type.GetType(parameters.ClassName);
 

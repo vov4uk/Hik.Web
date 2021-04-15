@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Autofac;
 using CronExpressionDescriptor;
 using Hik.DataAccess;
+using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Job;
 using Job.Extentions;
@@ -40,9 +41,12 @@ namespace Hik.Web.Pages
             this.dataContext = dataContext;
             dataContext.Database.EnsureCreated();
             QuartzTriggers = BuildModelAsync().GetAwaiter().GetResult();
+            JobTriggers = dataContext.JobTriggers.AsQueryable().ToList();
         }
 
         public IList<CronTriggerImpl> QuartzTriggers { get; set; }
+
+        public IList<JobTrigger> JobTriggers { get; set; }
 
         public Dictionary<string, IList<TriggerDTO>> TriggersDTOs { get; set; }
 
@@ -51,10 +55,13 @@ namespace Hik.Web.Pages
         public async Task OnGet(string msg = null)
         {
             ResponseMsg = msg;
-            var triggerDtos = new Dictionary<string, IList<TriggerDTO>>();
-            var triggers = await dataContext.JobTriggers.ToListAsync();
-            var latestJobs = await dataContext.Jobs.GroupBy(x => x.JobTriggerId).Select(x => x.Max(y => y.Id)).ToArrayAsync();
-            var jobs = await dataContext.Jobs.Where(x => latestJobs.Contains(x.Id)).ToListAsync();
+            TriggersDTOs = new Dictionary<string, IList<TriggerDTO>>();
+            var jobs = await dataContext.JobTriggers
+                .AsQueryable()
+                .Include(x => x.Jobs)
+                .Select(x => x.Jobs.OrderByDescending(y => y.Started)
+                .FirstOrDefault())
+                .ToListAsync();
 
             foreach (var item in QuartzTriggers)
             {
@@ -62,7 +69,7 @@ namespace Hik.Web.Pages
                 var group = item.Key.Group;
                 var name = item.Key.Name;
                 var act = activities.FirstOrDefault(x => x.Parameters.TriggerKey == name && x.Parameters.Group == group);
-                var tri = triggers.FirstOrDefault(x => x.TriggerKey == name && x.Group == group);
+                var tri = JobTriggers.FirstOrDefault(x => x.TriggerKey == name && x.Group == group);
                 var job = jobs.FirstOrDefault(x => x.JobTriggerId == tri?.Id);
                 var dto = new TriggerDTO
                 {
@@ -87,16 +94,10 @@ namespace Hik.Web.Pages
                     LastJobStarted = job?.Started,
                     LastJobFinished = job?.Finished
                 };
-                if (triggerDtos.ContainsKey(className))
-                {
-                    triggerDtos[className].Add(dto);
-                }
-                else
-                {
-                    triggerDtos.Add(className, new List<TriggerDTO> { dto });
-                }
+
+                TriggersDTOs.SafeAdd(className, dto);
+
             }
-            TriggersDTOs = triggerDtos.OrderBy(x => x.Key).ToDictionary(k => k.Key, v => v.Value);
         }
 
         public IActionResult OnPostRun(string group, string name)
