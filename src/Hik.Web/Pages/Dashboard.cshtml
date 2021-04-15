@@ -8,7 +8,7 @@
 
 @if (Model.Triggers != null && Model.Triggers.Any())
 {
-    <table class="table">
+<table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
         <thead>
             <tr>
                 <th>@Html.DisplayNameFor(model => model.Triggers.FirstOrDefault().TriggerKey)</th>

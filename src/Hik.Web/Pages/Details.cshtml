@@ -3,7 +3,7 @@
 
 @{ViewData["Title"] = "Details";}
 
-<table class="table">
+<table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(model => model.Job.Id)</th>
@@ -28,7 +28,7 @@
 
 @if (Model.Job.ExceptionLog != null)
 {
-    <table class="table">
+    <table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
         <thead>
             <tr>
                 <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Created)</th>

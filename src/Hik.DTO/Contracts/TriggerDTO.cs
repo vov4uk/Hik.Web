@@ -49,6 +49,7 @@ namespace Hik.DTO.Contracts
         [Display(Name = "Finished"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastJobFinished { get; set; }
 
+        [Display(Name = "Files")]
         public int? LastJobFilesCount { get; set; }
 
         public bool Success { get; set; }
