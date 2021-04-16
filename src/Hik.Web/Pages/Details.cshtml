@@ -2,7 +2,9 @@
 @model Hik.Web.Pages.DetailsModel
 
 @{ViewData["Title"] = "Details";}
-
+<button onclick="javascript:history.back()">Go Back</button>
+@if (Model.Job != null)
+{
 <table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
     <thead>
         <tr>
@@ -25,6 +27,7 @@
         </tr>
     </tbody>
 </table>
+}
 
 @if (Model.Job.ExceptionLog != null)
 {

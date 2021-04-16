@@ -42,9 +42,7 @@ namespace Hik.Client.Infrastructure
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();
             builder.RegisterType<HikVideoDownloaderService>();
             builder.RegisterType<HikPhotoDownloaderService>();
-            builder.RegisterType<DeleteSevice>();
             builder.RegisterType<ArchiveService>();
-            builder.RegisterType<CleanUpService>();
 
             return builder.Build();
         }

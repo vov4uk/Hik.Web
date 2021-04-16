@@ -16,116 +16,118 @@
 </div>
 
 <div class="container">
-
-    @foreach (var key in Model.TriggersDTOs.Keys.OrderBy(x => x))
+    @if(Model.TriggersDTOs != null && Model.TriggersDTOs.Any())
     {
-        var row = Model.TriggersDTOs[key];
-        <div class="row">
-            <div class="card-body text-center">
-                <h4 class="card-title">@Html.DisplayFor(x => key)</h4>
-            </div>
-        </div>
-        <div class="row">
-            <table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
-                <thead>
-                    <tr>
-                        <th>Cron</th>
-                        <th>Title</th>
-                        <th>@Html.DisplayNameFor(model => row[0].Next)</th>
-                        <th>@Html.DisplayNameFor(model => row[0].ConfigPath)</th>
-                        <th>@Html.DisplayNameFor(model => row[0].LastSync)</th>
-                        <th>@Html.DisplayNameFor(model => row[0].LastJobPeriodStart)</th>
-                        <th>@Html.DisplayNameFor(model => row[0].LastJobPeriodEnd)</th>
-                        <th>@Html.DisplayNameFor(model => row[0].LastJobFilesCount)</th>
-                        <th>Started</th>
-                        <th>Finished</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in row)
-                    {
-                        string started = Hik.Client.Helpers.Utils.GetRelativeTime(item.ActivityStarted ?? item.LastJobStarted);
-                        string finished = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobFinished);
-                        string lastSync = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastSync);
-                        string from = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodStart);
-                        string to = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodEnd);
-
-                        <tr data-status="@item.Success" class="failed">
-                            <td><span title="@item.CronSummary">@item.CronString</span></td>
-                            <td><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></td>
-                            <td>@Html.DisplayFor(x => item.Next)</td>
-                            <td>@Html.DisplayFor(x => item.ConfigPath)</td>
-                            <td><span title="@lastSync">@Html.DisplayFor(x => item.LastSync)</span></td>
-                            <td><span title="@from">@Html.DisplayFor(x => item.LastJobPeriodStart)</span></td>
-                            <td><span title="@to">@Html.DisplayFor(x => item.LastJobPeriodEnd)</span></td>
-                            <td>@Html.DisplayFor(x => item.LastJobFilesCount)</td>
-                            <td><a asp-page="./Details" asp-route-id="@item.JobId">@started</a></td>
-                            <td>@finished</td>
-                            <td>
-                                @if (item.ActivityId == null)
-                                {
-                                    <form method="POST">
-                                        <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@item.Group" asp-route-name="@item.Name" value="Start" />
-                                    </form>
-                                }
-                                else
-                                {
-                                    <form method="POST">
-                                        <input type="submit" class="btn btn-primary" asp-page-handler="Kill" asp-route-activityId="@item.ActivityId" value="@item.ProcessId" />
-                                    </form>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-            @foreach (var item in row)
-            {
-                string started = Hik.Client.Helpers.Utils.GetRelativeTime(item.ActivityStarted ?? item.LastJobStarted);
-                string finished = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobFinished);
-                string lastSync = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastSync);
-                string from = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodStart);
-                string to = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodEnd);
-                string color = item.Success && item.ActivityId == null ? "text-white tri-success" : item.ActivityId == null ? "text-white tri-error" : "text-black tri-info";
-
-                <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3">
-                    <div class="card @color" style="margin-bottom: 10px;">
-                        <div class="card-body text-center">
-                            <h4 class="card-title"><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></h4>
-                        </div>
-                        <ul class=" ">
-                            <li><span title="@item.CronSummary">@item.CronString</span></li>
-                            <li>Next - @Html.DisplayFor(x => item.Next)</li>
-                            <li>@Html.DisplayFor(x => item.ConfigPath)</li>
-                            <li><span title="@lastSync">Sync -  @Html.DisplayFor(x => item.LastSync)</span></li>
-                            <li><span title="@from">From -  @Html.DisplayFor(x => item.LastJobPeriodStart)</span></li>
-                            <li><span title="@to">To -    @Html.DisplayFor(x => item.LastJobPeriodEnd)</span></li>
-                            <li>Files - @Html.DisplayFor(x => item.LastJobFilesCount)</li>
-                            <li><a asp-page="./Details" asp-route-id="@item.JobId">Started - @started</a></li>
-                            <li>Finished - @finished</li>
-                        </ul>
-                        <div class="card-body text-center">
-                            <div>
-                                @if (item.ActivityId == null)
-                                {
-                                    <form method="POST">
-                                        <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@item.Group" asp-route-name="@item.Name" value="Start" />
-                                    </form>
-                                }
-                                else
-                                {
-                                    <form method="POST">
-                                        <input type="submit" class="btn btn-primary" asp-page-handler="Kill" asp-route-activityId="@item.ActivityId" value="@item.ProcessId" />
-                                    </form>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
+      @foreach (var key in Model.TriggersDTOs.Keys.OrderBy(x => x))
+      {
+          var row = Model.TriggersDTOs[key];
+          <div class="row">
+              <div class="card-body text-center">
+                  <h4 class="card-title">@Html.DisplayFor(x => key)</h4>
+              </div>
+          </div>
+          <div class="row">
+              <table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+                  <thead>
+                      <tr>
+                          <th>Cron</th>
+                          <th>Title</th>
+                          <th>@Html.DisplayNameFor(model => row[0].Next)</th>
+                          <th>@Html.DisplayNameFor(model => row[0].ConfigPath)</th>
+                          <th>@Html.DisplayNameFor(model => row[0].LastSync)</th>
+                          <th>@Html.DisplayNameFor(model => row[0].LastJobPeriodStart)</th>
+                          <th>@Html.DisplayNameFor(model => row[0].LastJobPeriodEnd)</th>
+                          <th>@Html.DisplayNameFor(model => row[0].LastJobFilesCount)</th>
+                          <th>Started</th>
+                          <th>Finished</th>
+                          <th></th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      @foreach (var item in row)
+                      {
+                          string started = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobStarted);
+                          string finished = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobFinished);
+                          string lastSync = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastSync);
+                          string from = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodStart);
+                          string to = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodEnd);
+     
+                          <tr data-status="@item.Success" class="failed">
+                              <td><span title="@item.CronSummary">@item.CronString</span></td>
+                              <td><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></td>
+                              <td>@Html.DisplayFor(x => item.Next)</td>
+                              <td>@Html.DisplayFor(x => item.ConfigPath)</td>
+                              <td><span title="@lastSync">@Html.DisplayFor(x => item.LastSync)</span></td>
+                              <td><span title="@from">@Html.DisplayFor(x => item.LastJobPeriodStart)</span></td>
+                              <td><span title="@to">@Html.DisplayFor(x => item.LastJobPeriodEnd)</span></td>
+                              <td>@Html.DisplayFor(x => item.LastJobFilesCount)</td>
+                              <td><a asp-page="./Details" asp-route-id="@item.JobId">@started</a></td>
+                              <td>@finished</td>
+                              <td>
+                                  @if (item.ActivityId == null)
+                                  {
+                                      <form method="POST">
+                                          <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@item.Group" asp-route-name="@item.Name" value="Start" />
+                                      </form>
+                                  }
+                                  else
+                                  {
+                                      <form method="POST">
+                                          <input type="submit" class="btn btn-primary" asp-page-handler="Kill" asp-route-activityId="@item.ActivityId" value="@item.ProcessId" />
+                                      </form>
+                                  }
+                              </td>
+                          </tr>
+                      }
+                  </tbody>
+              </table>
+     
+              @foreach (var item in row)
+              {
+                  string started = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobStarted);
+                  string finished = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobFinished);
+                  string lastSync = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastSync);
+                  string from = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodStart);
+                  string to = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodEnd);
+                  string color = item.Success && item.ActivityId == null ? "text-white tri-success" : item.ActivityId == null ? "text-white tri-error" : "text-black tri-info";
+     
+                  <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3">
+                      <div class="card @color" style="margin-bottom: 10px;">
+                          <div class="card-body text-center">
+                              <h4 class="card-title"><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></h4>
+                          </div>
+                          <ul class=" ">
+                              <li><span title="@item.CronSummary">@item.CronString</span></li>
+                              <li>Next - @Html.DisplayFor(x => item.Next)</li>
+                              <li>@Html.DisplayFor(x => item.ConfigPath)</li>
+                              <li><span title="@lastSync">Sync -  @Html.DisplayFor(x => item.LastSync)</span></li>
+                              <li><span title="@from">From -  @Html.DisplayFor(x => item.LastJobPeriodStart)</span></li>
+                              <li><span title="@to">To -    @Html.DisplayFor(x => item.LastJobPeriodEnd)</span></li>
+                              <li>Files - @Html.DisplayFor(x => item.LastJobFilesCount)</li>
+                              <li><a asp-page="./Details" asp-route-id="@item.JobId">Started - @started</a></li>
+                              <li>Finished - @finished</li>
+                          </ul>
+                          <div class="card-body text-center">
+                              <div>
+                                  @if (item.ActivityId == null)
+                                  {
+                                      <form method="POST">
+                                          <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@item.Group" asp-route-name="@item.Name" value="Start" />
+                                      </form>
+                                  }
+                                  else
+                                  {
+                                      <form method="POST">
+                                          <input type="submit" class="btn btn-primary" asp-page-handler="Kill" asp-route-activityId="@item.ActivityId" value="@item.ProcessId" />
+                                      </form>
+                                  }
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              }
+          </div>
+      }
     }
 </div>
 

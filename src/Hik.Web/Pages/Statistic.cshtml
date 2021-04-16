@@ -4,6 +4,9 @@
 @{ViewData["Title"] = Model.Trigger;}
 
 <h2>@Model.Trigger</h2>
+<button onclick="javascript:history.back()">Go Back</button>
+@if(Model.Statistics != null && Model.Statistics.Any())
+{
 <table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
     <thead>
         <tr>
@@ -28,6 +31,7 @@
         }
     </tbody>
 </table>
+}
 
 <!-- pager -->
 @if (Model.Pager.Pages.Any())

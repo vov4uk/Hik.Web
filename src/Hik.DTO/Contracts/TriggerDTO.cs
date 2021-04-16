@@ -9,8 +9,8 @@ namespace Hik.DTO.Contracts
         public const string DisplayTimeFormat = "{0:HH':'mm':'ss}";
 
         public string Group { get; set; }
+
         public string Name { get; set; }
-        public string Description { get; set; }
 
         [Display(Name = "Config")]
         public string ConfigPath { get; set; }
@@ -22,9 +22,6 @@ namespace Hik.DTO.Contracts
         [Display(Name = "Trigger"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime TriggerStarted { get; set; }
 
-        [Display(Name = "Activity"), DisplayFormat(DataFormatString = DisplayTimeFormat), DataType(DataType.DateTime)]
-        public DateTime? ActivityStarted { get; set; }    
-        
         [Display(Name = "Next"), DisplayFormat(DataFormatString = DisplayTimeFormat), DataType(DataType.DateTime)]
         public DateTime? Next { get; set; }
 
@@ -42,7 +39,7 @@ namespace Hik.DTO.Contracts
 
         [Display(Name = "To"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastJobPeriodEnd { get; set; }    
-        
+
         [Display(Name = "Started"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastJobStarted { get; set; }
 

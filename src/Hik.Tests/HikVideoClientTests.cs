@@ -214,8 +214,8 @@
         #region DownloadFileAsync
        
         [Theory]
-        [InlineData(1991, 05, 31, 60, "video", "C:\\1991-05\\31\\19910531_000000_000100.mp4")]
-        [InlineData(2020, 12, 31, 3600, "ch000000001", "C:\\2020-12\\31\\20201231_000000_010000.mp4")]
+        [InlineData(1991, 05, 31, 60, "video", "C:\\1991-05\\31\\00\\19910531_000000_000100.mp4")]
+        [InlineData(2020, 12, 31, 3600, "ch000000001", "C:\\2020-12\\31\\00\\20201231_000000_010000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, int duration, string name, string fileName)
         {
             var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test" };
@@ -257,6 +257,7 @@
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            this.filesMock.Setup(x => x.GetTempFileName()).Returns(string.Empty);
 
             var client = this.GetHikClient();
             var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
@@ -273,6 +274,7 @@
             this.SetupFilesMockForDownload();
 
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
+            this.filesMock.Setup(x => x.GetTempFileName()).Returns(string.Empty);
             this.videoServiceMock
                 .Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(downloadHandler);
@@ -327,8 +329,9 @@
             this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<int>())).Callback(() => client.ForceExit()).Returns(10);
             this.sdkMock.Setup(x => x.Logout(DefaultUserId));
             this.sdkMock.Setup(x => x.Cleanup());
+            this.filesMock.Setup(x => x.GetTempFileName()).Returns(string.Empty);
 
-           
+
             client.Login();
             var isDownloadingStarted = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
             

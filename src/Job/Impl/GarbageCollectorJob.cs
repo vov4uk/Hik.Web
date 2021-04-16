@@ -20,7 +20,7 @@ namespace Job.Impl
         public GarbageCollectorJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
-            Config = HikConfigExtentions.GetConfig<CleanupConfig>(configFilePath);
+            Config = HikConfigExtentions.GetConfig<GarbageCollectorConfig>(configFilePath);
             LogInfo(Config?.ToString());
             this.directoryHelper = new DirectoryHelper();
             this.filesHelper = new FilesHelper();
@@ -33,7 +33,7 @@ namespace Job.Impl
 
         public override Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
-            var cleanupConfig = Config as CleanupConfig;
+            var cleanupConfig = Config as GarbageCollectorConfig;
             var destination = Config.DestinationFolder;
 
             List<MediaFileDTO> deleteFilesResult = new();

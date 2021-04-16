@@ -1,6 +1,6 @@
 ﻿namespace Hik.DTO.Config
 {
-    public class CleanupConfig : BaseConfig
+    public class GarbageCollectorConfig : BaseConfig
     {
         public double FreeSpacePercentage { get; set; }
 
