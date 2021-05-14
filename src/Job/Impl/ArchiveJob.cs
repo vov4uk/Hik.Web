@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Job.Extensions;
 
 namespace Job.Impl
 {
@@ -17,29 +18,31 @@ namespace Job.Impl
         public ArchiveJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
-            Config = HikConfigExtentions.GetConfig<ArchiveConfig>(configFilePath);
+            Config = HikConfigExtensions.GetConfig<ArchiveConfig>(configFilePath);
             LogInfo(Config?.ToString());
         }
 
-        public override Task InitializeProcessingPeriod()
+        protected override Task InitializeProcessingPeriod()
         {
             return Task.CompletedTask;
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        protected override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var worker = AppBootstrapper.Container.Resolve<ArchiveService>();
             worker.ExceptionFired += base.ExceptionFired;
 
-            return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
+            var result =  await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
+            worker.ExceptionFired -= base.ExceptionFired;
+            return result;
         }
 
-        public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        protected override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             await service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }
 
-        public override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        protected override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);

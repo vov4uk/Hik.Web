@@ -8,7 +8,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using NLog;
 
-namespace Hik.Client
+namespace Hik.Client.Client
 {
     public abstract class HikBaseClient : IDisposable
     {
@@ -17,11 +17,11 @@ namespace Hik.Client
         protected readonly CameraConfig config;
         protected readonly IHikApi hikApi;
         protected readonly IFilesHelper filesHelper;
-        protected readonly IDirectoryHelper dirHelper;
-        protected ILogger logger = LogManager.GetCurrentClassLogger();
+        protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
         protected int downloadId = -1;
         protected Session session;
-        private bool disposedValue = false;
+        private readonly IDirectoryHelper dirHelper;
+        private bool disposedValue;
 
         protected HikBaseClient(
             CameraConfig config,
@@ -30,19 +30,14 @@ namespace Hik.Client
             IDirectoryHelper directoryHelper,
             IMapper mapper)
         {
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
-
-            this.config = config;
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
             this.dirHelper = directoryHelper;
             this.Mapper = mapper;
         }
 
-        protected IMapper Mapper { get; private set; }
+        protected IMapper Mapper { get; }
 
         public void InitializeClient()
         {
@@ -67,18 +62,16 @@ namespace Hik.Client
 
                 logger.Info(status?.ToString());
 
-                if (status != null && status.IsErrorStatus)
+                if (status is { IsErrorStatus: true })
                 {
                     throw new InvalidOperationException("HD error");
                 }
 
                 return true;
             }
-            else
-            {
-                logger.Warn("HikBaseClient.Login : Already logged in");
-                return false;
-            }
+
+            logger.Warn("HikBaseClient.Login : Already logged in");
+            return false;
         }
 
         public void ForceExit()
@@ -92,23 +85,6 @@ namespace Hik.Client
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                logger.Info($"Logout the device");
-                if (session != null)
-                {
-                    hikApi.Logout(session.UserId);
-                }
-
-                session = null;
-
-                hikApi.Cleanup();
-                disposedValue = true;
-            }
         }
 
         protected abstract string ToFileNameString(MediaFileDTO file);
@@ -141,6 +117,23 @@ namespace Hik.Client
         private string GetWorkingDirectory(MediaFileDTO file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, ToDirectoryNameString(file));
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                logger.Info($"Logout the device");
+                if (session != null)
+                {
+                    hikApi.Logout(session.UserId);
+                }
+
+                session = null;
+
+                hikApi.Cleanup();
+                disposedValue = true;
+            }
         }
     }
 }

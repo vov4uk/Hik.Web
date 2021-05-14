@@ -1,21 +1,18 @@
-﻿namespace Hik.Client.Services.Tests
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using AutoFixture;
-    using Hik.Api;
-    using Hik.Api.Data;
-    using Hik.Client.Abstraction;
-    using Hik.Client.Infrastructure;
-    using Hik.Client.Service;
-    using Hik.DTO.Config;
-    using Hik.DTO.Contracts;
-    using Moq;
-    using Xunit;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoFixture;
+using Hik.Api;
+using Hik.Client.Abstraction;
+using Hik.Client.Service;
+using Hik.DTO.Config;
+using Hik.DTO.Contracts;
+using Moq;
+using Xunit;
 
+namespace Hik.Client.Tests.Services
+{
     public class HikVideoDownloaderTests
     {
         private readonly Mock<IDirectoryHelper> directoryMock;
@@ -37,7 +34,7 @@
         {
             bool success = true;
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
-            var downloader = CreateHikDownloader();
+            var downloader = this.CreateHikDownloader();
             downloader.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
             {
                 success = false;
@@ -59,7 +56,7 @@
             this.SetupClientInitialize();
             this.SetupClientDispose();
             this.clientMock.Setup(x => x.Login()).Returns(false);
-            this.directoryMock.Setup(x => x.GetTotalFreeSpace(It.IsAny<string>())).Returns(0);
+            this.directoryMock.Setup(x => x.GetTotalFreeSpaceGb(It.IsAny<string>())).Returns(0);
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -69,8 +66,8 @@
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
             Assert.Empty(result);
-        }  
-        
+        }
+
         [Fact]
         public async Task ExecuteAsync_DestinationFolderNotExist_Exit()
         {
@@ -246,8 +243,8 @@
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
-        }     
-        
+        }
+
         [Fact]
         public async Task ExecuteAsync_CancelationOnDownload_ExceptionFiredAfterFirtstFileDownloaded()
         {
@@ -274,7 +271,7 @@
             {
                 isOperationCanceledException = e.Exception is OperationCanceledException;
             };
-            
+
             await downloader.ExecuteAsync(cameraConfig, default(DateTime), default(DateTime));
 
             // assert
@@ -283,8 +280,8 @@
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.clientMock.Verify(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()), Times.Once);
             Assert.True(isOperationCanceledException);
-        } 
-        
+        }
+
         [Fact]
         public void Cancel_DownloadNotStarted_NothiningToCancel()
         {
@@ -299,13 +296,13 @@
             {
                 isOperationCanceledException = e.Exception is OperationCanceledException;
             };
-            
+
             downloader.Cancel();
 
             // assert
             Assert.False(isOperationCanceledException);
-        }      
-        
+        }
+
         [Fact]
         public async Task ExecuteAsync_CancelationOnLogin_ExceptionFiredGetRemoteFilesListNotStarted()
         {
@@ -339,7 +336,7 @@
 
         private void SetupDirectoryHelper()
         {
-            this.directoryMock.Setup(x => x.GetTotalFreeSpace(It.IsAny<string>())).Returns(1024);
+            this.directoryMock.Setup(x => x.GetTotalFreeSpaceGb(It.IsAny<string>())).Returns(1024);
             this.directoryMock.Setup(x => x.DirSize(It.IsAny<string>())).Returns(1024);
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
         }
@@ -362,15 +359,15 @@
 
         private void VerifyStatisticWasPrinted()
         {
-            this.directoryMock.Verify(x => x.GetTotalFreeSpace(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.GetTotalFreeSpaceGb(It.IsAny<string>()), Times.Once);
             this.directoryMock.Verify(x => x.DirSize(It.IsAny<string>()), Times.Once);
         }
 
-        private HikVideoDownloaderService CreateHikDownloader()
+        private VideoDownloaderService CreateHikDownloader()
         {
             this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>())).Returns(this.clientMock.Object);
 
-            return new HikVideoDownloaderService(this.directoryMock.Object, this.clientFactoryMock.Object);
+            return new VideoDownloaderService(this.directoryMock.Object, this.clientFactoryMock.Object);
         }
     }
 }

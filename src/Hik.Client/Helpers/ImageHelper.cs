@@ -11,15 +11,13 @@ namespace Hik.Client.Helpers
     {
         public void SetDate(string path, string newPath, DateTime date)
         {
-            using (Image image = Image.FromFile(path))
-            {
-                var newItem = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
-                newItem.Value = Encoding.ASCII.GetBytes(date.ToString("yyyy':'MM':'dd' 'HH':'mm':'ss"));
-                newItem.Type = 2;
-                newItem.Id = 306;
-                image.SetPropertyItem(newItem);
-                image.Save(newPath, image.RawFormat);
-            }
+            using Image image = Image.FromFile(path);
+            var newItem = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
+            newItem.Value = Encoding.ASCII.GetBytes(date.ToString("yyyy':'MM':'dd' 'HH':'mm':'ss"));
+            newItem.Type = 2;
+            newItem.Id = 306;
+            image.SetPropertyItem(newItem);
+            image.Save(newPath, image.RawFormat);
         }
     }
 }

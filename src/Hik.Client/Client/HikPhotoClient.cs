@@ -9,7 +9,7 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 
-namespace Hik.Client
+namespace Hik.Client.Client
 {
     public sealed class HikPhotoClient : HikBaseClient, IClient
     {

@@ -7,7 +7,7 @@ using Hik.DataAccess.Metadata;
 namespace Hik.DataAccess.Data
 {
     [Table(Tables.JobTrigger)]
-    public class JobTrigger
+    public sealed class JobTrigger
     {
         [Key]
         public int Id { get; set; }
@@ -16,14 +16,14 @@ namespace Hik.DataAccess.Data
 
         public string Group { get; set; }
 
-        public List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
+        public List<DailyStatistic> DailyStatistics { get; } = new List<DailyStatistic>();
 
         public List<HikJob> Jobs { get; set; } = new List<HikJob>();
 
         [Display(Name = "Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastSync { get; set; }
 
-        public virtual List<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
+        public List<MediaFile> MediaFiles { get; } = new List<MediaFile>();
 
         public override string ToString()
         {

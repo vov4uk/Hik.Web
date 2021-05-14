@@ -3,10 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace Job
+namespace Job.Extensions
 {
     [ExcludeFromCodeCoverage]
-    public static class HikConfigExtentions
+    public static class HikConfigExtensions
     {
         public static T GetConfig<T>(string configPath = "configuration.json")
         {

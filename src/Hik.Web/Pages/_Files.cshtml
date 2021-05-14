@@ -1,24 +1,25 @@
 ﻿
+@using Hik.Client.Helpers
 @model List<Hik.DataAccess.Data.MediaFile>
 
 <h2>Files</h2>
-<table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+<table class="table table-striped table-bordered table-sm" width="100%">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model[0].Name)</th>
-            <th>@Html.DisplayNameFor(model => model[0].Date)</th>
-            <th>@Html.DisplayNameFor(model => model[0].Duration)</th>
-            <th>@Html.DisplayNameFor(model => model[0].Size)</th>
-            <th>@Html.DisplayNameFor(model => model[0].DownloadDuration.Started)</th>
-            <th>@Html.DisplayNameFor(model => model[0].DownloadDuration.Duration)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Name)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Date)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Duration)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Size)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().DownloadDuration.Started)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().DownloadDuration.Duration)</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            string size = Hik.Client.Helpers.Utils.FormatBytes(item.Size);
-            string duration = Hik.Client.Helpers.Utils.FormatSeconds(item.Duration);
-            string downloaded = Hik.Client.Helpers.Utils.FormatSeconds(item.DownloadDuration?.Duration);
+            string size = item.Size.FormatBytes();
+            string duration = item.Duration.FormatSeconds();
+            string downloaded = (item.DownloadDuration?.Duration).FormatSeconds();
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>

@@ -48,7 +48,7 @@ namespace Hik.Client.Service
                 this.OnExceptionFired(new ExceptionEventArgs(ex), config);
             }
 
-            return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
+            return Task.FromResult((IReadOnlyCollection<MediaFileDTO>)result);
         }
 
         private DateTime GetCreationDate(string dateTimeFormat, string oldFile, string nameTemplate)
@@ -95,9 +95,8 @@ namespace Hik.Client.Service
 
         private List<string> ReverseStringFormat(string template, string str)
         {
-            // Handels regex special characters.
-            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => "\\"
-             + m.Value);
+            // Handle regex special characters.
+            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => "\\" + m.Value);
 
             string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)") + "$";
 

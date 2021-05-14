@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace Job.Extentions
+namespace Hik.Client.Helpers
 {
     public static class DictionaryExtensions
     {
-        public static void SafeAdd<TKey, TValue>(this Dictionary<TKey, IList<TValue>> dict,
-                                                 TKey key, TValue value)
+        public static void SafeAdd<TKey, TValue>(this Dictionary<TKey, IList<TValue>> dict, TKey key, TValue value)
         {
             if (dict.ContainsKey(key))
             {

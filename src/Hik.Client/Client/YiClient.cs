@@ -10,9 +10,9 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using NLog;
 
-namespace Hik.Client
+namespace Hik.Client.Client
 {
-    public class YiClient : IClient
+    public sealed class YiClient : IClient
     {
         private const string YiFileNameFormat = "mm'M00S'";
 
@@ -21,7 +21,7 @@ namespace Hik.Client
         private readonly IDirectoryHelper directoryHelper;
         private readonly IFtpClient ftp;
         private readonly ILogger logger = LogManager.GetCurrentClassLogger();
-        private bool disposedValue = false;
+        private bool disposedValue;
 
         public YiClient(CameraConfig config, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IFtpClient ftp)
         {
@@ -53,18 +53,18 @@ namespace Hik.Client
             var result = new List<MediaFileDTO>();
             var end = periodEnd.AddMinutes(-1);
             var seconds = periodStart.Second;
-            periodStart = periodStart.AddSeconds(-seconds);
+            var start = periodStart.AddSeconds(-seconds);
 
-            while (periodStart < end)
+            while (start < end)
             {
-                var file = new MediaFileDTO()
+                var file = new MediaFileDTO
                 {
-                    Name = periodStart.ToUniversalTime().ToString(YiFileNameFormat),
-                    Date = periodStart,
+                    Name = start.ToUniversalTime().ToString(YiFileNameFormat),
+                    Date = start,
                     Duration = 60,
                 };
                 result.Add(file);
-                periodStart = periodStart.AddMinutes(1);
+                start = periodStart.AddMinutes(1);
             }
 
             return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
@@ -98,7 +98,7 @@ namespace Hik.Client
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!disposedValue)
             {

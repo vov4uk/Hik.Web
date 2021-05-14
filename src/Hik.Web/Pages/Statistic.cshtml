@@ -7,13 +7,13 @@
 <button onclick="javascript:history.back()">Go Back</button>
 @if(Model.Statistics != null && Model.Statistics.Any())
 {
-<table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+<table class="table table-striped table-bordered table-sm" width="100%">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.Statistics[0].Period)</th>
-            <th>@Html.DisplayNameFor(model => model.Statistics[0].FilesCount)</th>
-            <th>@Html.DisplayNameFor(model => model.Statistics[0].FilesSize)</th>
-            <th>@Html.DisplayNameFor(model => model.Statistics[0].TotalDuration)</th>
+            <th>@Html.DisplayNameFor(model => model.Statistics.FirstOrDefault().Period)</th>
+            <th>@Html.DisplayNameFor(model => model.Statistics.FirstOrDefault().FilesCount)</th>
+            <th>@Html.DisplayNameFor(model => model.Statistics.FirstOrDefault().FilesSize)</th>
+            <th>@Html.DisplayNameFor(model => model.Statistics.FirstOrDefault().TotalDuration)</th>
         </tr>
     </thead>
     <tbody>

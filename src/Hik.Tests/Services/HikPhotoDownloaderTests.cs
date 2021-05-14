@@ -1,21 +1,17 @@
-﻿namespace Hik.Client.Services.Tests
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using AutoFixture;
-    using Hik.Api;
-    using Hik.Api.Data;
-    using Hik.Client.Abstraction;
-    using Hik.Client.Infrastructure;
-    using Hik.Client.Service;
-    using Hik.DTO.Config;
-    using Hik.DTO.Contracts;
-    using Moq;
-    using Xunit;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoFixture;
+using Hik.Client.Abstraction;
+using Hik.Client.Service;
+using Hik.DTO.Config;
+using Hik.DTO.Contracts;
+using Moq;
+using Xunit;
 
+namespace Hik.Client.Tests.Services
+{
     public class HikPhotoDownloaderTests
     {
         private readonly Mock<IDirectoryHelper> directoryMock;
@@ -204,7 +200,7 @@
 
         private void SetupDirectoryHelper()
         {
-            this.directoryMock.Setup(x => x.GetTotalFreeSpace(It.IsAny<string>())).Returns(1024);
+            this.directoryMock.Setup(x => x.GetTotalFreeSpaceGb(It.IsAny<string>())).Returns(1024);
             this.directoryMock.Setup(x => x.DirSize(It.IsAny<string>())).Returns(1024);
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
         }
@@ -227,7 +223,7 @@
 
         private void VerifyStatisticWasPrinted()
         {
-            this.directoryMock.Verify(x => x.GetTotalFreeSpace(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.GetTotalFreeSpaceGb(It.IsAny<string>()), Times.Once);
             this.directoryMock.Verify(x => x.DirSize(It.IsAny<string>()), Times.Once);
         }
 

@@ -1,27 +1,28 @@
 ﻿@page
+@using Hik.Client.Helpers
 @model Hik.Web.Pages.JobModel
 
 @{ViewData["Title"] = "Job";}
 <button onclick="javascript:history.back()">Go Back</button>
 @if (Model.Jobs != null && Model.Jobs.Any())
 {
-<table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+<table class="table table-striped table-bordered table-sm" width="100%">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.Jobs[0].JobTrigger)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs[0].Started)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs[0].Finished)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs[0].PeriodStart)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs[0].PeriodEnd)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs[0].FilesCount)</th>
+            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().JobTrigger)</th>
+            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().Started)</th>
+            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().Finished)</th>
+            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().PeriodStart)</th>
+            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().PeriodEnd)</th>
+            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().FilesCount)</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.Jobs)
         {
-            string relativeDate = Hik.Client.Helpers.Utils.GetRelativeTime(item.Started);
-            string relativeFinishedDate = Hik.Client.Helpers.Utils.GetRelativeTime(item.Finished);
+            string relativeDate = item.Started.GetRelativeTime();
+            string relativeFinishedDate = item.Finished.GetRelativeTime();
             string trigger = item.JobTrigger.ToString();
         <tr data-status="@item.Success" class="failed">
             <td>@trigger</td>

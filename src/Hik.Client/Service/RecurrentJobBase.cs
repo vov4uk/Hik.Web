@@ -24,10 +24,10 @@ namespace Hik.Client.Service
         {
             try
             {
-                this.logger.Info("Start ExecuteAsync");
-                if (!this.directoryHelper.DirExist(config?.DestinationFolder))
+                logger.Info("Start ExecuteAsync");
+                if (!directoryHelper.DirExist(config?.DestinationFolder))
                 {
-                    this.logger.Error($"Output doesn't exist: {config?.DestinationFolder}");
+                    logger.Error($"Output doesn't exist: {config?.DestinationFolder}");
                     return default;
                 }
 
@@ -42,7 +42,7 @@ namespace Hik.Client.Service
 
         protected abstract Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to);
 
-        protected virtual void OnExceptionFired(ExceptionEventArgs e, BaseConfig config)
+        protected void OnExceptionFired(ExceptionEventArgs e, BaseConfig config)
         {
             ExceptionFired?.Invoke(this, e);
             logger.Error(e.ToString());

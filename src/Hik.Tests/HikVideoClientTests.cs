@@ -11,13 +11,12 @@
     using Hik.Api.Abstraction;
     using Hik.Api.Data;
     using Hik.Api.Services;
-    using Hik.Client;
     using Hik.Client.Abstraction;
+    using Hik.Client.Client;
     using Hik.Client.Infrastructure;
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Moq;
-    using NLog;
     using Xunit;
 
     public class HikVideoClientTests

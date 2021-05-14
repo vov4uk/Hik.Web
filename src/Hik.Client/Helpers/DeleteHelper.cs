@@ -14,7 +14,7 @@ namespace Hik.Client.Helpers
         private readonly IDirectoryHelper directoryHelper;
         private readonly IVideoHelper videoHelper;
         private bool isInitialized = false;
-        private Dictionary<DateTime, List<string>> directories;
+        private Dictionary<DateTime, IList<string>> directories;
         private Stack<DateTime> dates;
 
         public DeleteHelper(IDirectoryHelper directoryHelper, IFilesHelper filesHelper)
@@ -28,22 +28,14 @@ namespace Hik.Client.Helpers
         {
             if (!isInitialized)
             {
-                directories = new Dictionary<DateTime, List<string>>();
-                var subFolders = this.directoryHelper.EnumerateAllDirectories(destination);
-                foreach (var folder in subFolders)
+                directories = new Dictionary<DateTime, IList<string>>();
+                List<string> subFolders = this.directoryHelper.EnumerateAllDirectories(destination);
+                foreach (string folder in subFolders)
                 {
-                    var fol = folder[Math.Max(0, folder.Length - 13) ..].Replace(@"\", "-");
+                    string fol = folder[Math.Max(0, folder.Length - 13) ..].Replace(@"\", "-");
                     if (DateTime.TryParseExact(fol, "yyyy-MM-dd-HH", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var dt))
                     {
-                        Console.WriteLine($"{dt} - {folder}");
-                        if (directories.ContainsKey(dt))
-                        {
-                            directories[dt].Add(folder);
-                        }
-                        else
-                        {
-                            directories.Add(dt, new List<string> { folder });
-                        }
+                        directories.SafeAdd(dt, folder);
                     }
                 }
 
@@ -68,7 +60,7 @@ namespace Hik.Client.Helpers
                 }
             }
 
-            return Task.FromResult(files as IReadOnlyCollection<MediaFileDTO>);
+            return Task.FromResult((IReadOnlyCollection<MediaFileDTO>)files);
         }
     }
 }

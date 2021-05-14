@@ -8,30 +8,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Job.Extensions;
 
 namespace Job.Impl
 {
     public class GarbageCollectorJob : JobProcessBase
     {
-        private const double Gb = 1024.0 * 1024.0 * 1024.0;
-        protected readonly IDirectoryHelper directoryHelper;
-        protected readonly IFilesHelper filesHelper;
+        private readonly IDirectoryHelper directoryHelper;
+        private readonly IFilesHelper filesHelper;
 
         public GarbageCollectorJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
-            Config = HikConfigExtentions.GetConfig<GarbageCollectorConfig>(configFilePath);
+            Config = HikConfigExtensions.GetConfig<GarbageCollectorConfig>(configFilePath);
             LogInfo(Config?.ToString());
             this.directoryHelper = new DirectoryHelper();
             this.filesHelper = new FilesHelper();
         }
 
-        public override Task InitializeProcessingPeriod()
+        protected override Task InitializeProcessingPeriod()
         {
             return Task.CompletedTask;
         }
 
-        public override Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        protected override Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var cleanupConfig = Config as GarbageCollectorConfig;
             var destination = Config.DestinationFolder;
@@ -40,15 +40,13 @@ namespace Job.Impl
             var fileProvider = new FilesProvider();
             using var dbContext = new DataContext(this.ConnectionString);
 
-            double freePercentage = 0.0;
-            int page = 0;
             do
             {
-                double totalSpace = this.directoryHelper.GetTotalSpace(destination) / Gb;
-                double freeSpace = this.directoryHelper.GetTotalFreeSpace(destination) / Gb;
+                double totalSpace = this.directoryHelper.GetTotalSpaceGb(destination);
+                double freeSpace = this.directoryHelper.GetTotalFreeSpaceGb(destination);
 
-                freePercentage = 100 * freeSpace / totalSpace;
-                this.Logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2}");
+                var freePercentage = 100 * freeSpace / totalSpace;
+                this.logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2}");
 
                 if (freePercentage < cleanupConfig.FreeSpacePercentage)
                 {
@@ -62,7 +60,6 @@ namespace Job.Impl
                     }
 
                     deleteFilesResult.AddRange(deletedFiles);
-                    page++;
                 }
                 else
                 {
@@ -72,15 +69,15 @@ namespace Job.Impl
             while (true);
 
             directoryHelper.DeleteEmptyDirs(destination);
-            return Task.FromResult(deleteFilesResult as IReadOnlyCollection<MediaFileDTO>);
+            return Task.FromResult((IReadOnlyCollection<MediaFileDTO>) deleteFilesResult);
         }
 
-        protected List<MediaFileDTO> DeleteFiles(IReadOnlyCollection<MediaFile> filesToDelete)
+        private List<MediaFileDTO> DeleteFiles(IReadOnlyCollection<MediaFile> filesToDelete)
         {
             List<MediaFileDTO> result = new();
             foreach (var file in filesToDelete)
             {
-                this.Logger.Debug($"Deleting: {file.Path}");
+                this.logger.Debug($"Deleting: {file.Path}");
 #if RELEASE
                 this.filesHelper.DeleteFile(file.Path);
 #endif
@@ -90,7 +87,7 @@ namespace Job.Impl
             return result;
         }
 
-        public override async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        protected override async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
@@ -100,7 +97,7 @@ namespace Job.Impl
             await SaveHistory(files.Select(x => new MediaFile { Id = x.Id }).ToList(), service);
         }
 
-        public override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        protected override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             return service.SaveHistoryFilesAsync<DeleteHistory>(files);
         }

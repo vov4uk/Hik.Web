@@ -14,24 +14,24 @@ namespace Hik.Client.Helpers
         private const string DefaultPath = "/tmp/sd/record/";
         private const string YiFilePathFormat = "yyyy'Y'MM'M'dd'D'HH'H'";
         private const string YiFileNameFormat = "mm'M00S'";
-        private const string Yi720pFileNameFormat = "mm'M00S60'";
+        private const string Yi720PFileNameFormat = "mm'M00S60'";
         private const int SECOND = 1;
         private const int MINUTE = 60 * SECOND;
         private const int HOUR = 60 * MINUTE;
         private const int DAY = 24 * HOUR;
         private const int MONTH = 30 * DAY;
-        private static string[] suffix = new string[] { "B", "KB", "MB", "GB", "TB" };
+        private static readonly string[] Suffix = { "B", "KB", "MB", "GB", "TB" };
 
         public static string FormatBytes(this long bytes)
         {
             int i;
             double dblSByte = bytes;
-            for (i = 0; i < suffix.Length && bytes >= 1024; i++, bytes /= 1024)
+            for (i = 0; i < Suffix.Length && bytes >= 1024; i++, bytes /= 1024)
             {
                 dblSByte = bytes / 1024.0;
             }
 
-            return $"{dblSByte,6:0.00} {suffix[i]}";
+            return $"{dblSByte,6:0.00} {Suffix[i]}";
         }
 
         public static string FormatSeconds(this double seconds)
@@ -62,14 +62,14 @@ namespace Hik.Client.Helpers
             return sec.FormatSeconds();
         }
 
-        public static string GetRelativeTime(DateTime? yourDate)
+        public static string GetRelativeTime(this DateTime? yourDate)
         {
-            if (!yourDate.HasValue)
-            {
-                return "N/A";
-            }
+            return !yourDate.HasValue ? "N/A" : GetRelativeTime(yourDate.Value);
+        }
 
-            var ts = new TimeSpan(DateTime.Now.Ticks - yourDate.Value.Ticks);
+        public static string GetRelativeTime(this DateTime yourDate)
+        {
+            var ts = new TimeSpan(DateTime.Now.Ticks - yourDate.Ticks);
             double delta = Math.Abs(ts.TotalSeconds);
 
             if (delta < 1 * MINUTE)
@@ -102,21 +102,14 @@ namespace Hik.Client.Helpers
                 int months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
                 return months <= 1 ? "one month ago" : months + " months ago";
             }
-            else
-            {
-                int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
-                return years <= 1 ? "one year ago" : years + " years ago";
-            }
+
+            int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
+            return years <= 1 ? "one year ago" : years + " years ago";
         }
 
         public static string ToPhotoDirectoryNameString(this DateTime date)
         {
             return $"{date.Year:0000}-{date.Month:00}\\{date.Day:00}\\{date.Hour:00}";
-        }
-
-        public static string ToPhotoUserFriendlyString(this MediaFileDTO file)
-        {
-            return $"{file.Name} | {file.Date.ToString(StartDateTimePrintFormat)} | {FormatBytes(file.Size)}";
         }
 
         public static string ToVideoUserFriendlyString(this MediaFileDTO file)
@@ -147,7 +140,7 @@ namespace Hik.Client.Helpers
         public static string ToYiFilePathString(this DateTime date, ClientType clientType)
         {
             var utcStart = date.ToUniversalTime();
-            return $"{DefaultPath}{utcStart.ToString(YiFilePathFormat)}/{utcStart.ToString(GetFileNameformat(clientType))}.mp4";
+            return $"{DefaultPath}{utcStart.ToString(YiFilePathFormat)}/{utcStart.ToString(GetFileNameFormat(clientType))}.mp4";
         }
 
         public static string ToArchiveFileString(this DateTime date, int duration, string ext)
@@ -161,9 +154,9 @@ namespace Hik.Client.Helpers
             return (denominator == 0) ? 0 : numerator / denominator;
         }
 
-        private static string GetFileNameformat(ClientType clientType)
+        private static string GetFileNameFormat(ClientType clientType)
         {
-            return clientType == ClientType.Yi ? YiFileNameFormat : Yi720pFileNameFormat;
+            return clientType == ClientType.Yi ? YiFileNameFormat : Yi720PFileNameFormat;
         }
     }
 }

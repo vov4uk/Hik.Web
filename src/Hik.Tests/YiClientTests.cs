@@ -1,25 +1,17 @@
 ﻿namespace Hik.Client.Tests
 {
     using System;
-    using System.Collections.Generic;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Abstraction;
     using AutoFixture;
-    using AutoMapper;
+    using Client;
+    using DTO.Config;
+    using DTO.Contracts;
     using FluentFTP;
-    using Hik.Api.Abstraction;
-    using Hik.Api.Data;
-    using Hik.Api.Services;
-    using Hik.Client;
-    using Hik.Client.Abstraction;
-    using Hik.Client.Infrastructure;
-    using Hik.DTO.Config;
-    using Hik.DTO.Contracts;
     using Moq;
-    using NLog;
     using Xunit;
 
     public class YiClientTests

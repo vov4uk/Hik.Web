@@ -25,11 +25,11 @@ namespace Hik.Web.Pages
 
         public Pager Pager { get; set; }
 
-        public int TotalItems { get; set; }
+        private int TotalItems { get; set; }
 
-        public int PageSize { get; set; } = 40;
+        private int PageSize => 40;
 
-        public int MaxPages { get; set; } = 10;
+        private int MaxPages => 10;
 
         public async Task OnGetAsync(int triggerId, int p = 1)
         {

@@ -12,7 +12,8 @@ namespace Hik.Client.Helpers
     public class DirectoryHelper : IDirectoryHelper
     {
         private const string AllFilter = "*";
-        private readonly string[] allowedExtentions = new[] { ".mp4", ".jpg", ".ini" };
+        private const double Gb = 1024.0 * 1024.0 * 1024.0;
+        private readonly string[] allowedExtensions = { ".mp4", ".jpg", ".ini" };
 
         public static string AssemblyDirectory
         {
@@ -55,18 +56,18 @@ namespace Hik.Client.Helpers
             return size;
         }
 
-        public long GetTotalFreeSpace(string path)
+        public double GetTotalFreeSpaceGb(string path)
         {
             DriveInfo drive = GetDrive(path);
 
-            return drive?.TotalFreeSpace ?? -1;
+            return drive?.TotalFreeSpace / Gb ?? -1.0;
         }
 
-        public long GetTotalSpace(string path)
+        public double GetTotalSpaceGb(string path)
         {
             DriveInfo drive = GetDrive(path);
 
-            return drive?.TotalSize ?? -1;
+            return drive?.TotalSize / Gb ?? -1.0;
         }
 
         public void DeleteEmptyDirs(string path)
@@ -89,18 +90,13 @@ namespace Hik.Client.Helpers
         public List<string> EnumerateFiles(string path)
         {
             return Directory.EnumerateFiles(path, AllFilter, SearchOption.AllDirectories)
-                    .Where(s => allowedExtentions.Any(ext => ext == Path.GetExtension(s)))
+                    .Where(s => allowedExtensions.Any(ext => ext == Path.GetExtension(s)))
                     .ToList();
         }
 
         public List<string> EnumerateAllDirectories(string path)
         {
             return Directory.EnumerateDirectories(path, AllFilter, SearchOption.AllDirectories).OrderBy(x => x).ToList();
-        }
-
-        public List<string> EnumerateTopDirectories(string path)
-        {
-            return Directory.EnumerateDirectories(path, AllFilter, SearchOption.TopDirectoryOnly).OrderBy(x => x).ToList();
         }
 
         private static DriveInfo GetDrive(string path)

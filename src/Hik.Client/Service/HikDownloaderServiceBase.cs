@@ -14,7 +14,7 @@ namespace Hik.Client.Service
     public abstract class HikDownloaderServiceBase<T> : RecurrentJobBase<T>
         where T : MediaFileDTO
     {
-        protected const int JobTimeout = 30;
+        private const int JobTimeout = 30;
         private readonly IClientFactory clientFactory;
         private CancellationTokenSource cancelTokenSource;
 
@@ -32,8 +32,7 @@ namespace Hik.Client.Service
 
         public void Cancel()
         {
-            if (cancelTokenSource != null
-                && cancelTokenSource.Token.CanBeCanceled)
+            if (cancelTokenSource is { Token: { CanBeCanceled: true } })
             {
                 cancelTokenSource.Cancel();
                 logger.Warn("Cancel signal was sent");
@@ -44,9 +43,9 @@ namespace Hik.Client.Service
             }
         }
 
-        public abstract Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
+        protected abstract Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
 
-        public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token);
+        protected abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token);
 
         protected override async Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
@@ -148,8 +147,8 @@ namespace Hik.Client.Service
         {
             StringBuilder statisticsSb = new StringBuilder();
             statisticsSb.AppendLine();
-            statisticsSb.AppendLine($"{"Directory Size",-24}: {Utils.FormatBytes(directoryHelper.DirSize(destinationFolder))}");
-            statisticsSb.AppendLine($"{"Free space",-24}: {Utils.FormatBytes(directoryHelper.GetTotalFreeSpace(destinationFolder))}");
+            statisticsSb.AppendLine($"{"Directory Size",-24}: {directoryHelper.DirSize(destinationFolder).FormatBytes()}");
+            statisticsSb.AppendLine($"{"Free space",-24}: {directoryHelper.GetTotalFreeSpaceGb(destinationFolder)}");
             statisticsSb.AppendLine(new string('_', 40)); // separator
 
             logger.Info(statisticsSb.ToString());

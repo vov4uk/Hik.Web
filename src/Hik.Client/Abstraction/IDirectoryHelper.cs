@@ -6,9 +6,9 @@ namespace Hik.Client.Abstraction
     {
         void CreateDirIfNotExist(string path);
 
-        long GetTotalFreeSpace(string path);
+        double GetTotalFreeSpaceGb(string path);
 
-        long GetTotalSpace(string path);
+        double GetTotalSpaceGb(string path);
 
         long DirSize(string path);
 
@@ -19,7 +19,5 @@ namespace Hik.Client.Abstraction
         List<string> EnumerateFiles(string path);
 
         List<string> EnumerateAllDirectories(string path);
-
-        List<string> EnumerateTopDirectories(string path);
     }
 }

@@ -13,17 +13,17 @@ namespace Hik.DataAccess
         private Stack<DateTime> dates;
 
 
-        public void Initialize(string[] trigger, DataContext dbContenxt)
+        public void Initialize(string[] trigger, DataContext dbContext)
         {
             if (!isInitialized)
             {
-                var triggers = dbContenxt.JobTriggers.Where(x => trigger.Contains(x.TriggerKey)).ToList();
+                var triggers = dbContext.JobTriggers.Where(x => trigger.Contains(x.TriggerKey)).ToList();
 
                 mediaFiles = new Dictionary<DateTime, List<MediaFile>>();
 
                 foreach (var tri in triggers)
                 {
-                    var files = dbContenxt.MediaFiles
+                    var files = dbContext.MediaFiles
                         .Include(x => x.DeleteHistory)
                         .Where(x => x.JobTriggerId == tri.Id && x.DeleteHistory == null)
                         .OrderBy(x => x.Date);

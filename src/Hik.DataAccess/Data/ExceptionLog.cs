@@ -5,7 +5,7 @@ using Hik.DataAccess.Metadata;
 
 namespace Hik.DataAccess.Data
 {
-    public class ExceptionLog
+    public sealed class ExceptionLog
     {
         [Key]
         public int Id { get; set; }
@@ -22,6 +22,6 @@ namespace Hik.DataAccess.Data
 
         public string CallStack { get; set; }
 
-        public virtual HikJob Job { get; set; }
+        public HikJob Job { get; set; }
     }
 }

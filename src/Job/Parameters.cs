@@ -18,18 +18,21 @@ namespace Job
 
         public string ConnectionString { get; set; }
 
+        public bool RunAsTask { get; set; } = true;
+
         public override string ToString()
         {
-            return $"\"{ClassName}\" \"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigFilePath}\" \"{ConnectionString}\"";
+            return $"\"{ClassName}\" \"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigFilePath}\" \"{ConnectionString}\" \"{RunAsTask}\"";
         }
 
-        public Parameters(string className, string group, string description, string configFilePath, string connectionString)
+        public Parameters(string className, string group, string description, string configFilePath, string connectionString, bool runAsTask = false)
         {
             TriggerKey = description;
             ClassName = className;
             Group = group;
             ConfigFilePath = Path.Combine(AssemblyDirectory, "Config", configFilePath);
             ConnectionString = connectionString;
+            RunAsTask = runAsTask;
         }
 
 
@@ -46,6 +49,7 @@ namespace Job
             parameters.ActivityId = Guid.Parse(args[3]);
             parameters.ConfigFilePath = args[4];
             parameters.ConnectionString = args[5];
+            parameters.RunAsTask = args[6] == "true";
             return parameters;
         }
         private static string AssemblyDirectory

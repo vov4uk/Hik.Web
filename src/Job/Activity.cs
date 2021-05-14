@@ -73,31 +73,12 @@ namespace Job
 
         private Task StartProcess()
         {
-
-#if DEBUG
-            Type jobType = Type.GetType(Parameters.ClassName);
-
-            if (jobType == null)
+            if (Parameters.RunAsTask)
             {
-                throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
+                logger.Info($"Activity. Starting Task: {Parameters}");
+                return RunAsTask();
             }
 
-            Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(jobType, $"{Parameters.Group}.{Parameters.TriggerKey}", Parameters.ConfigFilePath, Parameters.ConnectionString, Parameters.ActivityId);
-            started = DateTime.Now;
-            bag.Add(this);
-            try
-            {
-                job.ExecuteAsync().GetAwaiter().GetResult();
-            }
-            finally
-            {
-                bag.Remove(this);
-            }
-
-            bag.Remove(this);
-            return Task.CompletedTask;
-
-#elif RELEASE
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
             hostProcess = new Process();
             hostProcess.StartInfo.FileName = $"{Parameters.Group}\\JobHost.exe";
@@ -109,10 +90,8 @@ namespace Job
 
             hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
             hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
-            logger.Info($"Activity. Starting : {Parameters}");
-            logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe");
-            logger.Info($"Actual Path : {hostProcess.StartInfo.FileName}");
-            logger.Info($"Working Direktory : {hostProcess.StartInfo.WorkingDirectory}");
+            logger.Info($"Activity. Starting Process: {Parameters}");
+            logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe, Actual Path : {hostProcess.StartInfo.FileName}, Working Direktory : {hostProcess.StartInfo.WorkingDirectory}");
             hostProcess.Start();
 
             hostProcess.EnableRaisingEvents = true;
@@ -131,7 +110,29 @@ namespace Job
             hostProcess.BeginErrorReadLine();
 
             return tcs.Task;
-#endif
+
+        }
+
+        private async Task RunAsTask()
+        {
+            Type jobType = Type.GetType(Parameters.ClassName);
+
+            if (jobType == null)
+            {
+                throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
+            }
+
+            Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(jobType, $"{Parameters.Group}.{Parameters.TriggerKey}", Parameters.ConfigFilePath, Parameters.ConnectionString, Parameters.ActivityId);
+            started = DateTime.Now;
+            bag.Add(this);
+            try
+            {
+                await job.ExecuteAsync();
+            }
+            finally
+            {
+                bag.Remove(this);
+            }
         }
 
         private void LogErrorData(object sender, DataReceivedEventArgs e)

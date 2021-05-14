@@ -1,4 +1,5 @@
 ﻿@page
+@using Hik.Client.Helpers
 @model Hik.Web.Pages.IndexModel
 @{ViewData["Title"] = "Scheduler";}
 
@@ -8,36 +9,36 @@
     <div class="col-lg-12 my-3">
         <div class="pull-right">
             <div class="btn-group">
-                <button id="cardsBtn" class="bootn active" onclick="showCard()">Cards</button>
-                <button id="tableBtn" class="bootn" onclick="showTable()">Table</button>
+                <button id="cardsBtn" class="bootn" onclick="showCard()">Cards</button>
+                <button id="tableBtn" class="bootn active" onclick="showTable()">Table</button>
             </div>
         </div>
     </div>
 </div>
 
 <div class="container">
-    @if(Model.TriggersDTOs != null && Model.TriggersDTOs.Any())
+    @if(Model.TriggersDtOs != null && Model.TriggersDtOs.Any())
     {
-      @foreach (var key in Model.TriggersDTOs.Keys.OrderBy(x => x))
+      @foreach (var key in Model.TriggersDtOs.Keys.OrderBy(x => x))
       {
-          var row = Model.TriggersDTOs[key];
+          var row = Model.TriggersDtOs[key];
           <div class="row">
               <div class="card-body text-center">
                   <h4 class="card-title">@Html.DisplayFor(x => key)</h4>
               </div>
           </div>
           <div class="row">
-              <table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+              <table class="table table-striped table-bordered table-sm" width="100%">
                   <thead>
                       <tr>
                           <th>Cron</th>
                           <th>Title</th>
-                          <th>@Html.DisplayNameFor(model => row[0].Next)</th>
-                          <th>@Html.DisplayNameFor(model => row[0].ConfigPath)</th>
-                          <th>@Html.DisplayNameFor(model => row[0].LastSync)</th>
-                          <th>@Html.DisplayNameFor(model => row[0].LastJobPeriodStart)</th>
-                          <th>@Html.DisplayNameFor(model => row[0].LastJobPeriodEnd)</th>
-                          <th>@Html.DisplayNameFor(model => row[0].LastJobFilesCount)</th>
+                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().Next)</th>
+                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().ConfigPath)</th>
+                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastSync)</th>
+                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastJobPeriodStart)</th>
+                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastJobPeriodEnd)</th>
+                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastJobFilesCount)</th>
                           <th>Started</th>
                           <th>Finished</th>
                           <th></th>
@@ -46,11 +47,11 @@
                   <tbody>
                       @foreach (var item in row)
                       {
-                          string started = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobStarted);
-                          string finished = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobFinished);
-                          string lastSync = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastSync);
-                          string from = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodStart);
-                          string to = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodEnd);
+                          string started = item.LastJobStarted.GetRelativeTime();
+                          string finished = item.LastJobFinished.GetRelativeTime();
+                          string lastSync = item.LastSync.GetRelativeTime();
+                          string from = item.LastJobPeriodStart.GetRelativeTime();
+                          string to = item.LastJobPeriodEnd.GetRelativeTime();
      
                           <tr data-status="@item.Success" class="failed">
                               <td><span title="@item.CronSummary">@item.CronString</span></td>
@@ -84,11 +85,11 @@
      
               @foreach (var item in row)
               {
-                  string started = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobStarted);
-                  string finished = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobFinished);
-                  string lastSync = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastSync);
-                  string from = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodStart);
-                  string to = Hik.Client.Helpers.Utils.GetRelativeTime(item.LastJobPeriodEnd);
+                  string started = item.LastJobStarted.GetRelativeTime();
+                  string finished = item.LastJobFinished.GetRelativeTime();
+                  string lastSync = item.LastSync.GetRelativeTime();
+                  string from = item.LastJobPeriodStart.GetRelativeTime();
+                  string to = item.LastJobPeriodEnd.GetRelativeTime();
                   string color = item.Success && item.ActivityId == null ? "text-white tri-success" : item.ActivityId == null ? "text-white tri-error" : "text-black tri-info";
      
                   <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3">
@@ -146,8 +147,7 @@
                 x[i].style.display = "table";
             }
 
-            var x = document.getElementsByClassName("card");
-            var i;
+            x = document.getElementsByClassName("card");
             for (i = 0; i < x.length; i++) {
                 x[i].style.display = "none";
             }
@@ -165,8 +165,7 @@
                 x[i].style.display = "none";
             }
 
-            var x = document.getElementsByClassName("card");
-            var i;
+            x = document.getElementsByClassName("card");
             for (i = 0; i < x.length; i++) {
                 x[i].style.display = "block";
             }

@@ -5,7 +5,7 @@
 <button onclick="javascript:history.back()">Go Back</button>
 @if (Model.Job != null)
 {
-<table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+<table class="table table-striped table-bordered table-sm" width="100%">
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(model => model.Job.Id)</th>
@@ -29,9 +29,9 @@
 </table>
 }
 
-@if (Model.Job.ExceptionLog != null)
+@if (Model.Job?.ExceptionLog != null)
 {
-    <table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+    <table class="table table-striped table-bordered table-sm" width="100%">
         <thead>
             <tr>
                 <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Created)</th>
@@ -51,7 +51,7 @@
 
 @if (Model.Files != null && Model.Files.Any())
 {
-    @await Html.PartialAsync("_Files.cshtml", Model.Files)
+    @await Html.PartialAsync("_Files.cshtml", (List<Hik.DataAccess.Data.MediaFile>) Model.Files)
 }
 
 <!-- pager -->

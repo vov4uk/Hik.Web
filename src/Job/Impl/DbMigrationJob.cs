@@ -6,20 +6,21 @@ using Hik.DTO.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Job.Extensions;
 
 namespace Job.Impl
 {
     public class DbMigrationJob : JobProcessBase
     {
         public DbMigrationJob(string trigger, string configFilePath, string connectionString, Guid activityId)
-            : base(HikConfigExtentions.GetConfig<MigrationConfig>(configFilePath).TriggerKey, configFilePath, connectionString, activityId)
+            : base(HikConfigExtensions.GetConfig<MigrationConfig>(configFilePath).TriggerKey, configFilePath, connectionString, activityId)
         {
-            Config = HikConfigExtentions.GetConfig<MigrationConfig>(configFilePath);
+            Config = HikConfigExtensions.GetConfig<MigrationConfig>(configFilePath);
             LogInfo(trigger);
             LogInfo(Config?.ToString());
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        protected override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var deleteHelper = new DeleteHelper(new DirectoryHelper(), new FilesHelper());
             deleteHelper.Initialize(Config.DestinationFolder);
@@ -42,12 +43,12 @@ namespace Job.Impl
             return files;
         }
 
-        public override Task InitializeProcessingPeriod()
+        protected override Task InitializeProcessingPeriod()
         {
             return Task.CompletedTask;
         }
 
-        public override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        protected override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             return service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }

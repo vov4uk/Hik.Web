@@ -40,7 +40,7 @@ namespace Hik.Client.Infrastructure
             hikAssemblies.Add(Assembly.GetExecutingAssembly());
             RegisterAutoMapper(builder);
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();
-            builder.RegisterType<HikVideoDownloaderService>();
+            builder.RegisterType<VideoDownloaderService>();
             builder.RegisterType<HikPhotoDownloaderService>();
             builder.RegisterType<ArchiveService>();
 

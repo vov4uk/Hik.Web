@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using AutoFixture;
 using Hik.Client.Abstraction;
@@ -11,7 +10,7 @@ using Hik.DTO.Config;
 using Moq;
 using Xunit;
 
-namespace Hik.Client.Services.Tests
+namespace Hik.Client.Tests.Services
 {
     public class ArchiveServiceTests
     {
@@ -44,7 +43,7 @@ namespace Hik.Client.Services.Tests
             Assert.ThrowsAsync<NullReferenceException>(() => service.ExecuteAsync(default, default(DateTime), default(DateTime)));
             Assert.False(success);
         }
-        
+
         [Fact]
         public async Task ExecuteAsync_ExceptionHappened_ExceptionHandled()
         {
@@ -64,18 +63,18 @@ namespace Hik.Client.Services.Tests
             await service.ExecuteAsync(config, default(DateTime), default(DateTime));
             Assert.True(isOperationCanceledException);
         }
-        
+
         [Fact]
         public async Task ExecuteAsync_NoFilesFound_NothingToDo()
         {
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
             this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>())).Returns(new List<string>());
 
-            var service = CreateArchiveService();            
+            var service = CreateArchiveService();
             await service.ExecuteAsync(fixture.Create<ArchiveConfig>(), default(DateTime), default(DateTime));
             this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>()), Times.Once);
         }
-        
+
         [Fact]
         public async Task ExecuteAsync_FoundOneFileSkipOneFile_NothingToDo()
         {

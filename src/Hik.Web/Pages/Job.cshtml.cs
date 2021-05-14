@@ -21,15 +21,15 @@ namespace Hik.Web.Pages
 
         public IList<HikJob> Jobs { get; set; }
 
-        public int JobTriggerId { get; set; }
+        public int JobTriggerId { get; private set; }
 
-        public Pager Pager { get; set; }
+        public Pager Pager { get; private set; }
 
-        public int TotalItems { get; set; }
+        private int TotalItems { get; set; }
 
-        public int PageSize { get; set; } = 40;
+        private int PageSize => 40;
 
-        public int MaxPages { get; set; } = 10;
+        private int MaxPages => 10;
 
         public async Task OnGetAsync(int jobTriggerId = default, int p = 1)
         {
