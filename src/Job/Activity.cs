@@ -34,7 +34,7 @@ namespace Job
             Parameters.ActivityId = Id;
             bag = new ActivityBag();
 
-            Log("Activity. Activity created with parameters {0}.", parameters.ToString());
+            Log($"Activity. Activity created with parameters {parameters}.");
         }
 
         public async Task Start()
@@ -51,7 +51,7 @@ namespace Job
                     }
                     else
                     {
-                        Log("Activity. Cannot start, {0} is already running.", Parameters.TriggerKey);
+                        Log($"Activity. Cannot start, {Parameters.TriggerKey} is already running.");
                     }
                 }
             }
@@ -154,12 +154,12 @@ namespace Job
             }
         }
 
-        private void Log(string format, params string[] args)
+        private void Log(string str)
         {
             Guid prevId = Trace.CorrelationManager.ActivityId;
             Trace.CorrelationManager.ActivityId = this.Id;
 
-            logger.Info($"{Parameters.TriggerKey} - {string.Format(format, args)}");
+            logger.Info($"{Parameters.TriggerKey} - {str}");
 
             Trace.CorrelationManager.ActivityId = prevId;
         }

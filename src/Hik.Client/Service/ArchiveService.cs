@@ -40,7 +40,7 @@ namespace Hik.Client.Service
                     var newFileName = date.ToArchiveFileString(duration, filesHelper.GetExtension(oldFile));
                     var newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(config.DestinationFolder, date));
                     this.filesHelper.RenameFile(oldFile, newFilePath);
-                    result.Add(new MediaFileDTO { Date = date, Name = newFileName, Duration = duration, Size = filesHelper.FileSize(newFilePath) });
+                    result.Add(new MediaFileDTO { Date = date, Name = newFileName, Path = newFilePath, Duration = duration, Size = filesHelper.FileSize(newFilePath) });
                 }
             }
             catch (Exception ex)
