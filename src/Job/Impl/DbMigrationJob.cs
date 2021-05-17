@@ -3,10 +3,10 @@ using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Job.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Job.Extensions;
 
 namespace Job.Impl
 {
@@ -20,7 +20,7 @@ namespace Job.Impl
             LogInfo(Config?.ToString());
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var deleteHelper = new DeleteHelper(new DirectoryHelper(), new FilesHelper());
             deleteHelper.Initialize(Config.DestinationFolder);
@@ -43,12 +43,12 @@ namespace Job.Impl
             return files;
         }
 
-        protected override Task InitializeProcessingPeriod()
+        public override Task InitializeProcessingPeriod()
         {
             return Task.CompletedTask;
         }
 
-        protected override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        public override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             return service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }

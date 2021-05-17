@@ -22,7 +22,7 @@ namespace Hik.Web
             {
                 var pathToExe = Process.GetCurrentProcess().MainModule?.FileName;
                 var pathToContentRoot = Path.GetDirectoryName(pathToExe);
-                builder.UseContentRoot(pathToContentRoot ?? string.Empty);
+                builder.UseContentRoot(pathToContentRoot);
             }
 
             var host = builder.Build();
@@ -37,7 +37,7 @@ namespace Hik.Web
             }
         }
 
-        private static IWebHostBuilder CreateHostBuilder(bool isService, string[] args)
+        public static IWebHostBuilder CreateHostBuilder(bool isService, string[] args)
         {
             var env = isService ? "Production" : "Development";
             var config = new ConfigurationBuilder()

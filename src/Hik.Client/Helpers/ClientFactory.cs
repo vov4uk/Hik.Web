@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using Hik.Api.Abstraction;
 using Hik.Client.Abstraction;
-using Hik.Client.Client;
 using Hik.DTO.Config;
 
 namespace Hik.Client.Helpers

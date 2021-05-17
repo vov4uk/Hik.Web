@@ -11,12 +11,13 @@
     using Hik.Api.Abstraction;
     using Hik.Api.Data;
     using Hik.Api.Services;
+    using Hik.Client;
     using Hik.Client.Abstraction;
-    using Hik.Client.Client;
     using Hik.Client.Infrastructure;
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Moq;
+    using NLog;
     using Xunit;
 
     public class HikPhotoClientTests
@@ -35,7 +36,7 @@
             photoServiceMock = new Mock<HikPhotoService>(MockBehavior.Strict);
 
             sdkMock = new Mock<IHikApi>(MockBehavior.Strict);
-            sdkMock.SetupGet(x => x.PhotoService).Returns(this.photoServiceMock.Object);
+            sdkMock.SetupGet(x => x.PhotoService).Returns(photoServiceMock.Object);
 
             filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
             dirMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);

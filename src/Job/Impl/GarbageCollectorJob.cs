@@ -4,18 +4,18 @@ using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Job.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Job.Extensions;
 
 namespace Job.Impl
 {
     public class GarbageCollectorJob : JobProcessBase
     {
-        private readonly IDirectoryHelper directoryHelper;
-        private readonly IFilesHelper filesHelper;
+        protected readonly IDirectoryHelper directoryHelper;
+        protected readonly IFilesHelper filesHelper;
 
         public GarbageCollectorJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
@@ -26,12 +26,12 @@ namespace Job.Impl
             this.filesHelper = new FilesHelper();
         }
 
-        protected override Task InitializeProcessingPeriod()
+        public override Task InitializeProcessingPeriod()
         {
             return Task.CompletedTask;
         }
 
-        protected override Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var cleanupConfig = Config as GarbageCollectorConfig;
             var destination = Config.DestinationFolder;
@@ -46,7 +46,7 @@ namespace Job.Impl
                 double freeSpace = this.directoryHelper.GetTotalFreeSpaceGb(destination);
 
                 var freePercentage = 100 * freeSpace / totalSpace;
-                this.logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2}");
+                this.Logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2}");
 
                 if (freePercentage < cleanupConfig.FreeSpacePercentage)
                 {
@@ -69,15 +69,15 @@ namespace Job.Impl
             while (true);
 
             directoryHelper.DeleteEmptyDirs(destination);
-            return Task.FromResult((IReadOnlyCollection<MediaFileDTO>) deleteFilesResult);
+            return Task.FromResult(deleteFilesResult as IReadOnlyCollection<MediaFileDTO>);
         }
 
-        private List<MediaFileDTO> DeleteFiles(IReadOnlyCollection<MediaFile> filesToDelete)
+        protected List<MediaFileDTO> DeleteFiles(IReadOnlyCollection<MediaFile> filesToDelete)
         {
             List<MediaFileDTO> result = new();
             foreach (var file in filesToDelete)
             {
-                this.logger.Debug($"Deleting: {file.Path}");
+                this.Logger.Debug($"Deleting: {file.Path}");
 #if RELEASE
                 this.filesHelper.DeleteFile(file.Path);
 #endif
@@ -87,7 +87,7 @@ namespace Job.Impl
             return result;
         }
 
-        protected override async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        public override async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
@@ -97,7 +97,7 @@ namespace Job.Impl
             await SaveHistory(files.Select(x => new MediaFile { Id = x.Id }).ToList(), service);
         }
 
-        protected override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        public override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             return service.SaveHistoryFilesAsync<DeleteHistory>(files);
         }

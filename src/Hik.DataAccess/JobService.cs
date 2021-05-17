@@ -13,7 +13,7 @@ namespace Hik.DataAccess
     {
         private readonly IUnitOfWorkFactory factory;
         private readonly HikJob job;
-        private static readonly IMapper mapper = new MapperConfiguration(ConfigureAutoMapper).CreateMapper();
+        private static readonly IMapper mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
 
         public JobService(IUnitOfWorkFactory factory, HikJob job)
         {
@@ -104,7 +104,7 @@ namespace Hik.DataAccess
             var newItems = new List<DailyStatistic>();
             do
             {
-                if (daily.All(d => d.Period != @from))
+                if (!daily.Any(d => d.Period == from))
                 {
                     newItems.Add(
                         new DailyStatistic
@@ -136,7 +136,7 @@ namespace Hik.DataAccess
             return Task.CompletedTask;
         }
 
-        private static void ConfigureAutoMapper(IMapperConfigurationExpression x)
+        static void configureAutoMapper(IMapperConfigurationExpression x)
         {
             x.AddProfile<AutoMapperProfile>();
         }

@@ -39,6 +39,6 @@ namespace Hik.DataAccess.Data
 
         public List<DownloadHistory> DownloadedFiles { get; set; } = new List<DownloadHistory>();
 
-        public List<DeleteHistory> DeletedFiles { get; } = new List<DeleteHistory>();
+        public List<DeleteHistory> DeletedFiles { get; set; } = new List<DeleteHistory>();
     }
 }

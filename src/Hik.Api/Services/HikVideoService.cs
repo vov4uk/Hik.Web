@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 
 namespace Hik.Api.Services
 {
-    public sealed class HikVideoService : FileService
+    public class HikVideoService : FileService
     {
-        public int StartDownloadFile(int userId, string sourceFile, string destinationPath)
+        public virtual int StartDownloadFile(int userId, string sourceFile, string destinationPath)
         {
             int downloadHandle = SdkHelper.InvokeSDK(() => NET_DVR_GetFileByName(userId, sourceFile, destinationPath));
 
@@ -18,12 +18,12 @@ namespace Hik.Api.Services
             return downloadHandle;
         }
 
-        public int GetDownloadPosition(int fileHandle)
+        public virtual int GetDownloadPosition(int fileHandle)
         {
             return SdkHelper.InvokeSDK(() => NET_DVR_GetDownloadPos(fileHandle));
         }
 
-        public void StopDownloadFile(int fileHandle)
+        public virtual void StopDownloadFile(int fileHandle)
         {
             SdkHelper.InvokeSDK(() => NET_DVR_StopGetFile(fileHandle));
         }
@@ -35,7 +35,6 @@ namespace Hik.Api.Services
 
         internal override int FindNext(int findId, ref ISourceFile source)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
             NET_DVR_FINDDATA_V30 findData = default(NET_DVR_FINDDATA_V30);
             int res = SdkHelper.InvokeSDK(() => NET_DVR_FindNextFile_V30(findId, ref findData));
 

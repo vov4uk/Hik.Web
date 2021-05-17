@@ -28,11 +28,11 @@
 
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.2.0" />
+    <PackageReference Include="Autofac" Version="6.1.0" />
     <PackageReference Include="CronExpressionDescriptor" Version="2.16.0" />
     <PackageReference Include="JW.Pager" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="5.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="5.0.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="NLog.Targets.Seq" Version="2.0.0" />
     <PackageReference Include="Quartz" Version="3.3.2" />

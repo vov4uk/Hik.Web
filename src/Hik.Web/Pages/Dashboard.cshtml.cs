@@ -5,6 +5,7 @@ using Hik.Client.Helpers;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Job.Extensions;
+using Job.Extentions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 

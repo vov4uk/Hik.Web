@@ -11,17 +11,16 @@ namespace Hik.Web
         {
             string className = context.MergedJobDataMap["Job"].ToString();
             string configPath = context.MergedJobDataMap["ConfigPath"].ToString();
-            string runAsTask = context.MergedJobDataMap["RunAsTask"].ToString();
 
             var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
 
             IConfigurationSection connStrings = configuration.GetSection("ConnectionStrings");
             string defaultConnection = connStrings.GetSection("HikConnectionString").Value;
 
-            string trigger = context.Trigger.Key.Name;
-            string group = context.Trigger.Key.Group;
+            var trigger = context.Trigger.Key.Name;
+            var group = context.Trigger.Key.Group;
 
-            var parameters = new Parameters(className, group, trigger, configPath, defaultConnection, runAsTask == "true");
+            var parameters = new Parameters(className, group, trigger, configPath, defaultConnection);
             var activity = new Activity(parameters);
             await activity.Start();
         }

@@ -6,7 +6,7 @@ using Hik.DataAccess.Metadata;
 namespace Hik.DataAccess.Data
 {
     [Table(Tables.DailyStatistics)]
-    public sealed class DailyStatistic
+    public class DailyStatistic
     {
         [Key]
         public int Id { get; set; }
@@ -26,6 +26,6 @@ namespace Hik.DataAccess.Data
         [Display(Name = "Duration")]
         public int? TotalDuration { get; set; }
 
-        public JobTrigger JobTrigger { get; set; }
+        public virtual JobTrigger JobTrigger { get; set; }
     }
 }

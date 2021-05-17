@@ -9,9 +9,9 @@ namespace Hik.Api.Services
 {
     public abstract class FileService
     {
-        public async Task<IReadOnlyCollection<HikRemoteFile>> FindFilesAsync(DateTime periodStart, DateTime periodEnd, Session session)
+        public virtual async Task<IReadOnlyCollection<HikRemoteFile>> FindFilesAsync(DateTime periodStart, DateTime periodEnd, Session session)
         {
-            int findId = StartFind(session.UserId, periodStart, periodEnd, session.Device.ChannelNumber);
+            int findId = this.StartFind(session.UserId, periodStart, periodEnd, session.Device.ChannelNumber);
 
             IEnumerable<HikRemoteFile> results = await this.GetFindResults(findId);
 
@@ -25,7 +25,7 @@ namespace Hik.Api.Services
 
         protected abstract bool FindClose(int findId);
 
-        private async Task<IReadOnlyCollection<HikRemoteFile>> GetFindResults(int findId)
+        protected async Task<IReadOnlyCollection<HikRemoteFile>> GetFindResults(int findId)
         {
             var results = new List<HikRemoteFile>();
             ISourceFile sourceFile = default(ISourceFile);

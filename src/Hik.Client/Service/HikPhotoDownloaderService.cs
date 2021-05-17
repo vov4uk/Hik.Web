@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
@@ -15,25 +16,28 @@ namespace Hik.Client.Service
         {
         }
 
-        protected override Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            return Client.GetFilesListAsync(periodStart, periodEnd);
+            List<MediaFileDTO> photos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).ToList();
+
+            this.logger.Info($"Found {photos.Count} photos");
+            return photos;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token)
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token)
         {
             foreach (var photo in remoteFiles)
             {
                 DateTime start = DateTime.Now;
-                ThrowIfCancellationRequested();
-                bool isDownloaded = await Client.DownloadFileAsync(photo, token);
+                this.ThrowIfCancellationRequested();
+                bool isDownloaded = await this.Client.DownloadFileAsync(photo, token);
                 DateTime finish = DateTime.Now;
 
                 if (isDownloaded)
                 {
                     photo.DownloadStarted = start;
                     photo.DownloadDuration = (int)(finish - start).TotalSeconds;
-                    OnFileDownloaded(new FileDownloadedEventArgs(photo));
+                    this.OnFileDownloaded(new FileDownloadedEventArgs(photo));
                 }
             }
 

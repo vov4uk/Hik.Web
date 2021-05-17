@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 
 namespace Hik.Api.Services
 {
-    public sealed class HikPhotoService : FileService
+    public class HikPhotoService : FileService
     {
-        public void DownloadFile(int userId, string remoteFileName, long size, string destinationPath)
+        public virtual void DownloadFile(int userId, string remoteFileName, long size, string destinationPath)
         {
             if (size > 0)
             {
@@ -37,7 +37,6 @@ namespace Hik.Api.Services
 
         internal override int FindNext(int findId, ref ISourceFile source)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
             NET_DVR_FIND_PICTURE_V50 findData = new NET_DVR_FIND_PICTURE_V50();
 
             int res = SdkHelper.InvokeSDK(() => NET_DVR_FindNextPicture_V50(findId, ref findData));

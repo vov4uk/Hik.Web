@@ -7,14 +7,14 @@ namespace Hik.DataAccess
 {
     public class DataContext : DbContext
     {
-        private readonly string connectionString;
+        private readonly string ConnectionString;
         public DataContext(DbContextOptions<DataContext> options)
             : base(options) {}
 
         public DataContext(string connection)
             : base()
         {
-            connectionString = connection;
+            ConnectionString = connection;
         }
 
         public DbSet<HikJob> Jobs { get; set; }
@@ -33,9 +33,9 @@ namespace Hik.DataAccess
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            if (!string.IsNullOrEmpty(connectionString))
+            if (!string.IsNullOrEmpty(ConnectionString))
             {
-                optionsBuilder.UseSqlite(connectionString, options =>
+                optionsBuilder.UseSqlite(ConnectionString, options =>
                 {
                     options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
                 });

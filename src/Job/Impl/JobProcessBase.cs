@@ -10,7 +10,7 @@ using Hik.DTO.Contracts;
 using Job.Email;
 using NLog;
 using Hik.Client.Events;
-using Job.Extensions;
+using Job.Extentions;
 
 namespace Job.Impl
 {
@@ -20,23 +20,23 @@ namespace Job.Impl
 
         protected HikJob JobInstance { get; private set; }
 
-        protected readonly UnitOfWorkFactory unitOfWorkFactory;
+        protected readonly UnitOfWorkFactory UnitOfWorkFactory;
 
-        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
+        protected readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        private string TriggerKey { get; set; }
+        public string TriggerKey { get; private set; }
 
-        private string ConfigPath { get; set; }
+        public string ConfigPath { get; private set; }
 
-        protected string ConnectionString { get; private set; }
+        public string ConnectionString { get; private set; }
 
-        protected BaseConfig Config { get; set; }
+        public BaseConfig Config { get; protected set; }
 
-        protected abstract Task<IReadOnlyCollection<MediaFileDTO>> Run();
+        public abstract Task<IReadOnlyCollection<MediaFileDTO>> Run();
 
-        protected abstract Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service);
+        public abstract Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service);
 
-        protected virtual async Task InitializeProcessingPeriod()
+        public virtual async Task InitializeProcessingPeriod()
         {
             var config = Config as CameraConfig;
             DateTime jobStart = DateTime.Now;
@@ -53,7 +53,7 @@ namespace Job.Impl
             LogInfo($"Period - {periodStart} - {jobStart}");
         }
 
-        protected virtual async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        public virtual async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.FilesCount = files.Count;
             var mediaFiles = await service.SaveFilesAsync(files);
@@ -67,7 +67,7 @@ namespace Job.Impl
             ConfigPath = configFilePath;
             ConnectionString = connectionString;
             System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
-            this.unitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
+            this.UnitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
         }
 
         public async Task ExecuteAsync()
@@ -103,12 +103,12 @@ namespace Job.Impl
 
             await InitializeProcessingPeriod();
 
-            await SaveJobInstanceToDb();
+            await SaveJobInstanceToDB();
         }
 
-        private async Task SaveJobInstanceToDb()
+        private async Task SaveJobInstanceToDB()
         {
-            using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
+            using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<HikJob>();
             await jobRepo.AddAsync(JobInstance);
             await unitOfWork.SaveChangesAsync();
@@ -123,9 +123,9 @@ namespace Job.Impl
         private void HandleException(Exception e)
         {
             this.JobInstance.Success = false;
-            logger.Error(e.ToString());
-            LogExceptionToDb(e);
-            JobService jobResultSaver = new(this.unitOfWorkFactory, this.JobInstance);
+            Logger.Error(e.ToString());
+            LogExceptionToDB(e);
+            JobService jobResultSaver = new(this.UnitOfWorkFactory, this.JobInstance);
             jobResultSaver.SaveJobResultAsync().GetAwaiter().GetResult();
 
             if (Config.SentEmailOnError)
@@ -135,11 +135,11 @@ namespace Job.Impl
             }
         }
 
-        private void LogExceptionToDb(Exception e)
+        private void LogExceptionToDB(Exception e)
         {
             try
             {
-                using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
+                using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
                 var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
 
                 jobRepo.Add(new ExceptionLog
@@ -151,20 +151,20 @@ namespace Job.Impl
                 });
                 unitOfWork.SaveChanges();
             }
-            catch (Exception ex) { logger.Error(ex.ToString()); }
+            catch (Exception ex) { Logger.Error(ex.ToString()); }
         }
 
-        private async Task SaveResultsInternal(IReadOnlyCollection<MediaFileDTO> files)
+        internal async Task SaveResultsInternal(IReadOnlyCollection<MediaFileDTO> files)
         {
             LogInfo("Save to DB...");
-            var jobResultSaver = new JobService(this.unitOfWorkFactory, this.JobInstance);
+            var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
             if (files?.Any() == true)
             {
                 await SaveResults(files, jobResultSaver);
             }
             else
             {
-                logger.Warn($"{TriggerKey} - Results Empty");
+                Logger.Warn($"{TriggerKey} - Results Empty");
             }
             if (this.JobInstance.Success)
             {
@@ -172,15 +172,15 @@ namespace Job.Impl
             }
             LogInfo("Save to DB. Done");
         }
-
-        private async Task<JobTrigger> GetJobTrigger()
+      
+        protected async Task<JobTrigger> GetJobTrigger()
         {
             if (this.jobTrigger == null)
             {
                 var jobNameParts = TriggerKey.Split(".");
                 var triggerKey = jobNameParts[1];
                 var group = jobNameParts[0];
-                using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
+                using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
                 var repo = unitOfWork.GetRepository<JobTrigger>();
                 this.jobTrigger = await repo.FindByAsync(x => x.TriggerKey == triggerKey && x.Group == group);
                 if (this.jobTrigger == null)
@@ -195,7 +195,7 @@ namespace Job.Impl
 
         protected void LogInfo(string msg)
         {
-            logger.Info($"{TriggerKey} - {msg}");
+            Logger.Info($"{TriggerKey} - {msg}");
         }
     }
 }

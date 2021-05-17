@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Hik.DataAccess.Data
 {
     [Table(Tables.DeleteHistory)]
-    public sealed class DeleteHistory : IAuditable, IHistory
+    public class DeleteHistory : IAuditable, IHistory
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -16,8 +16,8 @@ namespace Hik.DataAccess.Data
 
         public int JobId { get; set; }
 
-        public HikJob Job { get; set; }
+        public virtual HikJob Job { get; set; }
 
-        public MediaFile MediaFile { get; set; }
+        public virtual MediaFile MediaFile { get; set; }
     }
 }

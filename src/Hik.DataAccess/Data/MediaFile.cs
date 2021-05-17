@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Hik.DataAccess.Data
 {
     [Table(Tables.MediaFile)]
-    public sealed class MediaFile
+    public class MediaFile
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -29,10 +29,10 @@ namespace Hik.DataAccess.Data
 
         public JobTrigger JobTrigger { get; set; }
 
-        public DownloadDuration DownloadDuration { get; set; }
+        public virtual DownloadDuration DownloadDuration { get; set; }
 
-        public DownloadHistory DownloadHistory { get; set; }
+        public virtual DownloadHistory DownloadHistory { get; set; }
 
-        public DeleteHistory DeleteHistory { get; set; }
+        public virtual DeleteHistory DeleteHistory { get; set; }
     }
 }

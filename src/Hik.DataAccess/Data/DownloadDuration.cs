@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Hik.DataAccess.Data
 {
     [Table(Tables.DownloadDuration)]
-    public sealed class DownloadDuration: IHistory
+    public class DownloadDuration: IHistory
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -21,6 +21,6 @@ namespace Hik.DataAccess.Data
         [Display(Name = "Downloaded")]
         public int? Duration { get; set; }
 
-        public MediaFile MediaFile { get; set; }
+        public virtual MediaFile MediaFile { get; set; }
     }
 }

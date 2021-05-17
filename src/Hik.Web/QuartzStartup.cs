@@ -8,7 +8,7 @@ namespace Hik.Web
     public class QuartzStartup
     {
         private IScheduler scheduler;
-        private readonly IConfiguration configuration;
+        private IConfiguration configuration;
         public QuartzStartup(IConfiguration configuration)
         {
             this.configuration = configuration;
@@ -39,6 +39,10 @@ namespace Hik.Web
             if (scheduler.Shutdown(true).Wait(30000))
             {
                 scheduler = null;
+            }
+            else
+            {
+                // jobs didn't exit in timely fashion - log a warning...
             }
         }
     }

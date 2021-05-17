@@ -12,7 +12,7 @@ namespace Hik.Api
     public class HikException : Exception
     {
         public uint ErrorCode { get; }
-        public string ErrorMessage => GetEnumDescription((HikError)ErrorCode);
+        public string ErrorMessage { get { return GetEnumDescription((HikError)ErrorCode); } }
 
         public HikException(string method, uint errorCode)
             : base(method)

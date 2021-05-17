@@ -16,7 +16,7 @@ namespace Hik.Client.Helpers
 
                 engine.GetMetadata(inputFile);
 
-                if (inputFile.Metadata != null)
+                if (inputFile != null && inputFile.Metadata != null && inputFile.Metadata.Duration != null)
                 {
                     return (int)inputFile.Metadata.Duration.TotalSeconds;
                 }

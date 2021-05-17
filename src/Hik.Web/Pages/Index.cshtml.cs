@@ -10,6 +10,7 @@ using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Job;
 using Job.Extensions;
+using Job.Extentions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;

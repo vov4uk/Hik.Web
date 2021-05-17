@@ -14,7 +14,7 @@ namespace Hik.Web
             Configuration = configuration;
         }
 
-        private IConfiguration Configuration { get; }
+        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {

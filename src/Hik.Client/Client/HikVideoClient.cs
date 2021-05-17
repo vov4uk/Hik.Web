@@ -9,7 +9,7 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 
-namespace Hik.Client.Client
+namespace Hik.Client
 {
     public sealed class HikVideoClient : HikBaseClient, IClient
     {
@@ -30,7 +30,7 @@ namespace Hik.Client.Client
             {
                 do
                 {
-                    await Task.Delay(ProgressCheckPeriodMilliseconds, token);
+                    await Task.Delay(ProgressCheckPeriodMilliseconds);
                     token.ThrowIfCancellationRequested();
                     this.UpdateVideoProgress();
                 }

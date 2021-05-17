@@ -5,11 +5,11 @@ using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Job.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Job.Extensions;
 
 namespace Job.Impl
 {
@@ -22,27 +22,25 @@ namespace Job.Impl
             LogInfo(Config?.ToString());
         }
 
-        protected override Task InitializeProcessingPeriod()
+        public override Task InitializeProcessingPeriod()
         {
             return Task.CompletedTask;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var worker = AppBootstrapper.Container.Resolve<ArchiveService>();
             worker.ExceptionFired += base.ExceptionFired;
 
-            var result =  await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
-            worker.ExceptionFired -= base.ExceptionFired;
-            return result;
+            return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
         }
 
-        protected override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             await service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }
 
-        protected override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        public override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
