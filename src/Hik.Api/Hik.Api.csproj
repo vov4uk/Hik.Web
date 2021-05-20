@@ -19,7 +19,8 @@
   <ItemGroup>
     <None Include="..\..\LICENSE">
 		<Pack>True</Pack>
-    </None>
+		<PackagePath></PackagePath>
+	</None>
   </ItemGroup>
 
   <ItemGroup>
