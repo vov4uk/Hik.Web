@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="UnitTestsRules" Description="Extension of BaseAndSonarLintRules for unit tests" ToolsVersion="15.0">
-  <Include Path="..\HikConsole\HikConsole.ruleset" Action="Default" />
-  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
-    <Rule Id="CA1707" Action="None" />
-    <Rule Id="CA1822" Action="None" />
-  </Rules>
-</RuleSet>

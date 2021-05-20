@@ -1,0 +1,56 @@
+﻿@page
+@using Hik.Client.Helpers
+@model Hik.Web.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2>Dashboard</h2>
+
+@if (Model.JobTriggers != null && Model.JobTriggers.Any())
+{
+
+    @foreach (var key in Model.JobTriggers.Keys.OrderBy(x => x))
+    {
+        var row = Model.JobTriggers[key].OrderBy(x => x.TriggerKey).ToList();
+        <div class="row">
+            <div class="card-body text-center">
+                <h4 class="card-title">@Html.DisplayFor(x => key)</h4>
+            </div>
+        </div>
+        <div class="row">
+            <table class="table table-striped table-bordered table-sm" width="100%">
+                <thead>
+                    <tr>
+                        <th>@Html.DisplayNameFor(model => row.FirstOrDefault().TriggerKey)</th>
+                        <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastSync)</th>
+                        <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastSync)</th>
+                        <th>Files</th>
+                        <th>Size</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in row)
+                    {
+                        long statSize = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id)?.FilesSize ?? 0;
+                        int statDuration = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id)?.TotalDuration ?? 0;
+                        string size = statSize.FormatBytes();
+                        string dur = ((double)statDuration).FormatSeconds();
+                        string triggerString = item.ToString();
+                        string dateFormat = item.LastSync == item.LastSync?.Date ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss";
+                        string relativeFinishedDate = item.LastSync.GetRelativeTime();
+                        <tr>
+                            <td><a asp-page="./Statistic" asp-route-triggerId="@item.Id">@triggerString</a></td>
+                            <td>@item.LastSync?.ToString(dateFormat)</td>
+                            <td>@relativeFinishedDate</td>
+                            <td>@Html.DisplayFor(modelItem => Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id).FilesCount)</td>
+                            <td>@size</td>
+                            <td>@dur</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}

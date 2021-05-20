@@ -1,0 +1,90 @@
+﻿@page
+@model Hik.Web.Pages.DetailsModel
+
+@{ViewData["Title"] = "Details";}
+<button onclick="javascript:history.back()">Go Back</button>
+@if (Model.Job != null)
+{
+<table class="table table-striped table-bordered table-sm" width="100%">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Job.Id)</th>
+            <th>@Html.DisplayNameFor(model => model.Job.JobTrigger)</th>
+            <th>@Html.DisplayNameFor(model => model.Job.PeriodStart)</th>
+            <th>@Html.DisplayNameFor(model => model.Job.PeriodEnd)</th>
+            <th>@Html.DisplayNameFor(model => model.Job.Started)</th>
+            <th>@Html.DisplayNameFor(model => model.Job.Finished)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@Html.DisplayFor(modelItem => Model.Job.Id)</td>
+            <td>@Html.DisplayFor(modelItem => Model.Job.JobTrigger.TriggerKey)</td>
+            <td>@Html.DisplayFor(modelItem => Model.Job.PeriodStart)</td>
+            <td>@Html.DisplayFor(modelItem => Model.Job.PeriodEnd)</td>
+            <td>@Html.DisplayFor(modelItem => Model.Job.Started)</td>
+            <td>@Html.DisplayFor(modelItem => Model.Job.Finished)</td>
+        </tr>
+    </tbody>
+</table>
+}
+
+@if (Model.Job?.ExceptionLog != null)
+{
+    <table class="table table-striped table-bordered table-sm" width="100%">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Created)</th>
+                <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.HikErrorCode)</th>
+                <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Message)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.Created)</td>
+                <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.HikErrorCode)</td>
+                <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.Message)</td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@if (Model.Files != null && Model.Files.Any())
+{
+    @await Html.PartialAsync("_Files.cshtml", (List<Hik.DataAccess.Data.MediaFile>) Model.Files)
+}
+
+<!-- pager -->
+@if (Model.Pager != null && Model.Pager.Pages.Any())
+{
+    <nav class="table-responsive">
+        <ul class="pagination justify-content-center d-flex flex-wrap">
+            @if (Model.Pager.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?id=@Model.JobId">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?id=@Model.JobId&p=@(Model.Pager.CurrentPage - 1)">Previous</a>
+                </li>
+            }
+
+            @foreach (var p in Model.Pager.Pages)
+            {
+                <li class="page-item @(p == Model.Pager.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="?id=@Model.JobId&p=@p">@p</a>
+                </li>
+            }
+
+            @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?id=@Model.JobId&p=@(Model.Pager.CurrentPage + 1)">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?id=@Model.JobId&p=@(Model.Pager.TotalPages)">Last</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

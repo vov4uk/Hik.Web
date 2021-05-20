@@ -1,0 +1,29 @@
+# NOTE: Requires **VS2019 16.3** or later
+
+# Rules for Hik.Client
+# Description: Code analysis rules for Hik.Client.csproj.
+
+# Code files
+[*.{cs,vb}]
+
+
+dotnet_diagnostic.CA1821.severity = warning
+
+dotnet_diagnostic.CA2213.severity = warning
+
+dotnet_diagnostic.CA2231.severity = warning
+
+dotnet_diagnostic.SA0001.severity = none
+
+dotnet_diagnostic.SA1101.severity = none
+
+dotnet_diagnostic.SA1200.severity = none
+
+dotnet_diagnostic.SA1600.severity = none
+
+dotnet_diagnostic.SA1629.severity = none
+
+dotnet_diagnostic.SA1633.severity = none
+
+# SA1401: Fields should be private
+dotnet_diagnostic.SA1401.severity = none

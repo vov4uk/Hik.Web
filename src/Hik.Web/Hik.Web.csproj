@@ -1,0 +1,78 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RuntimeIdentifiers>win10-x64;</RuntimeIdentifiers>
+    <OutputType>Exe</OutputType>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>Hik.Web</AssemblyName>
+    <RootNamespace>Hik.Web</RootNamespace>
+    <UserSecretsId>7c49b740-7c37-4c0a-b031-e08ab0b4a0ab</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="quartz_jobs.debug.xml" />
+  </ItemGroup>
+
+ 
+  <ItemGroup>
+    <Content Include="quartz_jobs.debug.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="quartz_jobs.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="6.1.0" />
+    <PackageReference Include="CronExpressionDescriptor" Version="2.16.0" />
+    <PackageReference Include="JW.Pager" Version="1.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="5.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
+    <PackageReference Include="NLog.Targets.Seq" Version="2.0.0" />
+    <PackageReference Include="Quartz" Version="3.3.2" />
+    <PackageReference Include="Quartz.Plugins" Version="3.3.2" />
+    <PackageReference Include="Quartz.Serialization.Json" Version="3.3.2" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.1" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hik.DataAccess\Hik.DataAccess.csproj" />
+    <ProjectReference Include="..\Job\Job.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="appsettings.Production.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="wwwroot\css\site.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\favicon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\js\site.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

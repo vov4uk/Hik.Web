@@ -1,0 +1,227 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Provide sufficient contrast against white background */
+a {
+  color: #1b6ec2;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+/* Style the buttons */
+.bootn {
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+
+    .bootn:hover {
+        background-color: #ddd;
+    }
+
+    .bootn.active {
+        background-color: #666;
+        color: white;
+    }
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    font-size: 12px;
+    position: relative;
+    min-height: 100%;
+}
+@media (min-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+.border-top {
+  border-top: 1px solid #e5e5e5;
+}
+.border-bottom {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.box-shadow {
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+button.accept-policy {
+  font-size: 1rem;
+  line-height: inherit;
+}
+
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.failed[data-status="False"] {
+    background-color: #ffe6e6
+}
+
+.failed td {
+    vertical-align: middle;
+    border-top: 1px solid #dee2e6;
+}
+
+aside {
+    display: block;
+    border: 1px;
+}
+
+#container {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div[role="main"] section {
+    margin: 0 0 1em 0;
+    padding: 1em;
+    background: #000000;
+    background: rgba(0,0,0,.75);
+}
+
+div[role="main"] aside p {
+    margin: 0 0 1em 0;
+    padding: 1em;
+    background: #000000;
+    background: rgba(0,0,0,.75);
+}
+
+@media only screen and (min-width: 100px) {
+
+    #container {
+        background: pink;
+    }
+
+    div[role="main"] aside {
+        float: left;
+        width: 100%;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 0 0 2em;
+    }
+}
+
+@media only screen and (min-width: 480px) {
+
+    #container {
+        background: yellow;
+    }
+
+    div[role="main"] aside {
+        float: left;
+        width: 50%;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 0 0 2em;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+
+
+    #container {
+        padding: 2em;
+        background: blue;
+        font-size: 1em;
+    }
+
+    header,
+    footer,
+    div[role="main"] section {
+        padding: 2em;
+    }
+
+    div[role="main"] {
+        overflow: auto;
+        background: none;
+    }
+
+        div[role="main"] aside {
+            float: left;
+            width: 33%;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            padding: 0 0 0 2em;
+        }
+}
+
+@media only screen and (min-width: 1024px) {
+
+
+    div[role="main"] aside {
+        float: left;
+        width: 25%;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 0 0 2em;
+    }
+
+
+    #container {
+        background: red;
+        max-width: 1024px;
+        margin: 0 auto;
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+
+    #container {
+        background: cyan;
+    }
+
+    div[role="main"] aside {
+        float: left;
+        width: 20%;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 0 0 2em;
+    }
+}
+
+.tri-success {
+    background-color: #A0D468;
+}
+.tri-error {
+    background-color: #FC6E51;
+}
+.tri-info {
+    background-color: #E6E9ED;
+}
