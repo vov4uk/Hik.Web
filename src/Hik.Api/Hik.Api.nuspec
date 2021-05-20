@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<id>$id$</id>
+		<version>$version$</version>
+		<title>$title$</title>
+		<authors>vov4uk</authors>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<license type="expression">MIT</license>
+		<projectUrl>https://github.com/vov4uk/HikConsole</projectUrl>
+		<description>Simple wrapper over Hikvision SDK, with min functonality. Login, fetch files list, download files and logut.</description>
+		<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+		<copyright>$copyright$</copyright>
+		<tags>Hikvision, SDK, ipcamera, photo, video</tags>
+		<contentFiles>
+			<!-- this sets "CopyIfNewer" on all files in the project that references this package -->
+			<files include="**/*" buildAction="None" copyToOutput="true"/>
+		</contentFiles>
+		<dependencies>
+			<group targetFramework=".NETStandard2.0"/>
+		</dependencies>
+	</metadata>
+	<files>
+		<file src="bin\$configuration$\netstandard2.1\SDK\*.*" target="contentFiles\any\any\SDK"/>
+		<file src="bin\$configuration$\netstandard2.1\SDK\HCNetSDKCom\*.dll" target="contentFiles\any\any\SDK\HCNetSDKCom\"/>
+	</files>
+</package>

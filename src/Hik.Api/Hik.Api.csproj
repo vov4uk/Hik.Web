@@ -1,10 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>Hik.Api</AssemblyName>
     <RootNamespace>Hik.Api</RootNamespace>
+    <Authors>vov4uk</Authors>
+    <PackageProjectUrl>https://github.com/vov4uk/HikConsole</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageTags>Hikvision, SDK, ip camera, photo, video</PackageTags>
+    <RepositoryUrl>https://github.com/vov4uk/HikConsole.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Simple wrapper over Hikvision SDK, with min functionality. Login, fetch files list, download files, and log out.</Description>
+    <AssemblyVersion>1.0.10.0</AssemblyVersion>
+    <FileVersion>1.0.10.0</FileVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+		<Pack>True</Pack>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <None Update="SDK\HCCore.dll">
