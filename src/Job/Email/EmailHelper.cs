@@ -38,7 +38,7 @@ namespace Job.Email
 </ul>";
                 }
 
-                var msg = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.ToString());
+                var msg = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.StackTrace.Substring(0, 512));
 
                 if (Settings != null)
                 {

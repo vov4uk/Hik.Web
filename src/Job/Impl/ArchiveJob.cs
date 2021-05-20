@@ -22,7 +22,7 @@ namespace Job.Impl
             LogInfo(Config?.ToString());
         }
 
-        public override Task InitializeProcessingPeriod()
+        public override Task InitializeProcessingPeriodAsync()
         {
             return Task.CompletedTask;
         }
@@ -32,7 +32,9 @@ namespace Job.Impl
             var worker = AppBootstrapper.Container.Resolve<ArchiveService>();
             worker.ExceptionFired += base.ExceptionFired;
 
-            return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
+            var files = await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
+            worker.ExceptionFired -= base.ExceptionFired;
+            return files;
         }
 
         public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)

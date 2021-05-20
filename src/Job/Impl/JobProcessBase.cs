@@ -36,12 +36,12 @@ namespace Job.Impl
 
         public abstract Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service);
 
-        public virtual async Task InitializeProcessingPeriod()
+        public virtual async Task InitializeProcessingPeriodAsync()
         {
             var config = Config as CameraConfig;
             DateTime jobStart = DateTime.Now;
 
-            var trigger = await GetJobTrigger();
+            var trigger = await GetJobTriggerAsync();
 
             DateTime? lastSync = trigger.LastSync;
             LogInfo($"Last sync from DB - {lastSync}");
@@ -74,16 +74,10 @@ namespace Job.Impl
         {
             try
             {
-                LogInfo("InitializeJobInstance...");
-                await InitializeJobInstance();
-                LogInfo("InitializeJobInstance. Done.");
+                await InitializeJobInstanceAsync();
                 Config.Alias = TriggerKey;
-                LogInfo("Run...");
                 var result = await Run();
-                LogInfo("Run. Done.");
-                LogInfo("SaveResultsInternal ...");
-                await SaveResultsInternal(result);
-                LogInfo("SaveResultsInternal. Done.");
+                await SaveResultsInternalAsync(result);
             }
             catch (Exception e)
             {
@@ -91,9 +85,9 @@ namespace Job.Impl
             }
         }
 
-        private async Task InitializeJobInstance()
+        private async Task InitializeJobInstanceAsync()
         {
-            var trigger = await GetJobTrigger();
+            var trigger = await GetJobTriggerAsync();
 
             this.JobInstance = new HikJob
             {
@@ -101,12 +95,12 @@ namespace Job.Impl
                 JobTriggerId = trigger.Id
             };
 
-            await InitializeProcessingPeriod();
+            await InitializeProcessingPeriodAsync();
 
-            await SaveJobInstanceToDB();
+            await SaveJobInstanceToDBAsync();
         }
 
-        private async Task SaveJobInstanceToDB()
+        private async Task SaveJobInstanceToDBAsync()
         {
             using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<HikJob>();
@@ -123,10 +117,13 @@ namespace Job.Impl
         private void HandleException(Exception e)
         {
             this.JobInstance.Success = false;
-            Logger.Error(e.ToString());
-            LogExceptionToDB(e);
-            JobService jobResultSaver = new(this.UnitOfWorkFactory, this.JobInstance);
-            jobResultSaver.SaveJobResultAsync().GetAwaiter().GetResult();
+            try
+            {
+                JobService jobResultSaver = new(this.UnitOfWorkFactory, this.JobInstance);
+                Task.WaitAll(LogExceptionToDB(e), jobResultSaver.SaveJobResultAsync());
+            }
+            catch (Exception ex) { Logger.Error(ex.ToString()); }
+            
 
             if (Config.SentEmailOnError)
             {
@@ -135,26 +132,22 @@ namespace Job.Impl
             }
         }
 
-        private void LogExceptionToDB(Exception e)
+        private async Task LogExceptionToDB(Exception e)
         {
-            try
-            {
-                using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
-                var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
+            using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
+            var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
 
-                jobRepo.Add(new ExceptionLog
-                {
-                    CallStack = e.StackTrace,
-                    JobId = JobInstance.Id,
-                    Message = (e as HikException)?.ErrorMessage ?? e.Message,
-                    HikErrorCode = (e as HikException)?.ErrorCode
-                });
-                unitOfWork.SaveChanges();
-            }
-            catch (Exception ex) { Logger.Error(ex.ToString()); }
+            jobRepo.Add(new ExceptionLog
+            {
+                CallStack = e.StackTrace,
+                JobId = JobInstance.Id,
+                Message = (e as HikException)?.ErrorMessage ?? e.Message,
+                HikErrorCode = (e as HikException)?.ErrorCode
+            });
+            await unitOfWork.SaveChangesAsync();
         }
 
-        internal async Task SaveResultsInternal(IReadOnlyCollection<MediaFileDTO> files)
+        internal async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDTO> files)
         {
             LogInfo("Save to DB...");
             var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
@@ -173,7 +166,7 @@ namespace Job.Impl
             LogInfo("Save to DB. Done");
         }
       
-        protected async Task<JobTrigger> GetJobTrigger()
+        protected async Task<JobTrigger> GetJobTriggerAsync()
         {
             if (this.jobTrigger == null)
             {

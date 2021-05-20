@@ -27,8 +27,7 @@ namespace Hik.Client.Service
                 this.logger.Info("Start ExecuteAsync");
                 if (!this.directoryHelper.DirExist(config?.DestinationFolder))
                 {
-                    this.logger.Error($"Output doesn't exist: {config?.DestinationFolder}");
-                    return default;
+                    throw new InvalidOperationException($"Output doesn't exist: {config?.DestinationFolder}");
                 }
 
                 return await RunAsync(config, from, to);

@@ -43,7 +43,7 @@ namespace Job.Impl
             return files;
         }
 
-        public override Task InitializeProcessingPeriod()
+        public override Task InitializeProcessingPeriodAsync()
         {
             return Task.CompletedTask;
         }

@@ -27,7 +27,10 @@ namespace Job.Impl
             downloader.ExceptionFired += base.ExceptionFired;
             downloader.FileDownloaded += Downloader_VideoDownloaded;
             LogInfo($"{Config} - {this.JobInstance.PeriodStart.Value} - {this.JobInstance.PeriodEnd.Value}");
-            return await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
+            var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
+            downloader.ExceptionFired -= base.ExceptionFired;
+            downloader.FileDownloaded -= Downloader_VideoDownloaded;
+            return files;
         }
 
         public override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)

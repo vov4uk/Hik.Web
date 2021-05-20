@@ -129,6 +129,10 @@ namespace Job
             {
                 await job.ExecuteAsync();
             }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
             finally
             {
                 bag.Remove(this);

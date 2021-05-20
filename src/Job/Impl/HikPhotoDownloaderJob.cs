@@ -31,7 +31,9 @@ namespace Job.Impl
             var downloader = AppBootstrapper.Container.Resolve<HikPhotoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
 
-            return await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
+            var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
+            downloader.ExceptionFired -= base.ExceptionFired;
+            return files;
         }
     }
 }

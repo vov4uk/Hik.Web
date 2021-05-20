@@ -26,7 +26,7 @@ namespace Job.Impl
             this.filesHelper = new FilesHelper();
         }
 
-        public override Task InitializeProcessingPeriod()
+        public override Task InitializeProcessingPeriodAsync()
         {
             return Task.CompletedTask;
         }
