@@ -10,7 +10,7 @@ using Hik.DTO.Contracts;
 using Job.Email;
 using NLog;
 using Hik.Client.Events;
-using Job.Extentions;
+using Job.Extensions;
 
 namespace Job.Impl
 {
@@ -20,9 +20,9 @@ namespace Job.Impl
 
         protected HikJob JobInstance { get; private set; }
 
-        protected readonly UnitOfWorkFactory UnitOfWorkFactory;
+        protected readonly UnitOfWorkFactory unitOfWorkFactory;
 
-        protected readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public string TriggerKey { get; private set; }
 
@@ -67,7 +67,7 @@ namespace Job.Impl
             ConfigPath = configFilePath;
             ConnectionString = connectionString;
             System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
-            this.UnitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
+            this.unitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
         }
 
         public async Task ExecuteAsync()
@@ -102,7 +102,7 @@ namespace Job.Impl
 
         private async Task SaveJobInstanceToDBAsync()
         {
-            using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
+            using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<HikJob>();
             await jobRepo.AddAsync(JobInstance);
             await unitOfWork.SaveChangesAsync();
@@ -119,25 +119,29 @@ namespace Job.Impl
             this.JobInstance.Success = false;
             try
             {
-                JobService jobResultSaver = new(this.UnitOfWorkFactory, this.JobInstance);
+                JobService jobResultSaver = new(this.unitOfWorkFactory, this.JobInstance);
                 Task.WaitAll(LogExceptionToDB(e), jobResultSaver.SaveJobResultAsync());
             }
-            catch (Exception ex) { Logger.Error(ex.ToString()); }
-            
+            catch (Exception ex) { logger.Error(ex.ToString()); }
+
 
             if (Config.SentEmailOnError)
             {
                 var details = JobInstance.ToHtmlTable(Config);
                 EmailHelper.Send(e, Config.Alias, details);
             }
+            else
+            {
+                logger.Error(e.ToString());
+            }
         }
 
         private async Task LogExceptionToDB(Exception e)
         {
-            using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
+            using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
 
-            jobRepo.Add(new ExceptionLog
+            await jobRepo.AddAsync(new ExceptionLog
             {
                 CallStack = e.StackTrace,
                 JobId = JobInstance.Id,
@@ -150,14 +154,14 @@ namespace Job.Impl
         internal async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDTO> files)
         {
             LogInfo("Save to DB...");
-            var jobResultSaver = new JobService(this.UnitOfWorkFactory, this.JobInstance);
+            var jobResultSaver = new JobService(this.unitOfWorkFactory, this.JobInstance);
             if (files?.Any() == true)
             {
                 await SaveResults(files, jobResultSaver);
             }
             else
             {
-                Logger.Warn($"{TriggerKey} - Results Empty");
+                logger.Warn($"{TriggerKey} - Results Empty");
             }
             if (this.JobInstance.Success)
             {
@@ -173,7 +177,7 @@ namespace Job.Impl
                 var jobNameParts = TriggerKey.Split(".");
                 var triggerKey = jobNameParts[1];
                 var group = jobNameParts[0];
-                using var unitOfWork = this.UnitOfWorkFactory.CreateUnitOfWork();
+                using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
                 var repo = unitOfWork.GetRepository<JobTrigger>();
                 this.jobTrigger = await repo.FindByAsync(x => x.TriggerKey == triggerKey && x.Group == group);
                 if (this.jobTrigger == null)
@@ -188,7 +192,7 @@ namespace Job.Impl
 
         protected void LogInfo(string msg)
         {
-            Logger.Info($"{TriggerKey} - {msg}");
+            logger.Info($"{TriggerKey} - {msg}");
         }
     }
 }

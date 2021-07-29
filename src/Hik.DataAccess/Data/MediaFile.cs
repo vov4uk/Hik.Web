@@ -26,7 +26,6 @@ namespace Hik.DataAccess.Data
 
         public long Size { get; set; }
 
-
         public JobTrigger JobTrigger { get; set; }
 
         public virtual DownloadDuration DownloadDuration { get; set; }

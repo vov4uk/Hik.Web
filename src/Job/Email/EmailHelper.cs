@@ -15,62 +15,67 @@ namespace Job.Email
     {
 
         static EmailConfig Settings { get;}
-        static readonly ILogger logger = LogManager.GetCurrentClassLogger();
+        static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         static EmailHelper()
         {
+#if RELEASE
             string configPath = Path.Combine(GetAssemblyDirectory(), "email.json");
             Settings = JsonConvert.DeserializeObject<EmailConfig>(File.ReadAllText(configPath));
+#endif
         }
 
         public static void Send(Exception ex, string alias = null, string hikJobDetails = null)
         {
-            try
+            string errorDetails = string.Empty;
+            if (ex is HikException hikEx)
             {
-                string errorDetails = string.Empty;
-
-                if (ex is HikException)
-                {
-                    var hikEx = ex as HikException;
-                    errorDetails = $@"<ul>
+                errorDetails = $@"<ul>
   <li>Error Code : {hikEx.ErrorCode}</li>
   <li>{hikEx.ErrorMessage}</li>
 </ul>";
-                }
+            }
 
-                var msg = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.StackTrace.Substring(0, 512));
+            var msg = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.ToString());
+            var subject = $"{alias ?? "Hik.Web"} {(ex as HikException)?.ErrorMessage ?? ex.Message}".Replace('\r', ' ').Replace('\n', ' ');
+            Send(subject, msg);
 
+        }
+
+        public static void Send(string subject, string body)
+        {
+            try
+            {
+#if DEBUG
+                Logger.Info(body);
+#elif RELEASE
                 if (Settings != null)
                 {
                     using var mail = new MailMessage
                     {
                         From = new MailAddress(Settings.UserName),
-                        Subject = $"{alias ?? "Hik.Web"} {(ex as HikException)?.ErrorMessage ?? ex.Message}".Replace('\r', ' ').Replace('\n', ' '),
-                        Body = msg,
+                        Subject = subject,
+                        Body = body,
                         IsBodyHtml = true,
                     };
 
                     mail.To.Add(Settings.Receiver);
-
-#if DEBUG
-                    logger.Info(msg);
-#elif RELEASE
                     using var smtp = new SmtpClient(Settings.Server, Settings.Port)
                     {
                         Credentials = new System.Net.NetworkCredential(Settings.UserName, Settings.Password),
                         EnableSsl = true,
                     };
                     smtp.Send(mail);
-#endif
                 }
+#endif
             }
             catch (Exception e)
             {
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("Failed to Sent Email");
-                sb.AppendLine($"Parent exeption {ex.Message} - {ex.StackTrace}");
-                sb.AppendLine($"Local exeption {e}");
-                logger.Error(sb.ToString());
+                sb.AppendLine($"Local exception {e}");
+                sb.AppendLine($"With subject : {subject} and body : {body}");
+                Logger.Error(sb.ToString());
             }
         }
 

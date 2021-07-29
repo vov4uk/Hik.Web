@@ -14,18 +14,7 @@ namespace Hik.Client.Infrastructure
     {
         private static IContainer container = null;
 
-        public static IContainer Container
-        {
-            get
-            {
-                if (container == null)
-                {
-                    container = ConfigureIoc();
-                }
-
-                return container;
-            }
-        }
+        public static IContainer Container => container ??= ConfigureIoc();
 
         public static IContainer ConfigureIoc()
         {
@@ -34,7 +23,7 @@ namespace Hik.Client.Infrastructure
             var referencedAssembliesNames = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
             List<Assembly> hikAssemblies = referencedAssembliesNames
                 .Where(assembly => assembly.FullName.StartsWith("Hik."))
-                .Select(x => Assembly.Load(x))
+                .Select(Assembly.Load)
                 .ToList();
 
             hikAssemblies.Add(Assembly.GetExecutingAssembly());
@@ -49,12 +38,12 @@ namespace Hik.Client.Infrastructure
 
         private static void RegisterAutoMapper(ContainerBuilder builder)
         {
-            Action<IMapperConfigurationExpression> configureAutoMapper = x =>
+            void AutoMapper(IMapperConfigurationExpression x)
             {
                 x.AddProfile<HikConsoleProfile>();
-            };
+            }
 
-            builder.Register(context => new MapperConfiguration(configureAutoMapper))
+            builder.Register(context => new MapperConfiguration(AutoMapper))
                 .SingleInstance()
                 .AutoActivate()
                 .AsSelf();

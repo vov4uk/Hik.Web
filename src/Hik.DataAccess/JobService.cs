@@ -28,11 +28,11 @@ namespace Hik.DataAccess
             job.Finished = DateTime.Now;
             await jobRepo.UpdateAsync(job);
 
-            if (job.Success && job.PeriodEnd.HasValue)
+            if (job.Success)
             {
                 var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
                 var trigger = await triggerRepo.FindByAsync(x => x.Id == job.JobTriggerId);
-                trigger.LastSync = job.PeriodEnd;
+                trigger.LastSync = job.Started;
             }
 
             await unitOfWork.SaveChangesAsync(job);

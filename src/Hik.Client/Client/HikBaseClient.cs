@@ -30,12 +30,7 @@ namespace Hik.Client
             IDirectoryHelper directoryHelper,
             IMapper mapper)
         {
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
-
-            this.config = config;
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
             this.dirHelper = directoryHelper;
@@ -67,7 +62,7 @@ namespace Hik.Client
 
                 logger.Info(status?.ToString());
 
-                if (status != null && status.IsErrorStatus)
+                if (status is { IsErrorStatus: true })
                 {
                     throw new InvalidOperationException("HD error");
                 }
@@ -98,7 +93,7 @@ namespace Hik.Client
         {
             if (!disposedValue)
             {
-                logger.Info($"Logout the device");
+                logger.Info("Logout the device");
                 if (session != null)
                 {
                     hikApi.Logout(session.UserId);

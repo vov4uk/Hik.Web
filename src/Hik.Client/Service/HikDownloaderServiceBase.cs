@@ -148,7 +148,7 @@ namespace Hik.Client.Service
         {
             StringBuilder statisticsSb = new StringBuilder();
             statisticsSb.AppendLine();
-            statisticsSb.AppendLine($"{"Directory Size",-24}: {Utils.FormatBytes(directoryHelper.DirSize(destinationFolder))}");
+            statisticsSb.AppendLine($"{"Directory Size",-24}: {directoryHelper.DirSize(destinationFolder).FormatBytes()}");
             statisticsSb.AppendLine($"{"Free space",-24}: {directoryHelper.GetTotalFreeSpaceGb(destinationFolder)}");
             statisticsSb.AppendLine(new string('_', 40)); // separator
 

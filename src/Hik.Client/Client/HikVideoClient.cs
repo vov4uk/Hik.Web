@@ -30,7 +30,7 @@ namespace Hik.Client
             {
                 do
                 {
-                    await Task.Delay(ProgressCheckPeriodMilliseconds);
+                    await Task.Delay(ProgressCheckPeriodMilliseconds, token);
                     token.ThrowIfCancellationRequested();
                     this.UpdateVideoProgress();
                 }

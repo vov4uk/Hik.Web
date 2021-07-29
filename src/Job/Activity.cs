@@ -9,21 +9,15 @@ namespace Job
 {
     public class Activity
     {
-        protected static readonly ILogger logger = LogManager.GetCurrentClassLogger();
+        protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private readonly ActivityBag bag;
         private DateTime started = default;
 
         public readonly Guid Id;
         public Parameters Parameters { get; private set; }
-        public int ProcessId
-        {
-            get { return hostProcess?.Id ?? -1; }
-        }
+        public int ProcessId => hostProcess?.Id ?? -1;
 
-        public DateTime StartTime
-        {
-            get { return hostProcess?.StartTime ?? started; }
-        }
+        public DateTime StartTime => hostProcess?.StartTime ?? started;
 
         private Process hostProcess = default;
 
@@ -41,23 +35,21 @@ namespace Job
         {
             try
             {
-                using (var instance = new Mutex(true, $@"Global\{Parameters.TriggerKey}", out bool singleInstance))
+                using var instance = new Mutex(true, $@"Global\{Parameters.TriggerKey}", out bool singleInstance);
+                if (singleInstance)
                 {
-                    if (singleInstance)
-                    {
-                        Log("Activity. StartProcess...");
-                        await StartProcess();
-                        Log("Activity. StartProcess. Done.");
-                    }
-                    else
-                    {
-                        Log($"Activity. Cannot start, {Parameters.TriggerKey} is already running.");
-                    }
+                    Log("Activity. StartProcess...");
+                    await StartProcess();
+                    Log("Activity. StartProcess. Done.");
+                }
+                else
+                {
+                    Log($"Activity. Cannot start, {Parameters.TriggerKey} is already running.");
                 }
             }
             catch (Exception ex) {
 
-                logger.Error($"Activity.Start - catch exception : {ex}");
+                Logger.Error($"Activity.Start - catch exception : {ex}");
                 EmailHelper.Send(ex);
             }
         }
@@ -66,7 +58,7 @@ namespace Job
         {
             if (!hostProcess.HasExited)
             {
-                Log("Killing process manualy");
+                Log("Killing process manual");
                 hostProcess.Kill();
             }
         }
@@ -75,23 +67,28 @@ namespace Job
         {
             if (Parameters.RunAsTask)
             {
-                logger.Info($"Activity. Starting Task: {Parameters}");
+                Logger.Info($"Activity. Starting Task: {Parameters}");
                 return RunAsTask();
             }
 
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-            hostProcess = new Process();
-            hostProcess.StartInfo.FileName = $"{Parameters.Group}\\JobHost.exe";
-            hostProcess.StartInfo.Arguments = Parameters.ToString();
-            hostProcess.StartInfo.CreateNoWindow = true;
-            hostProcess.StartInfo.UseShellExecute = false;
-            hostProcess.StartInfo.RedirectStandardOutput = true;
-            hostProcess.StartInfo.RedirectStandardError = true;
+            hostProcess = new Process
+            {
+                StartInfo =
+                {
+                    FileName = $"{Parameters.Group}\\JobHost.exe",
+                    Arguments = Parameters.ToString(),
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
 
             hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
             hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
-            logger.Info($"Activity. Starting Process: {Parameters}");
-            logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe, Actual Path : {hostProcess.StartInfo.FileName}, Working Direktory : {hostProcess.StartInfo.WorkingDirectory}");
+            Logger.Info($"Activity. Starting Process: {Parameters}");
+            Logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe, Actual Path : {hostProcess.StartInfo.FileName}, Working Direktory : {hostProcess.StartInfo.WorkingDirectory}");
             hostProcess.Start();
 
             hostProcess.EnableRaisingEvents = true;
@@ -131,7 +128,7 @@ namespace Job
             }
             catch (Exception ex)
             {
-                logger.Error(ex);
+                Logger.Error(ex);
             }
             finally
             {
@@ -145,7 +142,7 @@ namespace Job
             {
                 Guid prevId = Trace.CorrelationManager.ActivityId;
                 Trace.CorrelationManager.ActivityId = this.Id;
-                logger.Error($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
+                Logger.Error($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
                 Trace.CorrelationManager.ActivityId = prevId;
                 EmailHelper.Send(new Exception(e.Data));
             }
@@ -163,7 +160,7 @@ namespace Job
             Guid prevId = Trace.CorrelationManager.ActivityId;
             Trace.CorrelationManager.ActivityId = this.Id;
 
-            logger.Info($"{Parameters.TriggerKey} - {str}");
+            Logger.Info($"{Parameters.TriggerKey} - {str}");
 
             Trace.CorrelationManager.ActivityId = prevId;
         }

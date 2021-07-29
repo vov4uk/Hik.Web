@@ -48,7 +48,7 @@ namespace Hik.Client.Service
                 this.OnExceptionFired(new ExceptionEventArgs(ex), config);
             }
 
-            return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
+            return Task.FromResult(result.AsReadOnly() as IReadOnlyCollection<MediaFileDTO>);
         }
 
         private DateTime GetCreationDate(string dateTimeFormat, string oldFile, string nameTemplate)

@@ -21,7 +21,7 @@ namespace Job.Impl
             LogInfo(Config?.ToString());
         }
 
-        public async override Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
         { 
             var downloader = AppBootstrapper.Container.Resolve<VideoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
@@ -46,7 +46,7 @@ namespace Job.Impl
         private async void Downloader_VideoDownloaded(object sender, Hik.Client.Events.FileDownloadedEventArgs e)
         {
             LogInfo("Save Video to DB...");
-            var jobResultSaver = new JobService(this.UnitOfWorkFactory, JobInstance);
+            var jobResultSaver = new JobService(this.unitOfWorkFactory, JobInstance);
             JobInstance.FilesCount++;
             var files = new[] { e.File };
             var mediaFiles = await jobResultSaver.SaveFilesAsync(files);

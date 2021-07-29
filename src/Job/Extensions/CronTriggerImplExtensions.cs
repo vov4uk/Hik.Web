@@ -4,22 +4,22 @@ namespace Job.Extensions
 {
     public static class CronTriggerImplExtensions
     {
-        private const string job = "Job";
-        private const string config = "ConfigPath";
-        private const string runAsTask = "RunAsTask";
+        private const string Job = "Job";
+        private const string Config = "ConfigPath";
+        private const string RunAsTask = "RunAsTask";
         public static string GetJobClass(this CronTriggerImpl item)
         {
-            return GetValue(item, job);
+            return GetValue(item, Job);
         }
 
         public static string GetConfig(this CronTriggerImpl item)
         {
-            return GetValue(item, config);
+            return GetValue(item, Config);
         }
-        
+
         public static string GetRunAsTask(this CronTriggerImpl item)
         {
-            return GetValue(item, runAsTask);
+            return GetValue(item, RunAsTask);
         }
 
         private static string GetValue(CronTriggerImpl item, string key)

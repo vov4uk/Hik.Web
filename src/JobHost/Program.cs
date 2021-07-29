@@ -7,14 +7,14 @@ namespace JobHost
 {
     static class Program
     {
-        private static ILogger logger = LogManager.GetCurrentClassLogger();
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         static void Main(string[] args)
         {
             try
             {
                 var parameters = Parameters.Parse(args);
                 System.Diagnostics.Trace.CorrelationManager.ActivityId = parameters.ActivityId;
-                logger.Info($"JobHost. Parameters resolved. {parameters}. Activity started execution.");
+                Logger.Info($"JobHost. Parameters resolved. {parameters}. Activity started execution.");
 
                 Type jobType = Type.GetType(parameters.ClassName);
 
@@ -30,11 +30,11 @@ namespace JobHost
                     parameters.ConnectionString, 
                     parameters.ActivityId);
                 job.ExecuteAsync().GetAwaiter().GetResult();
-                logger.Info("JobHost. Activity completed execution.");
+                Logger.Info("JobHost. Activity completed execution.");
             }
             catch (Exception exception)
             {
-                logger.Error($"JobHost. Exception : {exception}");
+                Logger.Error($"JobHost. Exception : {exception}");
                 EmailHelper.Send(exception);
                 Environment.ExitCode = -1;
             }

@@ -42,14 +42,16 @@ namespace Job
 
         public static Parameters Parse(string[] args)
         {
-            var parameters = new Parameters();
-            parameters.ClassName = args[0];
-            parameters.Group = args[1];
-            parameters.TriggerKey = args[2];
-            parameters.ActivityId = Guid.Parse(args[3]);
-            parameters.ConfigFilePath = args[4];
-            parameters.ConnectionString = args[5];
-            parameters.RunAsTask = args[6] == "true";
+            var parameters = new Parameters
+            {
+                ClassName = args[0],
+                Group = args[1],
+                TriggerKey = args[2],
+                ActivityId = Guid.Parse(args[3]),
+                ConfigFilePath = args[4],
+                ConnectionString = args[5],
+                RunAsTask = args[6] == "true"
+            };
             return parameters;
         }
         private static string AssemblyDirectory

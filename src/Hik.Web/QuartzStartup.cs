@@ -8,7 +8,7 @@ namespace Hik.Web
     public class QuartzStartup
     {
         private IScheduler scheduler;
-        private IConfiguration configuration;
+        private readonly IConfiguration configuration;
         public QuartzStartup(IConfiguration configuration)
         {
             this.configuration = configuration;

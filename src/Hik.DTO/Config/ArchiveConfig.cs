@@ -9,5 +9,7 @@
         public string FileNameDateTimeFormat { get; set; } = "yyyyMMddHHmmssfff";
 
         public int SkipLast { get; set; } = 0;
+
+        public int AbnormalFilesCount { get; set; } = 0;
     }
 }

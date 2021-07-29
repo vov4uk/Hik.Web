@@ -26,7 +26,7 @@ namespace Job.Impl
             await service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }
 
-        public async override Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
             var downloader = AppBootstrapper.Container.Resolve<HikPhotoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;

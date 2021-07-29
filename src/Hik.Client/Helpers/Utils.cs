@@ -62,6 +62,17 @@ namespace Hik.Client.Helpers
             return sec.FormatSeconds();
         }
 
+        public static string GetString(this DateTime? yourDate)
+        {
+            return !yourDate.HasValue ? "N/A" : GetString(yourDate.Value);
+        }
+
+        public static string GetString(this DateTime yourDate)
+        {
+            string format = yourDate == yourDate.Date ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss";
+            return yourDate.ToString(format);
+        }
+
         public static string GetRelativeTime(this DateTime? yourDate)
         {
             return !yourDate.HasValue ? "N/A" : GetRelativeTime(yourDate.Value);
@@ -69,42 +80,41 @@ namespace Hik.Client.Helpers
 
         public static string GetRelativeTime(this DateTime yourDate)
         {
-            var ts = new TimeSpan(DateTime.Now.Ticks - yourDate.Ticks);
+            return GetRelativeTime(new TimeSpan(DateTime.Now.Ticks - yourDate.Ticks)) + " ago";
+        }
+
+        public static string GetRelativeTime(this TimeSpan ts)
+        {
             double delta = Math.Abs(ts.TotalSeconds);
 
             if (delta < 1 * MINUTE)
             {
-                return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
+                return ts.Seconds == 1 ? "one second" : ts.Seconds + " seconds";
             }
 
             if (delta < 60 * MINUTE)
             {
-                return ts.Minutes + " minutes ago";
+                return ts.Minutes + " minutes";
             }
 
             if (delta < 24 * HOUR)
             {
-                return ts.Hours + " hours ago";
-            }
-
-            if (delta < 48 * HOUR)
-            {
-                return "yesterday";
+                return ts.Hours + " hours";
             }
 
             if (delta < 30 * DAY)
             {
-                return ts.Days + " days ago";
+                return ts.Days + " days";
             }
 
             if (delta < 12 * MONTH)
             {
                 int months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
-                return months <= 1 ? "one month ago" : months + " months ago";
+                return months <= 1 ? "one month" : months + " months";
             }
 
             int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
-            return years <= 1 ? "one year ago" : years + " years ago";
+            return years <= 1 ? "one year" : years + " years";
         }
 
         public static string ToPhotoDirectoryNameString(this DateTime date)

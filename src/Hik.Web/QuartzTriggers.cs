@@ -4,39 +4,34 @@ using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using Quartz.Impl.Triggers;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hik.Web
 {
     public static class QuartzTriggers
     {
-        private static IList<CronTriggerImpl> _quartzTriggers;
-        public static IList<CronTriggerImpl> Instance
-        {
-            get
-            {
-                return _quartzTriggers ??= BuildModelAsync().GetAwaiter().GetResult();
-            }
-        }
-
-        private static async Task<IList<CronTriggerImpl>> BuildModelAsync()
+        private static readonly IReadOnlyCollection<TriggerKey> TriggerKeys;
+        private static readonly IScheduler Scheduler;
+        static QuartzTriggers()
         {
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-            IScheduler scheduler = await schedulerFactory.GetScheduler("default");
-            if (scheduler == null)
+            Scheduler = schedulerFactory.GetScheduler("default").GetAwaiter().GetResult();
+            if (Scheduler == null)
             {
-                throw new NullReferenceException(nameof(scheduler));
+                throw new NullReferenceException(nameof(Scheduler));
             }
-            IReadOnlyCollection<TriggerKey> triggerKeys = await scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup());
-            var triggers = triggerKeys?.Select(async t => await scheduler.GetTrigger(t)).ToArray();
-            
-            if (triggers == null)
+            TriggerKeys = Scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup()).GetAwaiter().GetResult();
+        }
+
+        public static async Task<IEnumerable<CronTriggerImpl>> GetCronTriggersAsync()
+        {
+            List<CronTriggerImpl> resultList = new List<CronTriggerImpl>();
+            foreach (var t in TriggerKeys)
             {
-                throw new NullReferenceException(nameof(triggers));
+                var triggerImpl = await Scheduler.GetTrigger(t);
+                resultList.Add(triggerImpl as CronTriggerImpl);
             }
-            Task.WaitAll(triggers);
-            return triggers.Select(x => x.Result as CronTriggerImpl).ToList();
+            return resultList;
         }
     }
 }

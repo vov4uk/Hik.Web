@@ -46,7 +46,7 @@ namespace Job.Impl
                 double freeSpace = this.directoryHelper.GetTotalFreeSpaceGb(destination);
 
                 var freePercentage = 100 * freeSpace / totalSpace;
-                this.Logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2}");
+                this.logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2}");
 
                 if (freePercentage < cleanupConfig.FreeSpacePercentage)
                 {
@@ -77,7 +77,7 @@ namespace Job.Impl
             List<MediaFileDTO> result = new();
             foreach (var file in filesToDelete)
             {
-                this.Logger.Debug($"Deleting: {file.Path}");
+                this.logger.Debug($"Deleting: {file.Path}");
 #if RELEASE
                 this.filesHelper.DeleteFile(file.Path);
 #endif

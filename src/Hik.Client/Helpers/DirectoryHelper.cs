@@ -46,7 +46,7 @@ namespace Hik.Client.Helpers
                 size += fi.Length;
             }
 
-            // Add subdirectory sizes.
+            // Add sub directory sizes.
             DirectoryInfo[] dis = d.GetDirectories();
             foreach (DirectoryInfo di in dis)
             {

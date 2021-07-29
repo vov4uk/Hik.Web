@@ -32,9 +32,7 @@ namespace Job.Impl
             var worker = AppBootstrapper.Container.Resolve<ArchiveService>();
             worker.ExceptionFired += base.ExceptionFired;
 
-            var files = await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
-            worker.ExceptionFired -= base.ExceptionFired;
-            return files;
+            return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
         }
 
         public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
@@ -46,6 +44,13 @@ namespace Job.Impl
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
+
+            var abnormalFilesCount = (Config as ArchiveConfig)?.AbnormalFilesCount ?? 0;
+            if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
+            {
+                Email.EmailHelper.Send($"{TriggerKey}: Abnormal activity detected", $"There were {files.Count} taken in period from {JobInstance.PeriodStart} to {JobInstance.PeriodEnd}");
+            }
+
             return base.SaveResults(files, service);
         }
     }

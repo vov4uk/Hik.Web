@@ -67,7 +67,7 @@ namespace Hik.Client
                 periodStart = periodStart.AddMinutes(1);
             }
 
-            return Task.FromResult(result as IReadOnlyCollection<MediaFileDTO>);
+            return Task.FromResult(result.AsReadOnly() as IReadOnlyCollection<MediaFileDTO>);
         }
 
         public void ForceExit()
@@ -102,7 +102,7 @@ namespace Hik.Client
         {
             if (!disposedValue)
             {
-                LogInfo($"Logout the device");
+                LogInfo("Logout the device");
 
                 ftp?.Disconnect();
                 ftp?.Dispose();

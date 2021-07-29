@@ -7,21 +7,21 @@ namespace Job
 {
     public class ActivityBag : IEnumerable<Activity>
     {
-        private static ConcurrentDictionary<Guid, Activity> bag = new ConcurrentDictionary<Guid, Activity>();
+        private static readonly ConcurrentDictionary<Guid, Activity> Bag = new ConcurrentDictionary<Guid, Activity>();
 
         internal bool Add(Activity activity)
         {
-            return bag.TryAdd(activity.Id, activity);
+            return Bag.TryAdd(activity.Id, activity);
         }
 
         internal bool Remove(Activity activity)
         {
-            return bag.TryRemove(activity.Id, out var ignore);
+            return Bag.TryRemove(activity.Id, out var ignore);
         }
 
         public IEnumerator<Activity> GetEnumerator()
         {
-            return bag.Values.GetEnumerator();
+            return Bag.Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

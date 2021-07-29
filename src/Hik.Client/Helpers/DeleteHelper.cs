@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
 using Hik.DTO.Contracts;
-using static Job.Extentions.DictionaryExtensions;
 
 namespace Hik.Client.Helpers
 {
@@ -61,7 +60,7 @@ namespace Hik.Client.Helpers
                 }
             }
 
-            return Task.FromResult(files as IReadOnlyCollection<MediaFileDTO>);
+            return Task.FromResult(files.AsReadOnly() as IReadOnlyCollection<MediaFileDTO>);
         }
     }
 }

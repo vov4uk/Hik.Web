@@ -10,7 +10,6 @@ using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Job;
 using Job.Extensions;
-using Job.Extentions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -44,11 +43,12 @@ namespace Hik.Web.Pages
             var jobs = await dataContext.JobTriggers
                 .AsQueryable()
                 .Include(x => x.Jobs)
-                .Select(x => x.Jobs.OrderByDescending(y => y.Started)
-                .FirstOrDefault())
+                .Select(x => x.Jobs.OrderByDescending(y => y.Started).FirstOrDefault())
                 .ToListAsync();
 
-            foreach (var item in QuartzTriggers.Instance)
+            var cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
+
+            foreach (var item in cronTriggers)
             {
                 var className = item.GetJobClass();
                 var group = item.Key.Group;
@@ -83,9 +83,10 @@ namespace Hik.Web.Pages
             }
         }
 
-        public IActionResult OnPostRun(string group, string name)
+        public async Task<IActionResult> OnPostRun(string group, string name)
         {
-            var trigger = QuartzTriggers.Instance.Single(t => t.Key.Group == group && t.Key.Name == name);
+            var cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
+            var trigger = cronTriggers.Single(t => t.Key.Group == group && t.Key.Name == name);
 
             string className = trigger.GetJobClass();
             string configPath = trigger.GetConfig();
@@ -99,7 +100,7 @@ namespace Hik.Web.Pages
             var parameters = new Parameters(className, group, name, configPath, defaultConnection, runAsTask);
 
             var activity = new Activity(parameters);
-            Task.Run(() => activity.Start());
+            await activity.Start();
             return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
         }
 
