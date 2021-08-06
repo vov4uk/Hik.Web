@@ -50,7 +50,7 @@ namespace Hik.Client
         {
             ValidateDateParameters(periodStart, periodEnd);
 
-            LogInfo($"Get videos from {periodStart} to {periodEnd}");
+            LogDebugInfo($"Get videos from {periodStart} to {periodEnd}");
 
             var remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
             return Mapper.Map<IReadOnlyCollection<MediaFileDTO>>(remoteFiles);
@@ -85,14 +85,14 @@ namespace Hik.Client
             {
                 if (!filesHelper.FileExists(targetFilePath))
                 {
-                    LogInfo($"{targetFilePath}");
+                    LogDebugInfo($"{targetFilePath}");
                     downloadId = hikApi.VideoService.StartDownloadFile(session.UserId, file.Name, tempFile);
 
-                    LogInfo($"{file.ToVideoUserFriendlyString()} - downloading");
+                    LogDebugInfo($"{file.ToVideoUserFriendlyString()} - downloading");
                     return true;
                 }
 
-                LogInfo($"{file.ToVideoUserFriendlyString()} - exist");
+                LogDebugInfo($"{file.ToVideoUserFriendlyString()} - exist");
                 return false;
             }
             else
@@ -121,7 +121,7 @@ namespace Hik.Client
             if (progressValue == ProgressBarMaximum)
             {
                 StopDownload();
-                LogInfo(" - downloaded");
+                LogDebugInfo(" - downloaded");
             }
             else if (progressValue < ProgressBarMinimum || progressValue > ProgressBarMaximum)
             {
@@ -130,9 +130,9 @@ namespace Hik.Client
             }
         }
 
-        private void LogInfo(string msg)
+        private void LogDebugInfo(string msg)
         {
-            logger.Info($"{config.Alias} - {msg}");
+            logger.Debug($"{config.Alias} - {msg}");
         }
     }
 }

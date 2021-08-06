@@ -8,6 +8,7 @@ using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.DTO.Message;
 
 namespace Hik.Client.Service
 {
@@ -15,8 +16,12 @@ namespace Hik.Client.Service
     {
         private readonly IFilesHelper filesHelper;
         private readonly IVideoHelper videoHelper;
+        private Regex regex;
 
-        public ArchiveService(IDirectoryHelper directoryHelper, IFilesHelper filesHelper, IVideoHelper videoHelper)
+        public ArchiveService(
+            IDirectoryHelper directoryHelper,
+            IFilesHelper filesHelper,
+            IVideoHelper videoHelper)
             : base(directoryHelper)
         {
             this.filesHelper = filesHelper;
@@ -25,36 +30,94 @@ namespace Hik.Client.Service
 
         protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            var archiveConfig = config as ArchiveConfig;
+            var aConfig = config as ArchiveConfig;
+            PrepareRegex(aConfig.FileNamePattern);
 
             var result = new List<MediaFileDTO>();
-            var allFiles = this.directoryHelper.EnumerateFiles(archiveConfig.SourceFolder).SkipLast(archiveConfig.SkipLast);
+            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder).SkipLast(aConfig.SkipLast);
 
             try
             {
-                foreach (var oldFile in allFiles)
+                if (aConfig.DetectPeopleConfig != null && aConfig.DetectPeopleConfig.DetectPeoples)
                 {
-                    DateTime date = GetCreationDate(archiveConfig.FileNameDateTimeFormat, oldFile, archiveConfig.FileNamePattern);
-                    int duration = this.videoHelper.GetDuration(oldFile);
+                    var detectConfig = aConfig.DetectPeopleConfig;
+                    var mqConfig = detectConfig.RabbitMQConfig;
+                    if (mqConfig != null)
+                    {
+                        using var rabbitMq = new RabbitMQHelper(mqConfig.HostName, mqConfig.QueueName, mqConfig.RoutingKey);
+                        foreach (var oldFile in allFiles)
+                        {
+                            DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, oldFile);
+                            var duration = -1;
+                            string fileExt = filesHelper.GetExtension(oldFile);
+                            string newFileName = date.ToArchiveFileString(duration, fileExt);
+                            string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(aConfig.DestinationFolder, date));
+                            string junkFilePath = GetPathSafety(newFileName, GetWorkingDirectory(detectConfig.JunkFolder, date));
+                            string guid = Guid.NewGuid().ToString();
+                            var msg = new DetectPeopleMessage()
+                            {
+                                UniqueId = guid,
+                                OldFilePath = oldFile,
+                                NewFilePath = newFilePath,
+                                NewFileName = newFileName,
+                                JunkFilePath = junkFilePath,
+                                DeleteJunk = detectConfig.DeletePhotosWithoutPeoples,
+                            };
 
-                    var newFileName = date.ToArchiveFileString(duration, filesHelper.GetExtension(oldFile));
-                    var newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(config.DestinationFolder, date));
-                    this.filesHelper.RenameFile(oldFile, newFilePath);
-                    result.Add(new MediaFileDTO { Date = date, Name = newFileName, Path = newFilePath, Duration = duration, Size = filesHelper.FileSize(newFilePath) });
+                            rabbitMq.Sent(msg.ToString());
+
+                            result.Add(new MediaFileDTO
+                            {
+                                Date = date,
+                                Name = guid,
+                                Path = string.Empty,
+                                Duration = duration,
+                                Size = filesHelper.FileSize(oldFile),
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var oldFile in allFiles)
+                    {
+                        DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, oldFile);
+                        int duration = this.videoHelper.GetDuration(oldFile);
+
+                        string fileExt = filesHelper.GetExtension(oldFile);
+                        string newFileName = date.ToArchiveFileString(duration, fileExt);
+                        string newFilePath = MoveFile(aConfig.DestinationFolder, oldFile, date, newFileName);
+
+                        result.Add(new MediaFileDTO
+                        {
+                            Date = date,
+                            Name = newFileName,
+                            Path = filesHelper.GetDirectoryName(newFilePath),
+                            Duration = duration,
+                            Size = filesHelper.FileSize(newFilePath),
+                        });
+                    }
                 }
             }
             catch (Exception ex)
             {
-                this.OnExceptionFired(new ExceptionEventArgs(ex), config);
+                this.OnExceptionFired(new ExceptionEventArgs(ex), aConfig);
             }
 
             return Task.FromResult(result.AsReadOnly() as IReadOnlyCollection<MediaFileDTO>);
         }
 
-        private DateTime GetCreationDate(string dateTimeFormat, string oldFile, string nameTemplate)
+        private string MoveFile(string destinationFolder, string oldFilePath, DateTime date, string newFileName)
+        {
+            string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(destinationFolder, date));
+            this.filesHelper.RenameFile(oldFilePath, newFilePath);
+            return newFilePath;
+        }
+
+        private DateTime GetCreationDate(string dateTimeFormat, string oldFile)
         {
             string fileName = filesHelper.GetFileNameWithoutExtension(oldFile);
-            List<string> nameParts = ReverseStringFormat(nameTemplate, fileName);
+            List<string> nameParts = ReverseStringFormat(fileName);
             DateTime date = default;
             bool nameParsed = false;
             if (nameParts != null && nameParts.Any())
@@ -93,25 +156,17 @@ namespace Hik.Client.Service
             return filesHelper.CombinePath(directory, file);
         }
 
-        private List<string> ReverseStringFormat(string template, string str)
+        private List<string> ReverseStringFormat(string str)
+        {
+            return this.regex.Match(str).Groups.Select(x => x.Value).ToList();
+        }
+
+        private void PrepareRegex(string template)
         {
             // Handels regex special characters.
-            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => "\\"
-             + m.Value);
-
+            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => @"\" + m.Value);
             string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)") + "$";
-
-            Regex r = new Regex(pattern);
-            Match m = r.Match(str);
-
-            List<string> ret = new List<string>();
-
-            for (int i = 1; i < m.Groups.Count; i++)
-            {
-                ret.Add(m.Groups[i].Value);
-            }
-
-            return ret;
+            this.regex = new Regex(pattern);
         }
     }
 }

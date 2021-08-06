@@ -1,226 +1,291 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <job-scheduling-data xmlns="http://quartznet.sourceforge.net/JobSchedulingData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0">
-	<processing-directives>
-		<overwrite-existing-data>true</overwrite-existing-data>
-	</processing-directives>
-	<schedule>
-		<job>
-			<name>Launcher</name>
-			<group/>
-			<description/>
-			<job-type>Hik.Web.CronTrigger, Hik.Web</job-type>
-			<durable>true</durable>
-			<recover>false</recover>
-		</job>
-		<trigger>
-			<cron>
-				<name>CorridorVideo</name>
-				<group>JobHost</group>
-				<description>Download videos from street camera</description>
-				<job-name>Launcher</job-name>
-				<job-group/>
-				<job-data-map>
-					<entry>
-						<key>Job</key>
-						<value>Job.Impl.HikVideoDownloaderJob, Job</value>
-					</entry>
-					<entry>
-						<key>ConfigPath</key>
-						<value>configuration.corridor.json</value>
-					</entry>
-				</job-data-map>
-				<misfire-instruction>DoNothing</misfire-instruction>
-				<cron-expression>0 0/3 * * * ?</cron-expression>
-			</cron>
-		</trigger>
-		<trigger>
-			<cron>
-				<name>KitchenVideo</name>
-				<group>JobHost</group>
-				<description>Download videos from street camera</description>
-				<job-name>Launcher</job-name>
-				<job-group/>
-				<job-data-map>
-					<entry>
-						<key>Job</key>
-						<value>Job.Impl.HikVideoDownloaderJob, Job</value>
-					</entry>
-					<entry>
-						<key>ConfigPath</key>
-						<value>configuration.kitchen.json</value>
-					</entry>
-				</job-data-map>
-				<misfire-instruction>DoNothing</misfire-instruction>
-				<cron-expression>0 0/5 * * * ?</cron-expression>
-			</cron>
-		</trigger>
-		<trigger>
-			<cron>
-				<name>LivingVideo</name>
-				<group>JobHost</group>
-				<description>Download videos from street camera</description>
-				<job-name>Launcher</job-name>
-				<job-group/>
-				<job-data-map>
-					<entry>
-						<key>Job</key>
-						<value>Job.Impl.HikVideoDownloaderJob, Job</value>
-					</entry>
-					<entry>
-						<key>ConfigPath</key>
-						<value>configuration.living.json</value>
-					</entry>
-				</job-data-map>
-				<misfire-instruction>DoNothing</misfire-instruction>
-				<cron-expression>0 0/7 * * * ?</cron-expression>
-			</cron>
-		</trigger>
-		<trigger>
-			<cron>
-				<name>CleanUp</name>
-				<group>JobHost</group>
-				<description>Delete oldest files if empty psace less than 10%</description>
-				<job-name>Launcher</job-name>
-				<job-group/>
-				<job-data-map>
-					<entry>
-						<key>Job</key>
-						<value>Job.Impl.CleanUpJob, Job</value>
-					</entry>
-					<entry>
-						<key>ConfigPath</key>
-						<value>configuration.none.json</value>
-					</entry>
-				</job-data-map>
-				<misfire-instruction>DoNothing</misfire-instruction>
-				<cron-expression>0 0 0/1 1/1 * ?</cron-expression>
-			</cron>
-		</trigger>
-		<trigger>
-			<cron>
-				<name>ArchiveFTP</name>
-				<group>JobHost</group>
-				<description>Move files from ftp to cloud</description>
-				<job-name>Launcher</job-name>
-				<job-group/>
-				<job-data-map>
-					<entry>
-						<key>Job</key>
-						<value>Job.Impl.ArchiveJob, Job</value>
-					</entry>
-					<entry>
-						<key>ConfigPath</key>
-						<value>configuration.floor4.json</value>
-					</entry>
-				</job-data-map>
-				<misfire-instruction>DoNothing</misfire-instruction>
-				<cron-expression>0 7 0/1 1/1 * ?</cron-expression>
-			</cron>
-		</trigger>
-		<trigger>
-			<cron>
-				<name>Floor4_Video</name>
-				<group>JobHost</group>
-				<description>Download videos from internal camera</description>
-				<job-name>Launcher</job-name>
-				<job-group/>
-				<job-data-map>
-					<entry>
-						<key>Job</key>
-						<value>Job.Impl.HikVideoDownloaderJob, Job</value>
-					</entry>
-					<entry>
-						<key>ConfigPath</key>
-						<value>configuration.floor4.json</value>
-					</entry>
-				</job-data-map>
-				<misfire-instruction>DoNothing</misfire-instruction>
-				<cron-expression>0 17 0/3 1/1 * ? *</cron-expression>
-			</cron>
-		</trigger>
-		<!--<trigger>
-      <cron>
-        <name>StreetVideo</name>
-        <group>JobHost</group>
-        <description>Download videos from street camera</description>
-        <job-name>Launcher</job-name>
-        <job-group></job-group>
-        <job-data-map>
-          <entry>
-            <key>Job</key>
-            <value>Job.Impl.HikVideoDownloaderJob, Job</value>
-          </entry>
-          <entry>
-            <key>ConfigPath</key>
-            <value>configuration.street.json</value>
-          </entry>
-        </job-data-map>
-        <misfire-instruction>DoNothing</misfire-instruction>
-        <cron-expression>0 0/1 * * * ?</cron-expression>
-      </cron>
-    </trigger>-->
-		<!--<trigger>
-      <cron>
-        <name>Video</name>
-        <group>Internal</group>
-        <description>Download videos from internal camera</description>
-        <job-name>Launcher</job-name>
-        <job-group></job-group>
-        <job-data-map>
-          <entry>
-            <key>Job</key>
-            <value>Job.Impl.HikVideoDownloaderJob, Job</value>
-          </entry>
-          <entry>
-            <key>ConfigPath</key>
-            <value>configuration.internal.json</value>
-          </entry>
-        </job-data-map>
-        <misfire-instruction>DoNothing</misfire-instruction>
-        <cron-expression>0 0/1 * * * ?</cron-expression>
-      </cron>
-    </trigger>-->
-		<!--<trigger>
-      <cron>
-		  <name>Video</name>
-		  <group>Street</group>
-		  <description>Download videos from street camera</description>
-		  <job-name>Launcher</job-name>
-		  <job-group></job-group>
-		  <job-data-map>
-			  <entry>
-				  <key>Job</key>
-				  <value>Job.Impl.HikVideoDownloaderJob, Job</value>
-			  </entry>
-			  <entry>
-				  <key>ConfigPath</key>
-				  <value>configuration.street.json</value>
-			  </entry>
-		  </job-data-map>
-		  <misfire-instruction>DoNothing</misfire-instruction>
-        <cron-expression>0 0/1 * * * ?</cron-expression>
-      </cron>
-    </trigger>-->
-		<!--<trigger>
-      <cron>
-        <name>DeleteArchiving</name>
-        <group>JobHost</group>
-        <description>Delete videos</description>
-        <job-name>Launcher</job-name>
-        <job-group></job-group>
-        <job-data-map>
-          <entry>
-            <key>Job</key>
-            <value>Job.Impl.DeleteArchivingJob, Job</value>
-          </entry>
-          <entry>
-            <key>ConfigPath</key>
-            <value>configuration.internal.json</value>
-          </entry>
-        </job-data-map>
-        <misfire-instruction>DoNothing</misfire-instruction>
-        <cron-expression>0 0/1 * * * ?</cron-expression>
-      </cron>
-    </trigger>-->
-	</schedule>
+    <processing-directives>
+        <overwrite-existing-data>true</overwrite-existing-data>
+    </processing-directives>
+    <schedule>
+        <job>
+            <name>Launcher</name>
+            <group/>
+            <description/>
+            <job-type>Hik.Web.CronTrigger, Hik.Web</job-type>
+            <durable>true</durable>
+            <recover>false</recover>
+        </job>
+        <trigger>
+            <cron>
+                <name>Street_Video</name>
+                <group>Street</group>
+                <description>Download videos from street camera</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.HikVideoDownloaderJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>street.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>false</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 0/30 * * * ?</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Corridor_Video</name>
+                <group>JobHost</group>
+                <description>YiHome. Download videos from corridor camera</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.HikVideoDownloaderJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>corridor.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>false</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 0/10 * * * ?</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Kitchen_Video</name>
+                <group>JobHost</group>
+                <description>YiHome. Download videos from kitchen camera</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.HikVideoDownloaderJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>kitchen.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>false</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 0/5 * * * ?</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Living_Video</name>
+                <group>JobHost</group>
+                <description>YiHome. Download videos from living room camera</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.HikVideoDownloaderJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>living.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>false</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 0/10 * * * ?</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Indoor_Video</name>
+                <group>JobHost</group>
+                <description>Delete oldest files if empty space less than 10%</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.GarbageCollectorJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>indoor_video.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>true</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 54 0/1 * * ?</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Outdoor_Photo</name>
+                <group>JobHost</group>
+                <description>Delete oldest files if empty space less than 10%</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.GarbageCollectorJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>outdoor_photo.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>true</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 58 0/1 * * ?</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Outdoor_Video</name>
+                <group>JobHost</group>
+                <description>Delete oldest files if empty space less than 10%</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.GarbageCollectorJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>outdoor_video.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>true</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 56 0/1 * * ?</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Floor1_Photo</name>
+                <group>JobHost</group>
+                <description>Floor1. Move photos from c:\\ftp to cloud</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.ArchiveJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>floor1_photo.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>true</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 2 0/1 * * ?</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Floor1_Video</name>
+                <group>JobHost</group>
+                <description>Floor1. Move videos from c:\\ftp to cloud</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.ArchiveJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>floor1_video.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>true</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 4 0/1 * * ?</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Floor4_Video</name>
+                <group>JobHost</group>
+                <description>Download videos from Floor4 camera</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.HikVideoDownloaderJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>floor4_video.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>false</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 13 */12 ? * *</cron-expression>
+            </cron>
+        </trigger>
+        <trigger>
+            <cron>
+                <name>Floor4_Photo</name>
+                <group>JobHost</group>
+                <description>Floor4. Move photos from c:\\ftp to cloud</description>
+                <job-name>Launcher</job-name>
+                <job-group/>
+                <job-data-map>
+                    <entry>
+                        <key>Job</key>
+                        <value>Job.Impl.ArchiveJob, Job</value>
+                    </entry>
+                    <entry>
+                        <key>ConfigPath</key>
+                        <value>floor4_photo.json</value>
+                    </entry>
+                    <entry>
+                         <key>RunAsTask</key>
+                         <value>true</value>
+                    </entry>
+                </job-data-map>
+                <misfire-instruction>DoNothing</misfire-instruction>
+                <cron-expression>0 6 0/1 ? * *</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
 </job-scheduling-data>

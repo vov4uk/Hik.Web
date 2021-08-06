@@ -8,6 +8,7 @@ using Hik.Client.Helpers;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
+using Hik.Web.Scheduler;
 using Job;
 using Job.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,6 @@ namespace Hik.Web.Pages
     {
         private readonly DataContext dataContext;
         private readonly ActivityBag activities = new();
-        private readonly Options options = new() { DayOfWeekStartIndexZero = false, Use24HourTimeFormat = true };
 
         public IndexModel(DataContext dataContext)
         {
@@ -64,7 +64,7 @@ namespace Hik.Web.Pages
                     ConfigPath = item.GetConfig(),
                     Next = item.GetNextFireTimeUtc().Value.DateTime.ToLocalTime(),
                     ActivityId = act?.Id,
-                    CronSummary = ExpressionDescriptor.GetDescription(item.CronExpressionString, options),
+                    CronSummary = ExpressionDescriptor.GetDescription(item.CronExpressionString, CronDTO.Options),
                     CronString = item.CronExpressionString,
                     ProcessId = act?.ProcessId,
                     JobTriggerId = tri?.Id ?? -1,
@@ -90,7 +90,7 @@ namespace Hik.Web.Pages
 
             string className = trigger.GetJobClass();
             string configPath = trigger.GetConfig();
-            bool runAsTask = trigger.GetRunAsTask() == "true";
+            bool runAsTask = trigger.GetRunAsTask();
 
             var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
 
@@ -100,7 +100,7 @@ namespace Hik.Web.Pages
             var parameters = new Parameters(className, group, name, configPath, defaultConnection, runAsTask);
 
             var activity = new Activity(parameters);
-            await activity.Start();
+            await activity.Start().ConfigureAwait(false);
             return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
         }
 

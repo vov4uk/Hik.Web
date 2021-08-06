@@ -108,7 +108,6 @@ namespace Job.Impl
             await unitOfWork.SaveChangesAsync();
         }
 
-
         protected virtual void ExceptionFired(object sender, ExceptionEventArgs e)
         {
             HandleException(e.Exception);
@@ -169,7 +168,7 @@ namespace Job.Impl
             }
             LogInfo("Save to DB. Done");
         }
-      
+
         protected async Task<JobTrigger> GetJobTriggerAsync()
         {
             if (this.jobTrigger == null)

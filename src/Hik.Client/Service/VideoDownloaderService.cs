@@ -23,7 +23,7 @@ namespace Hik.Client.Service
             foreach (var video in remoteFiles)
             {
                 ThrowIfCancellationRequested();
-                logger.Info($"{j++,2}/{remoteFiles.Count} : ");
+                logger.Debug($"{j++,2}/{remoteFiles.Count} : ");
                 if (await DownloadRemoteVideoFileAsync(video, token))
                 {
                     OnFileDownloaded(new FileDownloadedEventArgs(video));
@@ -51,8 +51,8 @@ namespace Hik.Client.Service
                 file.DownloadDuration = duration;
 
                 int? videoDuration = file.Duration;
-                logger.Info($"Duration {duration.FormatSeconds()}, avg speed {((long)Utils.SafeDivision(file.Size, duration.Value)).FormatBytes()}/s");
-                logger.Info($"Video    {videoDuration.FormatSeconds()}, avg rate {((long)Utils.SafeDivision(file.Size, videoDuration.Value)).FormatBytes()}/s");
+                logger.Debug($"Duration {duration.FormatSeconds()}, avg speed {((long)Utils.SafeDivision(file.Size, duration.Value)).FormatBytes()}/s");
+                logger.Debug($"Video    {videoDuration.FormatSeconds()}, avg rate {((long)Utils.SafeDivision(file.Size, videoDuration.Value)).FormatBytes()}/s");
                 return true;
             }
 
