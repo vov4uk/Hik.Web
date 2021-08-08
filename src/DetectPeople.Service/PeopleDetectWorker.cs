@@ -1,5 +1,6 @@
 ﻿using DetectPeople.Face;
 using DetectPeople.Face.Helpers;
+using DetectPeople.Face.Retina;
 using DetectPeople.YOLOv4;
 using DetectPeople.YOLOv4.DataStructures;
 using FaceRecognitionDotNet;
@@ -8,6 +9,7 @@ using Hik.DTO.Message;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using NLog;
+using OpenCvSharp;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
@@ -26,14 +28,22 @@ namespace DetectPeople.Service
         protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private readonly Scorer _scorer;
         private readonly FacialRecognitionService service;
+        private readonly FaceDetection retinaFaceDetection;
+        private readonly Face.Retina.FaceRecognition retinaFaceRecognition;
+        private readonly Stopwatch sw = new Stopwatch();
 
         public PeopleDetectWorker()
         {
             _scorer = new Scorer();
             service = new FacialRecognitionService();
             service.Initialize();
-        }
 
+
+            this.retinaFaceDetection = new FaceDetection();
+            this.retinaFaceRecognition = new Face.Retina.FaceRecognition();
+            retinaFaceRecognition.Initialize();
+
+        }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -65,7 +75,7 @@ namespace DetectPeople.Service
             await tcs.Task;
             hikReceiver.Received -= Rabbit_Received;
             hikReceiver.Dispose();
-            logger.Info("Service stopped");
+            logger.Info("PeopleDetectWorker stopped");
         }
 
         private async void Rabbit_Received(object sender, BasicDeliverEventArgs ea)
@@ -79,18 +89,24 @@ namespace DetectPeople.Service
                 logger.Warn($"{msg.OldFilePath} not exist");
                 return;
             }
-            var sw = new Stopwatch();
-            sw.Start();
+
+            sw.Restart();
             IReadOnlyList<ObjectDetectResult> objects = await _scorer.DetectObjectsAsync(msg.OldFilePath);
             sw.Stop();
-            logger.Debug($"Done in {sw.ElapsedMilliseconds}ms.");
+            logger.Info($"DetectObjects done in {sw.ElapsedMilliseconds}ms.");
 
             if (objects.Any(IsPerson))
             {
+                logger.Info($"{objects.Count} objects detected");
 
-                foreach (var result in objects.Where(IsPerson))
+                var peoples = objects.Where(IsPerson);
+                logger.Info($"{peoples.Count()} peoples detected");
+                foreach (var result in peoples)
                 {
-                    DetectFaces(msg.OldFilePath, msg.NewFileName, result.BBox.Select(x => (int)x).ToArray());
+                    sw.Restart();
+                    DetectFaces_Retina(msg.OldFilePath, msg.NewFileName, result.BBox.Select(x => (int)x).ToArray());
+                    sw.Stop();
+                    logger.Info($"DetectFaces done in {sw.ElapsedMilliseconds}ms.");
                 }
 
                 File.Move(msg.OldFilePath, msg.NewFilePath, true);
@@ -125,28 +141,29 @@ namespace DetectPeople.Service
             return false;
         }
 
-        private void DetectFaces(string filePath, string fileName, int[] BBox)
+        private void DetectFaces_FaceRecognitionDotNet(string filePath, string fileName, int[] BBox)
         {
             try
             {
                 var tempImg = Path.GetTempFileName() + ".jpeg";
                 ImageProcessingHelper.CreateImage(filePath, tempImg, new Location(BBox[0], BBox[1], BBox[2], BBox[3]));
-                File.Copy(tempImg, $@"c:\tmp\{fileName}", true);
+                File.Copy(tempImg, $@"c:\tmp\{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}.jpg", true);
                 var res = service.Search(tempImg);
 
+                logger.Info($"{res.Count} faces detected");
                 foreach (SearchResult result in res)
                 {
                     var match = result.Matches.First();
+                    logger.Info($" {match.Name} : {match.Confidence} {match.ImagePath}");
+
                     if (match.Confidence > 0.65)
                     {
                         var personPath = Path.Combine(Path.GetDirectoryName(match.ImagePath), Path.GetFileName(fileName));
                         SavePerson(tempImg, personPath, result);
-
-                        logger.Info($" {match.Name} : {match.Confidence} {match.ImagePath}");
                     }
                     else // new person
                     {
-                        logger.Info($"new person {match.Confidence}");
+                        logger.Warn("Add new person");
                         var newPersonPath = Path.Combine(PathHelper.ImagesFolder(), Guid.NewGuid().ToString(), Path.GetFileName(fileName));
                         Directory.CreateDirectory(Path.GetDirectoryName(newPersonPath));
 
@@ -166,6 +183,52 @@ namespace DetectPeople.Service
             }
         }
 
+        private void DetectFaces_Retina(string filePath, string fileName, int[] BBox)
+        {
+            try
+            {
+                var tempImg = Path.GetTempFileName() + ".jpg";
+                ImageProcessingHelper.CreateImage(filePath, tempImg, new Location(BBox[0], BBox[1], BBox[2], BBox[3]));
+
+                File.Copy(tempImg, $@"c:\tmp\{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}.jpg", true);
+
+
+                var faces = retinaFaceDetection.OpenFile(tempImg);
+                Console.WriteLine($"{faces.Count} Faces Detected - {filePath}");
+
+                foreach (var face in faces)
+                {
+
+                    Mat myNewMat = new Mat(face.Mat, new Rect((int)face.Rect.X, (int)face.Rect.Y, (int)face.Rect.Width, (int)face.Rect.Height));
+                    (global::Retina.RecFaceInfo, global::Retina.RecFaceInfo, double?) res = retinaFaceRecognition.Search(myNewMat);
+                    var searchResult = res.Item1;
+                    var best = res.Item2;
+                    var coeficient = res.Item3;
+
+                    Console.WriteLine($"{best.Label} : {coeficient}");
+
+                    if (coeficient > 0.65)
+                    {
+                        var personPath = Path.Combine(PathHelper.ImagesFolder(), best.Label, Path.GetFileName(filePath));
+                        SavePerson(tempImg, myNewMat, personPath, searchResult);
+                    }
+                    else // new person
+                    {
+                        logger.Warn("Add new person");
+                        var newPersonPath = Path.Combine(PathHelper.ImagesFolder(), Guid.NewGuid().ToString(), Path.GetFileName(fileName));
+                        Directory.CreateDirectory(Path.GetDirectoryName(newPersonPath));
+
+                        SavePerson(tempImg, myNewMat, newPersonPath, searchResult);
+                    }
+                }
+                File.Delete(tempImg);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
         private void SavePerson(string originalPath, string personPath, SearchResult result)
         {
             string personFacePath = Path.ChangeExtension(personPath,".png");
@@ -174,6 +237,23 @@ namespace DetectPeople.Service
             ImageProcessingHelper.CreateImage(originalPath, personFacePath, result.FaceLocation);
             File.Move(originalPath, personPath, true);
             service.AddFace(new Face.Face {FullPath = personFacePath, Encoding = result.Encoding, Name = dir });
+        }
+
+        private void SavePerson(string originalPath, Mat originalFile, string personPath, Retina.RecFaceInfo result)
+        {
+            string personFacePath = Path.ChangeExtension(personPath,".png");
+            var parts = personPath.Split(new char[] { '\\', '/' });
+            var dir = parts[parts.Length - 2];
+
+            originalFile.SaveImage(personFacePath);
+            result.FilePath = personFacePath;
+            result.Label = dir;
+            result.Face = originalFile;
+
+            File.Move(originalPath, personPath, true);
+
+            retinaFaceRecognition.AddFace(result);
+
         }
     }
 }

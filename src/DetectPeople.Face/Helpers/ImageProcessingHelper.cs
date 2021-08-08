@@ -1,7 +1,6 @@
 ﻿using FaceRecognitionDotNet;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
 using System;
 using System.IO;
 using Image = SixLabors.ImageSharp.Image;
