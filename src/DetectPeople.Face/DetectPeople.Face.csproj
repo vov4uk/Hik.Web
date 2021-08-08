@@ -1,0 +1,108 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="C:\Users\vkhmelovskyi\.nuget\packages\dlibdotnet\19.21.0.20210302\build\..\runtimes\win-AnyCPU\native\DlibDotNetNative.dll" />
+    <Content Remove="C:\Users\vkhmelovskyi\.nuget\packages\dlibdotnet\19.21.0.20210302\build\..\runtimes\win-AnyCPU\native\DlibDotNetNativeDnn.dll" />
+    <Content Remove="C:\Users\vkhmelovskyi\.nuget\packages\facerecognitiondotnet\1.3.0.4\build\..\runtimes\win-AnyCPU\native\DlibDotNetNativeDnnAgeClassification.dll" />
+    <Content Remove="C:\Users\vkhmelovskyi\.nuget\packages\facerecognitiondotnet\1.3.0.4\build\..\runtimes\win-AnyCPU\native\DlibDotNetNativeDnnGenderClassification.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Classifiers\dlib-model\age-predictor\dnn_age_predictor_v1.dat.bz2" />
+    <None Remove="Classifiers\dlib-model\age-predictor\dnn_age_predictor_v1_ex.cpp" />
+    <None Remove="Classifiers\dlib-model\dlib_face_recognition_resnet_model_v1.dat" />
+    <None Remove="Classifiers\dlib-model\gender-classifier\dnn_gender_classifier_v1.dat.bz2" />
+    <None Remove="Classifiers\dlib-model\gender-classifier\dnn_gender_classifier_v1_ex.cpp" />
+    <None Remove="Classifiers\dlib-model\LICENSE" />
+    <None Remove="Classifiers\dlib-model\mmod_dog_hipsterizer.dat" />
+    <None Remove="Classifiers\dlib-model\mmod_front_and_rear_end_vehicle_detector.dat" />
+    <None Remove="Classifiers\dlib-model\mmod_human_face_detector.dat" />
+    <None Remove="Classifiers\dlib-model\mmod_rear_end_vehicle_detector.dat" />
+    <None Remove="Classifiers\dlib-model\README.md" />
+    <None Remove="Classifiers\dlib-model\resnet34_1000_imagenet_classifier.dnn" />
+    <None Remove="Classifiers\dlib-model\resnet50_1000_imagenet_classifier.dnn" />
+    <None Remove="Classifiers\dlib-model\shape_predictor_5_face_landmarks.dat" />
+    <None Remove="Classifiers\dlib-model\shape_predictor_68_face_landmarks.dat" />
+    <None Remove="Classifiers\opencv_face_detector.pbtxt" />
+    <None Remove="Classifiers\opencv_face_detector_uint8.pb" />
+    <None Remove="Classifiers\slim_320.bin" />
+    <None Remove="Classifiers\slim_320.param" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Classifiers\dlib-model\age-predictor\dnn_age_predictor_v1.dat.bz2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\age-predictor\dnn_age_predictor_v1_ex.cpp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\dlib_face_recognition_resnet_model_v1.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\gender-classifier\dnn_gender_classifier_v1.dat.bz2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\gender-classifier\dnn_gender_classifier_v1_ex.cpp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\LICENSE">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\mmod_dog_hipsterizer.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\mmod_front_and_rear_end_vehicle_detector.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\mmod_human_face_detector.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\mmod_rear_end_vehicle_detector.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\resnet34_1000_imagenet_classifier.dnn">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\resnet50_1000_imagenet_classifier.dnn">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\shape_predictor_5_face_landmarks.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\dlib-model\shape_predictor_68_face_landmarks.dat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\opencv_face_detector.pbtxt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\opencv_face_detector_uint8.pb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\slim_320.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Classifiers\slim_320.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FaceRecognitionDotNet" Version="1.3.0.4" />
+    <PackageReference Include="OpenCvSharp4" Version="4.5.3.20210725" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.5.3.20210725" />
+    <PackageReference Include="OpenCvSharp4.Windows" Version="4.5.3.20210725" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
+    <PackageReference Include="UltraFaceDotNet" Version="1.0.0.2" />
+  </ItemGroup>
+
+</Project>

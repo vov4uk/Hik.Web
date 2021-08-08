@@ -53,7 +53,7 @@ namespace DetectPeople.YOLOv4.DataStructures
         [ColumnName("height")]
         public float ImageHeight { get; set; }
 
-        public IReadOnlyList<Result> GetResults(string[] classes, float scoreThres = 0.5f, float iouThres = 0.5f)
+        public IReadOnlyList<ObjectDetectResult> GetResults(string[] classes, float scoreThres = 0.5f, float iouThres = 0.5f)
         {
             List<float[]> postProcesssedResults = new List<float[]>();
             int classesCount = classes.Length;
@@ -136,7 +136,7 @@ namespace DetectPeople.YOLOv4.DataStructures
 
             // Non-maximum Suppression
             postProcesssedResults = postProcesssedResults.OrderByDescending(x => x[4]).ToList(); // sort by confidence
-            List<Result> resultsNms = new List<Result>();
+            List<ObjectDetectResult> resultsNms = new List<ObjectDetectResult>();
 
             int f = 0;
             while (f < postProcesssedResults.Count)
@@ -152,7 +152,7 @@ namespace DetectPeople.YOLOv4.DataStructures
                 int id = (int)res[5];
                 string label = classes[id];
 
-                resultsNms.Add(new Result(id, res.Take(4).ToArray(), label, conf));
+                resultsNms.Add(new ObjectDetectResult(id, res.Take(4).ToArray(), label, conf));
                 postProcesssedResults[f] = null;
 
                 List<float> iou = postProcesssedResults.Select(bbox => bbox == null ? float.NaN : BoxIoU(res, bbox)).ToList();

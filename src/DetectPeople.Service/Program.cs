@@ -25,11 +25,11 @@ namespace DetectPeople.Service
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<PeopleDetectWorker>()
-                        .Configure<EventLogSettings>(config =>
-                        {
-                            config.LogName = "Person Detect Service";
-                            config.SourceName = "Person Detect Service Source";
-                        });
+                            .Configure<EventLogSettings>(config =>
+                            {
+                                config.LogName = "Person Detect Service";
+                                config.SourceName = "Person Detect Service Source";
+                            });
                 });
 
             if (isService)

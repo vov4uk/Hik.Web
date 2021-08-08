@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DetectPeople.Face\DetectPeople.Face.csproj" />
     <ProjectReference Include="..\DetectPeople.YOLOv4\DetectPeople.YOLOv4.csproj" />
     <ProjectReference Include="..\Hik.DTO\Hik.DTO.csproj" />
   </ItemGroup>

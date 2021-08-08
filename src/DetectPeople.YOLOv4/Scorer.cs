@@ -64,10 +64,10 @@ namespace DetectPeople.YOLOv4
             predictionEngine = mlContext.Model.CreatePredictionEngine<BitmapData, Prediction>(model);
         }
 
-        public async Task<IReadOnlyList<Result>> DetectObjectsAsync(string imagePath)
+        public async Task<IReadOnlyList<ObjectDetectResult>> DetectObjectsAsync(string imagePath)
         {
 
-            IReadOnlyList<Result> results = Array.Empty<Result>();
+            IReadOnlyList<ObjectDetectResult> results = Array.Empty<ObjectDetectResult>();
 
             using (var stream = new FileStream(imagePath, FileMode.Open))
             {

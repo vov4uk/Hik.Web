@@ -44,7 +44,7 @@ namespace Hik.Client.Service
                     var mqConfig = detectConfig.RabbitMQConfig;
                     if (mqConfig != null)
                     {
-                        using var rabbitMq = new RabbitMQHelper(mqConfig.HostName, mqConfig.QueueName, mqConfig.RoutingKey);
+                        using var rabbitMq = new RabbitMQSender(mqConfig.HostName, mqConfig.QueueName, mqConfig.RoutingKey);
                         foreach (var oldFile in allFiles)
                         {
                             DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, oldFile);
