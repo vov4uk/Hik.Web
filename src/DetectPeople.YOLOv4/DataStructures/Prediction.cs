@@ -8,23 +8,23 @@ namespace DetectPeople.YOLOv4.DataStructures
 {
     public class Prediction
     {
+        private const int anchorsCount = 3;
+
         // https://github.com/hunglc007/tensorflow-yolov4-tflite/blob/master/data/anchors/yolov4_anchors.txt
-        static readonly float[][][] ANCHORS = new float[][][]
+        private static readonly float[][][] ANCHORS = new float[][][]
         {
             new float[][] { new float[] { 12, 16 }, new float[] { 19, 36 }, new float[] { 40, 28 } },
             new float[][] { new float[] { 36, 75 }, new float[] { 76, 55 }, new float[] { 72, 146 } },
             new float[][] { new float[] { 142, 110 }, new float[] { 192, 243 }, new float[] { 459, 401 } }
         };
 
+        private static readonly int[] shapes = new int[] { 52, 26, 13 };
+
         // https://github.com/hunglc007/tensorflow-yolov4-tflite/blob/9f16748aa3f45ff240608da4bd9b1216a29127f5/core/config.py#L18
-        static readonly float[] STRIDES = new float[] { 8, 16, 32 };
+        private static readonly float[] STRIDES = new float[] { 8, 16, 32 };
 
         // https://github.com/hunglc007/tensorflow-yolov4-tflite/blob/9f16748aa3f45ff240608da4bd9b1216a29127f5/core/config.py#L20
-        static readonly float[] XYSCALE = new float[] { 1.2f, 1.1f, 1.05f };
-
-        static readonly int[] shapes = new int[] { 52, 26, 13 };
-
-        const int anchorsCount = 3;
+        private static readonly float[] XYSCALE = new float[] { 1.2f, 1.1f, 1.05f };
 
         /// <summary>
         /// Identity
@@ -47,11 +47,11 @@ namespace DetectPeople.YOLOv4.DataStructures
         [ColumnName("Identity_2:0")]
         public float[] Identity2 { get; set; }
 
-        [ColumnName("width")]
-        public float ImageWidth { get; set; }
-
         [ColumnName("height")]
         public float ImageHeight { get; set; }
+
+        [ColumnName("width")]
+        public float ImageWidth { get; set; }
 
         public IReadOnlyList<ObjectDetectResult> GetResults(string[] classes, float scoreThres = 0.5f, float iouThres = 0.5f)
         {
@@ -171,14 +171,6 @@ namespace DetectPeople.YOLOv4.DataStructures
         }
 
         /// <summary>
-        /// expit = https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.expit.html
-        /// </summary>
-        private static float Sigmoid(float x)
-        {
-            return 1f / (1f + (float)Math.Exp(-x));
-        }
-
-        /// <summary>
         /// Return intersection-over-union (Jaccard index) of boxes.
         /// <para>Both sets of boxes are expected to be in (x1, y1, x2, y2) format.</para>
         /// </summary>
@@ -200,6 +192,14 @@ namespace DetectPeople.YOLOv4.DataStructures
             var inter = dx * dy;
 
             return inter / (area1 + area2 - inter);
+        }
+
+        /// <summary>
+        /// expit = https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.expit.html
+        /// </summary>
+        private static float Sigmoid(float x)
+        {
+            return 1f / (1f + (float)Math.Exp(-x));
         }
     }
 }

@@ -8,14 +8,8 @@ using System.Threading.Tasks;
 
 namespace DetectPeople.Service
 {
-    class Program
+    internal class Program
     {
-        static async Task<int> Main(string[] args)
-        {
-            await CreateHostBuilder(args).Build().RunAsync();
-            return 0;
-        }
-
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             var isService = !(Debugger.IsAttached || args.Contains("--console"));
@@ -40,5 +34,10 @@ namespace DetectPeople.Service
             return service;
         }
 
+        private static async Task<int> Main(string[] args)
+        {
+            await CreateHostBuilder(args).Build().RunAsync();
+            return 0;
+        }
     }
 }

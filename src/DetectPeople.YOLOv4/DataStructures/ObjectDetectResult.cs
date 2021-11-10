@@ -1,8 +1,16 @@
-﻿namespace DetectPeople.YOLOv4.DataStructures
+﻿using System.Drawing;
+
+namespace DetectPeople.YOLOv4.DataStructures
 {
     public class ObjectDetectResult
     {
-        public int Id { get; }
+        public ObjectDetectResult(int id, float[] bbox, string label, float confidence)
+        {
+            Id = id;
+            BBox = bbox;
+            Label = label;
+            Confidence = confidence;
+        }
 
         /// <summary>
         /// x1, y1, x2, y2 in page coordinates.
@@ -11,21 +19,27 @@
         public float[] BBox { get; }
 
         /// <summary>
-        /// The Bbox category.
-        /// </summary>
-        public string Label { get; }
-
-        /// <summary>
         /// Confidence level.
         /// </summary>
         public float Confidence { get; }
 
-        public ObjectDetectResult(int id, float[] bbox, string label, float confidence)
+        public int Id { get; }
+
+        /// <summary>
+        /// The Bbox category.
+        /// </summary>
+        public string Label { get; }
+
+        public Rectangle GetRectangle()
         {
-            Id = id;
-            BBox = bbox;
-            Label = label;
-            Confidence = confidence;
+            var x1 = (int)BBox[0];
+            var y1 = (int)BBox[1];
+            var x2 = (int)BBox[2];
+            var y2 = (int)BBox[3];
+            var H = y2 - y1;
+            var W = x2 - x1;
+
+            return new Rectangle(x1, y1, W, H);
         }
     }
 }

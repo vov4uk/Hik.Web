@@ -1,0 +1,10 @@
+﻿{
+    "RabbitMQ": {
+        "HostName": "localhost",
+        "QueueName": "hik",
+        "RoutingKey": "hik"
+    },
+    "DetectFaces": true,
+    "FaceCoeficient": 0.65,
+    "OnlyInsideFaces": true
+}

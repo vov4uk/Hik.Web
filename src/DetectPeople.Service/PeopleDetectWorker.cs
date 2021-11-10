@@ -1,9 +1,7 @@
-﻿using DetectPeople.Face;
-using DetectPeople.Face.Helpers;
+﻿using DetectPeople.Face.Helpers;
 using DetectPeople.Face.Retina;
 using DetectPeople.YOLOv4;
 using DetectPeople.YOLOv4.DataStructures;
-using FaceRecognitionDotNet;
 using Hik.DTO.Config;
 using Hik.DTO.Message;
 using Microsoft.Extensions.Hosting;
@@ -14,6 +12,8 @@ using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,43 +26,35 @@ namespace DetectPeople.Service
     public class PeopleDetectWorker : BackgroundService
     {
         protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
-        private readonly Scorer _scorer;
-        private readonly FacialRecognitionService service;
-        private readonly FaceDetection retinaFaceDetection;
-        private readonly Face.Retina.FaceRecognition retinaFaceRecognition;
-        private readonly Stopwatch sw = new Stopwatch();
+        private readonly ObjectsDetecor objectsDetector;
+        private readonly FaceDetectionAdv faceDetect;
+        private readonly FaceRecognition faceRec;
+        private readonly Stopwatch timer = new();
+        private PeopleDetectConfig config;
+
+
 
         public PeopleDetectWorker()
         {
-            _scorer = new Scorer();
-            service = new FacialRecognitionService();
-            service.Initialize();
-
-
-            this.retinaFaceDetection = new FaceDetection();
-            this.retinaFaceRecognition = new Face.Retina.FaceRecognition();
-            retinaFaceRecognition.Initialize();
-
+            try
+            {
+                this.objectsDetector = new ObjectsDetecor();
+                this.faceDetect = new FaceDetectionAdv();
+                this.faceRec = new FaceRecognition();
+                faceRec.Initialize();
+            }
+            catch (Exception e)
+            {
+                logger.Error(e);
+            }
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             logger.Info("PeopleDetectWorker started");
-            RabbitMQConfig config;
-            var rootDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var configPath = Path.Combine(rootDir, "config.json");
-            if (!File.Exists(configPath))
-            {
-                logger.Error($"\"{configPath}\" does not exist.");
-                logger.Info("Use default config");
-                config = new RabbitMQConfig {HostName = "localhost", QueueName = "hik" , RoutingKey = "hik"};
-            }
-            else
-            {
-                config = JsonConvert.DeserializeObject<RabbitMQConfig>(File.ReadAllText(configPath));
-            }
+            config = GetConfig();
 
-            RabbitMQHelper hikReceiver = new RabbitMQHelper(config.HostName, config.QueueName, config.RoutingKey);
+            RabbitMQHelper hikReceiver = new(config.RabbitMQ.HostName, config.RabbitMQ.QueueName, config.RabbitMQ.RoutingKey);
             hikReceiver.Received += Rabbit_Received;
             hikReceiver.Consume();
 
@@ -78,104 +70,145 @@ namespace DetectPeople.Service
             logger.Info("PeopleDetectWorker stopped");
         }
 
-        private async void Rabbit_Received(object sender, BasicDeliverEventArgs ea)
+        private PeopleDetectConfig GetConfig()
         {
-            var body = Encoding.UTF8.GetString(ea.Body.ToArray());
-            DetectPeopleMessage msg = JsonConvert.DeserializeObject<DetectPeopleMessage>(body);
-            logger.Debug("[x] Received {0}", body);
-
-            if (!File.Exists(msg.OldFilePath))
+            var rootDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var configPath = Path.Combine(rootDir, "config.json");
+            if (!File.Exists(configPath))
             {
-                logger.Warn($"{msg.OldFilePath} not exist");
-                return;
-            }
-
-            sw.Restart();
-            IReadOnlyList<ObjectDetectResult> objects = await _scorer.DetectObjectsAsync(msg.OldFilePath);
-            sw.Stop();
-            logger.Info($"DetectObjects done in {sw.ElapsedMilliseconds}ms.");
-
-            if (objects.Any(IsPerson))
-            {
-                logger.Info($"{objects.Count} objects detected");
-
-                var peoples = objects.Where(IsPerson);
-                logger.Info($"{peoples.Count()} peoples detected");
-                foreach (var result in peoples)
-                {
-                    sw.Restart();
-                    DetectFaces_Retina(msg.OldFilePath, msg.NewFileName, result.BBox.Select(x => (int)x).ToArray());
-                    sw.Stop();
-                    logger.Info($"DetectFaces done in {sw.ElapsedMilliseconds}ms.");
-                }
-
-                File.Move(msg.OldFilePath, msg.NewFilePath, true);
+                logger.Error($"\"{configPath}\" does not exist.");
+                logger.Info("Use default config");
+                return new PeopleDetectConfig { RabbitMQ = new RabbitMQConfig { HostName = "localhost", QueueName = "hik", RoutingKey = "hik" } };
             }
             else
             {
-                if (msg.DeleteJunk)
-                {
-                    File.Delete(msg.OldFilePath);
-                }
-                else
-                {
-                    File.Move(msg.OldFilePath, msg.JunkFilePath, true);
-                }
+                return JsonConvert.DeserializeObject<PeopleDetectConfig>(File.ReadAllText(configPath));
             }
         }
 
+        private void DetectFaces(string filePath, string fileName)
+        {
+            var detectedObjectFolder = $@"c:\tmp\{ DateTime.Today.ToFileTime()}\";
+            if (!Directory.Exists(detectedObjectFolder))
+            {
+                Directory.CreateDirectory(detectedObjectFolder);
+            }
+
+            var detectedJunkFolder = $@"c:\tmp\{ DateTime.Today.ToFileTime()}\junk";
+            if (!Directory.Exists(detectedJunkFolder))
+            {
+                Directory.CreateDirectory(detectedJunkFolder);
+            }
+
+            var faces = faceDetect.DetectFaces(filePath);
+            logger.Info($"{faces.Count} Faces Detected - {filePath}");
+
+            foreach (var face in faces)
+            {
+                if (face.EyePointsScore < 0.75f)
+                {
+                    logger.Warn($"Eye score : {face.EyePointsScore}");
+                    FaceDetectionAdv.SaveFaceImg(face, Cv2.ImRead(filePath), Path.Combine(detectedJunkFolder, $"eyescore_{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}.jpg"));
+                    continue;
+                }
+
+
+                if (!(IsNormal(face.Head.Yaw) && IsNormal(face.Head.Pitch) && IsNormal(face.Head.Roll)))
+                {
+                    logger.Warn($"Yaw : {Math.Round(face.Head.Yaw, 2)}, Pitch : {Math.Round(face.Head.Pitch, 2)}, Roll : {Math.Round(face.Head.Roll, 2)}");
+                    FaceDetectionAdv.SaveFaceImg(face, Cv2.ImRead(filePath), Path.Combine(detectedJunkFolder, $"ypr_{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}.jpg"));
+                    continue;
+                }
+
+                if (!IsNormal(FaceDetectionAdv.Angle(face.Head.Axis[0])))
+                {
+                    logger.Warn("RED Head Axis > 20");
+                    FaceDetectionAdv.SaveFaceImg(face, Cv2.ImRead(filePath), Path.Combine(detectedJunkFolder, $"red_{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}.jpg"));
+                    continue;
+                }
+
+                FaceDetectionAdv.SaveFaceImg(face, Cv2.ImRead(filePath), Path.Combine(detectedObjectFolder, $"{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}.jpg"));
+
+                var recognizedFaces = faceRec.Recognize(face.Mat.Clone());
+                var searchResult = recognizedFaces.Found;
+                var best = recognizedFaces.Best;
+                var coeficient = recognizedFaces.MaxDistance;
+                var faceRectImg = new Mat(face.Mat, face.FaceRectangle);
+
+                if (coeficient > config.FaceCoeficient)
+                {
+                    logger.Warn($"{best.Label} : {coeficient}");
+                    var personPath = Path.Combine(PathHelper.ImagesFolder(), best.Label, fileName);
+                    SavePerson(filePath, faceRectImg, personPath, searchResult);
+                }
+                else // new person
+                {
+                    logger.Warn($"New person : {coeficient}");
+                    var newPersonPath = Path.Combine(PathHelper.ImagesFolder(), "unknown_" + Guid.NewGuid().ToString(), fileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(newPersonPath));
+
+                    SavePerson(filePath, faceRectImg, newPersonPath, searchResult);
+                }
+            }
+        }
 
         private bool IsPerson(ObjectDetectResult res)
         {
             if (res.Id == 0)// person
             {
-                var x1 = res.BBox[0];
-                var y1 = res.BBox[1];
-                var x2 = res.BBox[2];
-                var y2 = res.BBox[3];
-                var H = y2 - y1;
-                var W = x2 - x1;
-
-                return H > 200.0 && W > 100.0;
+                var rect = res.GetRectangle();
+                return rect.Height > 200.0 && rect.Width > 100.0;
             }
             return false;
         }
 
-        private void DetectFaces_FaceRecognitionDotNet(string filePath, string fileName, int[] BBox)
+        private async void Rabbit_Received(object sender, BasicDeliverEventArgs ea)
         {
             try
             {
-                var tempImg = Path.GetTempFileName() + ".jpeg";
-                ImageProcessingHelper.CreateImage(filePath, tempImg, new Location(BBox[0], BBox[1], BBox[2], BBox[3]));
-                File.Copy(tempImg, $@"c:\tmp\{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}.jpg", true);
-                var res = service.Search(tempImg);
 
-                logger.Info($"{res.Count} faces detected");
-                foreach (SearchResult result in res)
+                var body = Encoding.UTF8.GetString(ea.Body.ToArray());
+                DetectPeopleMessage msg = JsonConvert.DeserializeObject<DetectPeopleMessage>(body);
+                logger.Debug("[x] Received {0}", body);
+
+                if (!File.Exists(msg.OldFilePath))
                 {
-                    var match = result.Matches.First();
-                    logger.Info($" {match.Name} : {match.Confidence} {match.ImagePath}");
-
-                    if (match.Confidence > 0.65)
-                    {
-                        var personPath = Path.Combine(Path.GetDirectoryName(match.ImagePath), Path.GetFileName(fileName));
-                        SavePerson(tempImg, personPath, result);
-                    }
-                    else // new person
-                    {
-                        logger.Warn("Add new person");
-                        var newPersonPath = Path.Combine(PathHelper.ImagesFolder(), Guid.NewGuid().ToString(), Path.GetFileName(fileName));
-                        Directory.CreateDirectory(Path.GetDirectoryName(newPersonPath));
-
-                        SavePerson(tempImg, newPersonPath, result);
-                    }
+                    logger.Warn($"{msg.OldFilePath} not exist");
+                    return;
                 }
 
-                File.Delete(tempImg);
-            }
-            catch (NoFaceFoundException)
-            {
-                logger.Warn("No face found");
+                timer.Restart();
+                IReadOnlyList<ObjectDetectResult> objects = await objectsDetector.DetectObjectsAsync(msg.OldFilePath);
+                timer.Stop();
+                logger.Info($"DetectObjects done in {timer.ElapsedMilliseconds}ms. {objects.Count} objects detected. {string.Join(", ", objects.Select(x => x.Label))}");
+
+                var peoples = objects.Where(IsPerson);
+                if (peoples.Any())
+                {
+                    logger.Info($"{peoples.Count()} peoples detected");
+                    if (config.DetectFaces)
+                    {
+
+                        timer.Restart();
+                        DetectFaces(msg.OldFilePath, msg.NewFileName);// result.GetRectangle());
+                        timer.Stop();
+                        logger.Info($"DetectFaces done in {timer.ElapsedMilliseconds}ms.");
+                    }
+
+                    //File.Move(msg.OldFilePath, msg.NewFilePath, true);
+                    SaveJpg(msg.OldFilePath, msg.NewFilePath);
+                }
+                else
+                {
+                    if (msg.DeleteJunk)
+                    {
+                        File.Delete(msg.OldFilePath);
+                    }
+                    else
+                    {
+                        SaveJpg(msg.OldFilePath, msg.JunkFilePath);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -183,77 +216,62 @@ namespace DetectPeople.Service
             }
         }
 
-        private void DetectFaces_Retina(string filePath, string fileName, int[] BBox)
+        private void SavePerson(string originalPath, Mat originalFile, string personPath, FaceRecognitionResult result)
         {
-            try
-            {
-                var tempImg = Path.GetTempFileName() + ".jpg";
-                ImageProcessingHelper.CreateImage(filePath, tempImg, new Location(BBox[0], BBox[1], BBox[2], BBox[3]));
-
-                File.Copy(tempImg, $@"c:\tmp\{Path.GetFileNameWithoutExtension(fileName)}_{Guid.NewGuid()}.jpg", true);
-
-
-                var faces = retinaFaceDetection.OpenFile(tempImg);
-                Console.WriteLine($"{faces.Count} Faces Detected - {filePath}");
-
-                foreach (var face in faces)
-                {
-
-                    Mat myNewMat = new Mat(face.Mat, new Rect((int)face.Rect.X, (int)face.Rect.Y, (int)face.Rect.Width, (int)face.Rect.Height));
-                    (global::Retina.RecFaceInfo, global::Retina.RecFaceInfo, double?) res = retinaFaceRecognition.Search(myNewMat);
-                    var searchResult = res.Item1;
-                    var best = res.Item2;
-                    var coeficient = res.Item3;
-
-                    Console.WriteLine($"{best.Label} : {coeficient}");
-
-                    if (coeficient > 0.65)
-                    {
-                        var personPath = Path.Combine(PathHelper.ImagesFolder(), best.Label, Path.GetFileName(filePath));
-                        SavePerson(tempImg, myNewMat, personPath, searchResult);
-                    }
-                    else // new person
-                    {
-                        logger.Warn("Add new person");
-                        var newPersonPath = Path.Combine(PathHelper.ImagesFolder(), Guid.NewGuid().ToString(), Path.GetFileName(fileName));
-                        Directory.CreateDirectory(Path.GetDirectoryName(newPersonPath));
-
-                        SavePerson(tempImg, myNewMat, newPersonPath, searchResult);
-                    }
-                }
-                File.Delete(tempImg);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
-        }
-
-        private void SavePerson(string originalPath, string personPath, SearchResult result)
-        {
-            string personFacePath = Path.ChangeExtension(personPath,".png");
+            string personFacePath = Path.ChangeExtension(personPath, ".png");
             var parts = personPath.Split(new char[] { '\\', '/' });
-            var dir = parts[parts.Length - 2];
-            ImageProcessingHelper.CreateImage(originalPath, personFacePath, result.FaceLocation);
-            File.Move(originalPath, personPath, true);
-            service.AddFace(new Face.Face {FullPath = personFacePath, Encoding = result.Encoding, Name = dir });
-        }
-
-        private void SavePerson(string originalPath, Mat originalFile, string personPath, Retina.RecFaceInfo result)
-        {
-            string personFacePath = Path.ChangeExtension(personPath,".png");
-            var parts = personPath.Split(new char[] { '\\', '/' });
-            var dir = parts[parts.Length - 2];
+            var dir = parts[^2];
 
             originalFile.SaveImage(personFacePath);
             result.FilePath = personFacePath;
             result.Label = dir;
             result.Face = originalFile;
 
-            File.Move(originalPath, personPath, true);
+            File.Copy(originalPath, personPath, true);
 
-            retinaFaceRecognition.AddFace(result);
+            faceRec.AddFace(result);
+        }
 
+        private bool IsNormal(float f)
+        {
+            return Math.Abs(f) <= 25;
+        }
+
+
+        private void SaveJpg(string oldFilePath, string file_name)
+        {
+            try
+            {
+                using (Bitmap bmp1 = new Bitmap(oldFilePath))
+                {
+                    ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+                    System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Quality;
+                    EncoderParameters myEncoderParameters = new EncoderParameters(1);
+
+                    myEncoderParameters.Param[0] = new EncoderParameter(myEncoder, 25L);
+
+                    File.Delete(file_name);
+                    bmp1.Save(file_name, jpgEncoder, myEncoderParameters);
+                }
+                File.Delete(oldFilePath);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Error saving file '" + file_name + ex.ToString());
+            }
+        }
+
+        private ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+            foreach (ImageCodecInfo codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
+            }
+            return null;
         }
     }
 }

@@ -10,8 +10,6 @@ namespace Hik.Web.Scheduler
 {
     public static class QuartzTriggers
     {
-        private static readonly IReadOnlyCollection<TriggerKey> TriggerKeys;
-
         public static async Task<IEnumerable<CronTriggerImpl>> GetCronTriggersAsync()
         {
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();

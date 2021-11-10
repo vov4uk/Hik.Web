@@ -1,128 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net5.0</TargetFramework>
+        <OutputType>Library</OutputType>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <DebugType>full</DebugType>
         <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
-
+    
   <ItemGroup>
-    <None Remove="Classifiers\dlib-model\age-predictor\dnn_age_predictor_v1.dat.bz2" />
-    <None Remove="Classifiers\dlib-model\age-predictor\dnn_age_predictor_v1_ex.cpp" />
-    <None Remove="Classifiers\dlib-model\dlib_face_recognition_resnet_model_v1.dat" />
-    <None Remove="Classifiers\dlib-model\gender-classifier\dnn_gender_classifier_v1.dat.bz2" />
-    <None Remove="Classifiers\dlib-model\gender-classifier\dnn_gender_classifier_v1_ex.cpp" />
-    <None Remove="Classifiers\dlib-model\LICENSE" />
-    <None Remove="Classifiers\dlib-model\mmod_dog_hipsterizer.dat" />
-    <None Remove="Classifiers\dlib-model\mmod_front_and_rear_end_vehicle_detector.dat" />
-    <None Remove="Classifiers\dlib-model\mmod_human_face_detector.dat" />
-    <None Remove="Classifiers\dlib-model\mmod_rear_end_vehicle_detector.dat" />
-    <None Remove="Classifiers\dlib-model\README.md" />
-    <None Remove="Classifiers\dlib-model\resnet34_1000_imagenet_classifier.dnn" />
-    <None Remove="Classifiers\dlib-model\resnet50_1000_imagenet_classifier.dnn" />
-    <None Remove="Classifiers\dlib-model\shape_predictor_5_face_landmarks.dat" />
-    <None Remove="Classifiers\dlib-model\shape_predictor_68_face_landmarks.dat" />
-    <None Remove="Classifiers\FaceDetector.onnx" />
-    <None Remove="Classifiers\facenet.onnx" />
-    <None Remove="Classifiers\fsanet-1x1-iter-688590.onnx" />
-    <None Remove="Classifiers\fsanet-var-iter-688590.onnx" />
-    <None Remove="Classifiers\opencv_face_detector.pbtxt" />
-    <None Remove="Classifiers\opencv_face_detector_uint8.pb" />
-    <None Remove="Classifiers\res10_300x300_ssd_iter_140000.caffemodel" />
-    <None Remove="Classifiers\resnet10_ssd.prototxt" />
-    <None Remove="Classifiers\slim_320.bin" />
-    <None Remove="Classifiers\slim_320.param" />
+    <None Remove="Assets\FaceDetector.onnx" />
+    <None Remove="Assets\facenet.onnx" />
+    <None Remove="Assets\fsanet-1x1-iter-688590.onnx" />
+    <None Remove="Assets\fsanet-var-iter-688590.onnx" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Classifiers\dlib-model\age-predictor\dnn_age_predictor_v1.dat.bz2">
+    <Content Include="Assets\FaceDetector.onnx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Classifiers\dlib-model\age-predictor\dnn_age_predictor_v1_ex.cpp">
+    <Content Include="Assets\facenet.onnx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Classifiers\dlib-model\dlib_face_recognition_resnet_model_v1.dat">
+    <Content Include="Assets\fsanet-1x1-iter-688590.onnx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Classifiers\dlib-model\gender-classifier\dnn_gender_classifier_v1.dat.bz2">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\gender-classifier\dnn_gender_classifier_v1_ex.cpp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\LICENSE">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\mmod_dog_hipsterizer.dat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\mmod_front_and_rear_end_vehicle_detector.dat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\mmod_human_face_detector.dat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\mmod_rear_end_vehicle_detector.dat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\README.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\resnet34_1000_imagenet_classifier.dnn">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\resnet50_1000_imagenet_classifier.dnn">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\shape_predictor_5_face_landmarks.dat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\dlib-model\shape_predictor_68_face_landmarks.dat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\FaceDetector.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\facenet.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\fsanet-1x1-iter-688590.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\fsanet-var-iter-688590.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\opencv_face_detector.pbtxt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\opencv_face_detector_uint8.pb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\res10_300x300_ssd_iter_140000.caffemodel">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\resnet10_ssd.prototxt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\slim_320.bin">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Classifiers\slim_320.param">
+    <Content Include="Assets\fsanet-var-iter-688590.onnx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Emgu.CV" Version="4.5.3.4721" />
-    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.3.4721" />
-    <PackageReference Include="FaceRecognitionDotNet" Version="1.3.0.4" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.8.1" />
     <PackageReference Include="OpenCvSharp4" Version="4.5.3.20210725" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.5.3.20210725" />
     <PackageReference Include="OpenCvSharp4.Windows" Version="4.5.3.20210725" />
-      <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
-      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
-    <PackageReference Include="UltraFaceDotNet" Version="1.0.0.2" />
   </ItemGroup>
 
 </Project>
