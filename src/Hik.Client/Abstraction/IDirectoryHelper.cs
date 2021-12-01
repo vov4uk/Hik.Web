@@ -16,7 +16,7 @@ namespace Hik.Client.Abstraction
 
         bool DirExist(string path);
 
-        List<string> EnumerateFiles(string path);
+        List<string> EnumerateFiles(string path, string[] extentions);
 
         List<string> EnumerateAllDirectories(string path);
     }

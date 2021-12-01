@@ -12,6 +12,8 @@
 
         public int AbnormalFilesCount { get; set; } = 0;
 
+        public string[] AllowedFileExtentions { get; set; } = { ".mp4", ".jpg", ".ini" };
+
         public DetectPeopleConfig DetectPeopleConfig { get; set; }
     }
 

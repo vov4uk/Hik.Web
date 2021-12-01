@@ -37,7 +37,7 @@ namespace Job.Impl
             var gcConfig = Config as GarbageCollectorConfig;
 
             IReadOnlyCollection<MediaFileDTO> deleteFilesResult;
-            var fileProvider = new WinFileProvider();
+            var fileProvider = new WinFileProvider(gcConfig.FileExtention);
 
             if (gcConfig.RetentionPeriodDays > 0)
             {
@@ -74,7 +74,7 @@ namespace Job.Impl
                 {
                     fileProvider.Initialize(gcConfig.Triggers);
                     var filesToDelete = fileProvider.GetNextBatch();
-                    if (filesToDelete.Count <= 0)
+                    if (!filesToDelete.Any())
                     {
                         break;
                     }

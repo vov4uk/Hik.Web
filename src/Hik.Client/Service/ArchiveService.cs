@@ -34,7 +34,7 @@ namespace Hik.Client.Service
             PrepareRegex(aConfig.FileNamePattern);
 
             var result = new List<MediaFileDTO>();
-            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder).SkipLast(aConfig.SkipLast);
+            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions).SkipLast(aConfig.SkipLast);
 
             try
             {

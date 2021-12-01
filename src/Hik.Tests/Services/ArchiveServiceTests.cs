@@ -50,7 +50,7 @@ namespace Hik.Client.Tests.Services
             bool isOperationCanceledException = false;
 
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
-            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>())).Returns(new List<string> { "Hello World!" });
+            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>())).Returns(new List<string> { "Hello World!" });
             this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>())).Throws<OperationCanceledException>();
 
             var config = fixture.Build<ArchiveConfig>()
@@ -71,11 +71,11 @@ namespace Hik.Client.Tests.Services
         public async Task ExecuteAsync_NoFilesFound_NothingToDo()
         {
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
-            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>())).Returns(new List<string>());
+            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>())).Returns(new List<string>());
 
             var service = CreateArchiveService();
             await service.ExecuteAsync(fixture.Create<ArchiveConfig>(), default(DateTime), default(DateTime));
-            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
         }
 
         [Fact]
@@ -83,12 +83,12 @@ namespace Hik.Client.Tests.Services
         {
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
 
-            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>())).Returns(new List<string> { "File" });
+            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>())).Returns(new List<string> { "File" });
 
             var service = CreateArchiveService();
             var config = fixture.Build<ArchiveConfig>().With(x => x.SkipLast, 1).Create();
             await service.ExecuteAsync(config, default(DateTime), default(DateTime));
-            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
         }
 
         [Theory]
@@ -115,7 +115,7 @@ namespace Hik.Client.Tests.Services
             };
 
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
-            this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder)).Returns(new List<string> { sourceFileName });
+            this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder, It.IsAny<string[]>())).Returns(new List<string> { sourceFileName });
             this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>())).Returns((string arg) => Path.GetFileNameWithoutExtension(arg));
             this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>())).Returns((string arg) => Path.GetExtension(arg));
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
@@ -131,7 +131,7 @@ namespace Hik.Client.Tests.Services
                 success = false;
             };
             var result = await service.ExecuteAsync(config, default(DateTime), default(DateTime));
-            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
             Assert.True(success);
             Assert.Equal(result.Count, 1);
             var actual = result.FirstOrDefault();
@@ -169,7 +169,7 @@ namespace Hik.Client.Tests.Services
             };
 
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
-            this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder)).Returns(new List<string> { sourceFileName });
+            this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder, It.IsAny<string[]>())).Returns(new List<string> { sourceFileName });
             this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>())).Returns((string arg) => Path.GetFileNameWithoutExtension(arg));
             this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>())).Returns((string arg) => Path.GetExtension(arg));
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
@@ -186,7 +186,7 @@ namespace Hik.Client.Tests.Services
                 success = false;
             };
             var result = await service.ExecuteAsync(config, default(DateTime), default(DateTime));
-            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
             this.filesMock.Verify(x => x.GetCreationDate(sourceFileName), Times.Once);
             Assert.True(success);
             Assert.Equal(result.Count, 1);

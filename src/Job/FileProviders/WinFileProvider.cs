@@ -1,22 +1,29 @@
-﻿using Hik.DataAccess.Data;
-using Hik.DTO.Contracts;
+﻿using Hik.DTO.Contracts;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Hik.Client.Helpers;
 
 namespace Job.FileProviders
 {
     public class WinFileProvider : IFileProvider
     {
         private Stack<DateTime> dates;
-        Dictionary<DateTime, List<string>> folders;
+        private Dictionary<DateTime, IList<string>> folders;
         private bool isInitialized = false;
+        private string fileExtention;
+
+        public WinFileProvider(string fileExtention)
+        {
+            this.fileExtention = fileExtention;
+        }
+
         public void Initialize(string[] trigger)
         {
             if (!isInitialized)
             {
-                folders = new Dictionary<DateTime, List<string>>();
+                folders = new Dictionary<DateTime, IList<string>>();
                 foreach (var tr in trigger)
                 {
                     foreach (var item in Directory.EnumerateDirectories(tr, "*.*", SearchOption.AllDirectories).OrderBy(x => x))
@@ -27,17 +34,11 @@ namespace Job.FileProviders
                         {
                             if (DateTime.TryParse($"{trim[0]}-{trim[1]}-{trim[2]} {trim[3]}:00:00", out var dt))
                             {
-                                if (folders.ContainsKey(dt))
-                                {
-                                    folders[dt].Add(item);
-                                }
-                                else
-                                {
-                                    folders.Add(dt, new List<string> { item });
-                                }
+                                folders.SafeAdd(dt, item);
                             }
                         }
                     }
+                    folders.SafeAdd(DateTime.Today, tr);
                 }
                 dates = new Stack<DateTime>(folders.Keys.OrderByDescending(x => x).ToList());
             }
@@ -57,7 +58,7 @@ namespace Job.FileProviders
                         {
                             foreach (var folder in folders[lastDate])
                             {
-                                result.AddRange(Directory.EnumerateFiles(folder, "*.*").Select(x => new MediaFileDTO { Path = x, Date = lastDate}));
+                                result.AddRange(Directory.EnumerateFiles(folder, fileExtention).Select(x => new MediaFileDTO { Path = x, Date = lastDate}));
                             }
                         }
                     }
@@ -82,7 +83,7 @@ namespace Job.FileProviders
                     {
                         foreach (var folder in folders[fileDateTime])
                         {
-                            result.AddRange(Directory.EnumerateFiles(folder, "*.*").Select(x => new MediaFileDTO { Path = x, Date = fileDateTime }));
+                            result.AddRange(Directory.EnumerateFiles(folder, fileExtention).Select(x => new MediaFileDTO { Path = x, Date = fileDateTime }));
                         }
                     }
                 }

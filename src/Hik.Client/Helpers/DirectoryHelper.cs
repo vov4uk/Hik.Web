@@ -87,10 +87,10 @@ namespace Hik.Client.Helpers
             return Directory.Exists(path);
         }
 
-        public List<string> EnumerateFiles(string path)
+        public List<string> EnumerateFiles(string path, string[] extentions)
         {
             return Directory.EnumerateFiles(path, AllFilter, SearchOption.AllDirectories)
-                    .Where(s => allowedExtensions.Any(ext => ext == Path.GetExtension(s)))
+                    .Where(s => extentions.Any(ext => ext == Path.GetExtension(s)))
                     .ToList();
         }
 

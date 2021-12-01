@@ -9,13 +9,12 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <AssemblyName>Hik.Web</AssemblyName>
     <RootNamespace>Hik.Web</RootNamespace>
-    <UserSecretsId>7c49b740-7c37-4c0a-b031-e08ab0b4a0ab</UserSecretsId>
+	<EnableDefaultContentItems>true</EnableDefaultContentItems>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="quartz_jobs.debug.xml" />
   </ItemGroup>
-
  
   <ItemGroup>
     <Content Include="quartz_jobs.debug.xml">

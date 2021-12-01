@@ -7,7 +7,7 @@
     <AssemblyName>Hik.Client.Tests</AssemblyName>
     <RootNamespace>Hik.Client.Tests</RootNamespace>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-	<IsTestProject>true</IsTestProject>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
