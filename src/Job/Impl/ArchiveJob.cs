@@ -15,6 +15,7 @@ namespace Job.Impl
 {
     public class ArchiveJob : JobProcessBase
     {
+        private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
         public ArchiveJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
@@ -40,18 +41,27 @@ namespace Job.Impl
             await service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }
 
-        public override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        public override async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
+            JobInstance.FilesCount = files.Count;
 
             var abnormalFilesCount = (Config as ArchiveConfig)?.AbnormalFilesCount ?? 0;
             if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
             {
-                Email.EmailHelper.Send($"{TriggerKey}: Abnormal activity detected", $"There were {files.Count} taken in period from {JobInstance.PeriodStart} to {JobInstance.PeriodEnd}");
+                Email.EmailHelper.Send(
+                    $"{files.Count} - {TriggerKey}: Abnormal activity detected",
+                    $"{files.Count} taken in period from {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(DateTimeFormat)}");
             }
 
-            return base.SaveResults(files, service);
+            await service.UpdateDailyStatistics(files);
+
+            if (files.Sum(x => x.Duration ?? 0) > 0)
+            {
+                var mediaFiles = await service.SaveFilesAsync(files);
+                await SaveHistory(mediaFiles, service);
+            }
         }
     }
 }

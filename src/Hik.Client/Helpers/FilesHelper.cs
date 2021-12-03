@@ -33,12 +33,12 @@ namespace Hik.Client.Helpers
                 return info.Length;
             }
 
-            return -1;
+            return 0;
         }
 
         public void DeleteFile(string path)
         {
-            if (File.Exists(path))
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
             {
                 File.Delete(path);
             }
@@ -90,6 +90,16 @@ namespace Hik.Client.Helpers
         public string GetTempFileName()
         {
             return Path.GetTempFileName();
+        }
+
+        public string GetDirectoryName(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+            return Path.GetDirectoryName(path);
         }
     }
 }

@@ -41,17 +41,22 @@
                              string size = statSize.FormatBytes();
                              string dur = ((double)statDuration).FormatSeconds();
                              string triggerString = item.ToString();
-                             var latestFile = Model.LatestFiles.FirstOrDefault(x => x.Key == item.Id).Value;
+                             var latestFile = new DateTime();
+                             @if(Model.LatestFiles.ContainsKey(item.Id))
+                             {
+                             latestFile = Model.LatestFiles[item.Id];
+                             }
+
                              var delta = (item.LastSync ?? DateTime.Now) - latestFile;
-                             <tr>
-                                 <td><a asp-page="./Statistic" asp-route-triggerId="@item.Id">@triggerString</a></td>
-                                 <td><span title="@item.LastSync?.GetRelativeTime()">@item.LastSync?.GetString()</span></td>
-                                 <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
-                                 <td>@delta.GetRelativeTime()</td>
-                                 <td>@Html.DisplayFor(modelItem => Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id).FilesCount)</td>
-                                 <td>@size</td>
-                                 <td>@dur</td>
-                             </tr>
+                         <tr>
+                             <td><a asp-page="./Statistic" asp-route-triggerId="@item.Id">@triggerString</a></td>
+                             <td><span title="@item.LastSync?.GetRelativeTime()">@item.LastSync?.GetString()</span></td>
+                             <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
+                             <td>@delta.GetRelativeTime()</td>
+                             <td>@Html.DisplayFor(modelItem => Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id).FilesCount)</td>
+                             <td>@size</td>
+                             <td>@dur</td>
+                         </tr>
                          }
                      </tbody>
                  </table>

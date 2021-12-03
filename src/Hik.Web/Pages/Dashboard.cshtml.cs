@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Hik.Client.Helpers;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
+using Hik.Web.Scheduler;
 using Job.Extensions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ namespace Hik.Web.Pages
 
         public IReadOnlyCollection<DailyStatistic> Statistics { get; private set; }
 
-        public List<KeyValuePair<int, DateTime>> LatestFiles { get; private set; }
+        public Dictionary<int, DateTime> LatestFiles { get; private set; }
 
         public Dictionary<string, IList<JobTrigger>> JobTriggers { get; }
 
@@ -26,7 +27,6 @@ namespace Hik.Web.Pages
             this.dataContext = dataContext;
             JobTriggers = new Dictionary<string, IList<JobTrigger>>();
         }
-
 
         public async Task OnGet()
         {
@@ -39,21 +39,26 @@ namespace Hik.Web.Pages
                 .Where(x => x != null)
                 .ToListAsync();
 
-            LatestFiles = await this.dataContext.MediaFiles
+            var latestMediaFiles = await this.dataContext.MediaFiles
                 .AsQueryable()
                 .GroupBy(x => x.JobTriggerId)
                 .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.Date))).ToListAsync();
 
-            var deletedFiles = await this.dataContext.MediaFiles
-                .AsQueryable()
-                .Include(x => x.DeleteHistory)
-                .Where(x => x.DeleteHistory != null)
-                .Include("DeleteHistory.Job")
-                .Include("DeleteHistory.Job.JobTrigger")
-                .GroupBy(x => x.DeleteHistory.Job.JobTriggerId)
-                .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.Date))).ToListAsync();
+            LatestFiles = latestMediaFiles.ToDictionary(x => x.Key, y => y.Value);
 
-            LatestFiles.AddRange(deletedFiles);
+            var latestPeriodEnd = await this.dataContext.Jobs
+                .AsQueryable()
+                .Where(x => x.Finished != null)
+                .GroupBy(x => x.JobTriggerId)
+                .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.PeriodEnd ?? new DateTime()))).ToListAsync();
+
+            foreach (var period in latestPeriodEnd)
+            {
+                if (!LatestFiles.ContainsKey(period.Key))
+                {
+                    LatestFiles.Add(period.Key, period.Value);
+                }
+            }
 
             var cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
             foreach (var item in cronTriggers)

@@ -4,9 +4,9 @@ namespace Job.Extensions
 {
     public static class CronTriggerImplExtensions
     {
-        private const string Job = "Job";
-        private const string Config = "ConfigPath";
-        private const string RunAsTask = "RunAsTask";
+        public const string Job = "Job";
+        public const string Config = "ConfigPath";
+        public const string RunAsTask = "RunAsTask";
         public static string GetJobClass(this CronTriggerImpl item)
         {
             return GetValue(item, Job);
@@ -17,9 +17,9 @@ namespace Job.Extensions
             return GetValue(item, Config);
         }
 
-        public static string GetRunAsTask(this CronTriggerImpl item)
+        public static bool GetRunAsTask(this CronTriggerImpl item)
         {
-            return GetValue(item, RunAsTask);
+            return bool.Parse(GetValue(item, RunAsTask));
         }
 
         private static string GetValue(CronTriggerImpl item, string key)

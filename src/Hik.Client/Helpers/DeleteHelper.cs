@@ -50,7 +50,7 @@ namespace Hik.Client.Helpers
             {
                 foreach (var dir in directories[last])
                 {
-                    var localFiles = directoryHelper.EnumerateFiles(dir);
+                    var localFiles = directoryHelper.EnumerateFiles(dir, new[] { ".*" });
                     foreach (var file in localFiles)
                     {
                         var size = filesHelper.FileSize(file);

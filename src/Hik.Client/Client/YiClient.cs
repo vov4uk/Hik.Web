@@ -42,7 +42,7 @@ namespace Hik.Client
                 }
                 else
                 {
-                    LogInfo($"{remoteFile.ToVideoUserFriendlyString()} - exist");
+                    LogDebugInfo($"{remoteFile.ToVideoUserFriendlyString()} - exist");
                     return false;
                 }
             }
@@ -102,7 +102,7 @@ namespace Hik.Client
         {
             if (!disposedValue)
             {
-                LogInfo("Logout the device");
+                LogDebugInfo("Logout the device");
 
                 ftp?.Disconnect();
                 ftp?.Dispose();
@@ -117,7 +117,7 @@ namespace Hik.Client
 
             if (remoteFileExist)
             {
-                LogInfo($"{remoteFile.ToVideoUserFriendlyString()} - downloading");
+                LogDebugInfo($"{remoteFile.ToVideoUserFriendlyString()} - downloading");
                 var tempFile = filesHelper.GetTempFileName();
                 await ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
 
@@ -146,9 +146,9 @@ namespace Hik.Client
             return filesHelper.CombinePath(config.DestinationFolder, file.ToVideoDirectoryNameString());
         }
 
-        private void LogInfo(string msg)
+        private void LogDebugInfo(string msg)
         {
-            logger.Info($"{config.Alias} - {msg}");
+            logger.Debug($"{config.Alias} - {msg}");
         }
     }
 }

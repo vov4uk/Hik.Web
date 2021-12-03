@@ -261,4 +261,9 @@ __pycache__/
 *.pyc
 # SonarQube
 .sonarqube/
+
 *.pubxml
+*.debug.json
+*.onnx
+*.db
+*.debug.xml

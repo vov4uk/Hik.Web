@@ -1,4 +1,5 @@
 using Hik.DataAccess;
+using Hik.Web.Scheduler;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

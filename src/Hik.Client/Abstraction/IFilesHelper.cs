@@ -27,5 +27,7 @@ namespace Hik.Client.Abstraction
         string GetExtension(string path);
 
         string GetTempFileName();
+
+        string GetDirectoryName(string path);
     }
 }

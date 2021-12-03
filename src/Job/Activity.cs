@@ -31,7 +31,7 @@ namespace Job
             Log($"Activity. Activity created with parameters {parameters}.");
         }
 
-        public async Task Start()
+        public Task Start()
         {
             try
             {
@@ -39,8 +39,7 @@ namespace Job
                 if (singleInstance)
                 {
                     Log("Activity. StartProcess...");
-                    await StartProcess();
-                    Log("Activity. StartProcess. Done.");
+                    return StartProcess();
                 }
                 else
                 {
@@ -52,6 +51,11 @@ namespace Job
                 Logger.Error($"Activity.Start - catch exception : {ex}");
                 EmailHelper.Send(ex);
             }
+            finally
+            {
+                Log("Activity. StartProcess. Done.");
+            }
+            return Task.CompletedTask;
         }
 
         public void Kill()
@@ -88,7 +92,7 @@ namespace Job
             hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
             hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
             Logger.Info($"Activity. Starting Process: {Parameters}");
-            Logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe, Actual Path : {hostProcess.StartInfo.FileName}, Working Direktory : {hostProcess.StartInfo.WorkingDirectory}");
+            Logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe, Actual Path : {hostProcess.StartInfo.FileName}, Working Directory : {hostProcess.StartInfo.WorkingDirectory}");
             hostProcess.Start();
 
             hostProcess.EnableRaisingEvents = true;

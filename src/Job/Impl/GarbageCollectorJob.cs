@@ -5,6 +5,7 @@ using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Extensions;
+using Job.FileProviders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,13 +34,34 @@ namespace Job.Impl
 
         public override Task<IReadOnlyCollection<MediaFileDTO>> Run()
         {
-            var cleanupConfig = Config as GarbageCollectorConfig;
-            var destination = Config.DestinationFolder;
+            var gcConfig = Config as GarbageCollectorConfig;
 
-            List<MediaFileDTO> deleteFilesResult = new();
-            var fileProvider = new FilesProvider();
-            using var dbContext = new DataContext(this.ConnectionString);
+            IReadOnlyCollection<MediaFileDTO> deleteFilesResult;
+            var fileProvider = new WinFileProvider(gcConfig.FileExtention);
 
+            if (gcConfig.RetentionPeriodDays > 0)
+            {
+                var period = TimeSpan.FromDays(gcConfig.RetentionPeriodDays);
+                var cutOff = DateTime.Today.Subtract(period);
+                fileProvider.Initialize(new[] { gcConfig.DestinationFolder });
+                deleteFilesResult = fileProvider.GetFilesOlderThan(cutOff);
+
+                this.DeleteFiles(deleteFilesResult);
+            }
+            else
+            {
+                deleteFilesResult = PersentageDelete(gcConfig, fileProvider);
+            }
+
+
+            directoryHelper.DeleteEmptyDirs(gcConfig.DestinationFolder);
+            return Task.FromResult(deleteFilesResult);
+        }
+
+        private List<MediaFileDTO> PersentageDelete(GarbageCollectorConfig gcConfig, WinFileProvider fileProvider)
+        {
+            List<MediaFileDTO> deletedFiles = new();
+            var destination = gcConfig.DestinationFolder;
             do
             {
                 double totalSpace = this.directoryHelper.GetTotalSpaceGb(destination);
@@ -48,18 +70,16 @@ namespace Job.Impl
                 var freePercentage = 100 * freeSpace / totalSpace;
                 this.logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2}");
 
-                if (freePercentage < cleanupConfig.FreeSpacePercentage)
+                if (freePercentage < gcConfig.FreeSpacePercentage)
                 {
-                    fileProvider.Initialize(cleanupConfig.Triggers, dbContext);
-                    IReadOnlyCollection<MediaFile> filesToDelete = fileProvider.GetNextBatch();
-
-                    var deletedFiles = this.DeleteFiles(filesToDelete);
-                    if (deletedFiles.Count <= 0)
+                    fileProvider.Initialize(gcConfig.Triggers);
+                    var filesToDelete = fileProvider.GetNextBatch();
+                    if (!filesToDelete.Any())
                     {
                         break;
                     }
-
-                    deleteFilesResult.AddRange(deletedFiles);
+                    this.DeleteFiles(filesToDelete);
+                    deletedFiles.AddRange(filesToDelete);
                 }
                 else
                 {
@@ -67,24 +87,19 @@ namespace Job.Impl
                 }
             }
             while (true);
-
-            directoryHelper.DeleteEmptyDirs(destination);
-            return Task.FromResult(deleteFilesResult as IReadOnlyCollection<MediaFileDTO>);
+            return deletedFiles;
         }
 
-        protected List<MediaFileDTO> DeleteFiles(IReadOnlyCollection<MediaFile> filesToDelete)
+        protected void DeleteFiles(IReadOnlyCollection<MediaFileDTO> filesToDelete)
         {
-            List<MediaFileDTO> result = new();
             foreach (var file in filesToDelete)
             {
                 this.logger.Debug($"Deleting: {file.Path}");
 #if RELEASE
+                file.Size = filesHelper.FileSize(file.Path);
                 this.filesHelper.DeleteFile(file.Path);
 #endif
-                result.Add(new MediaFileDTO { Id = file.Id, Duration = file.Duration, Date = file.Date, Name = file.Name, Size = file.Size, Path = file.Path });
             }
-
-            return result;
         }
 
         public override async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
@@ -94,12 +109,11 @@ namespace Job.Impl
             JobInstance.FilesCount = files.Count;
 
             await service.UpdateDailyStatistics(files);
-            await SaveHistory(files.Select(x => new MediaFile { Id = x.Id }).ToList(), service);
         }
 
         public override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
         {
-            return service.SaveHistoryFilesAsync<DeleteHistory>(files);
+            return Task.CompletedTask;
         }
     }
 }
