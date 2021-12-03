@@ -34,9 +34,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="5.0.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="NLog.Targets.Seq" Version="2.1.0" />
-    <PackageReference Include="Quartz" Version="3.3.2" />
-    <PackageReference Include="Quartz.Plugins" Version="3.3.2" />
-    <PackageReference Include="Quartz.Serialization.Json" Version="3.3.2" />
+    <PackageReference Include="Quartz" Version="3.3.3" />
+    <PackageReference Include="Quartz.Plugins" Version="3.3.3" />
+    <PackageReference Include="Quartz.Serialization.Json" Version="3.3.3" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.1" />
   </ItemGroup>
 
