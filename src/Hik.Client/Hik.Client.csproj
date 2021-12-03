@@ -13,13 +13,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.1.0" />
+    <PackageReference Include="Autofac" Version="6.3.0" />
     <PackageReference Include="AutoMapper" Version="10.1.1" />
-    <PackageReference Include="FluentFTP" Version="34.0.0" />
+    <PackageReference Include="FluentFTP" Version="35.2.1" />
+    <PackageReference Include="Hik.Api" Version="1.0.12" />
     <PackageReference Include="MediaToolKit.B" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NLog" Version="4.7.9" />
-    <PackageReference Include="NLog.Targets.Seq" Version="2.0.0" />
+    <PackageReference Include="NLog" Version="4.7.12" />
+    <PackageReference Include="NLog.Targets.Seq" Version="2.1.0" />
     <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
@@ -34,7 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hik.Api\Hik.Api.csproj" />
     <ProjectReference Include="..\Hik.DTO\Hik.DTO.csproj" />
   </ItemGroup>
 
