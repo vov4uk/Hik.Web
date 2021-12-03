@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 
-namespace DetectPeople.YOLOv4.Assets
+namespace DetectPeople.YOLOv5.Assets
 {
     public static class Objects
     {
         public static int[] GetIds(string[] labels)
         {
-            return labels.Select(x => Array.IndexOf(ClassesNames, x)).Distinct().ToArray();
+            return labels.Select( x => Array.IndexOf(ClassesNames, x)).Distinct().ToArray();
         }
 
         public static readonly string[] ClassesNames = new string[]

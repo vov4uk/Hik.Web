@@ -34,7 +34,9 @@
   <ItemGroup>
     <ProjectReference Include="..\DetectPeople.Face\DetectPeople.Face.csproj" />
     <ProjectReference Include="..\DetectPeople.YOLOv4\DetectPeople.YOLOv4.csproj" />
+    <ProjectReference Include="..\DetectPeople.YOLOv5\DetectPeople.YOLOv5.csproj" />
     <ProjectReference Include="..\Hik.DTO\Hik.DTO.csproj" />
+    <ProjectReference Include="..\DetectPeople.YOLOv5Net\DetectPeople.YOLOv5Net.csproj" />
   </ItemGroup>
 
 </Project>

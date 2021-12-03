@@ -1,8 +1,6 @@
 ﻿using DetectPeople.Face.Helpers;
 using DetectPeople.Face.Retina;
-using DetectPeople.YOLOv4;
-using DetectPeople.YOLOv4.Assets;
-using DetectPeople.YOLOv4.DataStructures;
+using DetectPeople.YOLOv5Net;
 using Hik.DTO.Config;
 using Hik.DTO.Message;
 using Microsoft.Extensions.Hosting;
@@ -54,7 +52,9 @@ namespace DetectPeople.Service
             logger.Info("PeopleDetectWorker started");
             config = GetConfig();
 
-            var objectIds = config.AllowedObjects.Select(x => Array.IndexOf(Objects.ClassesNames, x)).Distinct();
+            logger.Info(JsonConvert.SerializeObject(config, Formatting.Indented));
+
+            var objectIds = Objects.GetIds(config.AllowedObjects);
             allowedObjects = new HashSet<int>(objectIds);
 
             RabbitMQHelper hikReceiver = new(config.RabbitMQ.HostName, config.RabbitMQ.QueueName, config.RabbitMQ.RoutingKey);
@@ -183,7 +183,10 @@ namespace DetectPeople.Service
                 timer.Restart();
                 IReadOnlyList<ObjectDetectResult> objects = await objectsDetector.DetectObjectsAsync(msg.OldFilePath);
                 timer.Stop();
-                logger.Info($"DetectObjects done in {timer.ElapsedMilliseconds}ms. {objects.Count} objects detected. {string.Join(", ", objects.Select(x => x.Label))}");
+                logger.Info(msg.OldFilePath);
+                logger.Info($"{timer.ElapsedMilliseconds}ms. {objects.Count} objects detected. {string.Join(", ", objects.Select(x => x.Label))}");
+                                
+                //DrawObjects(msg.OldFilePath, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Test", Path.GetFileName(msg.OldFilePath)), objects);
                 
                 if (objects.Any())
                 {
