@@ -13,7 +13,6 @@ namespace Hik.Client.Helpers
     {
         private const string AllFilter = "*";
         private const double Gb = 1024.0 * 1024.0 * 1024.0;
-        private readonly string[] allowedExtensions = { ".mp4", ".jpg", ".ini" };
 
         public static string AssemblyDirectory
         {

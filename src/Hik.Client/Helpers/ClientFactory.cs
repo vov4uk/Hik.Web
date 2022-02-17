@@ -36,6 +36,8 @@ namespace Hik.Client.Helpers
                 case ClientType.Yi:
                 case ClientType.Yi720p:
                     return new YiClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.FtpClient());
+                case ClientType.FTP:
+                    return new RSyncClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.FtpClient());
                 default:
                     throw new NotSupportedException();
             }

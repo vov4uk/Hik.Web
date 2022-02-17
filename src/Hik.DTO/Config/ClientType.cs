@@ -6,5 +6,6 @@
         HikVisionPhoto,
         Yi,
         Yi720p,
+        FTP,
     }
 }

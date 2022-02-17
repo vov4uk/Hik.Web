@@ -17,6 +17,7 @@ namespace Hik.Client.Tests.Services
         private readonly Mock<IDirectoryHelper> directoryMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IVideoHelper> videoMock;
+        private readonly Mock<IImageHelper> imageMock;
         private readonly Fixture fixture;
 
         public ArchiveServiceTests()
@@ -24,6 +25,7 @@ namespace Hik.Client.Tests.Services
             this.directoryMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
             this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
             this.videoMock = new Mock<IVideoHelper>(MockBehavior.Strict);
+            this.imageMock = new Mock<IImageHelper>(MockBehavior.Strict);
             this.fixture = new Fixture();
         }
 
@@ -120,7 +122,9 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>())).Returns((string arg) => Path.GetExtension(arg));
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
+            this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
+            this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
             this.filesMock.Setup(x => x.FileSize(targetFile)).Returns(1024);
             this.filesMock.Setup(x => x.GetDirectoryName(targetFile)).Returns(string.Empty);
             this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).Returns(duration);
@@ -174,9 +178,11 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>())).Returns((string arg) => Path.GetExtension(arg));
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
+            this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.FileSize(targetFile)).Returns(1024);
             this.filesMock.Setup(x => x.GetCreationDate(sourceFileName)).Returns(dateTime);
+            this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
             this.filesMock.Setup(x => x.GetDirectoryName(targetFile)).Returns(string.Empty);
             this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).Returns(duration);
 
@@ -200,7 +206,7 @@ namespace Hik.Client.Tests.Services
 
         private ArchiveService CreateArchiveService()
         {
-            return new ArchiveService(this.directoryMock.Object, this.filesMock.Object, this.videoMock.Object);
+            return new ArchiveService(this.directoryMock.Object, this.filesMock.Object, this.videoMock.Object, this.imageMock.Object);
         }
     }
 }

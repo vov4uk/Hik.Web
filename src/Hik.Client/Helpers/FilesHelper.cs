@@ -38,9 +38,17 @@ namespace Hik.Client.Helpers
 
         public void DeleteFile(string path)
         {
-            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            try
             {
                 File.Delete(path);
+            }
+            catch (FileNotFoundException)
+            {
+                // ОК
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 

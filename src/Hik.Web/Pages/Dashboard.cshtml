@@ -21,7 +21,7 @@
                  </div>
              </div>
              <div class="row">
-                 <table class="table table-striped table-bordered table-sm" width="100%">
+                 <table class="table table-bordered table-sm" width="100%">
                      <thead>
                          <tr>
                              <th>@Html.DisplayNameFor(model => row.FirstOrDefault().TriggerKey)</th>
@@ -44,11 +44,12 @@
                              var latestFile = new DateTime();
                              @if(Model.LatestFiles.ContainsKey(item.Id))
                              {
-                             latestFile = Model.LatestFiles[item.Id];
+                                 latestFile = Model.LatestFiles[item.Id];
                              }
 
-                             var delta = (item.LastSync ?? DateTime.Now) - latestFile;
-                         <tr>
+                            var delta = (item.LastSync ?? DateTime.Now) - latestFile;
+                            var success = delta.TotalHours < 2 || key == "Job.Impl.GarbageCollectorJob, Job";
+                            <tr data-status="@success" class="failed">
                              <td><a asp-page="./Statistic" asp-route-triggerId="@item.Id">@triggerString</a></td>
                              <td><span title="@item.LastSync?.GetRelativeTime()">@item.LastSync?.GetString()</span></td>
                              <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>

@@ -16,16 +16,19 @@ namespace Hik.Client.Service
     {
         private readonly IFilesHelper filesHelper;
         private readonly IVideoHelper videoHelper;
+        private readonly IImageHelper imageHelper;
         private Regex regex;
 
         public ArchiveService(
             IDirectoryHelper directoryHelper,
             IFilesHelper filesHelper,
-            IVideoHelper videoHelper)
+            IVideoHelper videoHelper,
+            IImageHelper imageHelper)
             : base(directoryHelper)
         {
             this.filesHelper = filesHelper;
             this.videoHelper = videoHelper;
+            this.imageHelper = imageHelper;
         }
 
         protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
@@ -85,6 +88,7 @@ namespace Hik.Client.Service
                         int duration = this.videoHelper.GetDuration(oldFile);
 
                         string fileExt = filesHelper.GetExtension(oldFile);
+
                         string newFileName = date.ToArchiveFileString(duration, fileExt);
                         string newFilePath = MoveFile(aConfig.DestinationFolder, oldFile, date, newFileName);
 
@@ -110,7 +114,17 @@ namespace Hik.Client.Service
         private string MoveFile(string destinationFolder, string oldFilePath, DateTime date, string newFileName)
         {
             string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(destinationFolder, date));
-            this.filesHelper.RenameFile(oldFilePath, newFilePath);
+            string fileExt = filesHelper.GetExtension(oldFilePath);
+            if (fileExt == ".jpg")
+            {
+                this.imageHelper.SetDate(oldFilePath, newFilePath, date);
+                this.filesHelper.DeleteFile(oldFilePath);
+            }
+            else
+            {
+                this.filesHelper.RenameFile(oldFilePath, newFilePath);
+            }
+
             return newFilePath;
         }
 
