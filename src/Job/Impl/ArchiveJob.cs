@@ -28,7 +28,7 @@ namespace Job.Impl
             return Task.CompletedTask;
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
             var worker = AppBootstrapper.Container.Resolve<ArchiveService>();
             worker.ExceptionFired += base.ExceptionFired;
@@ -36,12 +36,12 @@ namespace Job.Impl
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
         }
 
-        public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        public override async Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             await service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }
 
-        public override async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        public override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
@@ -55,12 +55,12 @@ namespace Job.Impl
                     $"{files.Count} taken in period from {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(DateTimeFormat)}");
             }
 
-            await service.UpdateDailyStatistics(files);
+            await service.UpdateDailyStatisticsAsync(files);
 
             if (files.Sum(x => x.Duration ?? 0) > 0)
             {
                 var mediaFiles = await service.SaveFilesAsync(files);
-                await SaveHistory(mediaFiles, service);
+                await SaveHistoryAsync(mediaFiles, service);
             }
         }
     }

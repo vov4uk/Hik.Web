@@ -20,7 +20,7 @@ namespace Job.Impl
             LogInfo(Config?.ToString());
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
             var deleteHelper = new DeleteHelper(new DirectoryHelper(), new FilesHelper());
             deleteHelper.Initialize(Config.DestinationFolder);
@@ -48,7 +48,7 @@ namespace Job.Impl
             return Task.CompletedTask;
         }
 
-        public override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        public override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             return service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }

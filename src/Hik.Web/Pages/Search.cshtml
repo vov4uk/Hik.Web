@@ -1,0 +1,37 @@
+﻿@page
+@using Hik.Client.Helpers
+@model Hik.Web.Pages.SearchModel
+@{
+    <form>
+    <p>
+    <select asp-for="JobTriggerId" asp-items="Model.JobTriggersList">
+    <option value="">All</option>
+    </select>
+    @Html.EditorFor(model => model.DateTime)
+    <input type="submit" value="Filter" />
+    </p>
+    </form>
+
+
+
+
+<h2>Before</h2>
+
+@if (Model.Files != null && Model.Files.Any())
+{
+    @await Html.PartialAsync("_FilesSearch.cshtml", Model.BeforeFiles)
+}
+
+<h2>Files</h2>
+@if (Model.Files != null && Model.Files.Any())
+{
+    @await Html.PartialAsync("_FilesSearch.cshtml", Model.Files)
+}
+
+<h2>After</h2>
+@if (Model.Files != null && Model.Files.Any())
+{
+    @await Html.PartialAsync("_FilesSearch.cshtml", Model.AfterFiles)
+}
+
+}

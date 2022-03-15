@@ -63,7 +63,7 @@ namespace Hik.DataAccess
             return mediaFiles;
         }
 
-        public async Task UpdateDailyStatistics(IReadOnlyCollection<MediaFileDTO> files)
+        public async Task UpdateDailyStatisticsAsync(IReadOnlyCollection<MediaFileDTO> files)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
 
@@ -86,14 +86,39 @@ namespace Hik.DataAccess
             await unitOfWork.SaveChangesAsync(job);
         }
 
-        public async Task SaveHistoryFilesAsync<T>(IReadOnlyCollection<MediaFile> files) where T: class, IHistory, new()
+        public async Task SaveHistoryFilesAsync<T>(IReadOnlyCollection<MediaFile> files)
+            where T: class, IHistory, new()
         {
             using var unitOfWork = factory.CreateUnitOfWork();
             var entities = files.Select(x => new T { MediaFileId = x.Id }).ToList();
 
             await AddEntities(entities, unitOfWork);
             await unitOfWork.SaveChangesAsync(job);
+        }
 
+        public async Task DeleteObsoleteJobsAsync(IReadOnlyCollection<string> triggers, DateTime to)
+        {
+            using var unitOfWork = factory.CreateUnitOfWork();
+
+            var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
+            var jobRepo = unitOfWork.GetRepository<HikJob>();
+            var filesRepo = unitOfWork.GetRepository<MediaFile>();
+
+            foreach (var trigger in triggers)
+            {
+                var jobTrigger = await triggerRepo.FindByAsync(x => x.ToString() == trigger);
+                if (jobTrigger != null)
+                {
+                    var jobsToDelete = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.PeriodEnd <= to);
+                    if (jobsToDelete?.Any() == true)
+                    {
+                        var jobIds = jobsToDelete.Select(x => x.JobTriggerId).ToList();
+                        await filesRepo.DeleteAsync(x => jobIds.Contains(x.JobTriggerId));
+                        await jobRepo.DeleteAsync(x => jobIds.Contains(x.JobTriggerId));
+                        await unitOfWork.SaveChangesAsync();
+                    }
+                }
+            }
         }
 
         private async Task<List<DailyStatistic>> GetDailyStatisticSafe(int triggerId, DateTime from, DateTime to, IUnitOfWork unitOfWork)

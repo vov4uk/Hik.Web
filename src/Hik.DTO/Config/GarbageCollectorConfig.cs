@@ -6,7 +6,7 @@
 
         public double FreeSpacePercentage { get; set; }
 
-        public string[] Triggers { get; set; }
+        public string[] TopFolders { get; set; }
 
         public string FileExtention { get; set; } = "*.*";
     }

@@ -1,5 +1,7 @@
 ﻿using Autofac;
+using Job.Commands;
 using Microsoft.Extensions.Configuration;
+using MediatR.Extensions.Autofac.DependencyInjection;
 
 namespace Hik.Web
 {
@@ -11,6 +13,7 @@ namespace Hik.Web
         {
             var builder = new ContainerBuilder();
             builder.RegisterInstance(configuration).SingleInstance();
+            builder.RegisterMediatR(typeof(ActivityCommand).Assembly);
             Container = builder.Build();
         }
     }

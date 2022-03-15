@@ -21,12 +21,12 @@ namespace Job.Impl
             LogInfo(Config?.ToString());
         }
 
-        public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        public override async Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             await service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
             var downloader = AppBootstrapper.Container.Resolve<HikPhotoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;

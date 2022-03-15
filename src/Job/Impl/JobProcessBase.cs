@@ -32,9 +32,9 @@ namespace Job.Impl
 
         public BaseConfig Config { get; protected set; }
 
-        public abstract Task<IReadOnlyCollection<MediaFileDTO>> Run();
+        public abstract Task<IReadOnlyCollection<MediaFileDTO>> RunAsync();
 
-        public abstract Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service);
+        public abstract Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service);
 
         public virtual async Task InitializeProcessingPeriodAsync()
         {
@@ -53,12 +53,12 @@ namespace Job.Impl
             LogInfo($"Period - {periodStart} - {jobStart}");
         }
 
-        public virtual async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        public virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.FilesCount = files.Count;
             var mediaFiles = await service.SaveFilesAsync(files);
-            await service.UpdateDailyStatistics(files);
-            await SaveHistory(mediaFiles, service);
+            await service.UpdateDailyStatisticsAsync(files);
+            await SaveHistoryAsync(mediaFiles, service);
         }
 
         protected JobProcessBase(string trigger, string configFilePath, string connectionString, Guid activityId)
@@ -76,7 +76,7 @@ namespace Job.Impl
             {
                 await InitializeJobInstanceAsync();
                 Config.Alias = TriggerKey;
-                var result = await Run();
+                var result = await RunAsync();
                 await SaveResultsInternalAsync(result);
             }
             catch (Exception e)
@@ -156,7 +156,7 @@ namespace Job.Impl
             var jobResultSaver = new JobService(this.unitOfWorkFactory, this.JobInstance);
             if (files?.Any() == true)
             {
-                await SaveResults(files, jobResultSaver);
+                await SaveResultsAsync(files, jobResultSaver);
             }
             else
             {

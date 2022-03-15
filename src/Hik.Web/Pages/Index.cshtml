@@ -17,11 +17,11 @@
 </div>
 
 <div class="container">
-    @if(Model.TriggersDtOs != null && Model.TriggersDtOs.Any())
+    @if(Model.TriggersDtos != null && Model.TriggersDtos.Any())
     {
-      @foreach (var key in Model.TriggersDtOs.Keys.OrderBy(x => x))
+      @foreach (var key in Model.TriggersDtos.Keys.OrderBy(x => x))
       {
-          var row = Model.TriggersDtOs[key];
+          var row = Model.TriggersDtos[key];
           <div class="row">
               <div class="card-body text-center">
                   <h4 class="card-title">@Html.DisplayFor(x => key)</h4>

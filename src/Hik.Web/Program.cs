@@ -41,11 +41,11 @@ namespace Hik.Web
         {
             var env = isService ? "Production" : "Development";
             var config = new ConfigurationBuilder()
-            .SetBasePath(AssemblyDirectory)
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
-            .AddCommandLine(args)
-            .Build();
+                .SetBasePath(AssemblyDirectory)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
+                .AddCommandLine(args)
+                .Build();
 
             AutofacConfig.RegisterConfiguration(config);
 

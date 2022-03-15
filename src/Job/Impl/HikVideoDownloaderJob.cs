@@ -21,7 +21,7 @@ namespace Job.Impl
             LogInfo(Config?.ToString());
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         { 
             var downloader = AppBootstrapper.Container.Resolve<VideoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
@@ -33,12 +33,12 @@ namespace Job.Impl
             return files;
         }
 
-        public override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        public override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             return Task.CompletedTask;
         }
 
-        public override Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        public override Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             return Task.CompletedTask;
         }
@@ -50,7 +50,7 @@ namespace Job.Impl
             JobInstance.FilesCount++;
             var files = new[] { e.File };
             var mediaFiles = await jobResultSaver.SaveFilesAsync(files);
-            await jobResultSaver.UpdateDailyStatistics(files);
+            await jobResultSaver.UpdateDailyStatisticsAsync(files);
             await jobResultSaver.SaveHistoryFilesAsync<DownloadHistory>(mediaFiles);
 
             LogInfo("Save Video to DB. Done");

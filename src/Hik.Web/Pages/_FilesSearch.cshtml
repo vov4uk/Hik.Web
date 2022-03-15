@@ -1,0 +1,26 @@
+﻿@using Hik.Client.Helpers
+@model List<Hik.DataAccess.Data.MediaFile>
+
+<table class="table table-bordered table-sm" width="100%">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Name)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Date)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Duration)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Size)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            string size = item.Size.FormatBytes();
+            string duration = item.Duration.FormatSeconds();
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Path)</td>
+                <td>@Html.DisplayFor(modelItem => item.Date)</td>
+                <td>@duration</td>
+                <td>@size</td>
+            </tr>
+        }
+    </tbody>
+</table>

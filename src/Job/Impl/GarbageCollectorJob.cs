@@ -32,7 +32,7 @@ namespace Job.Impl
             return Task.CompletedTask;
         }
 
-        public override Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
             var gcConfig = Config as GarbageCollectorConfig;
 
@@ -53,7 +53,6 @@ namespace Job.Impl
                 deleteFilesResult = PersentageDelete(gcConfig, fileProvider);
             }
 
-
             directoryHelper.DeleteEmptyDirs(gcConfig.DestinationFolder);
             return Task.FromResult(deleteFilesResult);
         }
@@ -72,7 +71,7 @@ namespace Job.Impl
 
                 if (freePercentage < gcConfig.FreeSpacePercentage)
                 {
-                    fileProvider.Initialize(gcConfig.Triggers);
+                    fileProvider.Initialize(gcConfig.TopFolders);
                     var filesToDelete = fileProvider.GetNextBatch();
                     if (!filesToDelete.Any())
                     {
@@ -102,16 +101,16 @@ namespace Job.Impl
             }
         }
 
-        public override async Task SaveResults(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        public override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
             JobInstance.FilesCount = files.Count;
 
-            await service.UpdateDailyStatistics(files);
+            await service.UpdateDailyStatisticsAsync(files);
         }
 
-        public override Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        public override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             return Task.CompletedTask;
         }
