@@ -27,9 +27,8 @@ namespace Job.Impl
             this.filesHelper = new FilesHelper();
         }
 
-        public override Task InitializeProcessingPeriodAsync()
+        public override void InitializeProcessingPeriod()
         {
-            return Task.CompletedTask;
         }
 
         public override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()

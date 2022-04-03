@@ -8,6 +8,8 @@
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Date)</th>
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Duration)</th>
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Size)</th>
+            <th/>
+            <th/>
         </tr>
     </thead>
     <tbody>
@@ -20,6 +22,12 @@
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>
                 <td>@duration</td>
                 <td>@size</td>
+                <td>
+                    <a href="@Url.Page("Search", "DownloadFile", new { fileId = item.Id })">Download</a>
+                </td>
+                <td>
+                    <a href="@Url.Page("Play", new { fileId = item.Id })" target="_blank">Play</a>
+                </td>
             </tr>
         }
     </tbody>

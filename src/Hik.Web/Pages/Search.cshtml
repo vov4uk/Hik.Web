@@ -2,36 +2,29 @@
 @using Hik.Client.Helpers
 @model Hik.Web.Pages.SearchModel
 @{
-    <form>
-    <p>
-    <select asp-for="JobTriggerId" asp-items="Model.JobTriggersList">
-    <option value="">All</option>
-    </select>
-    @Html.EditorFor(model => model.DateTime)
-    <input type="submit" value="Filter" />
-    </p>
-    </form>
-
-
-
-
+<form>
+   <p>
+      <select asp-for="JobTriggerId" asp-items="Model.JobTriggersList">
+         <option value="">All</option>
+      </select>
+      @Html.TextBoxFor(m => m.DateTime, "{0:yyyy-MM-dd HH:mm}", new { @class = "datepicker", placeholder = "Enter From date here...", Value = Model.DateTime })
+     <!-- @Html.EditorFor(model => model.DateTime) !-->
+      <input type="submit" value="Filter" />
+   </p>
+</form>
+@if (Model.Files != null && Model.Files.Any())
+{
 <h2>Before</h2>
-
+@await Html.PartialAsync("_FilesSearch.cshtml", Model.BeforeFiles)
+}
 @if (Model.Files != null && Model.Files.Any())
 {
-    @await Html.PartialAsync("_FilesSearch.cshtml", Model.BeforeFiles)
-}
-
 <h2>Files</h2>
+@await Html.PartialAsync("_FilesSearch.cshtml", Model.Files)
+}
 @if (Model.Files != null && Model.Files.Any())
 {
-    @await Html.PartialAsync("_FilesSearch.cshtml", Model.Files)
-}
-
 <h2>After</h2>
-@if (Model.Files != null && Model.Files.Any())
-{
-    @await Html.PartialAsync("_FilesSearch.cshtml", Model.AfterFiles)
+@await Html.PartialAsync("_FilesSearch.cshtml", Model.AfterFiles)
 }
-
 }

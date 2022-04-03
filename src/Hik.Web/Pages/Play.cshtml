@@ -1,0 +1,22 @@
+﻿@page
+@model Hik.Web.Pages.PlayModel
+@{
+<link href="https://unpkg.com/video.js/dist/video-js.min.css" rel="stylesheet">
+<script src="https://unpkg.com/video.js/dist/video.min.js"></script>
+<div>
+   <a href="@Url.Page("Search", "DownloadFile", new { fileId = @Model.FileId })">Download</a>
+   <video id="my-player"
+      width="900"
+      class="video-js"
+      controls
+      preload="auto"
+      poster="@Model.Poster"
+      data-setup='{}'>
+      <source src="/Search?fileId=@Model.FileId&handler=StreamFile" type="video/mp4" />
+      <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that
+         <a href="https://videojs.com/html5-video-support/" target="_blank"> supports HTML5 video
+         </a>
+      </p>
+   </video>
+</div>
+}

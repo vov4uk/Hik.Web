@@ -23,9 +23,8 @@ namespace Job.Impl
             LogInfo(Config?.ToString());
         }
 
-        public override Task InitializeProcessingPeriodAsync()
+        public override void InitializeProcessingPeriod()
         {
-            return Task.CompletedTask;
         }
 
         public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()

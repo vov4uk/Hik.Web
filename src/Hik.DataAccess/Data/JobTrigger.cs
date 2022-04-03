@@ -16,6 +16,8 @@ namespace Hik.DataAccess.Data
 
         public string Group { get; set; }
 
+        public bool ShowInSearch { get; set; }
+
         public List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
 
         public List<HikJob> Jobs { get; set; } = new List<HikJob>();

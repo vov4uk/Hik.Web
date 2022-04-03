@@ -52,7 +52,7 @@
                           string lastSync = item.LastSync.GetRelativeTime();
                           string from = item.LastJobPeriodStart.GetRelativeTime();
                           string to = item.LastJobPeriodEnd.GetRelativeTime();
-     
+
                           <tr data-status="@item.Success" class="failed">
                               <td><span title="@item.CronSummary">@item.CronString</span></td>
                               <td><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></td>
@@ -82,7 +82,7 @@
                       }
                   </tbody>
               </table>
-     
+
               @foreach (var item in row)
               {
                   string started = item.LastJobStarted.GetRelativeTime();
@@ -91,7 +91,7 @@
                   string from = item.LastJobPeriodStart.GetRelativeTime();
                   string to = item.LastJobPeriodEnd.GetRelativeTime();
                   string color = item.Success && item.ActivityId == null ? "text-white tri-success" : item.ActivityId == null ? "text-white tri-error" : "text-black tri-info";
-     
+
                   <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3">
                       <div class="card @color" style="margin-bottom: 10px;">
                           <div class="card-body text-center">

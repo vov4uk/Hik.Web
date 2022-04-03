@@ -36,14 +36,12 @@ namespace Job.Impl
 
         public abstract Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service);
 
-        public virtual async Task InitializeProcessingPeriodAsync()
+        public virtual void InitializeProcessingPeriod()
         {
             var config = Config as CameraConfig;
             DateTime jobStart = DateTime.Now;
 
-            var trigger = await GetJobTriggerAsync();
-
-            DateTime? lastSync = trigger.LastSync;
+            DateTime? lastSync = jobTrigger.LastSync;
             LogInfo($"Last sync from DB - {lastSync}");
             DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config?.ProcessingPeriodHours ?? 1);
 
@@ -74,6 +72,8 @@ namespace Job.Impl
         {
             try
             {
+                await GetJobTriggerAsync();
+
                 await InitializeJobInstanceAsync();
                 Config.Alias = TriggerKey;
                 var result = await RunAsync();
@@ -87,20 +87,18 @@ namespace Job.Impl
 
         private async Task InitializeJobInstanceAsync()
         {
-            var trigger = await GetJobTriggerAsync();
-
             this.JobInstance = new HikJob
             {
                 Started = DateTime.Now,
-                JobTriggerId = trigger.Id
+                JobTriggerId = jobTrigger.Id
             };
 
-            await InitializeProcessingPeriodAsync();
+            InitializeProcessingPeriod();
 
-            await SaveJobInstanceToDBAsync();
+            await SaveJobInstanceToDbAsync();
         }
 
-        private async Task SaveJobInstanceToDBAsync()
+        private async Task SaveJobInstanceToDbAsync()
         {
             using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<HikJob>();
@@ -169,7 +167,7 @@ namespace Job.Impl
             LogInfo("Save to DB. Done");
         }
 
-        protected async Task<JobTrigger> GetJobTriggerAsync()
+        protected async Task GetJobTriggerAsync()
         {
             if (this.jobTrigger == null)
             {
@@ -181,12 +179,11 @@ namespace Job.Impl
                 this.jobTrigger = await repo.FindByAsync(x => x.TriggerKey == triggerKey && x.Group == group);
                 if (this.jobTrigger == null)
                 {
-                    var triggerResult = await repo.AddAsync(new JobTrigger { TriggerKey = triggerKey, Group = group });
+                    var triggerResult = await repo.AddAsync(new JobTrigger { TriggerKey = triggerKey, Group = group, ShowInSearch = Config.ShowInSearch });
                     jobTrigger = triggerResult.Entity;
                     await unitOfWork.SaveChangesAsync();
                 }
             }
-            return this.jobTrigger;
         }
 
         protected void LogInfo(string msg)

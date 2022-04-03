@@ -43,9 +43,8 @@ namespace Job.Impl
             return files;
         }
 
-        public override Task InitializeProcessingPeriodAsync()
+        public override void InitializeProcessingPeriod()
         {
-            return Task.CompletedTask;
         }
 
         public override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
