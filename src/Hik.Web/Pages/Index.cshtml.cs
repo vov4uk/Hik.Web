@@ -103,7 +103,8 @@ namespace Hik.Web.Pages
             var parameters = new Parameters(className, group, name, configPath, defaultConnection, runAsTask);
 
             var command = new ActivityCommand(parameters);
-            var response = await _mediator.Send(command);
+            _mediator.Send(command).ConfigureAwait(false).GetAwaiter();
+
             return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
 
         }

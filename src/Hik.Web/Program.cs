@@ -12,6 +12,8 @@ namespace Hik.Web
 {
     public static class Program
     {
+        public static string Version {get;set;}
+
         public static void Main(string[] args)
         {
             // https://dotnetcoretutorials.com/2018/09/12/hosting-an-asp-net-core-web-application-as-a-windows-service/
@@ -27,9 +29,16 @@ namespace Hik.Web
 
             var host = builder.Build();
 
+            Assembly web = Assembly.GetExecutingAssembly();
+            AssemblyName webName = web.GetName();
+
+            Version = webName.Version.ToString();
+
             if (isService)
             {
+#pragma warning disable CA1416 // Validate platform compatibility
                 host.RunAsService();
+#pragma warning restore CA1416 // Validate platform compatibility
             }
             else
             {

@@ -3,57 +3,103 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using FFmpeg.NET;
 using Hik.Client.Abstraction;
-using MediaToolkit;
 
 namespace Hik.Client.Helpers
 {
     public class VideoHelper : IVideoHelper
     {
-        private readonly Engine engine = new Engine();
-        private readonly string[] videoExtentions = new[] { ".mp4", ".avi" };
+        private static readonly string[] VideoExtentions = new[] { ".mp4", ".avi" };
+        private static readonly Engine Engine = new Engine(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"FFMpeg\ffmpeg.exe"));
 
-        public int GetDuration(string path)
+        public static async Task<string> GetThumbnailAsync(string path)
         {
-            if (videoExtentions.Contains(Path.GetExtension(path)))
+            if (VideoExtentions.Contains(Path.GetExtension(path)))
             {
-                MediaToolkit.Model.MediaFile inputFile = new MediaToolkit.Model.MediaFile { Filename = path };
+                InputFile inputFile = new InputFile(path);
 
-                engine.GetMetadata(inputFile);
+                var options = new ConversionOptions { Seek = TimeSpan.FromSeconds(1) };
 
-                if (inputFile is { Metadata: { } })
+                var outputFile = new OutputFile(Path.GetTempFileName() + ".jpg");
+
+                await Engine.GetThumbnailAsync(inputFile, outputFile, options, CancellationToken.None);
+
+                var fullPath = outputFile.FileInfo.FullName;
+
+                using (Image image = Image.FromFile(fullPath))
                 {
-                    return (int)inputFile.Metadata.Duration.TotalSeconds;
+                    using (Image newImage = new Bitmap(image, 1080, 608))
+                    {
+                        image.Dispose();
+                        newImage.Save(fullPath);
+                    }
+                }
+
+                var commpresed = Path.GetTempFileName() + ".jpg";
+                CompressImage(fullPath, commpresed);
+
+                byte[] imageArray = await File.ReadAllBytesAsync(commpresed);
+                return Convert.ToBase64String(imageArray);
+            }
+
+            return string.Empty;
+        }
+
+        public async Task<int> GetDuration(string path)
+        {
+            if (VideoExtentions.Contains(Path.GetExtension(path)))
+            {
+                InputFile inputFile = new InputFile(path);
+
+                var metadata = await Engine.GetMetaDataAsync(inputFile, CancellationToken.None);
+
+                if (metadata != null)
+                {
+                    return (int)metadata.Duration.TotalSeconds;
                 }
             }
 
             return 0;
         }
 
-        public async Task<string> GetThumbnailAsync(string path)
+        private static void CompressImage(string source, string destination)
         {
-            if (videoExtentions.Contains(Path.GetExtension(path)))
+            using (Bitmap bitmap = new Bitmap(source))
             {
-                MediaToolkit.Model.MediaFile inputFile = new MediaToolkit.Model.MediaFile { Filename = path };
-                var outputFile = new MediaToolkit.Model.MediaFile { Filename = Path.GetTempFileName() + ".jpg" };
-
-                engine.GetThumbnail(inputFile, outputFile, new MediaToolkit.Options.ConversionOptions());
-
-                using (Image image = Image.FromFile(outputFile.Filename))
-                {
-                    using (Image newImage = new Bitmap(image, 900, 506))
-                    {
-                        image.Dispose();
-                        newImage.Save(outputFile.Filename);
-                    }
-                }
-
-                byte[] imageArray = await File.ReadAllBytesAsync(outputFile.Filename);
-                return Convert.ToBase64String(imageArray);
+                var parameters = GetCompressParameters();
+                DeleteFile(destination);
+                bitmap.Save(destination, parameters.jpgEncoder, parameters.encoderParameters);
             }
+        }
 
-            return string.Empty;
+        private static (ImageCodecInfo jpgEncoder, EncoderParameters encoderParameters) GetCompressParameters()
+        {
+            var jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+            var encoderParameters = new EncoderParameters(1);
+            encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 25L);
+
+            return (jpgEncoder, encoderParameters);
+        }
+
+        private static ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+            return codecs.FirstOrDefault(c => c.FormatID == format.Guid);
+        }
+
+        private static void DeleteFile(string filepath)
+        {
+            try
+            {
+                File.Delete(filepath);
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

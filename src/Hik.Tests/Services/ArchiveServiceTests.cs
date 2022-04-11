@@ -127,7 +127,7 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
             this.filesMock.Setup(x => x.FileSize(targetFile)).Returns(1024);
             this.filesMock.Setup(x => x.GetDirectoryName(targetFile)).Returns(string.Empty);
-            this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).Returns(duration);
+            this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).ReturnsAsync(duration);
 
             var service = CreateArchiveService();
             service.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
@@ -184,7 +184,7 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.GetCreationDate(sourceFileName)).Returns(dateTime);
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
             this.filesMock.Setup(x => x.GetDirectoryName(targetFile)).Returns(string.Empty);
-            this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).Returns(duration);
+            this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).ReturnsAsync(duration);
 
             var service = CreateArchiveService();
             service.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>

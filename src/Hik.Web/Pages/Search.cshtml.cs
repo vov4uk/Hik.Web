@@ -49,14 +49,14 @@ namespace Hik.Web.Pages
             }
             if (jobTriggerId.HasValue && dateTime.HasValue)
             {
-                Files = await dataContext.MediaFiles
+                var file = await dataContext.MediaFiles
                     .AsQueryable()
-                    .Where(x => x.JobTriggerId == jobTriggerId && x.Date <= dateTime)
-                    .OrderByDescending(x => x.Date).Take(1)
-                    .ToListAsync();
-                var file = Files.FirstOrDefault();
+                    .Where(x => x.JobTriggerId == jobTriggerId && x.Date >= dateTime)
+                    .OrderBy(x => x.Date).FirstOrDefaultAsync();
+
                 if (file != null)
                 {
+                    Files.Add(file);
                     BeforeFiles = await dataContext.MediaFiles
                         .AsQueryable()
                         .Where(x => x.JobTriggerId == jobTriggerId && x.Id < file.Id)
@@ -74,16 +74,14 @@ namespace Hik.Web.Pages
 
         public async Task<FileResult> OnGetDownloadFile(int fileId)
         {
-
             var file = await dataContext.MediaFiles
                     .AsQueryable()
                     .FirstOrDefaultAsync(x => x.Id == fileId);
 
-            // For debug
-            file.Path = @"C:\FFOutput\20220223_151022_151553.mp4";
+            var path = file.GetPath();
 
-            byte[] bytes = System.IO.File.ReadAllBytes(file.Path);
-            return File(bytes, "application/octet-stream", Path.GetFileName(file.Path));
+            byte[] bytes = System.IO.File.ReadAllBytes(path);
+            return File(bytes, "application/octet-stream", Path.GetFileName(path));
         }
 
         public async Task<IActionResult> OnGetStreamFile(int fileId)
@@ -91,7 +89,7 @@ namespace Hik.Web.Pages
             var file = await dataContext.MediaFiles
                 .AsQueryable()
                 .FirstOrDefaultAsync(x => x.Id == fileId);
-            var path = @"C:\FFOutput\20220223_151022_151553.mp4";
+            var path = file.GetPath();
 
             //Build the File Path.
             var memory = new MemoryStream();

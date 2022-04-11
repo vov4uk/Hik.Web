@@ -31,7 +31,7 @@ namespace Hik.Client.Service
             this.imageHelper = imageHelper;
         }
 
-        protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
+        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var aConfig = config as ArchiveConfig;
             PrepareRegex(aConfig.FileNamePattern);
@@ -85,7 +85,7 @@ namespace Hik.Client.Service
                     foreach (var oldFile in allFiles)
                     {
                         DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, oldFile);
-                        int duration = this.videoHelper.GetDuration(oldFile);
+                        int duration = await this.videoHelper.GetDuration(oldFile);
 
                         string fileExt = filesHelper.GetExtension(oldFile);
 
@@ -95,8 +95,8 @@ namespace Hik.Client.Service
                         result.Add(new MediaFileDTO
                         {
                             Date = date,
-                            Name = newFileName,
-                            Path = filesHelper.GetDirectoryName(newFilePath),
+                            Name = filesHelper.GetFileName(oldFile),
+                            Path = newFilePath,
                             Duration = duration,
                             Size = filesHelper.FileSize(newFilePath),
                         });
@@ -108,7 +108,7 @@ namespace Hik.Client.Service
                 this.OnExceptionFired(new ExceptionEventArgs(ex), aConfig);
             }
 
-            return Task.FromResult(result.AsReadOnly() as IReadOnlyCollection<MediaFileDTO>);
+            return result.AsReadOnly();
         }
 
         private string MoveFile(string destinationFolder, string oldFilePath, DateTime date, string newFileName)
