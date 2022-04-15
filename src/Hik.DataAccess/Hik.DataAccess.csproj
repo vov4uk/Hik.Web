@@ -10,6 +10,7 @@
     <PackageReference Include="AutoMapper" Version="11.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.2" />
+    <PackageReference Include="NLog" Version="4.7.15" />
   </ItemGroup>
 
   <ItemGroup>

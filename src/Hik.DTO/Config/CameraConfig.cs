@@ -16,7 +16,11 @@ namespace Hik.DTO.Config
 
         public string Password { get; set; }
 
-        public ClientType ClientType { get; set; } = ClientType.HikVisionVideo; 
+        public ClientType ClientType { get; set; } = ClientType.HikVisionVideo;
+
+        public bool SyncTime { get; set; } = true;
+
+        public int SyncTimeDeltaSeconds { get; set; } = 5;
 
         public override string ToString()
         {

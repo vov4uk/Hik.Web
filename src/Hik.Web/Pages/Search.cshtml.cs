@@ -30,6 +30,7 @@ namespace Hik.Web.Pages
         private IList<JobTrigger> JobTriggers { get; }
 
         public SelectList JobTriggersList { get; set; }
+        public string Msg { get; set; }
         public List<MediaFile> BeforeFiles { get; private set; }
         public List<MediaFile> Files { get; private set; }
         public List<MediaFile> AfterFiles { get; private set; }
@@ -68,11 +69,29 @@ namespace Hik.Web.Pages
                         .Where(x => x.JobTriggerId == jobTriggerId && x.Id > file.Id)
                         .OrderBy(x => x.Date).Take(5)
                         .ToListAsync();
+
+                    if (file.Date >= dateTime && file.Date.AddSeconds(file.Duration ?? 0) <= dateTime)
+                    {
+                        Msg = "Match";
+                    }
+                    else
+                    {
+                        Msg = "Out of range";
+                    }
+                }
+                else
+                {
+                    var latest = await dataContext.MediaFiles
+                        .AsQueryable()
+                        .Where(x => x.JobTriggerId == jobTriggerId)
+                        .OrderByDescending(x => x.Date).Take(5).ToListAsync();
+                    Files.AddRange(latest);
+                    Msg = "Latest 5 files";
                 }
             }
         }
 
-        public async Task<FileResult> OnGetDownloadFile(int fileId)
+        public async Task<IActionResult> OnGetDownloadFile(int fileId)
         {
             var file = await dataContext.MediaFiles
                     .AsQueryable()

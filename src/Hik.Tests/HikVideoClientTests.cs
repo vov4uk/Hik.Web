@@ -94,7 +94,7 @@
         {
             DeviceInfo outDevice = this.fixture.Create<DeviceInfo>();
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new Session(DefaultUserId, outDevice.ChannelNumber));
+                .Returns(new Session(DefaultUserId, outDevice.DefaultIpChannel, new List<IpChannel>()));
             this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
                 .Returns(new HdInfo { HdStatus = 2 });
 
@@ -110,7 +110,7 @@
         {
             DeviceInfo outDevice = this.fixture.Create<DeviceInfo>();
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new Session(DefaultUserId, outDevice.ChannelNumber));
+                .Returns(new Session(DefaultUserId, outDevice.DefaultIpChannel, new List<IpChannel>()));
             this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
                 .Returns(default(HdInfo));
 
@@ -347,7 +347,7 @@
         private Session SetupLoginAndHddStatusCheck()
         {
             DeviceInfo outDevice = this.fixture.Create<DeviceInfo>();
-            var result = new Session(DefaultUserId, outDevice.ChannelNumber);
+            var result = new Session(DefaultUserId, outDevice.DefaultIpChannel, new List<IpChannel>());
             var status = new HdInfo { HdStatus = 0 };
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(result);

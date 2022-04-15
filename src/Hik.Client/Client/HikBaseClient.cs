@@ -76,6 +76,21 @@ namespace Hik.Client
             }
         }
 
+        public void SyncTime()
+        {
+            if (config.SyncTime)
+            {
+                var cameraTime = hikApi.GetTime(session.UserId);
+                logger.Info($"Camera time :{cameraTime}");
+                var currentTime = DateTime.Now;
+                if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
+                {
+                    hikApi.SetTime(currentTime, session.UserId);
+                    logger.Warn($"Camera time updated :{currentTime}");
+                }
+            }
+        }
+
         public void ForceExit()
         {
             logger.Warn("HikBaseClient.ForceExit");

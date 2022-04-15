@@ -107,6 +107,8 @@ namespace Job.Impl
             JobInstance.FilesCount = files.Count;
 
             await service.UpdateDailyStatisticsAsync(files);
+
+            await service.DeleteObsoleteJobsAsync((Config as GarbageCollectorConfig).Triggers, JobInstance.PeriodEnd.Value);
         }
 
         public override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)

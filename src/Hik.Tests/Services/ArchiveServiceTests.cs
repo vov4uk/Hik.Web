@@ -107,12 +107,13 @@ namespace Hik.Client.Tests.Services
             string targetFile)
         {
             bool success = true;
-            var config = new ArchiveConfig { 
-                DestinationFolder = "C:\\", 
-                SourceFolder = "E:\\", 
-                Alias = "test", 
-                SkipLast = 0, 
-                FileNameDateTimeFormat = fileNameDateTimeFormat, 
+            var config = new ArchiveConfig
+            {
+                DestinationFolder = "C:\\",
+                SourceFolder = "E:\\",
+                Alias = "test",
+                SkipLast = 0,
+                FileNameDateTimeFormat = fileNameDateTimeFormat,
                 FileNamePattern = fileNamePattern 
             };
 
@@ -127,6 +128,7 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
             this.filesMock.Setup(x => x.FileSize(targetFile)).Returns(1024);
             this.filesMock.Setup(x => x.GetDirectoryName(targetFile)).Returns(string.Empty);
+            this.filesMock.Setup(x => x.GetFileName(It.IsAny<string>())).Returns(string.Empty);
             this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).ReturnsAsync(duration);
 
             var service = CreateArchiveService();
@@ -141,12 +143,11 @@ namespace Hik.Client.Tests.Services
             var actual = result.FirstOrDefault();
             Assert.Equal(actual.Duration, duration);
             Assert.Equal(actual.Size, 1024);
-            Assert.Equal(actual.Name, Path.GetFileName(targetFile));
-            Assert.Equal(actual.Path, string.Empty);
+            Assert.Equal(actual.Name, string.Empty);
+            Assert.Equal(actual.Path, targetFile);
             Assert.Equal(actual.Date, DateTime.ParseExact(date, fileNameDateTimeFormat, null));
         }
-        
-        
+
         [Theory]
         [InlineData("192.168.0.65_01_19700224210928654_MOTION_DETECTION.jpg", 60, "20210224210928654",
             "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928_211028.jpg")]
@@ -164,11 +165,12 @@ namespace Hik.Client.Tests.Services
         {
             bool success = true;
             var dateTime = DateTime.ParseExact(date, fileNameDateTimeFormat, null);
-            var config = new ArchiveConfig { 
-                DestinationFolder = "C:\\", 
-                SourceFolder = "E:\\", 
-                SkipLast = 0, 
-                FileNameDateTimeFormat = fileNameDateTimeFormat, 
+            var config = new ArchiveConfig
+            {
+                DestinationFolder = "C:\\",
+                SourceFolder = "E:\\",
+                SkipLast = 0,
+                FileNameDateTimeFormat = fileNameDateTimeFormat,
                 FileNamePattern = fileNamePattern 
             };
 
@@ -183,6 +185,7 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.FileSize(targetFile)).Returns(1024);
             this.filesMock.Setup(x => x.GetCreationDate(sourceFileName)).Returns(dateTime);
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
+            this.filesMock.Setup(x => x.GetFileName(It.IsAny<string>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.GetDirectoryName(targetFile)).Returns(string.Empty);
             this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).ReturnsAsync(duration);
 
@@ -199,8 +202,8 @@ namespace Hik.Client.Tests.Services
             var actual = result.FirstOrDefault();
             Assert.Equal(actual.Duration, duration);
             Assert.Equal(actual.Size, 1024);
-            Assert.Equal(actual.Name, Path.GetFileName(targetFile));
-            Assert.Equal(actual.Path, string.Empty);
+            Assert.Equal(actual.Name, string.Empty);
+            Assert.Equal(actual.Path, targetFile);
             Assert.Equal(actual.Date, DateTime.ParseExact(date, fileNameDateTimeFormat, null));
         }
 

@@ -23,7 +23,7 @@
     <PackageReference Include="Autofac" Version="6.3.0" />
     <PackageReference Include="AutoMapper" Version="11.0.1" />
     <PackageReference Include="FluentFTP" Version="37.0.2" />
-    <PackageReference Include="Hik.Api" Version="1.0.12" />
+    <PackageReference Include="Hik.Api" Version="1.0.13" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NLog" Version="4.7.15" />
     <PackageReference Include="NLog.Targets.Seq" Version="2.1.0" />

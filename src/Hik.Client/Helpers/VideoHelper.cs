@@ -14,7 +14,6 @@ namespace Hik.Client.Helpers
     public class VideoHelper : IVideoHelper
     {
         private static readonly string[] VideoExtentions = new[] { ".mp4", ".avi" };
-        private static readonly Engine Engine = new Engine(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"FFMpeg\ffmpeg.exe"));
 
         public static async Task<string> GetThumbnailAsync(string path)
         {
@@ -22,27 +21,21 @@ namespace Hik.Client.Helpers
             {
                 InputFile inputFile = new InputFile(path);
 
-                var options = new ConversionOptions { Seek = TimeSpan.FromSeconds(1) };
-
-                var outputFile = new OutputFile(Path.GetTempFileName() + ".jpg");
-
-                await Engine.GetThumbnailAsync(inputFile, outputFile, options, CancellationToken.None);
-
-                var fullPath = outputFile.FileInfo.FullName;
+                var fullPath = Path.GetTempFileName() + ".jpg";
+                var outputFile = new OutputFile(fullPath);
+                await GetEngine().GetThumbnailAsync(inputFile, outputFile, CancellationToken.None);
 
                 using (Image image = Image.FromFile(fullPath))
                 {
                     using (Image newImage = new Bitmap(image, 1080, 608))
                     {
                         image.Dispose();
-                        newImage.Save(fullPath);
+                        var parameters = GetCompressParameters();
+                        newImage.Save(fullPath, parameters.jpgEncoder, parameters.encoderParameters);
                     }
                 }
 
-                var commpresed = Path.GetTempFileName() + ".jpg";
-                CompressImage(fullPath, commpresed);
-
-                byte[] imageArray = await File.ReadAllBytesAsync(commpresed);
+                byte[] imageArray = await File.ReadAllBytesAsync(fullPath);
                 return Convert.ToBase64String(imageArray);
             }
 
@@ -55,7 +48,7 @@ namespace Hik.Client.Helpers
             {
                 InputFile inputFile = new InputFile(path);
 
-                var metadata = await Engine.GetMetaDataAsync(inputFile, CancellationToken.None);
+                var metadata = await GetEngine().GetMetaDataAsync(inputFile, CancellationToken.None);
 
                 if (metadata != null)
                 {
@@ -66,15 +59,7 @@ namespace Hik.Client.Helpers
             return 0;
         }
 
-        private static void CompressImage(string source, string destination)
-        {
-            using (Bitmap bitmap = new Bitmap(source))
-            {
-                var parameters = GetCompressParameters();
-                DeleteFile(destination);
-                bitmap.Save(destination, parameters.jpgEncoder, parameters.encoderParameters);
-            }
-        }
+        private static Engine GetEngine() => new Engine(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"FFMpeg\ffmpeg.exe"));
 
         private static (ImageCodecInfo jpgEncoder, EncoderParameters encoderParameters) GetCompressParameters()
         {

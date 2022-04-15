@@ -147,7 +147,7 @@
         private Session SetupLoginAndHddStatusCheck()
         {
             DeviceInfo outDevice = fixture.Create<DeviceInfo>();
-            var result = new Session(DefaultUserId, outDevice.ChannelNumber);
+            var result = new Session(DefaultUserId, outDevice.DefaultIpChannel, new List<IpChannel>());
             var status = new HdInfo { HdStatus = 0 };
             sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(result);

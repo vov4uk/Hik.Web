@@ -10,23 +10,28 @@
          <option value="">All</option>
       </select>
       @Html.TextBoxFor(m => m.DateTime, "{0:yyyy-MM-dd HH:mm}", new { @class = "datepicker", placeholder = "Enter From date here...", Value = Model.DateTime })
-     <!-- @Html.EditorFor(model => model.DateTime) !-->
       <input type="submit" value="Filter" />
    </p>
-</form>
-@if (Model.Files != null && Model.Files.Any())
-{
-<h2>Before</h2>
-@await Html.PartialAsync("_FilesSearch.cshtml", Model.BeforeFiles)
-}
-@if (Model.Files != null && Model.Files.Any())
-{
-<h2>Files</h2>
-@await Html.PartialAsync("_FilesSearch.cshtml", Model.Files)
-}
-@if (Model.Files != null && Model.Files.Any())
-{
-<h2>After</h2>
-@await Html.PartialAsync("_FilesSearch.cshtml", Model.AfterFiles)
-}
+</form> 
+    @if (Model.BeforeFiles != null && Model.BeforeFiles.Any())
+    {
+        <h2>Before</h2>
+        @await Html.PartialAsync("_FilesSearch.cshtml", Model.BeforeFiles)
+    }
+    @if (Model.Files != null && Model.Files.Any())
+    {
+        <h2>Files</h2>
+        <h3>@Model.Msg</h3>
+        @await Html.PartialAsync("_FilesSearch.cshtml", Model.Files)
+    }
+    else
+    {
+        <h2>No files found</h2>
+    }
+
+    @if (Model.AfterFiles != null && Model.AfterFiles.Any())
+    {
+        <h2>After</h2>
+        @await Html.PartialAsync("_FilesSearch.cshtml", Model.AfterFiles)
+    }
 }

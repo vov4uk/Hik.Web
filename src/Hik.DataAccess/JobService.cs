@@ -6,6 +6,7 @@ using AutoMapper;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
+using NLog;
 
 namespace Hik.DataAccess
 {
@@ -14,6 +15,7 @@ namespace Hik.DataAccess
         private readonly IUnitOfWorkFactory factory;
         private readonly HikJob job;
         private static readonly IMapper mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
+        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public JobService(IUnitOfWorkFactory factory, HikJob job)
         {
@@ -96,28 +98,32 @@ namespace Hik.DataAccess
             await unitOfWork.SaveChangesAsync(job);
         }
 
-        public async Task DeleteObsoleteJobsAsync(IReadOnlyCollection<string> triggers, DateTime to)
+        public async Task DeleteObsoleteJobsAsync(string[] triggers, DateTime to)
         {
-            using var unitOfWork = factory.CreateUnitOfWork();
-
-            var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
-            var jobRepo = unitOfWork.GetRepository<HikJob>();
-            var filesRepo = unitOfWork.GetRepository<MediaFile>();
-
-            foreach (var trigger in triggers)
+            using (var unitOfWork = factory.CreateUnitOfWork())
             {
-                var jobTrigger = await triggerRepo.FindByAsync(x => x.ToString() == trigger);
-                if (jobTrigger != null)
+                var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
+                var jobRepo = unitOfWork.GetRepository<HikJob>();
+                var filesRepo = unitOfWork.GetRepository<MediaFile>();
+
+                foreach (var trigger in triggers)
                 {
-                    var jobsToDelete = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.PeriodEnd <= to);
-                    if (jobsToDelete?.Any() == true)
+                    var parts = trigger.Split(".");
+                    logger.Info($"Try cleanup {trigger}");
+                    var jobTrigger = await triggerRepo.FindByAsync(x => x.Group == parts[0] && x.TriggerKey == parts[1]);
+                    if (jobTrigger != null)
                     {
-                        var jobIds = jobsToDelete.Select(x => x.JobTriggerId).ToList();
-                        await filesRepo.DeleteAsync(x => jobIds.Contains(x.JobTriggerId));
-                        await jobRepo.DeleteAsync(x => jobIds.Contains(x.JobTriggerId));
-                        await unitOfWork.SaveChangesAsync();
+                        logger.Info($"{trigger} found, Id = {jobTrigger.Id}, To = {to.ToLongDateString()}");
+                        await filesRepo.DeleteAsync(x => x.JobTriggerId == jobTrigger.Id && x.Date <= to);
+                        logger.Info($"{trigger} files cleared");
+
+                        await jobRepo.DeleteAsync(x => x.JobTriggerId == jobTrigger.Id && x.PeriodEnd <= to);
+                        logger.Info($"{trigger} jobs cleared");
                     }
                 }
+
+                unitOfWork.SaveChanges();
+                logger.Info($"Cleanup done");
             }
         }
 

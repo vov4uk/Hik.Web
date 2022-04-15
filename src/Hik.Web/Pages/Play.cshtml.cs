@@ -2,6 +2,7 @@ using Hik.Client.Helpers;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DataAccess.Metadata;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -35,21 +36,29 @@ namespace Hik.Web.Pages
                 .FirstOrDefaultAsync(x => x.Id == fileId);
             var path = file.GetPath();
 
-            PreviousFile = await dataContext.MediaFiles
-                .AsQueryable()
-                .Where(x => x.JobTriggerId == file.JobTriggerId && x.Id < file.Id)
-                .OrderByDescending(x => x.Date).FirstOrDefaultAsync();
+            if (System.IO.File.Exists(path))
+            {
+                PreviousFile = await dataContext.MediaFiles
+                    .AsQueryable()
+                    .Where(x => x.JobTriggerId == file.JobTriggerId && x.Id < file.Id)
+                    .OrderByDescending(x => x.Date).FirstOrDefaultAsync();
 
-            NextFile = await dataContext.MediaFiles
-                .AsQueryable()
-                .Where(x => x.JobTriggerId == file.JobTriggerId && x.Id > file.Id)
-                .OrderBy(x => x.Date).FirstOrDefaultAsync();
+                NextFile = await dataContext.MediaFiles
+                    .AsQueryable()
+                    .Where(x => x.JobTriggerId == file.JobTriggerId && x.Id > file.Id)
+                    .OrderBy(x => x.Date).FirstOrDefaultAsync();
 
-            var img = await VideoHelper.GetThumbnailAsync(path);
-            Poster = "data:image/jpg;base64," + img;
-            FileTitle = $"{file.Name} ({file.Duration.FormatSeconds()})";
-            FileFrom = file.Date.ToString(Consts.DisplayDateTimeStringFormat);
-            FileTo = file.Date.AddSeconds(file.Duration ?? 0).ToString(Consts.DisplayDateTimeStringFormat);
+                var img = await VideoHelper.GetThumbnailAsync(path).ConfigureAwait(false);
+                Poster = "data:image/jpg;base64," + img;
+                FileTitle = $"{file.Name} ({file.Duration.FormatSeconds()})";
+                FileFrom = file.Date.ToString(Consts.DisplayDateTimeStringFormat);
+                FileTo = file.Date.AddSeconds(file.Duration ?? 0).ToString(Consts.DisplayDateTimeStringFormat);
+            }
+            else
+            {
+                FileTitle = "Not found";
+                Poster = "http://vjs.zencdn.net/v/oceans.png";
+            }
         }
     }
 }
