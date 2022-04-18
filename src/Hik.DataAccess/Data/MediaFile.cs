@@ -40,7 +40,6 @@ namespace Hik.DataAccess.Data
         {
 #if DEBUG
             return file.Path.Replace("E:\\Cloud\\", "W:\\");
-            //return @"C:\FFOutput\20220223_151022_151553.mp4";
 #endif
             if (!Path.HasExtension(file.Path))
             {

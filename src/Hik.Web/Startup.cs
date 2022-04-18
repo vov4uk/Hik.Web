@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Globalization;
 
 namespace Hik.Web
 {
@@ -33,11 +32,6 @@ namespace Hik.Web
                   });
                   options.EnableSensitiveDataLogging();
               });
-
-            var cultureInfo = CultureInfo.InvariantCulture;
-
-            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
         }
 
         public void Configure(IApplicationBuilder app,
