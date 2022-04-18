@@ -125,6 +125,11 @@ namespace Hik.Client.Service
 
                 if (Client.Login())
                 {
+                    if (config.SyncTime && Client is HikBaseClient)
+                    {
+                        ((HikBaseClient)Client).SyncTime();
+                    }
+
                     ThrowIfCancellationRequested();
                     logger.Info($"{config.Alias} - Reading remote files...");
                     var remoteFiles = await GetRemoteFilesList(periodStart, periodEnd);

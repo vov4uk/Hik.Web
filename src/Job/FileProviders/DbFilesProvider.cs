@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Hik.DataAccess;
 using Hik.DTO.Contracts;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,8 +31,7 @@ namespace Job.FileProviders
                 foreach (var tri in triggers)
                 {
                     var files = dbContenxt.MediaFiles
-                        .Include(x => x.DeleteHistory)
-                        .Where(x => x.JobTriggerId == tri.Id && x.DeleteHistory == null)
+                        .Where(x => x.JobTriggerId == tri.Id)
                         .OrderBy(x => x.Date);
 
                     foreach (var file in files)

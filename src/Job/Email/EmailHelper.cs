@@ -39,7 +39,6 @@ namespace Job.Email
             var msg = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.ToString());
             var subject = $"{alias ?? "Hik.Web"} {(ex as HikException)?.ErrorMessage ?? ex.Message}".Replace('\r', ' ').Replace('\n', ' ');
             Send(subject, msg);
-
         }
 
         public static void Send(string subject, string body)
@@ -47,7 +46,7 @@ namespace Job.Email
             try
             {
 #if DEBUG
-                Logger.Info(body);
+                Logger.Error(body);
 #elif RELEASE
                 if (Settings != null)
                 {

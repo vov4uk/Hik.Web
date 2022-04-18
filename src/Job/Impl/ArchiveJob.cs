@@ -16,6 +16,7 @@ namespace Job.Impl
     public class ArchiveJob : JobProcessBase
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
+
         public ArchiveJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {

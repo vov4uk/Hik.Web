@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Diagnostics;
 
 namespace Hik.Web.Pages
 {
@@ -12,7 +12,7 @@ namespace Hik.Web.Pages
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
         public ErrorModel()
-        {           
+        {
         }
 
         public void OnGet()

@@ -2,7 +2,6 @@ using Hik.Client.Helpers;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DataAccess.Metadata;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -13,6 +12,7 @@ namespace Hik.Web.Pages
     public class PlayModel : PageModel
     {
         private readonly DataContext dataContext;
+
         public PlayModel(DataContext dataContext)
         {
             this.dataContext = dataContext;

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Hik.DataAccess.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Hik.DataAccess.Abstractions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Hik.DataAccess
 {
@@ -22,7 +22,7 @@ namespace Hik.DataAccess
         {
             return ctx.Set<T>().AddAsync(entity);
         }
-        
+
         public virtual EntityEntry<T> Add(T entity)
         {
             return ctx.Set<T>().Add(entity);
@@ -50,7 +50,7 @@ namespace Hik.DataAccess
 
         public virtual Task<List<T>> LastAsync(int last)
         {
-            return ctx.Set<T>().OrderByDescending(x=>x).Take(last).ToListAsync();
+            return ctx.Set<T>().OrderByDescending(x => x).Take(last).ToListAsync();
         }
 
         /// <summary>
@@ -69,8 +69,8 @@ namespace Hik.DataAccess
                 result = result.Include(includeExpression);
 
             return await result?.FirstOrDefaultAsync();
-        }   
-        
+        }
+
         /// <summary>
         ///     Finds by predicate.
         ///     http://appetere.com/post/passing-include-statements-into-a-repository

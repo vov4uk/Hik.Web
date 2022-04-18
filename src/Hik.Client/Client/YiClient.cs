@@ -51,9 +51,8 @@ namespace Hik.Client
         public Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             var result = new List<MediaFileDTO>();
+            periodStart = new DateTime(periodStart.Year, periodStart.Month, periodStart.Day, periodStart.Hour, periodStart.Minute, 0, 0);
             var end = periodEnd.AddMinutes(-1);
-            var seconds = periodStart.Second;
-            periodStart = periodStart.AddSeconds(-seconds);
 
             while (periodStart < end)
             {

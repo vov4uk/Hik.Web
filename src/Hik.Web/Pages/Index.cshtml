@@ -21,7 +21,7 @@
     {
       @foreach (var key in Model.TriggersDtos.Keys.OrderBy(x => x))
       {
-          var row = Model.TriggersDtos[key];
+          var jobTrigger = Model.TriggersDtos[key];
           <div class="row">
               <div class="card-body text-center">
                   <h4 class="card-title">@Html.DisplayFor(x => key)</h4>
@@ -33,19 +33,19 @@
                       <tr>
                           <th>Cron</th>
                           <th>Title</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().Next)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().ConfigPath)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastSync)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastJobPeriodStart)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastJobPeriodEnd)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastJobFilesCount)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().Next)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().ConfigPath)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastSync)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobPeriodStart)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobPeriodEnd)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobFilesCount)</th>
                           <th>Started</th>
                           <th>Finished</th>
                           <th></th>
                       </tr>
                   </thead>
                   <tbody>
-                      @foreach (var item in row)
+                      @foreach (var item in jobTrigger)
                       {
                           string started = item.LastJobStarted.GetRelativeTime();
                           string finished = item.LastJobFinished.GetRelativeTime();
@@ -83,7 +83,7 @@
                   </tbody>
               </table>
 
-              @foreach (var item in row)
+              @foreach (var item in jobTrigger)
               {
                   string started = item.LastJobStarted.GetRelativeTime();
                   string finished = item.LastJobFinished.GetRelativeTime();

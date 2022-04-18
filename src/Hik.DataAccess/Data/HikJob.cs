@@ -38,7 +38,5 @@ namespace Hik.DataAccess.Data
         public ExceptionLog ExceptionLog { get; set; }
 
         public List<DownloadHistory> DownloadedFiles { get; set; } = new List<DownloadHistory>();
-
-        public List<DeleteHistory> DeletedFiles { get; set; } = new List<DeleteHistory>();
     }
 }

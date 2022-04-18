@@ -31,6 +31,7 @@ namespace Hik.Web
                   {
                       options.MigrationsAssembly("Hik.DataAccess.dll");
                   });
+                  options.EnableSensitiveDataLogging();
               });
 
             var cultureInfo = CultureInfo.InvariantCulture;

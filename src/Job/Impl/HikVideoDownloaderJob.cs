@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Autofac;
-using Hik.DTO.Contracts;
-using Hik.Client.Service;
+﻿using Autofac;
 using Hik.Client.Infrastructure;
-using Hik.DTO.Config;
+using Hik.Client.Service;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
+using Hik.DTO.Config;
+using Hik.DTO.Contracts;
 using Job.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Job.Impl
 {
     public class HikVideoDownloaderJob : JobProcessBase
     {
-        public HikVideoDownloaderJob(string trigger, string configFilePath, string connectionString, Guid activityId) 
+        public HikVideoDownloaderJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
             Config = HikConfigExtensions.GetConfig<CameraConfig>(configFilePath);
@@ -22,7 +22,7 @@ namespace Job.Impl
         }
 
         public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
-        { 
+        {
             var downloader = AppBootstrapper.Container.Resolve<VideoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
             downloader.FileDownloaded += Downloader_VideoDownloaded;

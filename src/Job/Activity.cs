@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Job.Email;
+using NLog;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Job.Email;
-using NLog;
 
 namespace Job
 {
@@ -46,8 +46,8 @@ namespace Job
                     Log($"Activity. Cannot start, {Parameters.TriggerKey} is already running.");
                 }
             }
-            catch (Exception ex) {
-
+            catch (Exception ex)
+            {
                 Logger.Error($"Activity.Start - catch exception : {ex}");
                 EmailHelper.Send(ex);
             }
@@ -111,7 +111,6 @@ namespace Job
             hostProcess.BeginErrorReadLine();
 
             return tcs.Task;
-
         }
 
         private async Task RunAsTask()
@@ -146,11 +145,11 @@ namespace Job
             {
                 Guid prevId = Trace.CorrelationManager.ActivityId;
                 Trace.CorrelationManager.ActivityId = this.Id;
-                Logger.Error($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
+                Logger.Info($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
                 Trace.CorrelationManager.ActivityId = prevId;
-                EmailHelper.Send(new Exception(e.Data));
             }
         }
+
         private void LogData(object sender, DataReceivedEventArgs e)
         {
             if (!string.IsNullOrEmpty(e.Data))

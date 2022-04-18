@@ -32,8 +32,6 @@ namespace Hik.DataAccess.Data
         public virtual DownloadDuration DownloadDuration { get; set; }
 
         public virtual DownloadHistory DownloadHistory { get; set; }
-
-        public virtual DeleteHistory DeleteHistory { get; set; }
     }
 
     public static class MediaFileExtensions
@@ -41,7 +39,8 @@ namespace Hik.DataAccess.Data
         public static string GetPath(this MediaFile file)
         {
 #if DEBUG
-            return @"C:\FFOutput\20220223_151022_151553.mp4";
+            return file.Path.Replace("E:\\Cloud\\", "W:\\");
+            //return @"C:\FFOutput\20220223_151022_151553.mp4";
 #endif
             if (!Path.HasExtension(file.Path))
             {

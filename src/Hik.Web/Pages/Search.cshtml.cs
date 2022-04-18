@@ -1,5 +1,4 @@
-﻿using Hik.Client.Helpers;
-using Hik.DataAccess;
+﻿using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -18,11 +17,12 @@ namespace Hik.Web.Pages
     public class SearchModel : PageModel
     {
         private readonly DataContext dataContext;
+
         public SearchModel(DataContext dataContext)
         {
             this.dataContext = dataContext;
             this.dataContext.Database.EnsureCreated();
-            JobTriggers = dataContext.JobTriggers.AsQueryable().Where(x=>x.ShowInSearch).ToList();
+            JobTriggers = dataContext.JobTriggers.AsQueryable().Where(x => x.ShowInSearch).ToList();
             DateTime = DateTime.Now;
             JobTriggersList = new SelectList(JobTriggers, "Id", "TriggerKey", 1);
         }
@@ -48,12 +48,14 @@ namespace Hik.Web.Pages
             {
                 dateTime = DateTime.Now;
             }
+
+            dateTime = new DateTime(dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, dateTime.Value.Minute, 0, 0);
             if (jobTriggerId.HasValue && dateTime.HasValue)
             {
                 var file = await dataContext.MediaFiles
                     .AsQueryable()
-                    .Where(x => x.JobTriggerId == jobTriggerId && x.Date >= dateTime)
-                    .OrderBy(x => x.Date).FirstOrDefaultAsync();
+                    .Where(x => x.JobTriggerId == jobTriggerId && x.Date <= dateTime)
+                    .OrderByDescending(x => x.Date).FirstOrDefaultAsync();
 
                 if (file != null)
                 {
@@ -70,21 +72,14 @@ namespace Hik.Web.Pages
                         .OrderBy(x => x.Date).Take(5)
                         .ToListAsync();
 
-                    if (file.Date >= dateTime && file.Date.AddSeconds(file.Duration ?? 0) <= dateTime)
-                    {
-                        Msg = "Match";
-                    }
-                    else
-                    {
-                        Msg = "Out of range";
-                    }
+                    Msg = (file.Date >= dateTime && dateTime <= file.Date.AddSeconds(file.Duration ?? 0)) ? "Match" : "Out of range";
                 }
                 else
                 {
                     var latest = await dataContext.MediaFiles
                         .AsQueryable()
                         .Where(x => x.JobTriggerId == jobTriggerId)
-                        .OrderByDescending(x => x.Date).Take(5).ToListAsync();
+                        .OrderByDescending(x => x.Date).Take(5).OrderBy(x => x.Date).ToListAsync();
                     Files.AddRange(latest);
                     Msg = "Latest 5 files";
                 }

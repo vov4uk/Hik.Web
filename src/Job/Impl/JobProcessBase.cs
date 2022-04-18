@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hik.Api;
+﻿using Hik.Api;
+using Hik.Client.Events;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using NLog;
-using Hik.Client.Events;
 using Job.Extensions;
+using NLog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Job.Impl
 {
@@ -120,7 +120,6 @@ namespace Job.Impl
                 Task.WaitAll(LogExceptionToDB(e), jobResultSaver.SaveJobResultAsync());
             }
             catch (Exception ex) { logger.Error(ex.ToString()); }
-
 
             if (Config.SentEmailOnError)
             {

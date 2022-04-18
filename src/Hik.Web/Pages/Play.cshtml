@@ -5,32 +5,6 @@
 @{
 <link href="https://unpkg.com/video.js/dist/video-js.min.css" rel="stylesheet">
 <script src="https://unpkg.com/video.js/dist/video.min.js"></script>
-<style>
-   .video-pagination a {
-      display: inline-block;
-      margin-left: 10px;
-   }
-
-   .video-pagination h4 {
-      position: relative;
-      display: flex;
-      align-items: center;
-      margin: 0px;
-   }
-
-   .video-pagination {
-      position: relative;
-      display: flex;
-      align-items: center;
-      margin: 10px 0;
-      box-sizing: border-box;
-      justify-content: center;
-   }
-   .download-button{
-      position: absolute;
-      right: 0;
-   }
-</style>
 <div class="container">
    <div class="row ">
       <div class="col-md-12 video-pagination">
@@ -55,7 +29,7 @@
          </video>
       </div>
    </div>
-   <div class="row ">
+   <div class="row">
       <div class="col-md-12 video-pagination">
                 @if (@Model.PreviousFile != null)
                 {

@@ -1,14 +1,16 @@
-﻿using System;
-using Job;
+﻿using Job;
 using Job.Email;
 using NLog;
+using System;
+using System.Threading.Tasks;
 
 namespace JobHost
 {
-    static class Program
+    internal static class Program
     {
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        static void Main(string[] args)
+
+        private static async Task Main(string[] args)
         {
             try
             {
@@ -16,20 +18,17 @@ namespace JobHost
                 System.Diagnostics.Trace.CorrelationManager.ActivityId = parameters.ActivityId;
                 Logger.Info($"JobHost. Parameters resolved. {parameters}. Activity started execution.");
 
-                Type jobType = Type.GetType(parameters.ClassName);
-
-                if (jobType == null)
-                {
-                    throw new ArgumentException($"No such type exist '{parameters.ClassName}'");
-                }
+                Type jobType = Type.GetType(parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{parameters.ClassName}'");
 
                 Job.Impl.JobProcessBase job = (Job.Impl.JobProcessBase)Activator.CreateInstance(
-                    jobType, 
-                    $"{parameters.Group}.{parameters.TriggerKey}", 
-                    parameters.ConfigFilePath, 
-                    parameters.ConnectionString, 
+                    jobType,
+                    $"{parameters.Group}.{parameters.TriggerKey}",
+                    parameters.ConfigFilePath,
+                    parameters.ConnectionString,
                     parameters.ActivityId);
-                job.ExecuteAsync().GetAwaiter().GetResult();
+
+                await job.ExecuteAsync();
+
                 Logger.Info("JobHost. Activity completed execution.");
             }
             catch (Exception exception)

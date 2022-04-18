@@ -105,6 +105,7 @@ namespace Hik.DataAccess
                 var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
                 var jobRepo = unitOfWork.GetRepository<HikJob>();
                 var filesRepo = unitOfWork.GetRepository<MediaFile>();
+                var downloadRepo = unitOfWork.GetRepository<DownloadHistory>();
 
                 foreach (var trigger in triggers)
                 {
@@ -114,10 +115,20 @@ namespace Hik.DataAccess
                     if (jobTrigger != null)
                     {
                         logger.Info($"{trigger} found, Id = {jobTrigger.Id}, To = {to.ToLongDateString()}");
-                        await filesRepo.DeleteAsync(x => x.JobTriggerId == jobTrigger.Id && x.Date <= to);
+
+                        var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.PeriodEnd <= to);
+                        var jobIds = jobs.Select(x => x.Id).Distinct();
+
+                        var files = await downloadRepo.FindManyAsync(x => jobIds.Contains(x.JobId));
+                        var fileIds = files.Select(x => x.Id).Distinct();
+
+                        await downloadRepo.DeleteAsync(x => jobIds.Contains(x.JobId));
+                        logger.Info($"{trigger} downloadHistory cleared");
+
+                        await filesRepo.DeleteAsync(x => fileIds.Contains(x.Id));
                         logger.Info($"{trigger} files cleared");
 
-                        await jobRepo.DeleteAsync(x => x.JobTriggerId == jobTrigger.Id && x.PeriodEnd <= to);
+                        await jobRepo.DeleteAsync(x => jobIds.Contains(x.Id));
                         logger.Info($"{trigger} jobs cleared");
                     }
                 }

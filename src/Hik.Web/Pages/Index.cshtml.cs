@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using CronExpressionDescriptor;
 using Hik.Client.Helpers;
 using Hik.DataAccess;
@@ -17,6 +13,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
@@ -106,7 +106,6 @@ namespace Hik.Web.Pages
             _mediator.Send(command).ConfigureAwait(false).GetAwaiter();
 
             return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
-
         }
 
         public IActionResult OnPostKill(Guid activityId)

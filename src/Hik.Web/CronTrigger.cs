@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Job;
 using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
 namespace Hik.Web
 {
-    class CronTrigger : Quartz.IJob
+    internal class CronTrigger : Quartz.IJob
     {
         public async Task Execute(Quartz.IJobExecutionContext context)
         {

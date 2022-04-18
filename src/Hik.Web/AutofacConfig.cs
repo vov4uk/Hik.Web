@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Job.Commands;
-using Microsoft.Extensions.Configuration;
 using MediatR.Extensions.Autofac.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace Hik.Web
 {
