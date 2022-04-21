@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hik.Client\Hik.Client.csproj" />
+    <ProjectReference Include="..\..\Hik.Client\Hik.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>
