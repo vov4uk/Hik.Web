@@ -1,9 +1,12 @@
-[![Build Status](https://dev.azure.com/khmelovskyi/HikConsole/_apis/build/status/vov4uk.HikConsole?branchName=master)](https://dev.azure.com/khmelovskyi/HikConsole/_build/latest?definitionId=1&branchName=master)
+| What | Badge|
+| ---- | ---- |
+| Build | [![Build Status](https://dev.azure.com/khmelovskyi/HikConsole/_apis/build/status/vov4uk.HikConsole?branchName=master)](https://dev.azure.com/khmelovskyi/HikConsole/_build/latest?definitionId=1&branchName=master)|
+| Sonar | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=vov4uk_HikConsole&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=vov4uk_HikConsole)|
 
 # Hik.Client
-* Wrapper over Hik.Api. 
-* HikPhotoClient - Download photo files from Hikvision IP cameras. 
-* HikVideoClient - Download video files from Hikvision IP cameras. 
+* Wrapper over Hik.Api.
+* HikPhotoClient - Download photo files from Hikvision IP cameras.
+* HikVideoClient - Download video files from Hikvision IP cameras.
 * YiClient - Download files from Xiaomi YI cameras. Connetct YI camera over FTP, and download files.
 
 # HikWeb
