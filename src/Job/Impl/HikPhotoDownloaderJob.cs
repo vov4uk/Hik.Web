@@ -1,32 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Autofac;
-using Hik.DTO.Contracts;
+﻿using Autofac;
 using Hik.Client.Infrastructure;
 using Hik.Client.Service;
-using Hik.DTO.Config;
-using Hik.DataAccess.Data;
 using Hik.DataAccess;
+using Hik.DataAccess.Data;
+using Hik.DTO.Config;
+using Hik.DTO.Contracts;
 using Job.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Job.Impl
 {
     public class HikPhotoDownloaderJob : JobProcessBase
     {
-        public HikPhotoDownloaderJob(string trigger, string configFilePath, string connectionString, Guid activityId) 
+        public HikPhotoDownloaderJob(string trigger, string configFilePath, string connectionString, Guid activityId)
             : base(trigger, configFilePath, connectionString, activityId)
         {
             Config = HikConfigExtensions.GetConfig<CameraConfig>(configFilePath);
             LogInfo(Config?.ToString());
         }
 
-        public override async Task SaveHistory(IReadOnlyCollection<MediaFile> files, JobService service)
+        public override async Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             await service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> Run()
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
             var downloader = AppBootstrapper.Container.Resolve<HikPhotoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;

@@ -1,0 +1,46 @@
+﻿@page
+@model Hik.Web.Pages.PlayModel
+@{ViewData["Title"] = "Play";}
+
+@{
+<link href="https://unpkg.com/video.js/dist/video-js.min.css" rel="stylesheet">
+<script src="https://unpkg.com/video.js/dist/video.min.js"></script>
+<div class="container">
+   <div class="row ">
+      <div class="col-md-12 video-pagination">
+         <h2 mb-3>@Model.FileTitle</h2>
+         <a class="btn btn-primary download-button" role="button" href="@Url.Page("Search", "DownloadFile" , new { fileId=@Model.FileId })">Download</a>
+      </div>
+   </div>
+   <div class="row ">
+      <div class="col-md-12 video-pagination">
+         <h4 mb-3>@Model.FileFrom - @Model.FileTo</h4>
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-md-12 video-pagination">
+         <video id="my-player"
+                class="video-js"
+                width="1080"
+                controls preload="auto"
+                poster="@Model.Poster"
+                data-setup='{ "playbackRates": [0.5, 1, 1.5, 2, 4, 8] }'>
+            <source src="/Search?fileId=@Model.FileId&handler=StreamFile" type="video/mp4" />
+         </video>
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-md-12 video-pagination">
+                @if (@Model.PreviousFile != null)
+                {
+                    <a class="btn btn-outline-secondary" role="button" href="@Url.Page("Play", new { fileId=@Model.PreviousFile.Id })"><span aria-hidden="true">&laquo;</span> Previous</a>
+                }
+
+                @if (@Model.NextFile != null)
+                {
+                    <a class="btn btn-outline-success" role="button" href="@Url.Page("Play", new { fileId=@Model.NextFile.Id })">Next <span aria-hidden="true">&raquo;</span></a>
+                }
+      </div>
+   </div>
+</div>
+}

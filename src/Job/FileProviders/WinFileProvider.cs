@@ -10,7 +10,7 @@ namespace Job.FileProviders
     public class WinFileProvider : IFileProvider
     {
         private Stack<DateTime> dates;
-        private Dictionary<DateTime, IList<string>> folders;
+        private Dictionary<DateTime, IList<string>> directoriesToDelete;
         private bool isInitialized = false;
         private string fileExtention;
 
@@ -19,28 +19,25 @@ namespace Job.FileProviders
             this.fileExtention = fileExtention;
         }
 
-        public void Initialize(string[] trigger)
+        public void Initialize(string[] directories)
         {
             if (!isInitialized)
             {
-                folders = new Dictionary<DateTime, IList<string>>();
-                foreach (var tr in trigger)
+                directoriesToDelete = new Dictionary<DateTime, IList<string>>();
+                foreach (var topDirectory in directories)
                 {
-                    foreach (var item in Directory.EnumerateDirectories(tr, "*.*", SearchOption.AllDirectories).OrderBy(x => x))
+                    foreach (var directory in Directory.EnumerateDirectories(topDirectory, "*.*", SearchOption.AllDirectories).OrderBy(x => x))
                     {
-                        var trim = item.Remove(0, Math.Max(0, item.Length - 13)).Replace("\\", "-").Split("-");
+                        var trim = directory.Remove(0, Math.Max(0, directory.Length - 13)).Replace("\\", "-").Split("-");
 
-                        if (trim.Length == 4)
+                        if (trim.Length == 4 && DateTime.TryParse($"{trim[0]}-{trim[1]}-{trim[2]} {trim[3]}:00:00", out var dt))
                         {
-                            if (DateTime.TryParse($"{trim[0]}-{trim[1]}-{trim[2]} {trim[3]}:00:00", out var dt))
-                            {
-                                folders.SafeAdd(dt, item);
-                            }
+                            directoriesToDelete.SafeAdd(dt, directory);
                         }
                     }
-                    folders.SafeAdd(DateTime.Today, tr);
+                    directoriesToDelete.SafeAdd(DateTime.Today, topDirectory);
                 }
-                dates = new Stack<DateTime>(folders.Keys.OrderByDescending(x => x).ToList());
+                dates = new Stack<DateTime>(directoriesToDelete.Keys.OrderByDescending(x => x).ToList());
             }
             isInitialized = true;
         }
@@ -54,9 +51,9 @@ namespace Job.FileProviders
                 {
                     if (dates.TryPop(out var lastDate))
                     {
-                        if (folders.ContainsKey(lastDate))
+                        if (directoriesToDelete.ContainsKey(lastDate))
                         {
-                            foreach (var folder in folders[lastDate])
+                            foreach (var folder in directoriesToDelete[lastDate])
                             {
                                 result.AddRange(Directory.EnumerateFiles(folder, fileExtention).Select(x => new MediaFileDTO { Path = x, Date = lastDate}));
                             }
@@ -75,13 +72,13 @@ namespace Job.FileProviders
         public IReadOnlyCollection<MediaFileDTO> GetFilesOlderThan(DateTime date)
         {
             var result = new List<MediaFileDTO>();
-            if (folders.Any())
+            if (directoriesToDelete.Any())
             {
-                foreach (var fileDateTime in folders.Keys.Where(x => x <= date))
+                foreach (var fileDateTime in directoriesToDelete.Keys.Where(x => x <= date))
                 {
-                    if (folders.ContainsKey(fileDateTime))
+                    if (directoriesToDelete.ContainsKey(fileDateTime))
                     {
-                        foreach (var folder in folders[fileDateTime])
+                        foreach (var folder in directoriesToDelete[fileDateTime])
                         {
                             result.AddRange(Directory.EnumerateFiles(folder, fileExtention).Select(x => new MediaFileDTO { Path = x, Date = fileDateTime }));
                         }

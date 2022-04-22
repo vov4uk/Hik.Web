@@ -1,17 +1,19 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.WindowsServices;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace Hik.Web
 {
     public static class Program
     {
+        public static string Version { get; set; }
+
         public static void Main(string[] args)
         {
             // https://dotnetcoretutorials.com/2018/09/12/hosting-an-asp-net-core-web-application-as-a-windows-service/
@@ -27,9 +29,16 @@ namespace Hik.Web
 
             var host = builder.Build();
 
+            Assembly web = Assembly.GetExecutingAssembly();
+            AssemblyName webName = web.GetName();
+
+            Version = webName.Version.ToString();
+
             if (isService)
             {
+#pragma warning disable CA1416 // Validate platform compatibility
                 host.RunAsService();
+#pragma warning restore CA1416 // Validate platform compatibility
             }
             else
             {
@@ -39,13 +48,15 @@ namespace Hik.Web
 
         public static IWebHostBuilder CreateHostBuilder(bool isService, string[] args)
         {
+            Directory.SetCurrentDirectory(AssemblyDirectory);
+
             var env = isService ? "Production" : "Development";
             var config = new ConfigurationBuilder()
-            .SetBasePath(AssemblyDirectory)
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
-            .AddCommandLine(args)
-            .Build();
+                .SetBasePath(Environment.CurrentDirectory)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
+                .AddCommandLine(args)
+                .Build();
 
             AutofacConfig.RegisterConfiguration(config);
 

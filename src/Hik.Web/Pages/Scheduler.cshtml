@@ -1,5 +1,6 @@
 ﻿@page
 @model Hik.Web.Pages.SchedulerModel
+@{ViewData["Title"] = "Scheduler";}
 
 <div class="row">
     <div class="col-lg-12 my-3">
@@ -45,12 +46,9 @@
                 <td>@cron.Job</td>
                 <td>@cron.ConfigPath</td>
                 <td>@cron.RunAsTask</td>
-                <td>
-                    <a asp-page="./CronEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">Edit</a>
-                </td>
+                <td><a asp-page="./CronEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">Edit</a></td>
             </tr>
             }
         </tbody>
     </table>
-
 }

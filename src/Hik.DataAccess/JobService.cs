@@ -6,6 +6,7 @@ using AutoMapper;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
+using NLog;
 
 namespace Hik.DataAccess
 {
@@ -14,6 +15,7 @@ namespace Hik.DataAccess
         private readonly IUnitOfWorkFactory factory;
         private readonly HikJob job;
         private static readonly IMapper mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
+        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public JobService(IUnitOfWorkFactory factory, HikJob job)
         {
@@ -63,7 +65,7 @@ namespace Hik.DataAccess
             return mediaFiles;
         }
 
-        public async Task UpdateDailyStatistics(IReadOnlyCollection<MediaFileDTO> files)
+        public async Task UpdateDailyStatisticsAsync(IReadOnlyCollection<MediaFileDTO> files)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
 
@@ -86,14 +88,54 @@ namespace Hik.DataAccess
             await unitOfWork.SaveChangesAsync(job);
         }
 
-        public async Task SaveHistoryFilesAsync<T>(IReadOnlyCollection<MediaFile> files) where T: class, IHistory, new()
+        public async Task SaveHistoryFilesAsync<T>(IReadOnlyCollection<MediaFile> files)
+            where T: class, IHistory, new()
         {
             using var unitOfWork = factory.CreateUnitOfWork();
             var entities = files.Select(x => new T { MediaFileId = x.Id }).ToList();
 
             await AddEntities(entities, unitOfWork);
             await unitOfWork.SaveChangesAsync(job);
+        }
 
+        public async Task DeleteObsoleteJobsAsync(string[] triggers, DateTime to)
+        {
+            using (var unitOfWork = factory.CreateUnitOfWork())
+            {
+                var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
+                var jobRepo = unitOfWork.GetRepository<HikJob>();
+                var filesRepo = unitOfWork.GetRepository<MediaFile>();
+                var downloadRepo = unitOfWork.GetRepository<DownloadHistory>();
+
+                foreach (var trigger in triggers)
+                {
+                    var parts = trigger.Split(".");
+                    logger.Info($"Try cleanup {trigger}");
+                    var jobTrigger = await triggerRepo.FindByAsync(x => x.Group == parts[0] && x.TriggerKey == parts[1]);
+                    if (jobTrigger != null)
+                    {
+                        logger.Info($"{trigger} found, Id = {jobTrigger.Id}, To = {to.ToLongDateString()}");
+
+                        var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.PeriodEnd <= to);
+                        var jobIds = jobs.Select(x => x.Id).Distinct();
+
+                        var files = await downloadRepo.FindManyAsync(x => jobIds.Contains(x.JobId));
+                        var fileIds = files.Select(x => x.Id).Distinct();
+
+                        await downloadRepo.DeleteAsync(x => jobIds.Contains(x.JobId));
+                        logger.Info($"{trigger} downloadHistory cleared");
+
+                        await filesRepo.DeleteAsync(x => fileIds.Contains(x.Id));
+                        logger.Info($"{trigger} files cleared");
+
+                        await jobRepo.DeleteAsync(x => jobIds.Contains(x.Id));
+                        logger.Info($"{trigger} jobs cleared");
+                    }
+                }
+
+                unitOfWork.SaveChanges();
+                logger.Info($"Cleanup done");
+            }
         }
 
         private async Task<List<DailyStatistic>> GetDailyStatisticSafe(int triggerId, DateTime from, DateTime to, IUnitOfWork unitOfWork)

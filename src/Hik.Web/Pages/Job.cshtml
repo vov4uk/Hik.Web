@@ -1,20 +1,20 @@
 ﻿@page
 @using Hik.Client.Helpers
 @model Hik.Web.Pages.JobModel
-
 @{ViewData["Title"] = "Job";}
+
 <button onclick="javascript:history.back()">Go Back</button>
 @if (Model.Jobs != null && Model.Jobs.Any())
 {
 <table class="table table-bordered table-sm" width="100%">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().JobTrigger)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().Started)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().Finished)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().PeriodStart)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().PeriodEnd)</th>
-            <th>@Html.DisplayNameFor(model => model.Jobs.FirstOrDefault().FilesCount)</th>
+            <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().JobTrigger)</th>
+            <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().Started)</th>
+            <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().Finished)</th>
+            <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().PeriodStart)</th>
+            <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().PeriodEnd)</th>
+            <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().FilesCount)</th>
             <th></th>
         </tr>
     </thead>
@@ -28,9 +28,9 @@
             <td>@trigger</td>
             <td><span title="@item.Started">@relativeDate</span></td>
             <td><span title="@item.Finished">@relativeFinishedDate</span></td>
-            <td>@Html.DisplayFor(modelItem => item.PeriodStart)</td>
-            <td>@Html.DisplayFor(modelItem => item.PeriodEnd)</td>
-            <td>@Html.DisplayFor(modelItem => item.FilesCount)</td>
+            <td>@Html.DisplayFor(m => item.PeriodStart)</td>
+            <td>@Html.DisplayFor(m => item.PeriodEnd)</td>
+            <td>@Html.DisplayFor(m => item.FilesCount)</td>
             <td><a asp-page="./Details" asp-route-id="@item.Id">Details</a></td>
         </tr>
         }

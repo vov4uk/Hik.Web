@@ -1,7 +1,7 @@
-using System.Linq;
 using Hik.Web.Scheduler;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Linq;
 
 namespace Hik.Web.Pages
 {

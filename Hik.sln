@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Client", "src\Hik.Client\Hik.Client.csproj", "{1E49A7B7-1549-4566-84AA-A073179FE013}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Client.Tests", "src\Hik.Tests\Hik.Client.Tests.csproj", "{941C4E4E-2898-4A78-AF93-7A7E6EB87DA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Client.Tests", "src\Tests\Hik.Tests\Hik.Client.Tests.csproj", "{941C4E4E-2898-4A78-AF93-7A7E6EB87DA3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.DataAccess", "src\Hik.DataAccess\Hik.DataAccess.csproj", "{398BC768-99BB-4601-AD47-A987EFFA0252}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Job", "src\Job\Job.csproj", "{F96FB9D8-B2B6-44C5-90C9-34B5CB6A0C69}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JobHost", "src\JobHost\JobHost.csproj", "{D261541B-BBAF-48BF-8B94-0E46690DBE03}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{15507225-11CE-4713-8452-3885F5A6F3E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +56,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{941C4E4E-2898-4A78-AF93-7A7E6EB87DA3} = {15507225-11CE-4713-8452-3885F5A6F3E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BC11C5EE-74C4-497D-9A6F-46A53EC063DF}

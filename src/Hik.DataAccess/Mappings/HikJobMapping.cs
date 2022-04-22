@@ -13,6 +13,8 @@ namespace Hik.DataAccess.Mappings
         {
             builder.ToTable(Tables.Job);
             builder.HasKey(job => job.Id);
+            builder.HasIndex(job => job.PeriodStart);
+
             builder
                 .HasOne(v => v.JobTrigger)
                 .WithMany(v => v.Jobs)

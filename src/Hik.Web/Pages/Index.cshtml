@@ -1,7 +1,7 @@
 ﻿@page
 @using Hik.Client.Helpers
 @model Hik.Web.Pages.IndexModel
-@{ViewData["Title"] = "Scheduler";}
+@{ViewData["Title"] = "Home";}
 
 <h3>@Model.ResponseMsg</h3>
 
@@ -17,11 +17,11 @@
 </div>
 
 <div class="container">
-    @if(Model.TriggersDtOs != null && Model.TriggersDtOs.Any())
+    @if(Model.TriggersDtos != null && Model.TriggersDtos.Any())
     {
-      @foreach (var key in Model.TriggersDtOs.Keys.OrderBy(x => x))
+      @foreach (var key in Model.TriggersDtos.Keys.OrderBy(x => x))
       {
-          var row = Model.TriggersDtOs[key];
+          var jobTrigger = Model.TriggersDtos[key];
           <div class="row">
               <div class="card-body text-center">
                   <h4 class="card-title">@Html.DisplayFor(x => key)</h4>
@@ -33,26 +33,26 @@
                       <tr>
                           <th>Cron</th>
                           <th>Title</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().Next)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().ConfigPath)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastSync)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastJobPeriodStart)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastJobPeriodEnd)</th>
-                          <th>@Html.DisplayNameFor(model => row.FirstOrDefault().LastJobFilesCount)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().Next)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().ConfigPath)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastSync)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobPeriodStart)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobPeriodEnd)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobFilesCount)</th>
                           <th>Started</th>
                           <th>Finished</th>
                           <th></th>
                       </tr>
                   </thead>
                   <tbody>
-                      @foreach (var item in row)
+                      @foreach (var item in jobTrigger)
                       {
                           string started = item.LastJobStarted.GetRelativeTime();
                           string finished = item.LastJobFinished.GetRelativeTime();
                           string lastSync = item.LastSync.GetRelativeTime();
                           string from = item.LastJobPeriodStart.GetRelativeTime();
                           string to = item.LastJobPeriodEnd.GetRelativeTime();
-     
+
                           <tr data-status="@item.Success" class="failed">
                               <td><span title="@item.CronSummary">@item.CronString</span></td>
                               <td><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></td>
@@ -82,8 +82,8 @@
                       }
                   </tbody>
               </table>
-     
-              @foreach (var item in row)
+
+              @foreach (var item in jobTrigger)
               {
                   string started = item.LastJobStarted.GetRelativeTime();
                   string finished = item.LastJobFinished.GetRelativeTime();
@@ -91,7 +91,7 @@
                   string from = item.LastJobPeriodStart.GetRelativeTime();
                   string to = item.LastJobPeriodEnd.GetRelativeTime();
                   string color = item.Success && item.ActivityId == null ? "text-white tri-success" : item.ActivityId == null ? "text-white tri-error" : "text-black tri-info";
-     
+
                   <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3">
                       <div class="card @color" style="margin-bottom: 10px;">
                           <div class="card-body text-center">

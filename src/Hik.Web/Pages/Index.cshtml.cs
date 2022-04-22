@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using CronExpressionDescriptor;
 using Hik.Client.Helpers;
 using Hik.DataAccess;
@@ -10,11 +6,17 @@ using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Hik.Web.Scheduler;
 using Job;
+using Job.Commands;
 using Job.Extensions;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
@@ -22,31 +24,33 @@ namespace Hik.Web.Pages
     {
         private readonly DataContext dataContext;
         private readonly ActivityBag activities = new();
+        private readonly IMediator _mediator;
 
         public IndexModel(DataContext dataContext)
         {
             this.dataContext = dataContext;
-            dataContext.Database.EnsureCreated();
+            this.dataContext.Database.EnsureCreated();
+            _mediator = AutofacConfig.Container.Resolve<IMediator>();
             JobTriggers = dataContext.JobTriggers.AsQueryable().ToList();
         }
 
         private IList<JobTrigger> JobTriggers { get; }
 
-        public Dictionary<string, IList<TriggerDTO>> TriggersDtOs { get; private set; }
+        public Dictionary<string, IList<TriggerDTO>> TriggersDtos { get; private set; }
 
         public string ResponseMsg { get; private set; }
 
         public async Task OnGet(string msg = null)
         {
             ResponseMsg = msg;
-            TriggersDtOs = new Dictionary<string, IList<TriggerDTO>>();
+            TriggersDtos = new Dictionary<string, IList<TriggerDTO>>();
             var jobs = await dataContext.JobTriggers
                 .AsQueryable()
                 .Include(x => x.Jobs)
                 .Select(x => x.Jobs.OrderByDescending(y => y.Started).FirstOrDefault())
                 .ToListAsync();
 
-            var cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
+            IEnumerable<Quartz.Impl.Triggers.CronTriggerImpl> cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
 
             foreach (var item in cronTriggers)
             {
@@ -78,8 +82,7 @@ namespace Hik.Web.Pages
                     LastJobFinished = job?.Finished
                 };
 
-                TriggersDtOs.SafeAdd(className, dto);
-
+                TriggersDtos.SafeAdd(className, dto);
             }
         }
 
@@ -99,8 +102,9 @@ namespace Hik.Web.Pages
 
             var parameters = new Parameters(className, group, name, configPath, defaultConnection, runAsTask);
 
-            var activity = new Activity(parameters);
-            await activity.Start().ConfigureAwait(false);
+            var command = new ActivityCommand(parameters);
+            _mediator.Send(command).ConfigureAwait(false).GetAwaiter();
+
             return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
         }
 

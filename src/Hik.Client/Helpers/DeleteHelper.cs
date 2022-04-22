@@ -43,7 +43,7 @@ namespace Hik.Client.Helpers
             }
         }
 
-        public Task<IReadOnlyCollection<MediaFileDTO>> GetNextBatch(bool readDuration = false)
+        public async Task<IReadOnlyCollection<MediaFileDTO>> GetNextBatch(bool readDuration = false)
         {
             var files = new List<MediaFileDTO>();
             if (dates.TryPop(out var last) && directories.ContainsKey(last))
@@ -54,13 +54,13 @@ namespace Hik.Client.Helpers
                     foreach (var file in localFiles)
                     {
                         var size = filesHelper.FileSize(file);
-                        var duration = readDuration ? videoHelper.GetDuration(file) : 0;
+                        var duration = readDuration ? await videoHelper.GetDuration(file) : 0;
                         files.Add(new MediaFileDTO { Date = last, Name = filesHelper.GetFileName(file), Path = file, Size = size, Duration = duration });
                     }
                 }
             }
 
-            return Task.FromResult(files.AsReadOnly() as IReadOnlyCollection<MediaFileDTO>);
+            return files.AsReadOnly();
         }
     }
 }

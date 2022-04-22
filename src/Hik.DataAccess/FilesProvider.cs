@@ -1,5 +1,4 @@
 ﻿using Hik.DataAccess.Data;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,13 +23,11 @@ namespace Hik.DataAccess
                 foreach (var tri in triggers)
                 {
                     var files = dbContenxt.MediaFiles
-                        .Include(x => x.DeleteHistory)
-                        .Where(x => x.JobTriggerId == tri.Id && x.DeleteHistory == null)
+                        .Where(x => x.JobTriggerId == tri.Id)
                         .OrderBy(x => x.Date);
 
                     foreach (var file in files)
                     {
-
                         var dt = file.Date;
                         if (mediaFiles.ContainsKey(dt))
                         {

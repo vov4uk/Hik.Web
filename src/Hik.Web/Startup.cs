@@ -1,5 +1,7 @@
 using Hik.DataAccess;
 using Hik.Web.Scheduler;
+using Job.Commands;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,16 +22,19 @@ namespace Hik.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            services.AddMediatR(typeof(ActivityCommandHandler).Assembly);
+
             services.AddDbContext<DataContext>(options =>
               {
                   options.UseSqlite(Configuration.GetConnectionString("HikConnectionString"), options =>
                   {
                       options.MigrationsAssembly("Hik.DataAccess.dll");
                   });
+                  options.EnableSensitiveDataLogging();
               });
         }
 
-        public void Configure(IApplicationBuilder app, 
+        public void Configure(IApplicationBuilder app,
             IHostApplicationLifetime lifetime)
         {
             var quartz = new QuartzStartup(Configuration);
@@ -39,7 +44,6 @@ namespace Hik.Web
 
             app.UseDeveloperExceptionPage();
 
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthorization();

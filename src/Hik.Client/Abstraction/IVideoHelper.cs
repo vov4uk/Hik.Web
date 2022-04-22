@@ -1,7 +1,9 @@
-﻿namespace Hik.Client.Abstraction
+﻿using System.Threading.Tasks;
+
+namespace Hik.Client.Abstraction
 {
     public interface IVideoHelper
     {
-        int GetDuration(string path);
+        Task<int> GetDuration(string path);
     }
 }

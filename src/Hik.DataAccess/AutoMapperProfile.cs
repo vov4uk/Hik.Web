@@ -12,8 +12,7 @@ namespace Hik.DataAccess
                 .ForMember(x => x.DownloadHistory, opt => opt.Ignore())
                 .ForMember(x => x.DownloadDuration, opt => opt.Ignore())
                 .ForMember(x => x.JobTriggerId, opt => opt.Ignore())
-                .ForMember(x => x.JobTrigger, opt => opt.Ignore())
-                .ForMember(x => x.DeleteHistory, opt => opt.Ignore());
+                .ForMember(x => x.JobTrigger, opt => opt.Ignore());
 
             this.CreateMap<MediaFileDTO, DownloadDuration>(MemberList.None)
                 .ForMember(x => x.Duration, opt => opt.MapFrom(y => y.DownloadDuration))

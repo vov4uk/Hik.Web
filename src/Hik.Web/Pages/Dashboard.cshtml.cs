@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hik.Client.Helpers;
+﻿using Hik.Client.Helpers;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.Web.Scheduler;
 using Job.Extensions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {

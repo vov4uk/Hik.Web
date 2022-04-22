@@ -41,7 +41,7 @@ namespace Hik.Client
 
         public void InitializeClient()
         {
-            string sdkLogsPath = filesHelper.CombinePath(DirectoryHelper.AssemblyDirectory, "logs", config.Alias + "_SdkLog");
+            string sdkLogsPath = filesHelper.CombinePath(Environment.CurrentDirectory, "logs", config.Alias + "_SdkLog");
             dirHelper.CreateDirIfNotExist(sdkLogsPath);
             dirHelper.CreateDirIfNotExist(config.DestinationFolder);
 
@@ -73,6 +73,21 @@ namespace Hik.Client
             {
                 logger.Warn("HikBaseClient.Login : Already logged in");
                 return false;
+            }
+        }
+
+        public void SyncTime()
+        {
+            if (config.SyncTime)
+            {
+                var cameraTime = hikApi.GetTime(session.UserId);
+                logger.Info($"Camera time :{cameraTime}");
+                var currentTime = DateTime.Now;
+                if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
+                {
+                    hikApi.SetTime(currentTime, session.UserId);
+                    logger.Warn($"Camera time updated :{currentTime}");
+                }
             }
         }
 

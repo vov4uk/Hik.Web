@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.IO;
 
 namespace Hik.DataAccess.Data
 {
@@ -31,7 +32,20 @@ namespace Hik.DataAccess.Data
         public virtual DownloadDuration DownloadDuration { get; set; }
 
         public virtual DownloadHistory DownloadHistory { get; set; }
+    }
 
-        public virtual DeleteHistory DeleteHistory { get; set; }
+    public static class MediaFileExtensions
+    {
+        public static string GetPath(this MediaFile file)
+        {
+#if DEBUG
+            return file.Path.Replace("E:\\Cloud\\", "W:\\");
+#endif
+            if (!Path.HasExtension(file.Path))
+            {
+                return Path.Combine(file.Path, file.Name);
+            }
+            return file.Path;
+        }
     }
 }

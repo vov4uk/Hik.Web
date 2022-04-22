@@ -1,29 +1,29 @@
 ﻿@page
 @model Hik.Web.Pages.DetailsModel
-
 @{ViewData["Title"] = "Details";}
+
 <button onclick="javascript:history.back()">Go Back</button>
 @if (Model.Job != null)
 {
 <table class="table table-bordered table-sm" width="100%">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.Job.Id)</th>
-            <th>@Html.DisplayNameFor(model => model.Job.JobTrigger)</th>
-            <th>@Html.DisplayNameFor(model => model.Job.PeriodStart)</th>
-            <th>@Html.DisplayNameFor(model => model.Job.PeriodEnd)</th>
-            <th>@Html.DisplayNameFor(model => model.Job.Started)</th>
-            <th>@Html.DisplayNameFor(model => model.Job.Finished)</th>
+            <th>@Html.DisplayNameFor(m => m.Job.Id)</th>
+            <th>@Html.DisplayNameFor(m => m.Job.JobTrigger)</th>
+            <th>@Html.DisplayNameFor(m => m.Job.PeriodStart)</th>
+            <th>@Html.DisplayNameFor(m => m.Job.PeriodEnd)</th>
+            <th>@Html.DisplayNameFor(m => m.Job.Started)</th>
+            <th>@Html.DisplayNameFor(m => m.Job.Finished)</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td>@Html.DisplayFor(modelItem => Model.Job.Id)</td>
-            <td>@Html.DisplayFor(modelItem => Model.Job.JobTrigger.TriggerKey)</td>
-            <td>@Html.DisplayFor(modelItem => Model.Job.PeriodStart)</td>
-            <td>@Html.DisplayFor(modelItem => Model.Job.PeriodEnd)</td>
-            <td>@Html.DisplayFor(modelItem => Model.Job.Started)</td>
-            <td>@Html.DisplayFor(modelItem => Model.Job.Finished)</td>
+            <td>@Html.DisplayFor(m => Model.Job.Id)</td>
+            <td>@Html.DisplayFor(m => Model.Job.JobTrigger.TriggerKey)</td>
+            <td>@Html.DisplayFor(m => Model.Job.PeriodStart)</td>
+            <td>@Html.DisplayFor(m => Model.Job.PeriodEnd)</td>
+            <td>@Html.DisplayFor(m => Model.Job.Started)</td>
+            <td>@Html.DisplayFor(m => Model.Job.Finished)</td>
         </tr>
     </tbody>
 </table>
@@ -34,16 +34,16 @@
     <table class="table table-bordered table-sm" width="100%">
         <thead>
             <tr>
-                <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Created)</th>
-                <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.HikErrorCode)</th>
-                <th>@Html.DisplayNameFor(model => model.Job.ExceptionLog.Message)</th>
+                <th>@Html.DisplayNameFor(m => m.Job.ExceptionLog.Created)</th>
+                <th>@Html.DisplayNameFor(m => m.Job.ExceptionLog.HikErrorCode)</th>
+                <th>@Html.DisplayNameFor(m => m.Job.ExceptionLog.Message)</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.Created)</td>
-                <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.HikErrorCode)</td>
-                <td>@Html.DisplayFor(modelItem => Model.Job.ExceptionLog.Message)</td>
+                <td>@Html.DisplayFor(m => Model.Job.ExceptionLog.Created)</td>
+                <td>@Html.DisplayFor(m => Model.Job.ExceptionLog.HikErrorCode)</td>
+                <td>@Html.DisplayFor(m => Model.Job.ExceptionLog.Message)</td>
             </tr>
         </tbody>
     </table>

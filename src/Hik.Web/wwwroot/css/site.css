@@ -1,15 +1,20 @@
-﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
-
-a.navbar-brand {
+﻿a.navbar-brand {
   white-space: normal;
   text-align: center;
   word-break: break-all;
 }
 
-/* Provide sufficient contrast against white background */
 a {
   color: #1b6ec2;
+}
+
+h4 {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0px;
+    box-sizing: border-box;
+    justify-content: center;
 }
 
 .btn-primary {
@@ -49,6 +54,7 @@ html {
     position: relative;
     min-height: 100%;
 }
+
 @media (min-width: 768px) {
   html {
     font-size: 14px;
@@ -58,6 +64,7 @@ html {
 .border-top {
   border-top: 1px solid #e5e5e5;
 }
+
 .border-bottom {
   border-bottom: 1px solid #e5e5e5;
 }
@@ -75,6 +82,7 @@ body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
 }
+
 .footer {
   position: absolute;
   bottom: 0;
@@ -152,7 +160,6 @@ div[role="main"] aside p {
 
 @media only screen and (min-width: 768px) {
 
-
     #container {
         padding: 2em;
         background: blue;
@@ -224,4 +231,23 @@ div[role="main"] aside p {
 }
 .tri-info {
     background-color: #E6E9ED;
+}
+
+.video-pagination {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
+.video-pagination a {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.download-button {
+    position: absolute;
+    right: 0;
 }

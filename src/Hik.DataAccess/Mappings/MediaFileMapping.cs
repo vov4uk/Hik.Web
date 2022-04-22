@@ -13,6 +13,7 @@ namespace Hik.DataAccess.Mappings
         {
             builder.ToTable(Tables.MediaFile);
             builder.HasKey(file => file.Id);
+            builder.HasIndex(file => file.Date);
 
             builder
                 .HasOne(v => v.JobTrigger)

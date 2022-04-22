@@ -34,30 +34,31 @@
                          </tr>
                      </thead>
                      <tbody>
-                         @foreach (var item in row)
+                         @foreach (var jobTrigger in row)
                          {
-                             long statSize = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id)?.FilesSize ?? 0;
-                             int statDuration = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id)?.TotalDuration ?? 0;
+                             long statSize = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id)?.FilesSize ?? 0;
+                             int statDuration = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id)?.TotalDuration ?? 0;
                              string size = statSize.FormatBytes();
-                             string dur = ((double)statDuration).FormatSeconds();
-                             string triggerString = item.ToString();
+                             string duration = ((double)statDuration).FormatSeconds();
+                             string triggerString = jobTrigger.ToString();
                              var latestFile = new DateTime();
-                             @if(Model.LatestFiles.ContainsKey(item.Id))
+                             @if(Model.LatestFiles.ContainsKey(jobTrigger.Id))
                              {
-                                 latestFile = Model.LatestFiles[item.Id];
+                                 latestFile = Model.LatestFiles[jobTrigger.Id];
                              }
 
-                            var delta = (item.LastSync ?? DateTime.Now) - latestFile;
-                            var success = delta.TotalHours < 2 || key == "Job.Impl.GarbageCollectorJob, Job";
+                            var lastFileDelta = (jobTrigger.LastSync ?? DateTime.Now) - latestFile;
+                            var lastSyncDelta = DateTime.Now - (jobTrigger.LastSync ?? new DateTime());
+                            var success = (lastFileDelta.TotalHours < 2 && lastSyncDelta.TotalHours < 2) || key == "Job.Impl.GarbageCollectorJob, Job";
                             <tr data-status="@success" class="failed">
-                             <td><a asp-page="./Statistic" asp-route-triggerId="@item.Id">@triggerString</a></td>
-                             <td><span title="@item.LastSync?.GetRelativeTime()">@item.LastSync?.GetString()</span></td>
-                             <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
-                             <td>@delta.GetRelativeTime()</td>
-                             <td>@Html.DisplayFor(modelItem => Model.Statistics.FirstOrDefault(x => x.JobTriggerId == item.Id).FilesCount)</td>
-                             <td>@size</td>
-                             <td>@dur</td>
-                         </tr>
+                                <td><a asp-page="./Statistic" asp-route-triggerId="@jobTrigger.Id">@triggerString</a></td>
+                                <td><span title="@jobTrigger.LastSync?.GetRelativeTime()">@jobTrigger.LastSync?.GetString()</span></td>
+                                <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
+                                <td>@lastFileDelta.GetRelativeTime()</td>
+                                <td>@Html.DisplayFor(modelItem => Model.Statistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id).FilesCount)</td>
+                                <td>@size</td>
+                                <td>@duration</td>
+                            </tr>
                          }
                      </tbody>
                  </table>

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 
 namespace Job
 {
@@ -21,28 +20,24 @@ namespace Job
         public bool RunAsTask { get; set; } = true;
 
         public override string ToString()
-        {
-            return $"\"{ClassName}\" \"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigFilePath}\" \"{ConnectionString}\" \"{RunAsTask}\"";
-        }
+            => $"\"{ClassName}\" \"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigFilePath}\" \"{ConnectionString}\" \"{RunAsTask}\"";
 
         public Parameters(string className, string group, string description, string configFilePath, string connectionString, bool runAsTask = false)
         {
             TriggerKey = description;
             ClassName = className;
             Group = group;
-            ConfigFilePath = Path.Combine(AssemblyDirectory, "Config", configFilePath);
+            ConfigFilePath = Path.Combine(Environment.CurrentDirectory, "Config", configFilePath);
             ConnectionString = connectionString;
             RunAsTask = runAsTask;
         }
-
 
         private Parameters()
         {
         }
 
         public static Parameters Parse(string[] args)
-        {
-            var parameters = new Parameters
+            => new Parameters
             {
                 ClassName = args[0],
                 Group = args[1],
@@ -52,17 +47,5 @@ namespace Job
                 ConnectionString = args[5],
                 RunAsTask = args[6] == "true"
             };
-            return parameters;
-        }
-        private static string AssemblyDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().Location;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
     }
 }

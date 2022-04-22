@@ -14,6 +14,8 @@ namespace Hik.DTO.Config
 
         public bool SentEmailOnError { get; set; } = true;
 
+        public bool ShowInSearch { get; set; } = true;
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
