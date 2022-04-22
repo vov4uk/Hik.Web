@@ -48,9 +48,11 @@ namespace Hik.Web
 
         public static IWebHostBuilder CreateHostBuilder(bool isService, string[] args)
         {
+            Directory.SetCurrentDirectory(AssemblyDirectory);
+
             var env = isService ? "Production" : "Development";
             var config = new ConfigurationBuilder()
-                .SetBasePath(AssemblyDirectory)
+                .SetBasePath(Environment.CurrentDirectory)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
                 .AddCommandLine(args)

@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Mail;
-using System.Reflection;
 using System.Text;
 using Hik.Api;
 using Newtonsoft.Json;
@@ -20,7 +19,7 @@ namespace Job.Email
         static EmailHelper()
         {
 #if RELEASE
-            string configPath = Path.Combine(GetAssemblyDirectory(), "email.json");
+            string configPath = Path.Combine(Environment.CurrentDirectory, "email.json");
             Settings = JsonConvert.DeserializeObject<EmailConfig>(File.ReadAllText(configPath));
 #endif
         }
@@ -115,14 +114,6 @@ tr:nth-child(even) {{
 </pre>
 </body>
 </html>";
-        }
-
-        private static string GetAssemblyDirectory()
-        {
-            string codeBase = Assembly.GetExecutingAssembly().Location;
-            UriBuilder uri = new UriBuilder(codeBase);
-            string path = Uri.UnescapeDataString(uri.Path);
-            return Path.GetDirectoryName(path);
         }
     }
 }

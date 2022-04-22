@@ -92,9 +92,6 @@ namespace Hik.Web.Scheduler
         [XmlAttribute(AttributeName = "xmlns")]
         public string Xmlns { get; set; }
 
-        //[XmlAttribute(AttributeName = "xsi", Namespace = "http://www.w3.org/2000/xmlns/")]
-        //public string Xsi { get; set; }
-
         [XmlAttribute(AttributeName = "version")]
         public string Version { get; set; }
     }

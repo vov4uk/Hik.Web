@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 
 namespace Job
 {
@@ -28,7 +27,7 @@ namespace Job
             TriggerKey = description;
             ClassName = className;
             Group = group;
-            ConfigFilePath = Path.Combine(AssemblyDirectory, "Config", configFilePath);
+            ConfigFilePath = Path.Combine(Environment.CurrentDirectory, "Config", configFilePath);
             ConnectionString = connectionString;
             RunAsTask = runAsTask;
         }
@@ -48,16 +47,5 @@ namespace Job
                 ConnectionString = args[5],
                 RunAsTask = args[6] == "true"
             };
-
-        private static string AssemblyDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().Location;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
     }
 }

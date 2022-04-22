@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using FFmpeg.NET;
@@ -59,7 +58,7 @@ namespace Hik.Client.Helpers
             return 0;
         }
 
-        private static Engine GetEngine() => new Engine(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"FFMpeg\ffmpeg.exe"));
+        private static Engine GetEngine() => new Engine(Path.Combine(Environment.CurrentDirectory, @"FFMpeg\ffmpeg.exe"));
 
         private static (ImageCodecInfo jpgEncoder, EncoderParameters encoderParameters) GetCompressParameters()
         {
@@ -74,17 +73,6 @@ namespace Hik.Client.Helpers
         {
             ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
             return codecs.FirstOrDefault(c => c.FormatID == format.Guid);
-        }
-
-        private static void DeleteFile(string filepath)
-        {
-            try
-            {
-                File.Delete(filepath);
-            }
-            catch (Exception)
-            {
-            }
         }
     }
 }
