@@ -24,14 +24,36 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
+- task: SonarCloudPrepare@1
+  displayName: 'Prepare analysis configuration'
+  inputs:
+    SonarCloud: 'SC'
+    organization: 'vov4uk'
+    scannerMode: 'MSBuild'
+    projectKey: 'vov4uk_HikConsole'
+    projectName: 'HikConsole'
+
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: DotNetCoreCLI@2
+- task: VSTest@2
   inputs:
-    command: test
-    projects: '**/*Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    testAssemblyVer2: |
+     **\bin\$(BuildConfiguration)\**\*.tests.dll
+     !**\obj\**
+     !**\ref\**
+     !**\xunit.runner.visualstudio.testadapter.dll
+     !**\xunit.runner.visualstudio.dotnetcore.testadapter.dll
+    codeCoverageEnabled: true
+    testRunTitle: '$(Build.DefinitionName) | $(Build.Reason) |$(Build.SourceVersion)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: SonarCloudAnalyze@1
+  displayName: 'Run SonarCloud analysis'
+
+- task: SonarCloudPublish@1
+  displayName: 'Publish results on build summary'
