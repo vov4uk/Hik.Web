@@ -9,123 +9,116 @@ using System.Threading.Tasks;
 
 namespace Hik.DataAccess
 {
-    public class BaseRepository<T> : IBaseRepository<T> where T : class
+    public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
     {
-        private readonly DbContext ctx;
+        protected DbContext Database { get; }
+
+        protected DbSet<TEntity> DbSet { get; }
 
         public BaseRepository(DbContext context)
         {
-            ctx = context;
+            this.Database = context;
+            this.DbSet = this.Database.Set<TEntity>();
         }
 
-        public virtual ValueTask<EntityEntry<T>> AddAsync(T entity)
+        public virtual ValueTask<EntityEntry<TEntity>> AddAsync(TEntity entity)
         {
-            return ctx.Set<T>().AddAsync(entity);
+            return DbSet.AddAsync(entity);
         }
 
-        public virtual EntityEntry<T> Add(T entity)
+        public virtual EntityEntry<TEntity> Add(TEntity entity)
         {
-            return ctx.Set<T>().Add(entity);
+            return DbSet.Add(entity);
         }
 
-        public virtual Task AddRangeAsync(IEnumerable<T> entities)
+        public virtual Task AddRangeAsync(IEnumerable<TEntity> entities)
         {
-            return ctx.Set<T>().AddRangeAsync(entities);
+            return DbSet.AddRangeAsync(entities);
         }
 
-        public virtual Task<List<T>> GetAllAsync()
+        public virtual Task<List<TEntity>> GetAllAsync()
         {
-            return ctx.Set<T>().ToListAsync();
+            return DbSet.ToListAsync();
         }
 
-        public virtual async Task<List<T>> GetAllAsync(params Expression<Func<T, object>>[] includes)
+        public virtual async Task<List<TEntity>> GetAllAsync(params Expression<Func<TEntity, object>>[] includes)
         {
-            var result = ctx.Set<T>().Where(i => true);
+            var result = DbSet.Where(i => true);
 
             foreach (var includeExpression in includes)
+            {
                 result = result.Include(includeExpression);
+            }
 
             return await result.ToListAsync();
         }
 
-        public virtual Task<List<T>> LastAsync(int last)
+        public virtual Task<List<TEntity>> LastAsync(int last)
         {
-            return ctx.Set<T>().OrderByDescending(x => x).Take(last).ToListAsync();
+            return DbSet.OrderByDescending(x => x).Take(last).ToListAsync();
         }
 
-        /// <summary>
-        ///     Finds by predicate.
-        ///     http://appetere.com/post/passing-include-statements-into-a-repository
-        /// </summary>
-        /// <param name="predicate">The predicate.</param>
-        /// <param name="includes">The includes.</param>
-        /// <returns></returns>
-        public virtual async Task<T> FindByAsync(Expression<Func<T, bool>> predicate,
-            params Expression<Func<T, object>>[] includes)
+        public virtual async Task<TEntity> FindByAsync(Expression<Func<TEntity, bool>> predicate,
+            params Expression<Func<TEntity, object>>[] includes)
         {
-            var result = ctx.Set<T>().Where(predicate);
+            var result = DbSet.Where(predicate);
 
             foreach (var includeExpression in includes)
+            {
                 result = result.Include(includeExpression);
+            }
 
             return await result?.FirstOrDefaultAsync();
         }
 
-        /// <summary>
-        ///     Finds by predicate.
-        ///     http://appetere.com/post/passing-include-statements-into-a-repository
-        /// </summary>
-        /// <param name="predicate">The predicate.</param>
-        /// <param name="includes">The includes.</param>
-        /// <returns></returns>
-        public virtual async Task<List<T>> FindManyAsync(Expression<Func<T, bool>> predicate,
-            params Expression<Func<T, object>>[] includes)
+        public virtual async Task<List<TEntity>> FindManyAsync(Expression<Func<TEntity, bool>> predicate,
+            params Expression<Func<TEntity, object>>[] includes)
         {
-            var result = ctx.Set<T>().Where(predicate);
+            var result = DbSet.Where(predicate);
 
             foreach (var includeExpression in includes)
+            {
                 result = result.Include(includeExpression);
+            }
 
             return await result?.ToListAsync();
         }
 
-        public virtual async Task<bool> UpdateAsync(T entity)
+        public void Update(TEntity entity)
         {
-            try
-            {
-                ctx.Set<T>().Attach(entity);
-                ctx.Entry(entity).State = EntityState.Modified;
-
-                return await Task.FromResult(true);
-            }
-            catch
-            {
-                return await Task.FromResult(false);
-            }
+            DbSet.Attach(entity);
+            Database.Entry(entity).State = EntityState.Modified;
         }
 
-        public virtual async Task<bool> DeleteAsync(Expression<Func<T, bool>> identity,
-            params Expression<Func<T, object>>[] includes)
+        public void Remove(params object[] keys)
         {
-            var results = ctx.Set<T>().Where(identity);
-
-            foreach (var includeExpression in includes)
-                results = results.Include(includeExpression);
-            try
-            {
-                ctx.Set<T>().RemoveRange(results);
-                return await Task.FromResult(true);
-            }
-            catch
-            {
-                return await Task.FromResult(false);
-            }
+            TEntity entity = this.DbSet.Find(keys);
+            this.Remove(entity);
         }
 
-        public virtual async Task<bool> DeleteAsync(T entity)
+        public void Remove(TEntity entity)
         {
-            ctx.Set<T>().Remove(entity);
-            return await Task.FromResult(true);
+            if (this.Database.Entry(entity).State == EntityState.Detached)
+            {
+                this.DbSet.Attach(entity);
+            }
+
+            this.DbSet.Remove(entity);
+        }
+
+        public void RemoveRange(IEnumerable<TEntity> entities)
+        {
+            foreach (var entity in entities.Where(e => this.Database.Entry(e).State == EntityState.Detached))
+            {
+                this.DbSet.Attach(entity);
+            }
+
+            this.DbSet.RemoveRange(entities);
+        }
+
+        public void AddRange(IEnumerable<TEntity> entities)
+        {
+            this.DbSet.AddRange(entities);
         }
     }
 }

@@ -40,7 +40,7 @@ namespace Hik.Client.Tests.Services
                 success = false;
             };
 
-            Assert.ThrowsAsync<NullReferenceException>(() => downloader.ExecuteAsync(default, default(DateTime), default(DateTime)));
+            Assert.ThrowsAsync<ArgumentNullException>(() => downloader.ExecuteAsync(default, default(DateTime), default(DateTime)));
 
             this.clientMock.Verify(x => x.InitializeClient(), Times.Never);
             Assert.False(success);
@@ -200,7 +200,7 @@ namespace Hik.Client.Tests.Services
 
         private void SetupDirectoryHelper()
         {
-            this.directoryMock.Setup(x => x.GetTotalFreeSpaceGb(It.IsAny<string>())).Returns(1024);
+            this.directoryMock.Setup(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>())).Returns(1024);
             this.directoryMock.Setup(x => x.DirSize(It.IsAny<string>())).Returns(1024);
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
         }
@@ -223,7 +223,7 @@ namespace Hik.Client.Tests.Services
 
         private void VerifyStatisticWasPrinted()
         {
-            this.directoryMock.Verify(x => x.GetTotalFreeSpaceGb(It.IsAny<string>()), Times.Once);
+            this.directoryMock.Verify(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>()), Times.Once);
             this.directoryMock.Verify(x => x.DirSize(It.IsAny<string>()), Times.Once);
         }
 

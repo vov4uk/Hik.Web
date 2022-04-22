@@ -45,15 +45,12 @@ namespace Job.Impl
 
         private async void Downloader_VideoDownloaded(object sender, Hik.Client.Events.FileDownloadedEventArgs e)
         {
-            LogInfo("Save Video to DB...");
             var jobResultSaver = new JobService(this.unitOfWorkFactory, JobInstance);
             JobInstance.FilesCount++;
             var files = new[] { e.File };
             var mediaFiles = await jobResultSaver.SaveFilesAsync(files);
             await jobResultSaver.UpdateDailyStatisticsAsync(files);
             await jobResultSaver.SaveHistoryFilesAsync<DownloadHistory>(mediaFiles);
-
-            LogInfo("Save Video to DB. Done");
         }
     }
 }

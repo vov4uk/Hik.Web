@@ -15,8 +15,10 @@ namespace Hik.DataAccess.Mappings
             builder.HasKey(trigger => trigger.Id);
 
             builder.Property(f => f.ShowInSearch)
-                .IsRequired(true)
-                .HasDefaultValue(true);
+                .IsRequired()
+                .HasDefaultValueSql("(1)")
+                .ValueGeneratedNever();
+
             builder.Property(f => f.TriggerKey)
                 .HasMaxLength(30);
             builder.Property(f => f.Group)

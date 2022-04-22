@@ -6,9 +6,9 @@ namespace Hik.Client.Abstraction
     {
         void CreateDirIfNotExist(string path);
 
-        double GetTotalFreeSpaceGb(string path);
+        long GetTotalFreeSpaceBytes(string path);
 
-        double GetTotalSpaceGb(string path);
+        long GetTotalSpaceBytes(string path);
 
         long DirSize(string path);
 

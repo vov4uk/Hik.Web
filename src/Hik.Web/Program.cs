@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using NLog.Web;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -71,9 +72,9 @@ namespace Hik.Web
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
-                    logging.AddEventLog();
-                    logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Trace);
                 })
+                .UseNLog()
                 .UseUrls($"http://+:{port}");
         }
 

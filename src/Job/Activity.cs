@@ -92,7 +92,7 @@ namespace Job
             hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
             hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
             Logger.Info($"Activity. Starting Process: {Parameters}");
-            Logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe, Actual Path : {hostProcess.StartInfo.FileName}, Working Directory : {hostProcess.StartInfo.WorkingDirectory}");
+            Logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe, Actual Path : {hostProcess.StartInfo.FileName}, Working Directory : {Environment.CurrentDirectory}");
             hostProcess.Start();
 
             hostProcess.EnableRaisingEvents = true;

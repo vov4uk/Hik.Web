@@ -25,6 +25,7 @@ namespace Hik.DataAccess.Mappings
 
             builder.Property(f => f.Duration)
                 .IsRequired(false);
+
             builder.Property(f => f.Name)
                 .HasMaxLength(30);
         }
