@@ -34,7 +34,7 @@ namespace Hik.Web.Pages
 
             if (Data.Schedule.Trigger.Any())
             {
-                Crons = new List<CronDTO>(Data.Schedule.Trigger.Select(x => new CronDTO(x.Cron)));
+                Crons = new List<CronDTO>(Data.Schedule.Trigger.Select(x => new CronDTO(x.Cron))).OrderBy(x => x.Name).ToList();
             }
         }
 

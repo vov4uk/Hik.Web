@@ -22,7 +22,7 @@ namespace Hik.Web.Pages
         {
             this.dataContext = dataContext;
             this.dataContext.Database.EnsureCreated();
-            JobTriggers = dataContext.JobTriggers.AsQueryable().Where(x => x.ShowInSearch).ToList();
+            JobTriggers = dataContext.JobTriggers.AsQueryable().Where(x => x.ShowInSearch).OrderBy(x =>x.TriggerKey).ToList();
             DateTime = DateTime.Now;
             JobTriggersList = new SelectList(JobTriggers, "Id", "TriggerKey", 1);
         }

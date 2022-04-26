@@ -1,35 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
 using Hik.Client.Abstraction;
+using Hik.Client.Client;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using NLog;
 
 namespace Hik.Client
 {
-    public class RSyncClient : IClient
+    public class RSyncClient : FtpBaseClient
     {
-        private readonly CameraConfig config;
-        private readonly IFilesHelper filesHelper;
-        private readonly IDirectoryHelper directoryHelper;
-        private readonly IFtpClient ftp;
-        private readonly ILogger logger = LogManager.GetCurrentClassLogger();
-        private bool disposedValue = false;
-
         public RSyncClient(CameraConfig config, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IFtpClient ftp)
+            : base(config, filesHelper, directoryHelper, ftp)
         {
-            this.config = config ?? throw new ArgumentNullException(nameof(config));
-            this.filesHelper = filesHelper;
-            this.directoryHelper = directoryHelper;
-            this.ftp = ftp;
         }
 
-        public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
+        public override async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
         {
             string destinationFilePath = GetPathSafety(remoteFile);
             var filePath = remoteFile.Path;
@@ -45,7 +34,7 @@ namespace Hik.Client
             }
         }
 
-        public async Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             FtpListItem[] filesFromFtp = await ftp.GetListingAsync($"/{config.Alias.Split(".")[1]}");
 
@@ -59,47 +48,6 @@ namespace Hik.Client
             }).ToList();
 
             return files.AsReadOnly();
-        }
-
-        public void ForceExit()
-        {
-            Dispose(true);
-        }
-
-        public void InitializeClient()
-        {
-            ftp.Host = config.IpAddress;
-            ftp.ConnectTimeout = 5 * 1000;
-            ftp.DataConnectionReadTimeout = 5 * 1000;
-            ftp.ReadTimeout = 5 * 1000;
-            ftp.DataConnectionConnectTimeout = 5 * 1000;
-            ftp.RetryAttempts = 3;
-            ftp.Credentials = new NetworkCredential(config.UserName, config.Password);
-        }
-
-        public bool Login()
-        {
-            ftp.Connect();
-            return true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                LogDebugInfo("Logout the device");
-
-                ftp?.Disconnect();
-                ftp?.Dispose();
-
-                disposedValue = true;
-            }
         }
 
         private async Task<bool> DownloadInternalAsync(MediaFileDTO remoteFile, string targetFilePath, string remoteFilePath, CancellationToken token)
@@ -145,11 +93,6 @@ namespace Hik.Client
             directoryHelper.CreateDirIfNotExist(workingDirectory);
 
             return filesHelper.CombinePath(workingDirectory, remoteFile.Name);
-        }
-
-        private void LogDebugInfo(string msg)
-        {
-            logger.Debug($"{config.Alias} - {msg}");
         }
     }
 }
