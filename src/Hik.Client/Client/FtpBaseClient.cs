@@ -21,7 +21,7 @@ namespace Hik.Client.Client
         protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
         private bool disposedValue = false;
 
-        public FtpBaseClient(CameraConfig config, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IFtpClient ftp)
+        protected FtpBaseClient(CameraConfig config, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IFtpClient ftp)
         {
             this.config = config ?? throw new ArgumentNullException(nameof(config));
             this.filesHelper = filesHelper;
