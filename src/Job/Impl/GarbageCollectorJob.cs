@@ -62,11 +62,11 @@ namespace Job.Impl
             var destination = gcConfig.DestinationFolder;
             do
             {
-                double totalSpace = this.directoryHelper.GetTotalSpaceGb(destination);
-                double freeSpace = this.directoryHelper.GetTotalFreeSpaceGb(destination);
+                var totalSpace = this.directoryHelper.GetTotalSpaceBytes(destination) * 1.0;
+                var freeSpace = this.directoryHelper.GetTotalFreeSpaceBytes(destination) * 1.0;
 
                 var freePercentage = 100 * freeSpace / totalSpace;
-                this.logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2}");
+                this.logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2} %");
 
                 if (freePercentage < gcConfig.FreeSpacePercentage)
                 {

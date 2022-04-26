@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Job.Extensions;
+using System;
 using System.IO;
 
 namespace Job
@@ -27,7 +28,7 @@ namespace Job
             TriggerKey = description;
             ClassName = className;
             Group = group;
-            ConfigFilePath = Path.Combine(Environment.CurrentDirectory, "Config", configFilePath);
+            ConfigFilePath = HikConfigExtensions.GetConfigPath(configFilePath);
             ConnectionString = connectionString;
             RunAsTask = runAsTask;
         }

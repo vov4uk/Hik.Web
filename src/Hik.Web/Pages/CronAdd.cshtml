@@ -8,31 +8,31 @@
     <div class="col-md-4">
         <form method="post">
             <div class="form-group">
-                <label asp-for="CronDTO.Group" class="control-label"/>
+                @Html.LabelFor(model => model.CronDTO.Group)
                 <input asp-for="CronDTO.Group" class="form-control"/>
             </div>
             <div class="form-group">
-                <label asp-for="CronDTO.Name" class="control-label"/>
+                @Html.LabelFor(model => model.CronDTO.Name)
                 <input asp-for="CronDTO.Name" class="form-control"/>
             </div>
             <div class="form-group">
-                <label asp-for="CronDTO.Cronexpression" class="control-label"/>
+                @Html.LabelFor(model => model.CronDTO.Cronexpression)
                 <input asp-for="CronDTO.Cronexpression" class="form-control"/>
             </div>
             <div class="form-group">
-                <label asp-for="CronDTO.Description" class="control-label"/>
+                @Html.LabelFor(model => model.CronDTO.Description)
                 <input asp-for="CronDTO.Description" class="form-control"/>
             </div>
             <div class="form-group">
-                <label asp-for="CronDTO.Job" class="control-label"/>
+                @Html.LabelFor(model => model.CronDTO.Job)
                 <input asp-for="CronDTO.Job" class="form-control"/>
             </div>
             <div class="form-group">
-                <label asp-for="CronDTO.ConfigPath" class="control-label"/>
+                @Html.LabelFor(model => model.CronDTO.ConfigPath)
                 <input asp-for="CronDTO.ConfigPath" class="form-control"/>
             </div>
             <div class="form-group">
-                <label asp-for="CronDTO.RunAsTask" class="control-label"/>
+                @Html.LabelFor(model => model.CronDTO.RunAsTask)
                 <input asp-for="CronDTO.RunAsTask" class="form-control"/>
             </div>
             <div class="form-group">

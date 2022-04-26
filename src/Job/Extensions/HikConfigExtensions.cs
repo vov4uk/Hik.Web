@@ -8,18 +8,22 @@ namespace Job.Extensions
     [ExcludeFromCodeCoverage]
     public static class HikConfigExtensions
     {
-        public static T GetConfig<T>(string configPath = "configuration.json")
+        public static T GetConfig<T>(string configFileName = "configuration.json")
         {
-#if DEBUG
-            configPath = configPath.Replace(".json", ".debug.json");
-#endif
-
-            var config = JsonConvert.DeserializeObject<T>(File.ReadAllText(configPath));
+            var config = JsonConvert.DeserializeObject<T>(File.ReadAllText(configFileName));
             if(config == null)
             {
-                throw new InvalidCastException($"Config {configPath} invalid");
+                throw new InvalidCastException($"Config {configFileName} invalid");
             }
             return config;
+        }
+
+        public static string GetConfigPath(string configFileName)
+        {
+#if DEBUG
+            configFileName = configFileName.Replace(".json", ".debug.json");
+#endif
+            return Path.Combine(Environment.CurrentDirectory, "Config", configFileName);
         }
     }
 }

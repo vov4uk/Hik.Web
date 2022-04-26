@@ -22,7 +22,7 @@
 
 @if (Model.Crons != null && Model.Crons.Any())
 {
-    <table class="table table-bordered table-sm" width="100%">
+    <table class="table table-bordered table-sm" aria-label="Jobs" width="100%">
         <thead>
             <tr>
                 <th>Cron</th>
@@ -32,6 +32,7 @@
                 <th>Job</th>
                 <th>Config</th>
                 <th>AsTask</th>
+                <th></th>
                 <th></th>
             </tr>
         </thead>
@@ -47,6 +48,7 @@
                 <td>@cron.ConfigPath</td>
                 <td>@cron.RunAsTask</td>
                 <td><a asp-page="./CronEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">Edit</a></td>
+                <td><a asp-page="./ConfigEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">Config</a></td>
             </tr>
             }
         </tbody>

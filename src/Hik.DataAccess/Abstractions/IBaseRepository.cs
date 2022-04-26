@@ -24,11 +24,14 @@ namespace Hik.DataAccess.Abstractions
 
         Task<List<T>> FindManyAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
 
-        Task<bool> UpdateAsync(T entity);
+        void Update(T entity);
 
-        Task<bool> DeleteAsync(Expression<Func<T, bool>> identity, params Expression<Func<T, object>>[] includes);
+        void Remove(params object[] keys);
 
-        Task<bool> DeleteAsync(T entity);
+        void Remove(T entity);
 
+        void RemoveRange(IEnumerable<T> entities);
+
+        void AddRange(IEnumerable<T> entities);
     }
 }

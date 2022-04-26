@@ -24,7 +24,7 @@ namespace Hik.DataAccess.Mappings
                 .HasDefaultValue("true");
             builder.Property(f => f.Started)
                 .IsRequired(true)
-                .HasColumnType("datetime2(0)"); 
+                .HasColumnType("datetime2(0)");
             builder.Property(f => f.Finished)
                 .IsRequired(false)
                 .HasColumnType("datetime2(0)");

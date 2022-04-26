@@ -1,0 +1,29 @@
+﻿@page
+@model Hik.Web.Pages.ConfigEditModel
+@{ ViewData["Title"] = "Edit"; }
+
+@{
+    var title =$"{@Model.ConfigDTO.JobName}";
+    <h4>@title</h4>
+}
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <input type="hidden" asp-for="ConfigDTO.Path" />
+            <input type="hidden" asp-for="ConfigDTO.Json" />
+            <div class="form-group">
+                @Html.LabelFor(model => model.ConfigDTO.Json)
+                @Html.TextAreaFor(model => model.ConfigDTO.Json, new { @class = "form-control", @rows = 20 })
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Scheduler">Back to List</a>
+</div>

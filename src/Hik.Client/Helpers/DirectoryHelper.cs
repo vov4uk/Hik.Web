@@ -11,7 +11,6 @@ namespace Hik.Client.Helpers
     public class DirectoryHelper : IDirectoryHelper
     {
         private const string AllFilter = "*";
-        private const double Gb = 1024.0 * 1024.0 * 1024.0;
 
         public void CreateDirIfNotExist(string path)
         {
@@ -43,18 +42,18 @@ namespace Hik.Client.Helpers
             return size;
         }
 
-        public double GetTotalFreeSpaceGb(string path)
+        public long GetTotalFreeSpaceBytes(string path)
         {
             DriveInfo drive = GetDrive(path);
 
-            return drive?.TotalFreeSpace / Gb ?? -1.0;
+            return drive?.TotalFreeSpace ?? 0;
         }
 
-        public double GetTotalSpaceGb(string path)
+        public long GetTotalSpaceBytes(string path)
         {
             DriveInfo drive = GetDrive(path);
 
-            return drive?.TotalSize / Gb ?? -1.0;
+            return drive?.TotalSize ?? -1;
         }
 
         public void DeleteEmptyDirs(string path)

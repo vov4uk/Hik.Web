@@ -50,9 +50,10 @@ namespace Hik.Client.Service
 
         protected override async Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
+            CameraConfig cameraConfig = config as CameraConfig ?? throw new ArgumentNullException(nameof(config));
             IReadOnlyCollection<T> jobResult = null;
 
-            using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(config?.Timeout ?? JobTimeout)))
+            using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(cameraConfig.Timeout)))
             {
                 TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
 
@@ -61,7 +62,7 @@ namespace Hik.Client.Service
                     taskCompletionSource.TrySetCanceled();
                 });
 
-                Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(config as CameraConfig, from, to);
+                Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(cameraConfig, from, to);
                 Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
 
                 if (completedTask == downloadTask)
@@ -96,16 +97,10 @@ namespace Hik.Client.Service
 
         private async Task<IReadOnlyCollection<T>> InternalDownload(CameraConfig config, DateTime from, DateTime to)
         {
-            DateTime appStart = DateTime.Now;
-
-            logger.Info($"{config.Alias} - Internal download...");
-
             var result = await ProcessCameraAsync(config, from, to);
             if (result.Count > 0)
             {
                 PrintStatistic(config?.DestinationFolder);
-                var duration = (DateTime.Now - appStart).TotalSeconds;
-                logger.Info($"{config.Alias} - Internal download. Done. Duration  : {duration.FormatSeconds()}");
             }
             else
             {
@@ -131,14 +126,10 @@ namespace Hik.Client.Service
                     }
 
                     ThrowIfCancellationRequested();
-                    logger.Info($"{config.Alias} - Reading remote files...");
-                    var remoteFiles = await GetRemoteFilesList(periodStart, periodEnd);
-                    logger.Info($"{config.Alias} - Reading remote files. Done");
 
-                    logger.Info($"{config.Alias} - Downloading files...");
+                    var remoteFiles = await GetRemoteFilesList(periodStart, periodEnd);
                     var downloadedFiles = await DownloadFilesFromClientAsync(remoteFiles, cancelTokenSource?.Token ?? CancellationToken.None);
                     result.AddRange(downloadedFiles);
-                    logger.Info($"{config.Alias} - Downloading files. Done");
                 }
                 else
                 {
@@ -154,8 +145,7 @@ namespace Hik.Client.Service
             StringBuilder statisticsSb = new StringBuilder();
             statisticsSb.AppendLine();
             statisticsSb.AppendLine($"{"Directory Size",-24}: {directoryHelper.DirSize(destinationFolder).FormatBytes()}");
-            statisticsSb.AppendLine($"{"Free space",-24}: {directoryHelper.GetTotalFreeSpaceGb(destinationFolder)}");
-            statisticsSb.AppendLine(new string('_', 40)); // separator
+            statisticsSb.AppendLine($"{"Free space",-24}: {directoryHelper.GetTotalFreeSpaceBytes(destinationFolder).FormatBytes()}");
 
             logger.Info(statisticsSb.ToString());
         }

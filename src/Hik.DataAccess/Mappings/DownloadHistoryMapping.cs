@@ -15,12 +15,14 @@ namespace Hik.DataAccess.Mappings
             builder
                 .HasOne(v => v.Job)
                 .WithMany(job => job.DownloadedFiles)
-                .HasForeignKey(v => v.JobId);
+                .HasForeignKey(v => v.JobId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasOne(v => v.MediaFile)
                 .WithOne(job => job.DownloadHistory)
-                .HasForeignKey<DownloadHistory>(x => x.MediaFileId);
+                .HasForeignKey<DownloadHistory>(x => x.MediaFileId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Hik.DataAccess.Data;
 using Hik.DataAccess.Mappings;
 using Microsoft.EntityFrameworkCore;
+using NLog;
 using System.Reflection;
 
 namespace Hik.DataAccess
@@ -8,7 +9,6 @@ namespace Hik.DataAccess
     public class DataContext : DbContext
     {
         private readonly string ConnectionString;
-
         public DataContext(DbContextOptions<DataContext> options)
             : base(options) { }
 
@@ -35,7 +35,10 @@ namespace Hik.DataAccess
                 {
                     options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
                 });
+#if DEBUG
                 optionsBuilder.EnableSensitiveDataLogging();
+                optionsBuilder.LogTo(x => LogManager.GetCurrentClassLogger().Info(x), Microsoft.Extensions.Logging.LogLevel.Information);
+#endif
             }
         }
 

@@ -42,13 +42,12 @@ namespace Job.Impl
             DateTime jobStart = DateTime.Now;
 
             DateTime? lastSync = jobTrigger.LastSync;
-            LogInfo($"Last sync from DB - {lastSync}");
             DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config?.ProcessingPeriodHours ?? 1);
 
             this.JobInstance.PeriodStart = periodStart;
             this.JobInstance.PeriodEnd = jobStart;
 
-            LogInfo($"Period - {periodStart} - {jobStart}");
+            LogInfo($"Last sync from DB - {lastSync}, Period - {periodStart} - {jobStart}");
         }
 
         public virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
@@ -141,7 +140,7 @@ namespace Job.Impl
             {
                 CallStack = e.StackTrace,
                 JobId = JobInstance.Id,
-                Message = (e as HikException)?.ErrorMessage ?? e.Message,
+                Message = (e as HikException)?.ErrorMessage ?? e.ToString(),
                 HikErrorCode = (e as HikException)?.ErrorCode
             });
             await unitOfWork.SaveChangesAsync();
@@ -149,7 +148,6 @@ namespace Job.Impl
 
         internal async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDTO> files)
         {
-            LogInfo("Save to DB...");
             var jobResultSaver = new JobService(this.unitOfWorkFactory, this.JobInstance);
             if (files?.Any() == true)
             {
@@ -163,7 +161,6 @@ namespace Job.Impl
             {
                 await jobResultSaver.SaveJobResultAsync();
             }
-            LogInfo("Save to DB. Done");
         }
 
         protected async Task GetJobTriggerAsync()

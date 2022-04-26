@@ -15,11 +15,13 @@ namespace Hik.DataAccess.Mappings
             builder
                 .HasOne(v => v.MediaFile)
                 .WithOne(job => job.DownloadDuration)
-                .HasForeignKey<DownloadDuration>(x => x.MediaFileId);
+                .HasForeignKey<DownloadDuration>(x => x.MediaFileId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Property(f => f.Started)
                     .IsRequired(false)
                     .HasColumnType("datetime2(0)");
+
             builder.Property(f => f.Duration)
                     .IsRequired(false);
         }
