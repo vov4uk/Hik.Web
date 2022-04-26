@@ -9,8 +9,6 @@ namespace Hik.DataAccess
     public class DataContext : DbContext
     {
         private readonly string ConnectionString;
-        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
-
         public DataContext(DbContextOptions<DataContext> options)
             : base(options) { }
 
@@ -39,7 +37,7 @@ namespace Hik.DataAccess
                 });
 #if DEBUG
                 optionsBuilder.EnableSensitiveDataLogging();
-                optionsBuilder.LogTo(x => logger.Info(x), Microsoft.Extensions.Logging.LogLevel.Information);
+                optionsBuilder.LogTo(x => LogManager.GetCurrentClassLogger().Info(x), Microsoft.Extensions.Logging.LogLevel.Information);
 #endif
             }
         }
