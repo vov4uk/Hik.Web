@@ -20,7 +20,7 @@ namespace Hik.Client.Helpers
             {
                 InputFile inputFile = new InputFile(path);
 
-                var fullPath = Path.GetTempFileName() + ".jpg";
+                var fullPath = Path.GetRandomFileName() + ".jpg";
                 var outputFile = new OutputFile(fullPath);
                 await GetEngine().GetThumbnailAsync(inputFile, outputFile, CancellationToken.None);
 
