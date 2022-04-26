@@ -46,10 +46,6 @@ namespace Hik.Client.Helpers
             {
                 // ОК
             }
-            catch (Exception)
-            {
-                throw;
-            }
         }
 
         public string ReadAllText(string path)
@@ -97,7 +93,7 @@ namespace Hik.Client.Helpers
 
         public string GetTempFileName()
         {
-            return Path.GetTempFileName();
+            return Path.GetRandomFileName();
         }
 
         public string GetDirectoryName(string path)

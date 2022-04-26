@@ -10,7 +10,6 @@ namespace Job
     public class Activity
     {
         protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        private readonly ActivityBag bag;
         private DateTime started = default;
 
         public readonly Guid Id;
@@ -26,8 +25,6 @@ namespace Job
             Id = Guid.NewGuid();
             Parameters = parameters;
             Parameters.ActivityId = Id;
-            bag = new ActivityBag();
-
             Log($"Activity. Activity created with parameters {parameters}.");
         }
 
@@ -100,13 +97,13 @@ namespace Job
             {
                 tcs.SetResult(null);
                 Log($"Activity. Process exit with code: {hostProcess.ExitCode}");
-                if (!bag.Remove(this))
+                if (!ActivityBag.Remove(this))
                 {
                     Log("Cannot remove activity from ActivityBag");
                 }
             };
 
-            bag.Add(this);
+            ActivityBag.Add(this);
             hostProcess.BeginOutputReadLine();
             hostProcess.BeginErrorReadLine();
 
@@ -115,16 +112,11 @@ namespace Job
 
         private async Task RunAsTask()
         {
-            Type jobType = Type.GetType(Parameters.ClassName);
-
-            if (jobType == null)
-            {
-                throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
-            }
+            Type jobType = Type.GetType(Parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
 
             Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(jobType, $"{Parameters.Group}.{Parameters.TriggerKey}", Parameters.ConfigFilePath, Parameters.ConnectionString, Parameters.ActivityId);
             started = DateTime.Now;
-            bag.Add(this);
+            ActivityBag.Add(this);
             try
             {
                 await job.ExecuteAsync();
@@ -135,7 +127,7 @@ namespace Job
             }
             finally
             {
-                bag.Remove(this);
+                ActivityBag.Remove(this);
             }
         }
 

@@ -45,9 +45,9 @@
             var client = new YiClient(config, this.filesMock.Object, this.dirMock.Object, ftp);
             client.InitializeClient();
 
-            Assert.Equal(ftp.Host, config.IpAddress);
-            Assert.Equal(ftp.Credentials.UserName, config.UserName);
-            Assert.Equal(ftp.Credentials.Password, config.Password);
+            Assert.Equal(config.IpAddress, ftp.Host);
+            Assert.Equal(config.UserName, ftp.Credentials.UserName);
+            Assert.Equal(config.Password, ftp.Credentials.Password);
         }
 
         #endregion InitializeClient
@@ -119,8 +119,8 @@
             var client = this.GetClient();
             var mediaFiles = await client.GetFilesListAsync(start, end);
 
-            Assert.Equal(mediaFiles.Count, 1);
-            var firstFile = mediaFiles.FirstOrDefault();
+            Assert.Single(mediaFiles);
+            var firstFile = mediaFiles.First();
             Assert.Equal(60, firstFile.Duration);
             Assert.Equal("00M00S", firstFile.Name); 
         }
@@ -134,7 +134,7 @@
             var client = this.GetClient();
             var mediaFiles = await client.GetFilesListAsync(start, end);
 
-            Assert.Equal(mediaFiles.Count, 0);
+            Assert.Empty(mediaFiles);
         }
 
         [Fact]
@@ -146,10 +146,10 @@
             var client = this.GetClient();
             var mediaFiles = await client.GetFilesListAsync(start.DateTime, end);
 
-            Assert.Equal(mediaFiles.Count, 1);
-            var firstFile = mediaFiles.FirstOrDefault();
-            Assert.Equal(firstFile.Date, new DateTime(2008, 8, 22, 1, 5, 0));
-            Assert.Equal(firstFile.Name, "05M00S");
+            Assert.Single(mediaFiles);
+            var firstFile = mediaFiles.First();
+            Assert.Equal(new DateTime(2008, 8, 22, 1, 5, 0), firstFile.Date);
+            Assert.Equal("05M00S", firstFile.Name);
         }
         #endregion GetFilesListAsync
 

@@ -6,7 +6,7 @@ namespace Hik.Web.Scheduler
 {
     public class CronDTO
     {
-        public static Options Options = new() { DayOfWeekStartIndexZero = false, Use24HourTimeFormat = true };
+        internal static readonly Options Options = new() { DayOfWeekStartIndexZero = false, Use24HourTimeFormat = true };
 
         public CronDTO() { }
         public CronDTO(Cron cron)
@@ -50,7 +50,7 @@ namespace Hik.Web.Scheduler
             return modified;
         }
 
-        private Entry GetJobDataMap(string key, string value)
+        private static Entry GetJobDataMap(string key, string value)
         {
             return new Entry { Key = key, Value = value };
         }

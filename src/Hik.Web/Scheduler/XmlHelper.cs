@@ -5,15 +5,13 @@ using System.Xml.Serialization;
 
 namespace Hik.Web.Scheduler
 {
-    public class XmlHelper
+    public static class XmlHelper
     {
-        private static string xmlFilePath;
-
         public static JobSchedulingData GetJobSchedulingData()
         {
             var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
             var options = new QuartzOption(configuration);
-            xmlFilePath = options.Plugin.JobInitializer.FileNames;
+            var xmlFilePath = options.Plugin.JobInitializer.FileNames;
             var xml = File.ReadAllText(xmlFilePath);
 
             XmlSerializer serializer = new XmlSerializer(typeof(JobSchedulingData));
@@ -27,7 +25,7 @@ namespace Hik.Web.Scheduler
         {
             var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
             var options = new QuartzOption(configuration);
-            xmlFilePath = options.Plugin.JobInitializer.FileNames;
+            var xmlFilePath = options.Plugin.JobInitializer.FileNames;
 
             XmlSerializer serializer = new XmlSerializer(typeof(JobSchedulingData));
             using (StringWriter writer = new StringWriter())

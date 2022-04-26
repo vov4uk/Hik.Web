@@ -12,6 +12,8 @@ namespace Hik.Web.Pages
 {
     public class StatisticModel : PageModel
     {
+        private const int PageSize = 40;
+        private const int MaxPages = 10;
         private readonly DataContext dataContext;
 
         public StatisticModel(DataContext dataContext)
@@ -26,10 +28,6 @@ namespace Hik.Web.Pages
         public Pager Pager { get; set; }
 
         private int TotalItems { get; set; }
-
-        private int PageSize => 40;
-
-        private int MaxPages => 10;
 
         public async Task OnGetAsync(int triggerId, int p = 1)
         {

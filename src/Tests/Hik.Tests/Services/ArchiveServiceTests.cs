@@ -139,13 +139,13 @@ namespace Hik.Client.Tests.Services
             var result = await service.ExecuteAsync(config, default(DateTime), default(DateTime));
             this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
             Assert.True(success);
-            Assert.Equal(result.Count, 1);
-            var actual = result.FirstOrDefault();
-            Assert.Equal(actual.Duration, duration);
-            Assert.Equal(actual.Size, 1024);
-            Assert.Equal(actual.Name, string.Empty);
-            Assert.Equal(actual.Path, targetFile);
-            Assert.Equal(actual.Date, DateTime.ParseExact(date, fileNameDateTimeFormat, null));
+            Assert.Single(result);
+            var actual = result.First();
+            Assert.Equal(duration, actual.Duration);
+            Assert.Equal(1024, actual.Size);
+            Assert.Equal(string.Empty, actual.Name);
+            Assert.Equal(targetFile, actual.Path);
+            Assert.Equal(DateTime.ParseExact(date, fileNameDateTimeFormat, null), actual.Date);
         }
 
         [Theory]
@@ -198,13 +198,13 @@ namespace Hik.Client.Tests.Services
             this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
             this.filesMock.Verify(x => x.GetCreationDate(sourceFileName), Times.Once);
             Assert.True(success);
-            Assert.Equal(result.Count, 1);
-            var actual = result.FirstOrDefault();
-            Assert.Equal(actual.Duration, duration);
-            Assert.Equal(actual.Size, 1024);
-            Assert.Equal(actual.Name, string.Empty);
-            Assert.Equal(actual.Path, targetFile);
-            Assert.Equal(actual.Date, DateTime.ParseExact(date, fileNameDateTimeFormat, null));
+            Assert.Single(result);
+            var actual = result.First();
+            Assert.Equal(duration, actual.Duration);
+            Assert.Equal(1024, actual.Size);
+            Assert.Equal(string.Empty, actual.Name);
+            Assert.Equal(targetFile, actual.Path);
+            Assert.Equal(DateTime.ParseExact(date, fileNameDateTimeFormat, null), actual.Date);
         }
 
         private ArchiveService CreateArchiveService()

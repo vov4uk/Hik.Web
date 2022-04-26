@@ -33,16 +33,15 @@ namespace Hik.Client
         {
             string destinationFilePath = GetPathSafety(remoteFile);
             var filePath = remoteFile.Path;
+
+            if (!filesHelper.FileExists(destinationFilePath))
             {
-                if (!filesHelper.FileExists(destinationFilePath))
-                {
-                    return await DownloadInternalAsync(remoteFile, destinationFilePath, filePath, token);
-                }
-                else
-                {
-                    LogDebugInfo($"{remoteFile.Name} - exist");
-                    return false;
-                }
+                return await DownloadInternalAsync(remoteFile, destinationFilePath, filePath, token);
+            }
+            else
+            {
+                LogDebugInfo($"{remoteFile.Name} - exist");
+                return false;
             }
         }
 
@@ -50,7 +49,7 @@ namespace Hik.Client
         {
             FtpListItem[] filesFromFtp = await ftp.GetListingAsync($"/{config.Alias.Split(".")[1]}");
 
-            var files = filesFromFtp.Select(item => new MediaFileDTO()
+            var files = filesFromFtp.Select(item => new MediaFileDTO
             {
                 Name = item.Name,
                 Path = item.FullName,

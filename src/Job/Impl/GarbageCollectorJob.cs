@@ -29,6 +29,7 @@ namespace Job.Impl
 
         public override void InitializeProcessingPeriod()
         {
+            // Not applicable
         }
 
         public override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()

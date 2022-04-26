@@ -13,6 +13,8 @@ namespace Hik.Web.Pages
 {
     public class DetailsModel : PageModel
     {
+        private const int PageSize = 40;
+        private const int MaxPages = 10;
         private readonly DataContext dataContext;
 
         public DetailsModel(DataContext dataContext)
@@ -29,10 +31,6 @@ namespace Hik.Web.Pages
         public Pager Pager { get; private set; }
 
         private int TotalItems { get; set; }
-
-        private int PageSize => 40;
-
-        private int MaxPages => 10;
 
         public async Task<IActionResult> OnGetAsync(int? id, int p = 1)
         {

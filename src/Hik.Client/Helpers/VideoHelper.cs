@@ -20,18 +20,16 @@ namespace Hik.Client.Helpers
             {
                 InputFile inputFile = new InputFile(path);
 
-                var fullPath = Path.GetTempFileName() + ".jpg";
+                var fullPath = Path.GetRandomFileName() + ".jpg";
                 var outputFile = new OutputFile(fullPath);
                 await GetEngine().GetThumbnailAsync(inputFile, outputFile, CancellationToken.None);
 
-                using (Image image = Image.FromFile(fullPath))
+                Image image = Image.FromFile(fullPath);
+                using (Image newImage = new Bitmap(image, 1080, 608))
                 {
-                    using (Image newImage = new Bitmap(image, 1080, 608))
-                    {
-                        image.Dispose();
-                        var parameters = GetCompressParameters();
-                        newImage.Save(fullPath, parameters.jpgEncoder, parameters.encoderParameters);
-                    }
+                    image.Dispose();
+                    var parameters = GetCompressParameters();
+                    newImage.Save(fullPath, parameters.jpgEncoder, parameters.encoderParameters);
                 }
 
                 byte[] imageArray = await File.ReadAllBytesAsync(fullPath);

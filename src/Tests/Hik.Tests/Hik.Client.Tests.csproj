@@ -30,9 +30,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Hik.Client\Hik.Client.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-
 </Project>

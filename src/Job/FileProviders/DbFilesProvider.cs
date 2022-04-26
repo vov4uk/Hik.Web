@@ -13,7 +13,7 @@ namespace Job.FileProviders
         private bool isInitialized = false;
         private Dictionary<DateTime, List<MediaFileDTO>> mediaFiles;
         private Stack<DateTime> dates;
-        DataContext dbContenxt;
+        private readonly DataContext dbContenxt;
 
         public DbFilesProvider(DataContext dbContenxt)
         {
