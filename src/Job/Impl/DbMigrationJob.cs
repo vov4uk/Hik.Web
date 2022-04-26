@@ -45,6 +45,7 @@ namespace Job.Impl
 
         public override void InitializeProcessingPeriod()
         {
+            // Not applicable
         }
 
         public override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
