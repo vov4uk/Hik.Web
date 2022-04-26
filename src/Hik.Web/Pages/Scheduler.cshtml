@@ -33,6 +33,7 @@
                 <th>Config</th>
                 <th>AsTask</th>
                 <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -47,6 +48,7 @@
                 <td>@cron.ConfigPath</td>
                 <td>@cron.RunAsTask</td>
                 <td><a asp-page="./CronEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">Edit</a></td>
+                <td><a asp-page="./ConfigEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">Config</a></td>
             </tr>
             }
         </tbody>

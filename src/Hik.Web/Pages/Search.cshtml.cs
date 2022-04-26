@@ -72,7 +72,7 @@ namespace Hik.Web.Pages
                         .OrderBy(x => x.Date).Take(5)
                         .ToListAsync();
 
-                    Msg = (file.Date >= dateTime && dateTime <= file.Date.AddSeconds(file.Duration ?? 0)) ? "Match" : "Out of range";
+                    Msg = (file.Date <= dateTime && dateTime <= file.Date.AddSeconds(file.Duration ?? 0)) ? "Match" : "Out of range";
                 }
                 else
                 {
