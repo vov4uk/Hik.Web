@@ -46,10 +46,6 @@ namespace Hik.Client.Helpers
             {
                 // ОК
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
         }
 
         public string ReadAllText(string path)

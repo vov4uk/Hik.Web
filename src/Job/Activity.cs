@@ -10,7 +10,6 @@ namespace Job
     public class Activity
     {
         protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        private readonly ActivityBag bag;
         private DateTime started = default;
 
         public readonly Guid Id;
@@ -26,8 +25,6 @@ namespace Job
             Id = Guid.NewGuid();
             Parameters = parameters;
             Parameters.ActivityId = Id;
-            bag = new ActivityBag();
-
             Log($"Activity. Activity created with parameters {parameters}.");
         }
 

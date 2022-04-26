@@ -13,11 +13,8 @@ namespace Hik.Web.Scheduler
         public static async Task<IEnumerable<CronTriggerImpl>> GetCronTriggersAsync()
         {
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-            var scheduler = await schedulerFactory.GetScheduler("default");
-            if (scheduler == null)
-            {
-                throw new ArgumentNullException(nameof(scheduler));
-            }
+            var scheduler = await schedulerFactory.GetScheduler("default") ?? throw new InvalidOperationException("Unable to load default scheduler");
+
             var triggerKeys = await scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup());
 
             List<CronTriggerImpl> resultList = new List<CronTriggerImpl>();
