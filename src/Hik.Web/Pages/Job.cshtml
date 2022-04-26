@@ -6,7 +6,7 @@
 <button onclick="javascript:history.back()">Go Back</button>
 @if (Model.Jobs != null && Model.Jobs.Any())
 {
-<table class="table table-bordered table-sm" width="100%">
+<table class="table table-bordered table-sm" summary="Jobs" width="100%">
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().JobTrigger)</th>

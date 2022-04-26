@@ -50,13 +50,10 @@ namespace Hik.Client.Service
 
         protected override async Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
+            CameraConfig cameraConfig = config as CameraConfig ?? throw new ArgumentNullException(nameof(config));
             IReadOnlyCollection<T> jobResult = null;
-            if (config is null)
-            {
-                throw new ArgumentNullException("Config");
-            }
 
-            using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(config?.Timeout ?? JobTimeout)))
+            using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(cameraConfig.Timeout)))
             {
                 TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
 
@@ -65,7 +62,7 @@ namespace Hik.Client.Service
                     taskCompletionSource.TrySetCanceled();
                 });
 
-                Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(config as CameraConfig, from, to);
+                Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(cameraConfig, from, to);
                 Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
 
                 if (completedTask == downloadTask)

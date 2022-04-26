@@ -106,7 +106,6 @@ namespace Hik.DataAccess
                 var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
                 var jobRepo = unitOfWork.GetRepository<HikJob>();
                 var filesRepo = unitOfWork.GetRepository<MediaFile>();
-                var downloadRepo = unitOfWork.GetRepository<DownloadHistory>();
 
                 foreach (var trigger in triggers)
                 {

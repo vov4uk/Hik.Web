@@ -37,9 +37,10 @@ namespace Hik.DataAccess
                 {
                     options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
                 });
-
-                // optionsBuilder.EnableSensitiveDataLogging();
-                // optionsBuilder.LogTo(x => logger.Info(x), Microsoft.Extensions.Logging.LogLevel.Information);
+#if DEBUG
+                optionsBuilder.EnableSensitiveDataLogging();
+                optionsBuilder.LogTo(x => logger.Info(x), Microsoft.Extensions.Logging.LogLevel.Information);
+#endif
             }
         }
 

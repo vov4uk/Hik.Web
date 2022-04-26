@@ -5,7 +5,7 @@
 <button onclick="javascript:history.back()">Go Back</button>
 @if (Model.Job != null)
 {
-<table class="table table-bordered table-sm" width="100%">
+<table class="table table-bordered table-sm" summary="Job" width="100%">
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(m => m.Job.Id)</th>
@@ -31,7 +31,7 @@
 
 @if (Model.Job?.ExceptionLog != null)
 {
-    <table class="table table-bordered table-sm" width="100%">
+    <table class="table table-bordered table-sm" summary="Exceptions" width="100%">
         <thead>
             <tr>
                 <th>@Html.DisplayNameFor(m => m.Job.ExceptionLog.Created)</th>
