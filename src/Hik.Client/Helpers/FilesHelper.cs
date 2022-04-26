@@ -46,9 +46,9 @@ namespace Hik.Client.Helpers
             {
                 // ОК
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 

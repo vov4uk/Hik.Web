@@ -12,7 +12,7 @@ namespace Job.FileProviders
         private Stack<DateTime> dates;
         private Dictionary<DateTime, IList<string>> directoriesToDelete;
         private bool isInitialized = false;
-        private string fileExtention;
+        private readonly string fileExtention;
 
         public WinFileProvider(string fileExtention)
         {
@@ -74,14 +74,11 @@ namespace Job.FileProviders
             var result = new List<MediaFileDTO>();
             if (directoriesToDelete.Any())
             {
-                foreach (var fileDateTime in directoriesToDelete.Keys.Where(x => x <= date))
+                foreach (var fileDateTime in directoriesToDelete.Keys.Where(x => x <= date && directoriesToDelete.ContainsKey(x)))
                 {
-                    if (directoriesToDelete.ContainsKey(fileDateTime))
+                    foreach (var folder in directoriesToDelete[fileDateTime])
                     {
-                        foreach (var folder in directoriesToDelete[fileDateTime])
-                        {
-                            result.AddRange(Directory.EnumerateFiles(folder, fileExtention).Select(x => new MediaFileDTO { Path = x, Date = fileDateTime }));
-                        }
+                        result.AddRange(Directory.EnumerateFiles(folder, fileExtention).Select(x => new MediaFileDTO { Path = x, Date = fileDateTime }));
                     }
                 }
             }

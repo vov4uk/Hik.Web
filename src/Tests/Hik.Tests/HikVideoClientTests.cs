@@ -189,8 +189,8 @@
             var mediaFiles = await client.GetFilesListAsync(start, end);
 
             this.videoServiceMock.Verify(x => x.FindFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Session>()), Times.Once);
-            Assert.Equal(mediaFiles.Count, 1);
-            var firstFile = mediaFiles.FirstOrDefault();
+            Assert.Single(mediaFiles);
+            var firstFile = mediaFiles.First();
             Assert.Equal(remoteFile.Name, firstFile.Name);
             Assert.Equal(remoteFile.Date, firstFile.Date);
             Assert.Equal(remoteFile.Duration, firstFile.Duration);

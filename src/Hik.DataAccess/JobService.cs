@@ -133,7 +133,7 @@ namespace Hik.DataAccess
             }
         }
 
-        private async Task<List<DailyStatistic>> GetDailyStatisticSafe(int triggerId, DateTime from, DateTime to, IUnitOfWork unitOfWork)
+        private static async Task<List<DailyStatistic>> GetDailyStatisticSafe(int triggerId, DateTime from, DateTime to, IUnitOfWork unitOfWork)
         {
             var repo = unitOfWork.GetRepository<DailyStatistic>();
             var daily = await repo.FindManyAsync(x => x.JobTriggerId == triggerId && x.Period >= from && x.Period <= to);
@@ -160,7 +160,7 @@ namespace Hik.DataAccess
             return daily;
         }
 
-        private Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)
+        private static Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)
             where TEntity : class
         {
             if (entities != null && entities.Any())

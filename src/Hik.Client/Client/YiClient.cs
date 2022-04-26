@@ -35,16 +35,15 @@ namespace Hik.Client
         {
             string destinationFilePath = GetPathSafety(remoteFile);
             var filePath = remoteFile.Date.ToYiFilePathString(config.ClientType);
+
+            if (!filesHelper.FileExists(destinationFilePath))
             {
-                if (!filesHelper.FileExists(destinationFilePath))
-                {
-                    return await DownloadInternalAsync(remoteFile, destinationFilePath, filePath, token);
-                }
-                else
-                {
-                    LogDebugInfo($"{remoteFile.ToVideoUserFriendlyString()} - exist");
-                    return false;
-                }
+                return await DownloadInternalAsync(remoteFile, destinationFilePath, filePath, token);
+            }
+            else
+            {
+                LogDebugInfo($"{remoteFile.ToVideoUserFriendlyString()} - exist");
+                return false;
             }
         }
 

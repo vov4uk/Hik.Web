@@ -40,6 +40,7 @@ namespace Hik.Client.Helpers
                 }
 
                 dates = new Stack<DateTime>(directories.Keys.OrderBy(x => x).ToList());
+                isInitialized = true;
             }
         }
 

@@ -9,6 +9,7 @@ namespace Hik.Client.Helpers
         private readonly IConnection connection;
         private readonly IModel channel;
         private readonly string routingKey;
+        private bool disposedValue = false;
 
         public RabbitMQSender(string hostName, string queueName, string routingKey)
         {
@@ -27,8 +28,18 @@ namespace Hik.Client.Helpers
 
         public void Dispose()
         {
-            connection?.Dispose();
-            channel?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                connection?.Dispose();
+                channel?.Dispose();
+                disposedValue = true;
+            }
         }
     }
 }

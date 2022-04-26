@@ -24,14 +24,12 @@ namespace Hik.Client.Helpers
                 var outputFile = new OutputFile(fullPath);
                 await GetEngine().GetThumbnailAsync(inputFile, outputFile, CancellationToken.None);
 
-                using (Image image = Image.FromFile(fullPath))
+                Image image = Image.FromFile(fullPath);
+                using (Image newImage = new Bitmap(image, 1080, 608))
                 {
-                    using (Image newImage = new Bitmap(image, 1080, 608))
-                    {
-                        image.Dispose();
-                        var parameters = GetCompressParameters();
-                        newImage.Save(fullPath, parameters.jpgEncoder, parameters.encoderParameters);
-                    }
+                    image.Dispose();
+                    var parameters = GetCompressParameters();
+                    newImage.Save(fullPath, parameters.jpgEncoder, parameters.encoderParameters);
                 }
 
                 byte[] imageArray = await File.ReadAllBytesAsync(fullPath);

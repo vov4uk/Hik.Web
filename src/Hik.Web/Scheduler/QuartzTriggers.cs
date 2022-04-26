@@ -16,7 +16,7 @@ namespace Hik.Web.Scheduler
             var scheduler = await schedulerFactory.GetScheduler("default");
             if (scheduler == null)
             {
-                throw new NullReferenceException(nameof(scheduler));
+                throw new ArgumentNullException(nameof(scheduler));
             }
             var triggerKeys = await scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup());
 
