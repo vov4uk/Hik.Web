@@ -326,7 +326,7 @@
                 .Setup(x => x.StartDownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(downloadHandler);
             this.videoServiceMock.Setup(x => x.StopDownloadFile(downloadHandler));
-            this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<int>())).Callback(() => client.ForceExit()).Returns(10);
+            this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<int>())).Callback(client.ForceExit).Returns(10);
             this.sdkMock.Setup(x => x.Logout(DefaultUserId));
             this.sdkMock.Setup(x => x.Cleanup());
             this.filesMock.Setup(x => x.GetTempFileName()).Returns(string.Empty);

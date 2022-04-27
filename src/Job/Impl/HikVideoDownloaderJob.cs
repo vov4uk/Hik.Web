@@ -1,7 +1,8 @@
 ﻿using Autofac;
+using Hik.Client.Abstraction;
 using Hik.Client.Infrastructure;
-using Hik.Client.Service;
 using Hik.DataAccess;
+using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -14,16 +15,16 @@ namespace Job.Impl
 {
     public class HikVideoDownloaderJob : JobProcessBase
     {
-        public HikVideoDownloaderJob(string trigger, string configFilePath, string connectionString, Guid activityId)
-            : base(trigger, configFilePath, connectionString, activityId)
+        public HikVideoDownloaderJob(string trigger, string configFilePath, IUnitOfWorkFactory unitOfWorkFactory, Guid activityId)
+            : base(trigger, unitOfWorkFactory, activityId)
         {
             Config = HikConfigExtensions.GetConfig<CameraConfig>(configFilePath);
             LogInfo(Config?.ToString());
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
-            var downloader = AppBootstrapper.Container.Resolve<VideoDownloaderService>();
+            var downloader = AppBootstrapper.Container.Resolve<IHikVideoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
             downloader.FileDownloaded += Downloader_VideoDownloaded;
             LogInfo($"{Config} - {this.JobInstance.PeriodStart.Value} - {this.JobInstance.PeriodEnd.Value}");
@@ -33,12 +34,12 @@ namespace Job.Impl
             return files;
         }
 
-        public override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
+        protected override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             return Task.CompletedTask;
         }
 
-        public override Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        protected override Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             return Task.CompletedTask;
         }

@@ -13,7 +13,9 @@ namespace Hik.DataAccess
 
         public IUnitOfWork CreateUnitOfWork()
         {
-            return new UnitOfWork<DataContext>(new DataContext(this.connectionString));
+            var db = new DataContext(this.connectionString);
+            db.Database.EnsureCreated();
+            return new UnitOfWork<DataContext>(db);
         }
     }
 }

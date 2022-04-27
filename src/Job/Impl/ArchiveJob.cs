@@ -1,7 +1,8 @@
 ﻿using Autofac;
+using Hik.Client.Abstraction;
 using Hik.Client.Infrastructure;
-using Hik.Client.Service;
 using Hik.DataAccess;
+using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -17,38 +18,38 @@ namespace Job.Impl
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
 
-        public ArchiveJob(string trigger, string configFilePath, string connectionString, Guid activityId)
-            : base(trigger, configFilePath, connectionString, activityId)
+        public ArchiveJob(string trigger, string configFilePath, IUnitOfWorkFactory unitOfWorkFactory, Guid activityId)
+            : base(trigger, unitOfWorkFactory, activityId)
         {
             Config = HikConfigExtensions.GetConfig<ArchiveConfig>(configFilePath);
             LogInfo(Config?.ToString());
         }
 
-        public override void InitializeProcessingPeriod()
+        protected override void CalculateProcessingPeriod()
         {
             // Not applicable
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
-            var worker = AppBootstrapper.Container.Resolve<ArchiveService>();
+            IArchiveService worker = AppBootstrapper.Container.Resolve<IArchiveService>();
             worker.ExceptionFired += base.ExceptionFired;
 
-            return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MinValue);
+            return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MaxValue);
         }
 
-        public override async Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
+        protected override async Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             await service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }
 
-        public override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
             JobInstance.FilesCount = files.Count;
 
-            var abnormalFilesCount = (Config as ArchiveConfig)?.AbnormalFilesCount ?? 0;
+            var abnormalFilesCount = ((ArchiveConfig)Config).AbnormalFilesCount;
             if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
             {
                 Email.EmailHelper.Send(

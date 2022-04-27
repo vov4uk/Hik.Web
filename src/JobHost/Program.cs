@@ -1,4 +1,6 @@
-﻿using Job;
+﻿using Hik.DataAccess;
+using Hik.DataAccess.Abstractions;
+using Job;
 using Job.Email;
 using NLog;
 using System;
@@ -20,11 +22,13 @@ namespace JobHost
 
                 Type jobType = Type.GetType(parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{parameters.ClassName}'");
 
+                IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(parameters.ConnectionString);
+
                 Job.Impl.JobProcessBase job = (Job.Impl.JobProcessBase)Activator.CreateInstance(
                     jobType,
                     $"{parameters.Group}.{parameters.TriggerKey}",
                     parameters.ConfigFilePath,
-                    parameters.ConnectionString,
+                    unitOfWorkFactory,
                     parameters.ActivityId);
 
                 await job.ExecuteAsync();

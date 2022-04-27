@@ -1,0 +1,9 @@
+{
+  "1JobTimeoutMinutes": 25,
+  "1Alias": "Floor1",
+  "1DestinationFolder": "C:\\FFOutput",
+  "1SourceFolder": "C:\\Floor1",
+  "1FileNameDateTimeFormat": "yyyyMMdd_HHmmss",
+  "1AbnormalFilesCount": 500
+  }
+}

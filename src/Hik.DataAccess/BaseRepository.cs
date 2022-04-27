@@ -21,9 +21,10 @@ namespace Hik.DataAccess
             this.DbSet = this.Database.Set<TEntity>();
         }
 
-        public virtual ValueTask<EntityEntry<TEntity>> AddAsync(TEntity entity)
+        public virtual async ValueTask<TEntity> AddAsync(TEntity entity)
         {
-            return DbSet.AddAsync(entity);
+            var result = await DbSet.AddAsync(entity);
+            return result.Entity;
         }
 
         public virtual EntityEntry<TEntity> Add(TEntity entity)

@@ -1,6 +1,7 @@
 ﻿using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DataAccess;
+using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -18,8 +19,8 @@ namespace Job.Impl
         protected readonly IDirectoryHelper directoryHelper;
         protected readonly IFilesHelper filesHelper;
 
-        public GarbageCollectorJob(string trigger, string configFilePath, string connectionString, Guid activityId)
-            : base(trigger, configFilePath, connectionString, activityId)
+        public GarbageCollectorJob(string trigger, string configFilePath, IUnitOfWorkFactory unitOfWorkFactory, Guid activityId)
+            : base(trigger, unitOfWorkFactory, activityId)
         {
             Config = HikConfigExtensions.GetConfig<GarbageCollectorConfig>(configFilePath);
             LogInfo(Config?.ToString());
@@ -27,12 +28,24 @@ namespace Job.Impl
             this.filesHelper = new FilesHelper();
         }
 
-        public override void InitializeProcessingPeriod()
+        protected void DeleteFiles(IReadOnlyCollection<MediaFileDTO> filesToDelete)
+        {
+            foreach (var file in filesToDelete)
+            {
+                this.logger.Debug($"Deleting: {file.Path}");
+#if RELEASE
+                file.Size = filesHelper.FileSize(file.Path);
+                this.filesHelper.DeleteFile(file.Path);
+#endif
+            }
+        }
+
+        protected override void CalculateProcessingPeriod()
         {
             // Not applicable
         }
 
-        public override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
             var gcConfig = Config as GarbageCollectorConfig;
 
@@ -55,6 +68,28 @@ namespace Job.Impl
 
             directoryHelper.DeleteEmptyDirs(gcConfig.DestinationFolder);
             return Task.FromResult(deleteFilesResult);
+        }
+
+        protected override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
+        {
+            return Task.CompletedTask;
+        }
+
+        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        {
+            JobInstance.PeriodStart = files.Min(x => x.Date);
+            JobInstance.PeriodEnd = files.Max(x => x.Date);
+            JobInstance.FilesCount = files.Count;
+
+            await service.UpdateDailyStatisticsAsync(files);
+            if (JobInstance.PeriodEnd.HasValue)
+            {
+                var config = (GarbageCollectorConfig)Config;
+                if (config.Triggers != null && config.Triggers.Any())
+                {
+                    await service.DeleteObsoleteJobsAsync(config.Triggers, JobInstance.PeriodEnd.Value);
+                }
+            }
         }
 
         private List<MediaFileDTO> PersentageDelete(GarbageCollectorConfig gcConfig, WinFileProvider fileProvider)
@@ -87,40 +122,6 @@ namespace Job.Impl
             }
             while (true);
             return deletedFiles;
-        }
-
-        protected void DeleteFiles(IReadOnlyCollection<MediaFileDTO> filesToDelete)
-        {
-            foreach (var file in filesToDelete)
-            {
-                this.logger.Debug($"Deleting: {file.Path}");
-#if RELEASE
-                file.Size = filesHelper.FileSize(file.Path);
-                this.filesHelper.DeleteFile(file.Path);
-#endif
-            }
-        }
-
-        public override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
-        {
-            JobInstance.PeriodStart = files.Min(x => x.Date);
-            JobInstance.PeriodEnd = files.Max(x => x.Date);
-            JobInstance.FilesCount = files.Count;
-
-            await service.UpdateDailyStatisticsAsync(files);
-            if (Config is GarbageCollectorConfig && JobInstance.PeriodEnd.HasValue)
-            {
-                var config = (GarbageCollectorConfig)Config;
-                if (config.Triggers != null && config.Triggers.Any())
-                {
-                    await service.DeleteObsoleteJobsAsync(config.Triggers, JobInstance.PeriodEnd.Value);
-                }
-            }
-        }
-
-        public override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
-        {
-            return Task.CompletedTask;
         }
     }
 }

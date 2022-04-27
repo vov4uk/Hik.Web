@@ -75,14 +75,14 @@ namespace Hik.DataAccess
             var dailyStat = (await GetDailyStatisticSafe(job.JobTriggerId, from, to, unitOfWork)).ToDictionary(k => k.Period, v => v);
 
             var group = files.GroupBy(x => x.Date.Date)
-                .Select(x => new { date = x.Key, cnt = x.Count(), size = x.Sum(p => p.Size), dur = x.Sum(p => p.Duration) });
+                .Select(x => new { Date = x.Key, Count = x.Count(), Size = x.Sum(p => p.Size), Duration = x.Sum(p => p.Duration) });
 
             foreach (var item in group)
             {
-                var day = dailyStat[item.date];
-                day.FilesCount += item.cnt;
-                day.FilesSize += item.size;
-                day.TotalDuration += item.dur;
+                var day = dailyStat[item.Date];
+                day.FilesCount += item.Count;
+                day.FilesSize += item.Size;
+                day.TotalDuration += item.Duration;
             }
 
             await unitOfWork.SaveChangesAsync(job);

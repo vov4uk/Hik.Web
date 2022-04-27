@@ -1,5 +1,6 @@
 ﻿using Hik.Client.Helpers;
 using Hik.DataAccess;
+using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -12,23 +13,30 @@ namespace Job.Impl
 {
     public class DbMigrationJob : JobProcessBase
     {
-        public DbMigrationJob(string trigger, string configFilePath, string connectionString, Guid activityId)
-            : base(HikConfigExtensions.GetConfig<MigrationConfig>(configFilePath).TriggerKey, configFilePath, connectionString, activityId)
+        public DbMigrationJob(string trigger, string configFilePath, IUnitOfWorkFactory unitOfWorkFactory, Guid activityId)
+            : base(HikConfigExtensions.GetConfig<MigrationConfig>(configFilePath).TriggerKey, unitOfWorkFactory, activityId)
         {
             Config = HikConfigExtensions.GetConfig<MigrationConfig>(configFilePath);
             LogInfo(trigger);
             LogInfo(Config?.ToString());
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override void CalculateProcessingPeriod()
+        {
+            // Not applicable
+        }
+
+        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
             var deleteHelper = new DeleteHelper(new DirectoryHelper(), new FilesHelper());
             deleteHelper.Initialize(Config.DestinationFolder);
 
+            bool readDuration = ((MigrationConfig)Config).ReadDuration;
+
             List<MediaFileDTO> files = new();
             do
             {
-                var batch = await deleteHelper.GetNextBatch(((MigrationConfig)Config).ReadDuration);
+                var batch = await deleteHelper.GetNextBatch(readDuration);
                 if (batch.Count > 0)
                 {
                     files.AddRange(batch);
@@ -42,13 +50,7 @@ namespace Job.Impl
 
             return files;
         }
-
-        public override void InitializeProcessingPeriod()
-        {
-            // Not applicable
-        }
-
-        public override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
+        protected override Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
         {
             return service.SaveHistoryFilesAsync<DownloadHistory>(files);
         }

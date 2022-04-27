@@ -1,0 +1,17 @@
+{
+  "JobTimeoutMinutes": 25,
+  "Alias": "Floor1",
+  "DestinationFolder": "C:\\FFOutput",
+  "SourceFolder": "C:\\Floor1",
+  "FileNameDateTimeFormat": "yyyyMMdd_HHmmss",
+  "AbnormalFilesCount": 500,
+  "DetectPeopleConfig": {
+    "DetectPeoples": true,
+    "JunkFolder": "C:\\FFOutput\\Junk",
+    "RabbitMQConfig": {
+      "HostName": "localhost",
+      "QueueName": "hik",
+      "RoutingKey": "hik"
+    }
+  }
+}
