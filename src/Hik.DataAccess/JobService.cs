@@ -10,20 +10,58 @@ using NLog;
 
 namespace Hik.DataAccess
 {
-    public class JobService
+    public class JobService : IJobService
     {
         private readonly IUnitOfWorkFactory factory;
-        private readonly HikJob job;
         private static readonly IMapper mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
         protected readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public JobService(IUnitOfWorkFactory factory, HikJob job)
+        public JobService(IUnitOfWorkFactory factory)
         {
             this.factory = factory;
-            this.job = job;
         }
 
-        public async Task SaveJobResultAsync()
+        public async Task CreateJobInstanceAsync(HikJob job)
+        {
+            using var unitOfWork = this.factory.CreateUnitOfWork();
+            var jobRepo = unitOfWork.GetRepository<HikJob>();
+            await jobRepo.AddAsync(job);
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task LogExceptionToDbAsync(int jobId, string message, string callStack, uint? errorCode = null)
+        {
+            using var unitOfWork = this.factory.CreateUnitOfWork();
+            var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
+
+            await jobRepo.AddAsync(new ExceptionLog
+            {
+                CallStack = callStack,
+                JobId = jobId,
+                Message = message,
+                HikErrorCode = errorCode
+            });
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<JobTrigger> GetOrCreateJobTriggerAsync(string triggerKey)
+        {
+            var jobNameParts = triggerKey.Split(".");
+            var group = jobNameParts[0];
+            var key = jobNameParts[1];
+
+            using var unitOfWork = this.factory.CreateUnitOfWork();
+            var repo = unitOfWork.GetRepository<JobTrigger>();
+            var jobTrigger = await repo.FindByAsync(x => x.TriggerKey == key && x.Group == group);
+            if (jobTrigger == null)
+            {
+                jobTrigger = await repo.AddAsync(new JobTrigger { TriggerKey = key, Group = group });
+                await unitOfWork.SaveChangesAsync();
+            }
+            return jobTrigger;
+        }
+
+        public async Task SaveJobResultAsync(HikJob job)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<HikJob>();
@@ -40,7 +78,7 @@ namespace Hik.DataAccess
             await unitOfWork.SaveChangesAsync(job);
         }
 
-        public async Task<List<MediaFile>> SaveFilesAsync(IReadOnlyCollection<MediaFileDTO> files)
+        public async Task<List<MediaFile>> SaveFilesAsync(HikJob job, IReadOnlyCollection<MediaFileDTO> files)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
 
@@ -65,7 +103,7 @@ namespace Hik.DataAccess
             return mediaFiles;
         }
 
-        public async Task UpdateDailyStatisticsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        public async Task UpdateDailyStatisticsAsync(HikJob job, IReadOnlyCollection<MediaFileDTO> files)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
 
@@ -88,11 +126,10 @@ namespace Hik.DataAccess
             await unitOfWork.SaveChangesAsync(job);
         }
 
-        public async Task SaveHistoryFilesAsync<T>(IReadOnlyCollection<MediaFile> files)
-            where T: class, IHistory, new()
+        public async Task SaveDownloadHistoryFilesAsync(HikJob job, IReadOnlyCollection<MediaFile> files)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
-            var entities = files.Select(x => new T { MediaFileId = x.Id }).ToList();
+            var entities = files.Select(x => new DownloadHistory { MediaFileId = x.Id }).ToList();
 
             await AddEntities(entities, unitOfWork);
             await unitOfWork.SaveChangesAsync(job);

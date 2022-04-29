@@ -19,7 +19,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JobHost", "src\JobHost\JobH
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{15507225-11CE-4713-8452-3885F5A6F3E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Job.Tests", "src\Tests\Job.Tests\Job.Tests.csproj", "{C3FE1EEF-59B1-4890-9389-43D90D9C3A43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Job.Tests", "src\Tests\Job.Tests\Job.Tests.csproj", "{C3FE1EEF-59B1-4890-9389-43D90D9C3A43}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E4D958FE-B559-4989-8F1B-A13207CEE32A}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

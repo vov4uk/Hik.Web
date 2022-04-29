@@ -13,7 +13,7 @@ namespace Job
     {
         protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private DateTime started = default;
-
+        private readonly EmailHelper email = new EmailHelper();
         public readonly Guid Id;
         public Parameters Parameters { get; private set; }
         public int ProcessId => hostProcess?.Id ?? -1;
@@ -48,7 +48,7 @@ namespace Job
             catch (Exception ex)
             {
                 Logger.Error($"Activity.Start - catch exception : {ex}");
-                EmailHelper.Send(ex);
+                email.Send(ex);
             }
             finally
             {
@@ -116,11 +116,13 @@ namespace Job
         {
             Type jobType = Type.GetType(Parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
             IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(Parameters.ConnectionString);
+            IJobService db = new JobService(unitOfWorkFactory);
 
             Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(
                     jobType, $"{Parameters.Group}.{Parameters.TriggerKey}",
                     Parameters.ConfigFilePath,
-                    unitOfWorkFactory,
+                    db,
+                    email,
                     Parameters.ActivityId);
             started = DateTime.Now;
             ActivityBag.Add(this);

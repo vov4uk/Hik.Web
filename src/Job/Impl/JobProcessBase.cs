@@ -1,6 +1,5 @@
 ﻿using Hik.Api;
 using Hik.Client.Events;
-using Hik.DataAccess;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
@@ -18,25 +17,26 @@ namespace Job.Impl
     public abstract class JobProcessBase
     {
         protected readonly Logger logger = LogManager.GetCurrentClassLogger();
-        protected readonly IUnitOfWorkFactory unitOfWorkFactory;
-        private JobTrigger jobTrigger;
+        protected readonly IJobService db;
+        protected readonly IEmailHelper email;
+        protected JobTrigger jobTrigger;
 
-        protected JobProcessBase(string trigger, IUnitOfWorkFactory unitOfWorkFactory, Guid activityId)
+        protected JobProcessBase(string trigger, IJobService db, IEmailHelper email, Guid activityId)
         {
             TriggerKey = trigger;
             System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
-            this.unitOfWorkFactory = unitOfWorkFactory;
+            this.db = db;
+            this.email = email;
         }
 
         public BaseConfig Config { get; protected set; }
         public string TriggerKey { get; private set; }
-        protected HikJob JobInstance { get; private set; }
+        internal HikJob JobInstance { get; private set; }
+
         public async Task ExecuteAsync()
         {
             try
             {
-                await SetJobTriggerAsync();
-
                 await CreateJobInstanceAsync();
                 Config.Alias = TriggerKey;
                 var result = await RunAsync();
@@ -53,20 +53,6 @@ namespace Job.Impl
             HandleException(e.Exception);
         }
 
-        protected virtual void CalculateProcessingPeriod()
-        {
-            var config = Config as CameraConfig;
-            DateTime jobStart = DateTime.Now;
-
-            DateTime? lastSync = jobTrigger.LastSync;
-            DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config?.ProcessingPeriodHours ?? 1);
-
-            this.JobInstance.PeriodStart = periodStart;
-            this.JobInstance.PeriodEnd = jobStart;
-
-            LogInfo($"Last sync from DB - {lastSync}, Period - {periodStart} - {jobStart}");
-        }
-
         protected void LogInfo(string msg)
         {
             logger.Info($"{TriggerKey} - {msg}");
@@ -74,14 +60,12 @@ namespace Job.Impl
 
         protected abstract Task<IReadOnlyCollection<MediaFileDTO>> RunAsync();
 
-        protected abstract Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service);
-
-        protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
         {
             JobInstance.FilesCount = files.Count;
-            var mediaFiles = await service.SaveFilesAsync(files);
-            await service.UpdateDailyStatisticsAsync(files);
-            await SaveHistoryAsync(mediaFiles, service);
+            var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
+            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+            await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
 
         private void HandleException(Exception e)
@@ -89,15 +73,14 @@ namespace Job.Impl
             this.JobInstance.Success = false;
             try
             {
-                JobService jobResultSaver = new(this.unitOfWorkFactory, this.JobInstance);
-                Task.WaitAll(LogExceptionToDB(e), jobResultSaver.SaveJobResultAsync());
+                Task.WaitAll(LogExceptionToDB(e), db.SaveJobResultAsync(JobInstance));
             }
             catch (Exception ex) { logger.Error(ex.ToString()); }
 
             if (Config.SentEmailOnError)
             {
                 var details = JobInstance.ToHtmlTable(Config);
-                EmailHelper.Send(e, Config.Alias, details);
+                email.Send(e, Config.Alias, details);
             }
             else
             {
@@ -107,72 +90,36 @@ namespace Job.Impl
 
         private async Task CreateJobInstanceAsync()
         {
+            this.jobTrigger = await db.GetOrCreateJobTriggerAsync(TriggerKey);
+
             this.JobInstance = new HikJob
             {
                 Started = DateTime.Now,
                 JobTriggerId = jobTrigger.Id
             };
 
-            CalculateProcessingPeriod();
-
-            await SaveJobInstanceToDbAsync();
-        }
-
-        private async Task SetJobTriggerAsync()
-        {
-            if (this.jobTrigger == null)
-            {
-                var jobNameParts = TriggerKey.Split(".");
-                var group = jobNameParts[0];
-                var triggerKey = jobNameParts[1];
-                using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
-                var repo = unitOfWork.GetRepository<JobTrigger>();
-                this.jobTrigger = await repo.FindByAsync(x => x.TriggerKey == triggerKey && x.Group == group);
-                if (this.jobTrigger == null)
-                {
-                    jobTrigger = await repo.AddAsync(new JobTrigger { TriggerKey = triggerKey, Group = group, ShowInSearch = Config.ShowInSearch });
-                    await unitOfWork.SaveChangesAsync();
-                }
-            }
+            await db.CreateJobInstanceAsync(JobInstance);
         }
 
         private async Task LogExceptionToDB(Exception e)
         {
-            using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
-            var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
-
-            await jobRepo.AddAsync(new ExceptionLog
-            {
-                CallStack = e.StackTrace,
-                JobId = JobInstance.Id,
-                Message = (e as HikException)?.ErrorMessage ?? e.ToString(),
-                HikErrorCode = (e as HikException)?.ErrorCode
-            });
-            await unitOfWork.SaveChangesAsync();
-        }
-
-        private async Task SaveJobInstanceToDbAsync()
-        {
-            using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
-            var jobRepo = unitOfWork.GetRepository<HikJob>();
-            await jobRepo.AddAsync(JobInstance);
-            await unitOfWork.SaveChangesAsync();
+            await db.LogExceptionToDbAsync(JobInstance.Id, (e as HikException)?.ErrorMessage ?? e.ToString(), e.StackTrace, (e as HikException)?.ErrorCode);
         }
 
         private async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDTO> files)
         {
-            var jobResultSaver = new JobService(this.unitOfWorkFactory, this.JobInstance);
             if (files?.Any() == true)
             {
-                await SaveResultsAsync(files, jobResultSaver);
+                await SaveResultsAsync(files);
             }
             else
             {
                 logger.Warn($"{TriggerKey} - Results Empty");
             }
+
             if (this.JobInstance.Success)
             {
-                await jobResultSaver.SaveJobResultAsync();
+                await db.SaveJobResultAsync(JobInstance);
             }
         }
     }

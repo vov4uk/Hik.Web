@@ -5,11 +5,16 @@
 <button onclick="javascript:history.back()">Go Back</button>
 @if (Model.Job != null)
 {
+  <div class="row">
+      <div class="card-body text-center">
+          <h2 class="card-title">@Model.Job.JobTrigger.TriggerKey</h2>
+      </div>
+  </div>
+
 <table class="table table-bordered table-sm" aria-label="Job">
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(m => m.Job.Id)</th>
-            <th>@Html.DisplayNameFor(m => m.Job.JobTrigger)</th>
             <th>@Html.DisplayNameFor(m => m.Job.PeriodStart)</th>
             <th>@Html.DisplayNameFor(m => m.Job.PeriodEnd)</th>
             <th>@Html.DisplayNameFor(m => m.Job.Started)</th>
@@ -19,7 +24,6 @@
     <tbody>
         <tr>
             <td>@Html.DisplayFor(m => Model.Job.Id)</td>
-            <td>@Html.DisplayFor(m => Model.Job.JobTrigger.TriggerKey)</td>
             <td>@Html.DisplayFor(m => Model.Job.PeriodStart)</td>
             <td>@Html.DisplayFor(m => Model.Job.PeriodEnd)</td>
             <td>@Html.DisplayFor(m => Model.Job.Started)</td>
@@ -51,7 +55,7 @@
 
 @if (Model.Files != null && Model.Files.Any())
 {
-    @await Html.PartialAsync("_Files.cshtml", (List<Hik.DataAccess.Data.MediaFile>) Model.Files)
+    @await Html.PartialAsync("_FilesSearch.cshtml", (List<Hik.DataAccess.Data.MediaFile>) Model.Files)
 }
 
 <!-- pager -->

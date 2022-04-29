@@ -1,9 +1,10 @@
-﻿using Hik.DTO.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Hik.Client.FileProviders;
 using Hik.Client.Helpers;
+using Hik.DTO.Contracts;
 
 namespace Job.FileProviders
 {
@@ -12,12 +13,6 @@ namespace Job.FileProviders
         private Stack<DateTime> dates;
         private Dictionary<DateTime, IList<string>> directoriesToDelete;
         private bool isInitialized = false;
-        private readonly string fileExtention;
-
-        public WinFileProvider(string fileExtention)
-        {
-            this.fileExtention = fileExtention;
-        }
 
         public void Initialize(string[] directories)
         {
@@ -35,14 +30,17 @@ namespace Job.FileProviders
                             directoriesToDelete.SafeAdd(dt, directory);
                         }
                     }
+
                     directoriesToDelete.SafeAdd(DateTime.Today, topDirectory);
                 }
+
                 dates = new Stack<DateTime>(directoriesToDelete.Keys.OrderByDescending(x => x).ToList());
             }
+
             isInitialized = true;
         }
 
-        public IReadOnlyCollection<MediaFileDTO> GetNextBatch(int batchSize = 100)
+        public IReadOnlyCollection<MediaFileDTO> GetNextBatch(string fileExtention, int batchSize = 100)
         {
             var result = new List<MediaFileDTO>();
             if (dates.Any())
@@ -69,7 +67,7 @@ namespace Job.FileProviders
             return result;
         }
 
-        public IReadOnlyCollection<MediaFileDTO> GetFilesOlderThan(DateTime date)
+        public IReadOnlyCollection<MediaFileDTO> GetFilesOlderThan(string fileExtention, DateTime date)
         {
             var result = new List<MediaFileDTO>();
             if (directoriesToDelete.Any())

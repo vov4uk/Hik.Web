@@ -10,7 +10,7 @@ using NLog;
 namespace Job.Email
 {
     [ExcludeFromCodeCoverage]
-    public static class EmailHelper
+    public class EmailHelper : IEmailHelper
     {
 
         static EmailConfig Settings { get;}
@@ -24,7 +24,7 @@ namespace Job.Email
 #endif
         }
 
-        public static void Send(Exception ex, string alias = null, string hikJobDetails = null)
+        public void Send(Exception ex, string alias = null, string hikJobDetails = null)
         {
             string errorDetails = string.Empty;
             if (ex is HikException hikEx)
@@ -40,7 +40,7 @@ namespace Job.Email
             Send(subject, msg);
         }
 
-        public static void Send(string subject, string body)
+        public void Send(string subject, string body)
         {
             try
             {

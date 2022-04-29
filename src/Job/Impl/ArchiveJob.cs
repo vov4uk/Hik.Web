@@ -1,11 +1,10 @@
 ﻿using Autofac;
 using Hik.Client.Abstraction;
 using Hik.Client.Infrastructure;
-using Hik.DataAccess;
 using Hik.DataAccess.Abstractions;
-using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Job.Email;
 using Job.Extensions;
 using System;
 using System.Collections.Generic;
@@ -18,16 +17,11 @@ namespace Job.Impl
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
 
-        public ArchiveJob(string trigger, string configFilePath, IUnitOfWorkFactory unitOfWorkFactory, Guid activityId)
-            : base(trigger, unitOfWorkFactory, activityId)
+        public ArchiveJob(string trigger, string configFilePath, IJobService db, IEmailHelper email, Guid activityId)
+            : base(trigger, db, email, activityId)
         {
             Config = HikConfigExtensions.GetConfig<ArchiveConfig>(configFilePath);
             LogInfo(Config?.ToString());
-        }
-
-        protected override void CalculateProcessingPeriod()
-        {
-            // Not applicable
         }
 
         protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
@@ -38,12 +32,7 @@ namespace Job.Impl
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MaxValue);
         }
 
-        protected override async Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service)
-        {
-            await service.SaveHistoryFilesAsync<DownloadHistory>(files);
-        }
-
-        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
+        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
@@ -52,17 +41,17 @@ namespace Job.Impl
             var abnormalFilesCount = ((ArchiveConfig)Config).AbnormalFilesCount;
             if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
             {
-                Email.EmailHelper.Send(
+                email.Send(
                     $"{files.Count} - {TriggerKey}: Abnormal activity detected",
                     $"{files.Count} taken in period from {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(DateTimeFormat)}");
             }
 
-            await service.UpdateDailyStatisticsAsync(files);
+            await db.UpdateDailyStatisticsAsync(JobInstance, files);
 
             if (files.Sum(x => x.Duration ?? 0) > 0)
             {
-                var mediaFiles = await service.SaveFilesAsync(files);
-                await SaveHistoryAsync(mediaFiles, service);
+                var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
+                await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
             }
         }
     }

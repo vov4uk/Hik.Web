@@ -16,7 +16,7 @@ namespace Hik.DataAccess.Data
         public int JobTriggerId { get; set; }
 
         [Display(Name = "Success")]
-        public bool Success { get; set; }
+        public bool Success { get; set; } = true;
 
         [Display(Name = "From"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public  DateTime? PeriodStart { get; set; }
