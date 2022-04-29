@@ -5,5 +5,5 @@
   "SourceFolder": "C:\\Floor1",
   "FileNameDateTimeFormat": "yyyyMMdd_HHmmss",
   "AbnormalFilesCount": 500,
-  "SentEmailOnError": false
+  "SentEmailOnError": true
 }

@@ -130,6 +130,44 @@
         }
 
         [Fact]
+        public async Task ExecuteAsync_ExceptionFired_ExceptionLogged()
+        {
+            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}")).ReturnsAsync(new JobTrigger());
+            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>())).Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>())).Returns(Task.CompletedTask);
+            //dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>())).ReturnsAsync(new List<MediaFile>());
+            //dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>())).Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.LogExceptionToDbAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null)).Returns(Task.CompletedTask);
+
+            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue)).ThrowsAsync(new Exception("Shit happens"));
+            //emailMock.Setup(x => x.Send($"2 - {group}.{triggerKey}: Abnormal activity detected", It.IsAny<string>())).Verifiable();
+
+            var job = new ArchiveJob($"{group}.{triggerKey}", Path.Combine(CurrentDirectory, "ArchiveJobTests.json"), dbMock.Object, this.emailMock.Object, Guid.Empty);
+            await job.ExecuteAsync();
+
+            dbMock.VerifyAll();
+            Assert.False(job.JobInstance.Success);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_ExceptionFired_EmailWasSent()
+        {
+            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}")).ReturnsAsync(new JobTrigger());
+            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>())).Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>())).Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.LogExceptionToDbAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null)).Returns(Task.CompletedTask);
+
+            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue)).ThrowsAsync(new Exception("Shit happens"));
+            emailMock.Setup(x => x.Send(It.IsAny<Exception>(),It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+
+            var job = new ArchiveJob($"{group}.{triggerKey}", Path.Combine(CurrentDirectory, "ArchiveJobTestsSendEmail.json"), dbMock.Object, this.emailMock.Object, Guid.Empty);
+            await job.ExecuteAsync();
+
+            dbMock.VerifyAll();
+            emailMock.VerifyAll();
+        }
+
+        [Fact]
         public void Constructor_ConfigNotExist_Exception()
         {
             Assert.Throws<FileNotFoundException>(() => new ArchiveJob($"{group}.{triggerKey}", "ArchiveJobTests.json", this.dbMock.Object, this.emailMock.Object, Guid.Empty));

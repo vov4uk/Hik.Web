@@ -8,12 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Configs\ArchiveJobTests.json" />
-    <None Remove="Configs\ArchiveJobTestsAbnormalActivity.json" />
-    <None Remove="Configs\ArchiveJobTestsInvalid.json" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Content Include="Configs\ArchiveJobTestsSendEmail.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Configs\ArchiveJobTestsAbnormalActivity.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

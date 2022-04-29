@@ -43,24 +43,24 @@ namespace Job.FileProviders
         public IReadOnlyCollection<MediaFileDTO> GetNextBatch(string fileExtention, int batchSize = 100)
         {
             var result = new List<MediaFileDTO>();
-            if (dates.Any())
+
+            while (result.Count <= batchSize)
             {
-                while (result.Count <= batchSize)
+                if (dates.Any() && dates.TryPop(out var lastDate))
                 {
-                    if (dates.TryPop(out var lastDate))
+                    if (directoriesToDelete.ContainsKey(lastDate))
                     {
-                        if (directoriesToDelete.ContainsKey(lastDate))
+                        foreach (var folder in directoriesToDelete[lastDate])
                         {
-                            foreach (var folder in directoriesToDelete[lastDate])
-                            {
-                                result.AddRange(Directory.EnumerateFiles(folder, fileExtention).Select(x => new MediaFileDTO { Path = x, Date = lastDate}));
-                            }
+                            result
+                                .AddRange(Directory.EnumerateFiles(folder, fileExtention)
+                                .Select(x => new MediaFileDTO { Path = x, Date = lastDate }));
                         }
                     }
-                    else
-                    {
-                        break;
-                    }
+                }
+                else
+                {
+                    break;
                 }
             }
 
