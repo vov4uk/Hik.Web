@@ -32,8 +32,8 @@ namespace Job.Tests.Impl
             AppBootstrapper.SetupTest(builder);
 
             string path = Uri.UnescapeDataString(new UriBuilder(Assembly.GetExecutingAssembly().Location).Path);
-            CurrentDirectory = Path.GetDirectoryName(path) ?? Environment.ProcessPath ?? Environment.CurrentDirectory;
-            CurrentDirectory = Path.Combine(CurrentDirectory, "Configs");
+            var currentDirectory = Path.GetDirectoryName(path) ?? Environment.ProcessPath ?? Environment.CurrentDirectory;
+            CurrentDirectory = Path.Combine(currentDirectory, "Configs");
         }
     }
 }
