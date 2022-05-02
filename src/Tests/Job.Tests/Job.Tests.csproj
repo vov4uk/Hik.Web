@@ -8,6 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Configs\HikVideoTests.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Configs\ArchiveJobTestsSendEmail.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

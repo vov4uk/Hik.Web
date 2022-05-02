@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public class HikPhotoDownloaderJob : HikJobBase
+    public class HikPhotoDownloaderJob : JobProcessBase
     {
         public HikPhotoDownloaderJob(string trigger, string configFilePath, IJobService db, IEmailHelper email, Guid activityId)
             : base(trigger, db, email, activityId)
@@ -26,7 +26,10 @@ namespace Job.Impl
             var downloader = AppBootstrapper.Container.Resolve<IHikPhotoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
 
-            CalculateProcessingPeriod();
+            var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
+            LogInfo($"Last sync from DB - {jobTrigger.LastSync}, Period - {period.PeriodStart} - {period.PeriodEnd}");
+            JobInstance.PeriodStart = period.PeriodStart;
+            JobInstance.PeriodEnd = period.PeriodEnd;
 
             var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
             downloader.ExceptionFired -= base.ExceptionFired;
