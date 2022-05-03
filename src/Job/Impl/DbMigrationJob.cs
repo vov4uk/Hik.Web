@@ -17,7 +17,7 @@ namespace Job.Impl
     {
         protected readonly IFileProvider filesProvider;
 
-        public DbMigrationJob(string trigger, string configFilePath, IJobService db, IEmailHelper email, Guid activityId)
+        public DbMigrationJob(string trigger, string configFilePath, IHikDatabase db, IEmailHelper email, Guid activityId)
             : base(HikConfigExtensions.GetConfig<MigrationConfig>(configFilePath).TriggerKey, db, email, activityId)
         {
             Config = HikConfigExtensions.GetConfig<MigrationConfig>(configFilePath);

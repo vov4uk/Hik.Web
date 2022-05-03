@@ -10,13 +10,13 @@ using NLog;
 
 namespace Hik.DataAccess
 {
-    public class JobService : IJobService
+    public class HikDatabase : IHikDatabase
     {
         private readonly IUnitOfWorkFactory factory;
         private static readonly IMapper mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
         protected readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public JobService(IUnitOfWorkFactory factory)
+        public HikDatabase(IUnitOfWorkFactory factory)
         {
             this.factory = factory;
         }
@@ -29,7 +29,7 @@ namespace Hik.DataAccess
             await unitOfWork.SaveChangesAsync();
         }
 
-        public async Task LogExceptionToDbAsync(int jobId, string message, string callStack, uint? errorCode = null)
+        public async Task LogExceptionToAsync(int jobId, string message, string callStack, uint? errorCode = null)
         {
             using var unitOfWork = this.factory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
@@ -197,16 +197,14 @@ namespace Hik.DataAccess
             return daily;
         }
 
-        private static Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)
+        private static async Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)
             where TEntity : class
         {
             if (entities != null && entities.Any())
             {
                 var repo = unitOfWork.GetRepository<TEntity>();
-                return repo.AddRangeAsync(entities);
+                await repo.AddRangeAsync(entities);
             }
-
-            return Task.CompletedTask;
         }
 
         static void configureAutoMapper(IMapperConfigurationExpression x)

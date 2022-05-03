@@ -40,8 +40,8 @@
         {
             var files = new List<MediaFileDTO>()
             {
-                new MediaFileDTO{Date = new DateTime(2022,01,01), Name = "File1", Duration = 0},
-                new MediaFileDTO{Date = new DateTime(2022,01,31), Name = "File2", Duration = 0},
+                new (){Date = new (2022,01,01), Name = "File1", Duration = 0},
+                new (){Date = new (2022,01,31), Name = "File2", Duration = 0},
             };
 
             dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
@@ -67,10 +67,10 @@
         [Fact]
         public async Task ExecuteAsync_AbnormalActivity_EmailSend()
         {
-            var files = new List<MediaFileDTO>()
+            List<MediaFileDTO> files = new ()
             {
-                new MediaFileDTO(),
-                new MediaFileDTO(),
+                new (),
+                new (),
             };
 
             dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
@@ -96,11 +96,11 @@
         [Fact]
         public async Task ExecuteAsync_VideoFiles_SaveFilesAsync()
         {
-            var files = new List<MediaFileDTO>()
+            List<MediaFileDTO> files = new ()
             {
-                new MediaFileDTO(){ Duration = 1 },
-                new MediaFileDTO(){ Duration = 1 },
-                new MediaFileDTO(){ Duration = 1 },
+                new (){ Duration = 1 },
+                new (){ Duration = 1 },
+                new (){ Duration = 1 },
             };
 
             dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
@@ -134,7 +134,7 @@
                 .Returns(Task.CompletedTask);
             dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
                 .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.LogExceptionToDbAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
+            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
                 .Returns(Task.CompletedTask);
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
@@ -156,7 +156,7 @@
                 .Returns(Task.CompletedTask);
             dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
                 .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.LogExceptionToDbAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
+            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
                 .Returns(Task.CompletedTask);
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
@@ -180,7 +180,7 @@
                 .Returns(Task.CompletedTask);
             dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
                 .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.LogExceptionToDbAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
+            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
                 .Throws<Exception>();
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))

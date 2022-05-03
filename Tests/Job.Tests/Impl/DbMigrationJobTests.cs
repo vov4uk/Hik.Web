@@ -11,9 +11,6 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -23,7 +20,7 @@ namespace Job.Tests.Impl
     {
         protected const string group = "Test";
         protected const string triggerKey = "Key";
-        protected readonly Mock<IJobService> dbMock;
+        protected readonly Mock<IHikDatabase> dbMock;
         protected readonly Mock<IEmailHelper> emailMock;
         protected readonly Mock<IFileProvider> filesProvider;
 
@@ -38,7 +35,6 @@ namespace Job.Tests.Impl
 
             AppBootstrapper.SetupTest(builder);
         }
-
 
         [Fact]
         public async Task RunAsync_FoundFiles_FilesSaved()
@@ -62,16 +58,16 @@ namespace Job.Tests.Impl
                 .Verifiable();
             filesProvider.SetupSequence(x => x.GetOldestFilesBatch(false))
                 .ReturnsAsync(new List<MediaFileDTO>() {
-                    new MediaFileDTO() { Date = new DateTime(2022, 01,01)},
-                    new MediaFileDTO() { Date = new DateTime(2022, 01,11)},
-                    new MediaFileDTO() { Date = new DateTime(2022, 01,21)},
-                    new MediaFileDTO() { Date = new DateTime(2022, 01,31)},
+                    new () { Date = new (2022, 01,01)},
+                    new () { Date = new (2022, 01,11)},
+                    new () { Date = new (2022, 01,21)},
+                    new () { Date = new (2022, 01,31)},
                 })
                 .ReturnsAsync(new List<MediaFileDTO>() {
-                    new MediaFileDTO() { Date = new DateTime(2022, 02,01)},
-                    new MediaFileDTO() { Date = new DateTime(2022, 02,11)},
-                    new MediaFileDTO() { Date = new DateTime(2022, 02,21)},
-                    new MediaFileDTO() { Date = new DateTime(2022, 02,28)},
+                    new () { Date = new (2022, 02,01)},
+                    new () { Date = new (2022, 02,11)},
+                    new () { Date = new (2022, 02,21)},
+                    new () { Date = new (2022, 02,28)},
                 })
                 .ReturnsAsync(new List<MediaFileDTO>());
 

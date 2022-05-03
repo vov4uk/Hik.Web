@@ -14,7 +14,7 @@ namespace Job.Tests.Impl
         protected const string triggerKey = "Key";
         
         protected readonly Mock<T> serviceMock;
-        protected readonly Mock<IJobService> dbMock;
+        protected readonly Mock<IHikDatabase> dbMock;
         protected readonly Mock<IEmailHelper> emailMock;
 
         public JobBaseTests()

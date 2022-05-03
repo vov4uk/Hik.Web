@@ -17,7 +17,7 @@ namespace Job.Impl
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
 
-        public ArchiveJob(string trigger, string configFilePath, IJobService db, IEmailHelper email, Guid activityId)
+        public ArchiveJob(string trigger, string configFilePath, IHikDatabase db, IEmailHelper email, Guid activityId)
             : base(trigger, db, email, activityId)
         {
             Config = HikConfigExtensions.GetConfig<ArchiveConfig>(configFilePath);

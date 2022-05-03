@@ -56,7 +56,7 @@ namespace Job.Tests.Impl
                 .Returns(Task.CompletedTask);
             dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
                 .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.LogExceptionToDbAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
+            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
                 .Returns(Task.CompletedTask);
             emailMock.Setup(x => x.Send(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Verifiable();

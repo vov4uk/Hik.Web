@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Hik.DataAccess.Abstractions
 {
-    public interface IJobService
+    public interface IHikDatabase
     {
         Task CreateJobInstanceAsync(HikJob job);
 
         Task SaveJobResultAsync(HikJob job);
 
-        Task LogExceptionToDbAsync(int jobId, string message, string callStack, uint? errorCode = null);
+        Task LogExceptionToAsync(int jobId, string message, string callStack, uint? errorCode = null);
 
         Task<JobTrigger> GetOrCreateJobTriggerAsync(string triggerKey);
 

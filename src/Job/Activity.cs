@@ -118,7 +118,7 @@ namespace Job
         {
             Type jobType = Type.GetType(Parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
             IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(Parameters.ConnectionString);
-            IJobService db = new JobService(unitOfWorkFactory);
+            IHikDatabase db = new HikDatabase(unitOfWorkFactory);
 
             Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(
                     jobType, $"{Parameters.Group}.{Parameters.TriggerKey}",

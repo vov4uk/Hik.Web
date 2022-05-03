@@ -14,7 +14,7 @@ namespace Job.Impl
 {
     public class HikVideoDownloaderJob : JobProcessBase
     {
-        public HikVideoDownloaderJob(string trigger, string configFilePath, IJobService db, IEmailHelper email, Guid activityId)
+        public HikVideoDownloaderJob(string trigger, string configFilePath, IHikDatabase db, IEmailHelper email, Guid activityId)
             : base(trigger, db, email, activityId)
         {
             Config = HikConfigExtensions.GetConfig<CameraConfig>(configFilePath);

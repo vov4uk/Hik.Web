@@ -20,7 +20,7 @@ namespace Job.Impl
         protected readonly IFilesHelper filesHelper;
         protected readonly IFileProvider filesProvider;
 
-        public GarbageCollectorJob(string trigger, string configFilePath, IJobService db, IEmailHelper email, Guid activityId)
+        public GarbageCollectorJob(string trigger, string configFilePath, IHikDatabase db, IEmailHelper email, Guid activityId)
             : base(trigger, db, email, activityId)
         {
             Config = HikConfigExtensions.GetConfig<GarbageCollectorConfig>(configFilePath);

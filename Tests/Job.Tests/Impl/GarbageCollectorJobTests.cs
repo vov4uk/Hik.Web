@@ -12,7 +12,6 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -22,7 +21,7 @@ namespace Job.Tests.Impl
     {
         protected const string group = "Test";
         protected const string triggerKey = "Key";
-        protected readonly Mock<IJobService> dbMock;
+        protected readonly Mock<IHikDatabase> dbMock;
         protected readonly Mock<IEmailHelper> emailMock;
         protected readonly Mock<IDirectoryHelper> directoryHelper;
         protected readonly Mock<IFilesHelper> filesHelper;
@@ -91,10 +90,10 @@ namespace Job.Tests.Impl
                 .Verifiable();
             filesProvider.Setup(x => x.GetFilesOlderThan("*.*", It.IsAny<DateTime>()))
                 .Returns(new List<MediaFileDTO>() {
-                    new MediaFileDTO() { Date = new DateTime(2022, 01,01)},
-                    new MediaFileDTO() { Date = new DateTime(2022, 01,11)},
-                    new MediaFileDTO() { Date = new DateTime(2022, 01,21)},
-                    new MediaFileDTO() { Date = new DateTime(2022, 01,31)},
+                    new () { Date = new (2022, 01,01)},
+                    new () { Date = new (2022, 01,11)},
+                    new () { Date = new (2022, 01,21)},
+                    new () { Date = new (2022, 01,31)},
                 })
                 .Verifiable();
             filesHelper.Setup(x => x.FileSize(It.IsAny<string>())).Returns(0);

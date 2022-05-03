@@ -17,7 +17,6 @@
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Moq;
-    using NLog;
     using Xunit;
 
     public class HikPhotoClientTests
@@ -124,7 +123,6 @@
         }
 
         #endregion DownloadFileAsync
-
 
         #region ForceExit
         [Fact]

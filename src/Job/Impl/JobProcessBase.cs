@@ -17,11 +17,11 @@ namespace Job.Impl
     public abstract class JobProcessBase
     {
         protected readonly Logger logger = LogManager.GetCurrentClassLogger();
-        protected readonly IJobService db;
+        protected readonly IHikDatabase db;
         protected readonly IEmailHelper email;
         protected JobTrigger jobTrigger;
 
-        protected JobProcessBase(string trigger, IJobService db, IEmailHelper email, Guid activityId)
+        protected JobProcessBase(string trigger, IHikDatabase db, IEmailHelper email, Guid activityId)
         {
             TriggerKey = trigger;
             System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
@@ -103,7 +103,7 @@ namespace Job.Impl
 
         private async Task LogExceptionToDB(Exception e)
         {
-            await db.LogExceptionToDbAsync(JobInstance.Id, (e as HikException)?.ErrorMessage ?? e.ToString(), e.StackTrace, (e as HikException)?.ErrorCode);
+            await db.LogExceptionToAsync(JobInstance.Id, (e as HikException)?.ErrorMessage ?? e.ToString(), e.StackTrace, (e as HikException)?.ErrorCode);
         }
 
         private async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDTO> files)
