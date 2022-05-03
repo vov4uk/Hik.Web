@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
@@ -66,7 +65,7 @@ namespace Job.FileProviders
                         foreach (var folder in folders[lastDate])
                         {
                             result
-                                .AddRange(Directory.EnumerateFiles(folder, fileExtention)
+                                .AddRange(directoryHelper.EnumerateFiles(folder, new[] { fileExtention })
                                 .Select(x => new MediaFileDTO { Path = x, Date = lastDate }));
                         }
                     }
@@ -83,19 +82,16 @@ namespace Job.FileProviders
         public async Task<IReadOnlyCollection<MediaFileDTO>> GetOldestFilesBatch(bool readDuration = false)
         {
             var files = new List<MediaFileDTO>();
-            if (isInitialized)
+            if (isInitialized && dates.TryPop(out var last) && folders.ContainsKey(last))
             {
-                if (dates.TryPop(out var last) && folders.ContainsKey(last))
+                foreach (var dir in folders[last])
                 {
-                    foreach (var dir in folders[last])
+                    var localFiles = directoryHelper.EnumerateFiles(dir, new[] { ".*" });
+                    foreach (var file in localFiles)
                     {
-                        var localFiles = directoryHelper.EnumerateFiles(dir, new[] { ".*" });
-                        foreach (var file in localFiles)
-                        {
-                            var size = filesHelper.FileSize(file);
-                            var duration = readDuration ? await videoHelper.GetDuration(file) : 0;
-                            files.Add(new MediaFileDTO { Date = last, Name = filesHelper.GetFileName(file), Path = file, Size = size, Duration = duration });
-                        }
+                        var size = filesHelper.FileSize(file);
+                        var duration = readDuration ? await videoHelper.GetDuration(file) : 0;
+                        files.Add(new MediaFileDTO { Date = last, Name = filesHelper.GetFileName(file), Path = file, Size = size, Duration = duration });
                     }
                 }
             }
