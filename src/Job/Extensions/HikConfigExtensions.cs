@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Hik.DTO.Config;
 using Newtonsoft.Json;
 
 namespace Job.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class HikConfigExtensions
     {
         public static T GetConfig<T>(string configFileName) =>

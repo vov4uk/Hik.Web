@@ -19,11 +19,10 @@ namespace Hik.DTO.Config
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine();
             sb.AppendLine(this.GetRow("Alias", this.Alias));
             sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
             sb.AppendLine(this.GetRow("Timeout", this.Timeout.ToString()));
-  
+
             return sb.ToString();
         }
 

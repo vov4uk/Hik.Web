@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Net.Mail;
 using System.Text;
 using Hik.Api;
-using Newtonsoft.Json;
 using NLog;
 
 namespace Job.Email
@@ -12,15 +9,14 @@ namespace Job.Email
     [ExcludeFromCodeCoverage]
     public class EmailHelper : IEmailHelper
     {
-
         static EmailConfig Settings { get;}
         static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         static EmailHelper()
         {
 #if RELEASE
-            string configPath = Path.Combine(Environment.CurrentDirectory, "email.json");
-            Settings = JsonConvert.DeserializeObject<EmailConfig>(File.ReadAllText(configPath));
+            string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
+            Settings = Newtonsoft.Json.JsonConvert.DeserializeObject<EmailConfig>(System.IO.File.ReadAllText(configPath));
 #endif
         }
 
@@ -35,9 +31,9 @@ namespace Job.Email
 </ul>";
             }
 
-            var msg = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.ToString());
+            var body = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.ToString());
             var subject = $"{alias ?? "Hik.Web"} {(ex as HikException)?.ErrorMessage ?? ex.Message}".Replace('\r', ' ').Replace('\n', ' ');
-            Send(subject, msg);
+            Send(subject, body);
         }
 
         public void Send(string subject, string body)
@@ -49,16 +45,16 @@ namespace Job.Email
 #elif RELEASE
                 if (Settings != null)
                 {
-                    using var mail = new MailMessage
+                    using var mail = new System.Net.Mail.MailMessage
                     {
-                        From = new MailAddress(Settings.UserName),
+                        From = new System.Net.Mail.MailAddress(Settings.UserName),
                         Subject = subject,
                         Body = body,
                         IsBodyHtml = true,
                     };
 
                     mail.To.Add(Settings.Receiver);
-                    using var smtp = new SmtpClient(Settings.Server, Settings.Port)
+                    using var smtp = new System.Net.Mail.SmtpClient(Settings.Server, Settings.Port)
                     {
                         Credentials = new System.Net.NetworkCredential(Settings.UserName, Settings.Password),
                         EnableSsl = true,

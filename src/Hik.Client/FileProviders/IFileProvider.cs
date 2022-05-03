@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hik.DTO.Contracts;
 
 namespace Hik.Client.FileProviders
@@ -11,5 +12,7 @@ namespace Hik.Client.FileProviders
         IReadOnlyCollection<MediaFileDTO> GetNextBatch(string fileExtention, int batchSize = 100);
 
         IReadOnlyCollection<MediaFileDTO> GetFilesOlderThan(string fileExtention, DateTime date);
+
+        Task<IReadOnlyCollection<MediaFileDTO>> GetOldestFilesBatch(bool readDuration = false);
     }
 }

@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Job
 {
+    [ExcludeFromCodeCoverage]
     public class ActivityBag : IEnumerable<Activity>
     {
         private static readonly ConcurrentDictionary<Guid, Activity> Bag = new ConcurrentDictionary<Guid, Activity>();

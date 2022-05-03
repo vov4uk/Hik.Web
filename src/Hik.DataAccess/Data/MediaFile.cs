@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.IO;
 
 namespace Hik.DataAccess.Data
@@ -38,9 +39,11 @@ namespace Hik.DataAccess.Data
     {
         public static string GetPath(this MediaFile file)
         {
-#if DEBUG
-            return file.Path.Replace("E:\\Cloud\\", "W:\\");
-#endif
+            if (Debugger.IsAttached)
+            {
+                return file.Path.Replace("E:\\Cloud\\", "W:\\");
+            }
+
             if (!Path.HasExtension(file.Path))
             {
                 return Path.Combine(file.Path, file.Name);

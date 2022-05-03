@@ -4,11 +4,13 @@ using Job.Email;
 using NLog;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Job
 {
+    [ExcludeFromCodeCoverage]
     public class Activity
     {
         protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();

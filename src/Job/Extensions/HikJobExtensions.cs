@@ -1,10 +1,12 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 
 namespace Job.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class HikJobExtensions
     {
         public static string ToHtmlTable(this HikJob job, BaseConfig config)

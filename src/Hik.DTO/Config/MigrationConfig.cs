@@ -5,6 +5,5 @@
         public string TriggerKey { get; set; }
 
         public bool ReadVideoDuration { get; set; }
-
     }
 }

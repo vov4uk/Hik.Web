@@ -45,6 +45,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Configs\DBMigrationTests.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Configs\GCTestsTriggers.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

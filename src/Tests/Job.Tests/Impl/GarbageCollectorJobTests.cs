@@ -22,7 +22,6 @@ namespace Job.Tests.Impl
     {
         protected const string group = "Test";
         protected const string triggerKey = "Key";
-        protected readonly string CurrentDirectory;
         protected readonly Mock<IJobService> dbMock;
         protected readonly Mock<IEmailHelper> emailMock;
         protected readonly Mock<IDirectoryHelper> directoryHelper;
@@ -43,10 +42,6 @@ namespace Job.Tests.Impl
             builder.RegisterInstance(filesProvider.Object);
 
             AppBootstrapper.SetupTest(builder);
-
-            string path = Uri.UnescapeDataString(new UriBuilder(Assembly.GetExecutingAssembly().Location).Path);
-            var currentDirectory = Path.GetDirectoryName(path) ?? Environment.ProcessPath ?? Environment.CurrentDirectory;
-            CurrentDirectory = Path.Combine(currentDirectory, "Configs");
         }
 
         [Fact]
@@ -191,7 +186,7 @@ namespace Job.Tests.Impl
         }
 
         private GarbageCollectorJob CreateJob(string configFileName = "GCTests.json")
-            => new GarbageCollectorJob($"{group}.{triggerKey}", Path.Combine(CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
+            => new GarbageCollectorJob($"{group}.{triggerKey}", Path.Combine(TestsHelper.CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
 
     }
 }

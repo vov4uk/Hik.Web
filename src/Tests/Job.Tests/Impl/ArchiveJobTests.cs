@@ -215,6 +215,6 @@
         }
 
         private ArchiveJob CreateJob(string configFileName = "ArchiveJobTests.json")
-            => new ArchiveJob($"{group}.{triggerKey}", Path.Combine(CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
+            => new ArchiveJob($"{group}.{triggerKey}", Path.Combine(TestsHelper.CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
     }
 }

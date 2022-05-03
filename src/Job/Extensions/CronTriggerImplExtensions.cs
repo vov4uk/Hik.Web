@@ -1,7 +1,9 @@
 ﻿using Quartz.Impl.Triggers;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Job.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class CronTriggerImplExtensions
     {
         public const string Job = "Job";

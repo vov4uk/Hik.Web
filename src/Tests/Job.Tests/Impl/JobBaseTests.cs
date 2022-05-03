@@ -4,9 +4,6 @@ using Hik.Client.Infrastructure;
 using Hik.DataAccess.Abstractions;
 using Job.Email;
 using Moq;
-using System;
-using System.IO;
-using System.Reflection;
 
 namespace Job.Tests.Impl
 {
@@ -15,7 +12,7 @@ namespace Job.Tests.Impl
     {
         protected const string group = "Test";
         protected const string triggerKey = "Key";
-        protected readonly string CurrentDirectory;
+        
         protected readonly Mock<T> serviceMock;
         protected readonly Mock<IJobService> dbMock;
         protected readonly Mock<IEmailHelper> emailMock;
@@ -30,10 +27,6 @@ namespace Job.Tests.Impl
             builder.RegisterInstance(serviceMock.Object);
 
             AppBootstrapper.SetupTest(builder);
-
-            string path = Uri.UnescapeDataString(new UriBuilder(Assembly.GetExecutingAssembly().Location).Path);
-            var currentDirectory = Path.GetDirectoryName(path) ?? Environment.ProcessPath ?? Environment.CurrentDirectory;
-            CurrentDirectory = Path.Combine(currentDirectory, "Configs");
         }
     }
 }

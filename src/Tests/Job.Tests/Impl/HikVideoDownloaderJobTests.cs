@@ -89,6 +89,6 @@ namespace Job.Tests.Impl
         }
 
         private HikVideoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
-            => new HikVideoDownloaderJob($"{group}.{triggerKey}", Path.Combine(CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
+            => new HikVideoDownloaderJob($"{group}.{triggerKey}", Path.Combine(TestsHelper.CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
     }
 }
