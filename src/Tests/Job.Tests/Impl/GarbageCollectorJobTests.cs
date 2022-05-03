@@ -34,7 +34,7 @@ namespace Job.Tests.Impl
             dbMock = new (MockBehavior.Strict);
             emailMock = new (MockBehavior.Strict);
             directoryHelper = new(MockBehavior.Strict);
-            filesHelper = new (MockBehavior.Strict);
+            filesHelper = new ();
             filesProvider = new (MockBehavior.Strict);
 
             var builder = new ContainerBuilder();
