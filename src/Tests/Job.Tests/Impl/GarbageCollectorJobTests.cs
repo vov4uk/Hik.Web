@@ -68,6 +68,8 @@ namespace Job.Tests.Impl
             filesProvider.Setup(x => x.GetFilesOlderThan("*.*", It.IsAny<DateTime>()))
                 .Returns(new List<MediaFileDTO>() { new MediaFileDTO () })
                 .Verifiable();
+            filesHelper.Setup(x => x.FileSize(It.IsAny<string>())).Returns(0);
+            filesHelper.Setup(x => x.DeleteFile(It.IsAny<string>()));
 
             var job = CreateJob("GCTestsRetention.json");
             await job.ExecuteAsync();
@@ -100,6 +102,8 @@ namespace Job.Tests.Impl
                     new MediaFileDTO() { Date = new DateTime(2022, 01,31)},
                 })
                 .Verifiable();
+            filesHelper.Setup(x => x.FileSize(It.IsAny<string>())).Returns(0);
+            filesHelper.Setup(x => x.DeleteFile(It.IsAny<string>()));
 
             var job = CreateJob("GCTestsTriggers.json");
             await job.ExecuteAsync();
@@ -125,6 +129,8 @@ namespace Job.Tests.Impl
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\FTP\\Floor0"));
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
+            filesHelper.Setup(x => x.FileSize(It.IsAny<string>())).Returns(0);
+            filesHelper.Setup(x => x.DeleteFile(It.IsAny<string>()));
 
             directoryHelper.Setup(x => x.GetTotalSpaceBytes(It.IsAny<string>())).Returns(100);
             directoryHelper.SetupSequence(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>()))
