@@ -13,9 +13,9 @@ using Xunit;
 
 namespace Job.Tests.Impl
 {
-    public class HikVideoDownloaderJobTests : JobBaseTests<IHikVideoDownloaderService>
+    public class HikPhotoDownloaderJobTests : JobBaseTests<IHikPhotoDownloaderService>
     {
-        public HikVideoDownloaderJobTests() : base() { }
+        public HikPhotoDownloaderJobTests() : base() { }
 
         [Fact]
         public async Task ExecuteAsync_FileDownloaded_SaveFilesAsync()
@@ -28,18 +28,15 @@ namespace Job.Tests.Impl
                 .Returns(Task.CompletedTask);
             dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
                 .Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+                .Returns(Task.CompletedTask);
             dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
                 .ReturnsAsync(new List<MediaFile>());
+            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
+                .Returns(Task.CompletedTask);
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), lastSync.AddMinutes(-1), It.IsAny<DateTime>()))
-                .Callback(() =>
-                {
-                    this.serviceMock.Raise(mock => mock.FileDownloaded += null,
-                        new FileDownloadedEventArgs(new MediaFileDTO() { Duration = 1, Name = "video0.mp4" }));
-                    this.serviceMock.Raise(mock => mock.FileDownloaded += null,
-                        new FileDownloadedEventArgs(new MediaFileDTO() { Duration = 1, Name = "video1.mp4" }));
-                })
-                .ReturnsAsync(new List<MediaFileDTO>());
+                .ReturnsAsync(new List<MediaFileDTO>() { new MediaFileDTO() { Duration = 0, Name = "photo0.jpg" } });
 
             var job = CreateJob();
 
@@ -47,7 +44,7 @@ namespace Job.Tests.Impl
 
             dbMock.VerifyAll();
             emailMock.VerifyAll();
-            Assert.Equal(2, job.JobInstance.FilesCount);
+            Assert.Equal(1, job.JobInstance.FilesCount);
         }
 
         [Fact]
@@ -88,7 +85,7 @@ namespace Job.Tests.Impl
             Assert.IsType<CameraConfig>(job.Config);
         }
 
-        private HikVideoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
-            => new HikVideoDownloaderJob($"{group}.{triggerKey}", Path.Combine(CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
+        private HikPhotoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
+            => new HikPhotoDownloaderJob($"{group}.{triggerKey}", Path.Combine(CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
     }
 }

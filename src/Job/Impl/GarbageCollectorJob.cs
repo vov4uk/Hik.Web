@@ -24,23 +24,11 @@ namespace Job.Impl
             : base(trigger, db, email, activityId)
         {
             Config = HikConfigExtensions.GetConfig<GarbageCollectorConfig>(configFilePath);
-            LogInfo(Config?.ToString());
+            LogInfo(Config.ToString());
 
             this.directoryHelper = AppBootstrapper.Container.Resolve<IDirectoryHelper>();
             this.filesHelper = AppBootstrapper.Container.Resolve<IFilesHelper>();
             this.filesProvider = AppBootstrapper.Container.Resolve<IFileProvider>();
-        }
-
-        private void DeleteFiles(IReadOnlyCollection<MediaFileDTO> filesToDelete)
-        {
-            foreach (var file in filesToDelete)
-            {
-                this.logger.Debug($"Deleting: {file.Path}");
-#if RELEASE
-                file.Size = filesHelper.FileSize(file.Path);
-                this.filesHelper.DeleteFile(file.Path);
-#endif
-            }
         }
 
         protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
@@ -74,24 +62,32 @@ namespace Job.Impl
             JobInstance.FilesCount = files.Count;
 
             await db.UpdateDailyStatisticsAsync(JobInstance, files);
-            if (JobInstance.PeriodEnd.HasValue)
+
+            var config = (GarbageCollectorConfig)Config;
+            if (JobInstance.PeriodEnd.HasValue && JobInstance.FilesCount > 0 && config.Triggers?.Any() == true)
             {
-                var config = (GarbageCollectorConfig)Config;
-                if (config.Triggers != null && config.Triggers.Any())
-                {
-                    await db.DeleteObsoleteJobsAsync(config.Triggers, JobInstance.PeriodEnd.Value);
-                }
+                await db.DeleteObsoleteJobsAsync(config.Triggers, JobInstance.PeriodEnd.Value);
             }
         }
 
+        private void DeleteFiles(IReadOnlyCollection<MediaFileDTO> filesToDelete)
+        {
+            foreach (var file in filesToDelete)
+            {
+                this.logger.Debug($"Deleting: {file.Path}");
+#if RELEASE
+                file.Size = filesHelper.FileSize(file.Path);
+                this.filesHelper.DeleteFile(file.Path);
+#endif
+            }
+        }
         private List<MediaFileDTO> PersentageDelete(GarbageCollectorConfig gcConfig)
         {
             List<MediaFileDTO> deletedFiles = new();
             var destination = gcConfig.DestinationFolder;
-
+            var totalSpace = this.directoryHelper.GetTotalSpaceBytes(destination) * 1.0;
             do
             {
-                var totalSpace = this.directoryHelper.GetTotalSpaceBytes(destination) * 1.0;
                 var freeSpace = this.directoryHelper.GetTotalFreeSpaceBytes(destination) * 1.0;
 
                 var freePercentage = 100 * freeSpace / totalSpace;

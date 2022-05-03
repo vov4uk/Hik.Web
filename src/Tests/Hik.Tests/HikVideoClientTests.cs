@@ -87,8 +87,8 @@
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
             Assert.True(loginResult);
-        }   
-        
+        }
+
         [Fact]
         public void Login_HardDriveStatusError_ThrowsException()
         {
@@ -104,7 +104,7 @@
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
         }
-        
+
         [Fact]
         public void Login_HardDriveStatusNull_ReturnTrue()
         {
@@ -212,7 +212,7 @@
         #endregion GetFilesListAsync
 
         #region DownloadFileAsync
-       
+
         [Theory]
         [InlineData(1991, 05, 31, 60, "video", "C:\\1991-05\\31\\00\\19910531_000000_000100.mp4")]
         [InlineData(2020, 12, 31, 3600, "ch000000001", "C:\\2020-12\\31\\00\\20201231_000000_010000.mp4")]

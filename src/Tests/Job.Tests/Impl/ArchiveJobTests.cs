@@ -207,6 +207,13 @@
             Assert.Throws<JsonReaderException>(() => CreateJob("ArchiveJobTestsInvalid.json"));
         }
 
+        [Fact]
+        public void Constructor_ValidConfig_ValidConfigType()
+        {
+            var job = CreateJob();
+            Assert.IsType<ArchiveConfig>(job.Config);
+        }
+
         private ArchiveJob CreateJob(string configFileName = "ArchiveJobTests.json")
             => new ArchiveJob($"{group}.{triggerKey}", Path.Combine(CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
     }

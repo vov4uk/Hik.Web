@@ -22,9 +22,9 @@ namespace Job.Tests.Impl
 
         public JobBaseTests()
         {
-            serviceMock = new Mock<T>(MockBehavior.Strict);
-            dbMock = new Mock<IJobService>(MockBehavior.Strict);
-            emailMock = new Mock<IEmailHelper>(MockBehavior.Strict);
+            serviceMock = new (MockBehavior.Strict);
+            dbMock = new (MockBehavior.Strict);
+            emailMock = new (MockBehavior.Strict);
 
             var builder = new ContainerBuilder();
             builder.RegisterInstance(serviceMock.Object);
