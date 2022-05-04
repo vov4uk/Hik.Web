@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Hik.DataAccess.Abstractions;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hik.DataAccess
 {
+    [ExcludeFromCodeCoverage]
     public class UnitOfWork<TContext> : IRepositoryFactory, IUnitOfWork<TContext>
         where TContext : DbContext, IDisposable
     {

@@ -1,7 +1,9 @@
 ﻿using Hik.DataAccess.Abstractions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Hik.DataAccess
 {
+    [ExcludeFromCodeCoverage]
     public class UnitOfWorkFactory : IUnitOfWorkFactory
     {
         private readonly string connectionString;

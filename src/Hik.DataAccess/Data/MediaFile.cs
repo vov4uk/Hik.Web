@@ -3,10 +3,12 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace Hik.DataAccess.Data
 {
+    [ExcludeFromCodeCoverage]
     [Table(Tables.MediaFile)]
     public class MediaFile
     {
