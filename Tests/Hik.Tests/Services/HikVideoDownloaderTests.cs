@@ -33,9 +33,10 @@ namespace Hik.Client.Tests.Services
         public void ExecuteAsync_EmptyConfig_ExceptionThrown()
         {
             bool success = true;
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
             var downloader = this.CreateHikDownloader();
-            downloader.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
+            downloader.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
             {
                 success = false;
             };
@@ -55,8 +56,10 @@ namespace Hik.Client.Tests.Services
             this.SetupDirectoryHelper();
             this.SetupClientInitialize();
             this.SetupClientDispose();
-            this.clientMock.Setup(x => x.Login()).Returns(false);
-            this.directoryMock.Setup(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>())).Returns(0);
+            this.clientMock.Setup(x => x.Login())
+                .Returns(false);
+            this.directoryMock.Setup(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>()))
+                .Returns(0);
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -74,7 +77,8 @@ namespace Hik.Client.Tests.Services
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
 
-            this.directoryMock.Setup(x => x.DirExist(cameraConfig.DestinationFolder)).Returns(false);
+            this.directoryMock.Setup(x => x.DirExist(cameraConfig.DestinationFolder))
+                .Returns(false);
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -95,7 +99,8 @@ namespace Hik.Client.Tests.Services
             this.clientMock.Setup(x => x.ForceExit());
             this.clientMock.Setup(x => x.Login()).Throws(new HikException("Login", 7));
             this.clientMock.Setup(x => x.Dispose());
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -117,7 +122,8 @@ namespace Hik.Client.Tests.Services
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
 
-            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(Array.Empty<MediaFileDTO>());
+            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync(Array.Empty<MediaFileDTO>());
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -139,9 +145,11 @@ namespace Hik.Client.Tests.Services
             this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
-            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
 
-            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(new MediaFileDTO[] { file, file });
+            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync(new MediaFileDTO[] { file, file });
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -174,8 +182,10 @@ namespace Hik.Client.Tests.Services
             this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
-            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(files);
+            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync(files);
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -209,7 +219,8 @@ namespace Hik.Client.Tests.Services
                 .ReturnsAsync(false)
                 .ReturnsAsync(true);
 
-            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(files);
+            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync(files);
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -230,7 +241,8 @@ namespace Hik.Client.Tests.Services
                 .Create();
 
             this.clientMock.Setup(x => x.InitializeClient());
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
             this.SetupClientDispose();
 
             // act
@@ -260,7 +272,8 @@ namespace Hik.Client.Tests.Services
             this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
-            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(files);
+            this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync(files);
 
             // act
             var downloader = this.CreateHikDownloader();
@@ -313,14 +326,16 @@ namespace Hik.Client.Tests.Services
             this.clientMock.Setup(x => x.InitializeClient());
 
             this.clientMock.Setup(x => x.Dispose());
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
             this.SetupClientDispose();
             this.clientMock.Setup(x => x.InitializeClient());
 
             // act
             var downloader = this.CreateHikDownloader();
             this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()));
-            this.clientMock.Setup(x => x.Login()).Callback(downloader.Cancel).Returns(true);
+            this.clientMock.Setup(x => x.Login()).Callback(downloader.Cancel)
+                .Returns(true);
             downloader.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
             {
                 isOperationCanceledException = e.Exception is OperationCanceledException;
@@ -336,15 +351,19 @@ namespace Hik.Client.Tests.Services
 
         private void SetupDirectoryHelper()
         {
-            this.directoryMock.Setup(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>())).Returns(1024);
-            this.directoryMock.Setup(x => x.DirSize(It.IsAny<string>())).Returns(1024);
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>()))
+                .Returns(1024);
+            this.directoryMock.Setup(x => x.DirSize(It.IsAny<string>()))
+                .Returns(1024);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
         }
 
         private void SetupClientSuccessLogin()
         {
             this.SetupClientInitialize();
-            this.clientMock.Setup(x => x.Login()).Returns(true);
+            this.clientMock.Setup(x => x.Login())
+                .Returns(true);
         }
 
         private void SetupClientInitialize()
@@ -365,7 +384,8 @@ namespace Hik.Client.Tests.Services
 
         private VideoDownloaderService CreateHikDownloader()
         {
-            this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>())).Returns(this.clientMock.Object);
+            this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>()))
+                .Returns(this.clientMock.Object);
 
             return new VideoDownloaderService(this.directoryMock.Object, this.clientFactoryMock.Object);
         }

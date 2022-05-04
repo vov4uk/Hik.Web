@@ -198,7 +198,7 @@ namespace Hik.DataAccess.Tests
 
             var actual = await db.SaveFilesAsync(job, files);
             Assert.Equal(4, actual.Count);
-            actual.TrueForAll(x => x.JobTriggerId == 31);
+            Assert.True(actual.TrueForAll(x => x.JobTriggerId == 31));
         }
 
         [Fact]
@@ -256,12 +256,14 @@ namespace Hik.DataAccess.Tests
             var db = new HikDatabase(uowFactory.Object);
 
             await db.SaveDownloadHistoryFilesAsync(job, files);
+
+            fileRepo.Verify(x => x.AddRangeAsync(It.IsAny<List<DownloadHistory>>()), Times.Once);
         }
 
         [Fact]
         public async Task UpdateDailyStatisticsAsync_StatisticsUpdated()
         {
-            HikJob job = new HikJob() { Started = new DateTime(2022, 01, 01), Success = true };
+            HikJob job = new () { Started = new DateTime(2022, 01, 01), Success = true };
 
             var newStatistics = new List<DailyStatistic>();
 

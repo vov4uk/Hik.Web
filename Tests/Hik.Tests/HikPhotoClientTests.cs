@@ -35,7 +35,8 @@
             photoServiceMock = new Mock<HikPhotoService>(MockBehavior.Strict);
 
             sdkMock = new Mock<IHikApi>(MockBehavior.Strict);
-            sdkMock.SetupGet(x => x.PhotoService).Returns(photoServiceMock.Object);
+            sdkMock.SetupGet(x => x.PhotoService)
+                .Returns(photoServiceMock.Object);
 
             filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
             dirMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
@@ -89,11 +90,14 @@
 
             var targetName = localFolder + localFileName;
 
-            filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
+            filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
+                .Returns((string[] arg) => Path.Combine(arg));
             dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            filesMock.Setup(x => x.FileSize(targetName)).Returns(1);
+            filesMock.Setup(x => x.FileSize(targetName))
+                .Returns(1);
             filesMock.Setup(x => x.DeleteFile(localFileName));
-            filesMock.Setup(x => x.FileExists(targetName)).Returns(false);
+            filesMock.Setup(x => x.FileExists(targetName))
+                .Returns(false);
             imageMock.Setup(x => x.SetDate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()));
 
             photoServiceMock.Setup(x => x.DownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()));
@@ -112,9 +116,11 @@
         [Fact]
         public async Task DownloadFileAsync_FileAlreadyExist_ReturnFalse()
         {
-            filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
+            filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
+                .Returns(string.Empty);
             dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            filesMock.Setup(x => x.FileExists(It.IsAny<string>()))
+                .Returns(true);
 
             var client = GetHikClient();
             var isDownloaded = await client.DownloadFileAsync(fixture.Create<MediaFileDTO>(), CancellationToken.None);

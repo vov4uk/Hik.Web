@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
-using Hik.Client.FileProviders;
 using Hik.Client.Helpers;
 using Hik.DTO.Contracts;
 
-namespace Job.FileProviders
+namespace Hik.Client.FileProviders
 {
     public class WindowsFileProvider : IFileProvider
     {
@@ -25,6 +24,8 @@ namespace Job.FileProviders
             this.videoHelper = videoHelper;
         }
 
+        public bool IsInitialized => isInitialized;
+
         public void Initialize(string[] directories)
         {
             if (!isInitialized)
@@ -32,7 +33,7 @@ namespace Job.FileProviders
                 folders = new Dictionary<DateTime, IList<string>>();
                 foreach (var topDirectory in directories)
                 {
-                    List<string> subFolders = this.directoryHelper.EnumerateAllDirectories(topDirectory);
+                    List<string> subFolders = directoryHelper.EnumerateAllDirectories(topDirectory);
                     foreach (var directory in subFolders)
                     {
                         var trim = directory.Remove(0, Math.Max(0, directory.Length - 13)).Replace("\\", "-").Split("-");
@@ -55,6 +56,10 @@ namespace Job.FileProviders
         public IReadOnlyCollection<MediaFileDTO> GetNextBatch(string fileExtention, int batchSize = 100)
         {
             var result = new List<MediaFileDTO>();
+            if (!isInitialized)
+            {
+                return result;
+            }
 
             while (result.Count <= batchSize)
             {
@@ -64,8 +69,7 @@ namespace Job.FileProviders
                     {
                         foreach (var folder in folders[lastDate])
                         {
-                            result
-                                .AddRange(directoryHelper.EnumerateFiles(folder, new[] { fileExtention })
+                            result.AddRange(directoryHelper.EnumerateFiles(folder, new[] { fileExtention })
                                 .Select(x => new MediaFileDTO { Path = x, Date = lastDate }));
                         }
                     }
@@ -102,7 +106,7 @@ namespace Job.FileProviders
         public IReadOnlyCollection<MediaFileDTO> GetFilesOlderThan(string fileExtention, DateTime date)
         {
             var result = new List<MediaFileDTO>();
-            if (folders.Any())
+            if (isInitialized && folders.Any())
             {
                 foreach (var fileDateTime in folders.Keys.Where(x => x <= date && folders.ContainsKey(x)))
                 {

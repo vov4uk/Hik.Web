@@ -34,10 +34,11 @@ namespace Hik.Client.Tests.Services
         {
             bool success = true;
 
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
 
             var service = CreateArchiveService();
-            service.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
+            service.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
             {
                 success = false;
             };
@@ -51,16 +52,19 @@ namespace Hik.Client.Tests.Services
         {
             bool isOperationCanceledException = false;
 
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
-            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>())).Returns(new List<string> { "Hello World!" });
-            this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>())).Throws<OperationCanceledException>();
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
+            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()))
+                .Returns(new List<string> { "Hello World!" });
+            this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>()))
+                .Throws<OperationCanceledException>();
 
             var config = fixture.Build<ArchiveConfig>()
                 .With(x => x.SkipLast, 0)
                 .With(x => x.DetectPeopleConfig, default(DetectPeopleConfig))
                 .Create();
             var service = CreateArchiveService();
-            service.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
+            service.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
             {
                 isOperationCanceledException = e.Exception is OperationCanceledException;
             };
@@ -72,8 +76,10 @@ namespace Hik.Client.Tests.Services
         [Fact]
         public async Task ExecuteAsync_NoFilesFound_NothingToDo()
         {
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
-            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>())).Returns(new List<string>());
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
+            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()))
+                .Returns(new List<string>());
 
             var service = CreateArchiveService();
             await service.ExecuteAsync(fixture.Create<ArchiveConfig>(), default(DateTime), default(DateTime));
@@ -83,9 +89,11 @@ namespace Hik.Client.Tests.Services
         [Fact]
         public async Task ExecuteAsync_FoundOneFileSkipOneFile_NothingToDo()
         {
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
 
-            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>())).Returns(new List<string> { "File" });
+            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()))
+                .Returns(new List<string> { "File" });
 
             var service = CreateArchiveService();
             var config = fixture.Build<ArchiveConfig>().With(x => x.SkipLast, 1).Create();
@@ -117,22 +125,31 @@ namespace Hik.Client.Tests.Services
                 FileNamePattern = fileNamePattern 
             };
 
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
-            this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder, It.IsAny<string[]>())).Returns(new List<string> { sourceFileName });
-            this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>())).Returns((string arg) => Path.GetFileNameWithoutExtension(arg));
-            this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>())).Returns((string arg) => Path.GetExtension(arg));
-            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
+            this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder, It.IsAny<string[]>()))
+                .Returns(new List<string> { sourceFileName });
+            this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>()))
+                .Returns((string arg) => Path.GetFileNameWithoutExtension(arg));
+            this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>()))
+                .Returns((string arg) => Path.GetExtension(arg));
+            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
+                .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
-            this.filesMock.Setup(x => x.FileSize(targetFile)).Returns(1024);
-            this.filesMock.Setup(x => x.GetDirectoryName(targetFile)).Returns(string.Empty);
-            this.filesMock.Setup(x => x.GetFileName(It.IsAny<string>())).Returns(string.Empty);
-            this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).ReturnsAsync(duration);
+            this.filesMock.Setup(x => x.FileSize(targetFile))
+                .Returns(1024);
+            this.filesMock.Setup(x => x.GetDirectoryName(targetFile))
+                .Returns(string.Empty);
+            this.filesMock.Setup(x => x.GetFileName(It.IsAny<string>()))
+                .Returns(string.Empty);
+            this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>()))
+                .ReturnsAsync(duration);
 
             var service = CreateArchiveService();
-            service.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
+            service.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
             {
                 success = false;
             };
@@ -174,23 +191,33 @@ namespace Hik.Client.Tests.Services
                 FileNamePattern = fileNamePattern 
             };
 
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>())).Returns(true);
-            this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder, It.IsAny<string[]>())).Returns(new List<string> { sourceFileName });
-            this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>())).Returns((string arg) => Path.GetFileNameWithoutExtension(arg));
-            this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>())).Returns((string arg) => Path.GetExtension(arg));
-            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
+            this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder, It.IsAny<string[]>()))
+                .Returns(new List<string> { sourceFileName });
+            this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>()))
+                .Returns((string arg) => Path.GetFileNameWithoutExtension(arg));
+            this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>()))
+                .Returns((string arg) => Path.GetExtension(arg));
+            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
+                .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
-            this.filesMock.Setup(x => x.FileSize(targetFile)).Returns(1024);
-            this.filesMock.Setup(x => x.GetCreationDate(sourceFileName)).Returns(dateTime);
+            this.filesMock.Setup(x => x.FileSize(targetFile))
+                .Returns(1024);
+            this.filesMock.Setup(x => x.GetCreationDate(sourceFileName))
+                .Returns(dateTime);
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
-            this.filesMock.Setup(x => x.GetFileName(It.IsAny<string>())).Returns(string.Empty);
-            this.filesMock.Setup(x => x.GetDirectoryName(targetFile)).Returns(string.Empty);
-            this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>())).ReturnsAsync(duration);
+            this.filesMock.Setup(x => x.GetFileName(It.IsAny<string>()))
+                .Returns(string.Empty);
+            this.filesMock.Setup(x => x.GetDirectoryName(targetFile))
+                .Returns(string.Empty);
+            this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>()))
+                .ReturnsAsync(duration);
 
             var service = CreateArchiveService();
-            service.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
+            service.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
             {
                 success = false;
             };

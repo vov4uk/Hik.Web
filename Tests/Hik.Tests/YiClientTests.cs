@@ -7,7 +7,6 @@
     using System.Threading.Tasks;
     using Abstraction;
     using AutoFixture;
-    using Client;
     using DTO.Config;
     using DTO.Contracts;
     using FluentFTP;
@@ -16,7 +15,6 @@
 
     public class YiClientTests
     {
-        private const int DefaultUserId = 1;
         private readonly Mock<IFtpClient> ftpMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IDirectoryHelper> dirMock;
@@ -168,13 +166,18 @@
             var tempName = localFilePath + ".tmp";
             var targetName = localFilePath;
 
-            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns((string[] arg) => Path.Combine(arg));
+            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
+                .Returns((string[] arg) => Path.Combine(arg));
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.filesMock.Setup(x => x.FileSize(targetName)).Returns(1);
-            this.filesMock.Setup(x => x.GetTempFileName()).Returns(tempName);
+            this.filesMock.Setup(x => x.FileSize(targetName))
+                .Returns(1);
+            this.filesMock.Setup(x => x.GetTempFileName())
+                .Returns(tempName);
             this.filesMock.Setup(x => x.RenameFile(tempName, targetName));
-            this.filesMock.Setup(x => x.FileExists(targetName)).Returns(false);
-            this.ftpMock.Setup(x => x.FileExistsAsync(remoteFilePath, CancellationToken.None)).ReturnsAsync(true);
+            this.filesMock.Setup(x => x.FileExists(targetName))
+                .Returns(false);
+            this.ftpMock.Setup(x => x.FileExistsAsync(remoteFilePath, CancellationToken.None))
+                .ReturnsAsync(true);
             this.ftpMock.Setup(x => x.DownloadFileAsync(tempName, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
 
@@ -192,9 +195,11 @@
         [Fact]
         public async Task DownloadFileAsync_FileAlreadyExist_ReturnFalse()
         {
-            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
+            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
+                .Returns(string.Empty);
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            this.filesMock.Setup(x => x.FileExists(It.IsAny<string>()))
+                .Returns(true);
 
             var client = this.GetClient();
             var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
@@ -205,10 +210,13 @@
         [Fact]
         public async Task DownloadFileAsync_RemoteFileNotExist_ReturnFalse()
         {
-            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
-            this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
+            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
+                .Returns(string.Empty);
+            this.filesMock.Setup(x => x.FileExists(It.IsAny<string>()))
+                .Returns(false);
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.ftpMock.Setup(x => x.FileExistsAsync(It.IsAny<string>(), CancellationToken.None)).ReturnsAsync(false);
+            this.ftpMock.Setup(x => x.FileExistsAsync(It.IsAny<string>(), CancellationToken.None))
+                .ReturnsAsync(false);
 
             var client = this.GetClient();
             var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
@@ -231,15 +239,6 @@
         }
 
         #endregion ForceExit
-
-        private void SetupFilesMockForDownload()
-        {
-            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>())).Returns(string.Empty);
-            this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.filesMock.Setup(x => x.FileSize(It.IsAny<string>())).Returns(1);
-            this.filesMock.Setup(x => x.RenameFile(It.IsAny<string>(), It.IsAny<string>()));
-            this.filesMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
-        }
 
         private YiClient GetClient()
         {
