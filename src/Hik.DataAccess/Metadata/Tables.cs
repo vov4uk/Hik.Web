@@ -10,7 +10,6 @@ namespace Hik.DataAccess.Metadata
         public const string JobTrigger = nameof(JobTrigger);
         public const string ExceptionLog = nameof(ExceptionLog);
         public const string DailyStatistics = nameof(DailyStatistics);
-        public const string DeleteHistory = nameof(DeleteHistory);
         public const string DownloadHistory = nameof(DownloadHistory);
         public const string DownloadDuration = nameof(DownloadDuration);
     }

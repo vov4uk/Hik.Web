@@ -4,10 +4,12 @@ using Job;
 using Job.Email;
 using NLog;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace JobHost
 {
+    [ExcludeFromCodeCoverage]
     internal static class Program
     {
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();

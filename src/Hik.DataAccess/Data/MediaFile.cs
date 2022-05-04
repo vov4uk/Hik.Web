@@ -8,8 +8,7 @@ using System.IO;
 
 namespace Hik.DataAccess.Data
 {
-    [ExcludeFromCodeCoverage]
-    [Table(Tables.MediaFile)]
+    [ExcludeFromCodeCoverage, Table(Tables.MediaFile)]
     public class MediaFile
     {
         [Key]
