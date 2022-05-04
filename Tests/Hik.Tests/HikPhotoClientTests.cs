@@ -32,16 +32,16 @@
 
         public HikPhotoClientTests()
         {
-            photoServiceMock = new Mock<HikPhotoService>(MockBehavior.Strict);
+            photoServiceMock = new (MockBehavior.Strict);
 
-            sdkMock = new Mock<IHikApi>(MockBehavior.Strict);
+            sdkMock = new (MockBehavior.Strict);
             sdkMock.SetupGet(x => x.PhotoService)
                 .Returns(photoServiceMock.Object);
 
-            filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
-            dirMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
-            imageMock = new Mock<IImageHelper>(MockBehavior.Strict);
-            fixture = new Fixture();
+            filesMock = new (MockBehavior.Strict);
+            dirMock = new (MockBehavior.Strict);
+            imageMock = new (MockBehavior.Strict);
+            fixture = new ();
             Action<IMapperConfigurationExpression> configureAutoMapper = x =>
             {
                 x.AddProfile<HikConsoleProfile>();
@@ -86,7 +86,7 @@
             var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test" };
 
             SetupLoginAndHddStatusCheck();
-            MediaFileDTO remoteFile = new MediaFileDTO { Date = new DateTime(y, m, d)};
+            MediaFileDTO remoteFile = new () { Date = new DateTime(y, m, d)};
 
             var targetName = localFolder + localFileName;
 
@@ -160,9 +160,8 @@
             return result;
         }
 
-        private HikPhotoClient GetHikClient()
-        {
-            return new HikPhotoClient(fixture.Create<CameraConfig>(), sdkMock.Object, filesMock.Object, this.dirMock.Object, mapper, imageMock.Object);
-        }
+        private HikPhotoClient GetHikClient() =>
+            new HikPhotoClient(fixture.Create<CameraConfig>(), sdkMock.Object, filesMock.Object, this.dirMock.Object, mapper, imageMock.Object);
+
     }
 }

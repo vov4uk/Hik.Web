@@ -32,15 +32,15 @@
 
         public HikVideoClientTests()
         {
-            this.videoServiceMock = new Mock<HikVideoService>(MockBehavior.Strict);
+            this.videoServiceMock = new (MockBehavior.Strict);
 
-            this.sdkMock = new Mock<IHikApi>(MockBehavior.Strict);
+            this.sdkMock = new (MockBehavior.Strict);
             this.sdkMock.SetupGet(x => x.VideoService)
                 .Returns(this.videoServiceMock.Object);
 
-            this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
-            this.dirMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
-            this.fixture = new Fixture();
+            this.filesMock = new (MockBehavior.Strict);
+            this.dirMock = new (MockBehavior.Strict);
+            this.fixture = new ();
             Action<IMapperConfigurationExpression> configureAutoMapper = x =>
             {
                 x.AddProfile<HikConsoleProfile>();
@@ -388,9 +388,8 @@
                 .Returns(false);
         }
 
-        private HikVideoClient GetHikClient()
-        {
-            return new HikVideoClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper);
-        }
+        private HikVideoClient GetHikClient() =>
+            new HikVideoClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper);
+
     }
 }

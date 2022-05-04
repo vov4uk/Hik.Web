@@ -29,7 +29,21 @@ namespace Hik.Client.Client
             this.ftp = ftp;
         }
 
-        public abstract Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token);
+        public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
+        {
+            string localFilePath = GetPathSafety(remoteFile);
+            var remoteFilePath = GetRemoteFileFath(remoteFile);
+
+            if (!filesHelper.FileExists(localFilePath))
+            {
+                return await DownloadInternalAsync(remoteFile, localFilePath, remoteFilePath, token);
+            }
+            else
+            {
+                LogDebugInfo($"{remoteFile.Name} - exist");
+                return false;
+            }
+        }
 
         public abstract Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
 
@@ -74,6 +88,31 @@ namespace Hik.Client.Client
             }
         }
 
+        protected async Task<bool> DownloadInternalAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
+        {
+            var remoteFileExist = await ftp.FileExistsAsync(remoteFilePath, token);
+
+            if (remoteFileExist)
+            {
+                LogDebugInfo($"{remoteFile.Name} - downloading");
+                var tempFile = filesHelper.GetTempFileName();
+                await ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
+
+                filesHelper.RenameFile(tempFile, localFilePath);
+
+                return await PostDownloadFileProcessAsync(remoteFile, localFilePath, remoteFilePath, token);
+            }
+            else
+            {
+                logger.Error($"{config.Alias} - File not found {remoteFilePath}");
+                return false;
+            }
+        }
+
+        protected abstract Task<bool> PostDownloadFileProcessAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token);
+
+        protected abstract string GetRemoteFileFath(MediaFileDTO remoteFile);
+
         protected string GetWorkingDirectory(MediaFileDTO file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, file.ToVideoDirectoryNameString());
@@ -82,6 +121,14 @@ namespace Hik.Client.Client
         protected void LogDebugInfo(string msg)
         {
             logger.Debug($"{config.Alias} - {msg}");
+        }
+
+        private string GetPathSafety(MediaFileDTO remoteFile)
+        {
+            string workingDirectory = GetWorkingDirectory(remoteFile);
+            directoryHelper.CreateDirIfNotExist(workingDirectory);
+
+            return filesHelper.CombinePath(workingDirectory, remoteFile.ToYiFileNameString());
         }
     }
 }

@@ -22,10 +22,10 @@
 
         public YiClientTests()
         {
-            this.ftpMock = new Mock<IFtpClient>(MockBehavior.Strict);
-            this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
-            this.dirMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
-            this.fixture = new Fixture();
+            this.ftpMock = new (MockBehavior.Strict);
+            this.filesMock = new (MockBehavior.Strict);
+            this.dirMock = new (MockBehavior.Strict);
+            this.fixture = new ();
         }
 
         [Fact]
@@ -189,7 +189,6 @@
             this.dirMock.Verify(x => x.CreateDirIfNotExist(It.IsAny<string>()), Times.Once);
             this.filesMock.Verify(x => x.FileExists(targetName), Times.Once);
             this.filesMock.Verify(x => x.RenameFile(tempName, targetName), Times.Once);
-
         }
 
         [Fact]
@@ -240,9 +239,7 @@
 
         #endregion ForceExit
 
-        private YiClient GetClient()
-        {
-            return new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object);
-        }
+        private YiClient GetClient() =>
+               new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object);
     }
 }
