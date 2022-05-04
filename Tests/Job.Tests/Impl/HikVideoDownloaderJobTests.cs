@@ -24,10 +24,8 @@ namespace Job.Tests.Impl
 
             dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
                 .ReturnsAsync(new JobTrigger() { LastSync = lastSync });
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
             dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
                 .ReturnsAsync(new List<MediaFile>());
 
@@ -53,14 +51,10 @@ namespace Job.Tests.Impl
         [Fact]
         public async Task ExecuteAsync_ExceptionFired_ExceptionHandled()
         {
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            SetupLogExceptionToAsync();
             emailMock.Setup(x => x.Send(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Verifiable();
 

@@ -20,14 +20,10 @@
     [Fact]
         public async Task ExecuteAsync_NoFilesFound_NothingSavedToDb()
         {
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
-                .ReturnsAsync(new List<MediaFileDTO>());
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            SetupExecuteAsync();
 
             var job = CreateJob();
             await job.ExecuteAsync();
@@ -44,12 +40,9 @@
                 new (){Date = new (2022,01,31), Name = "File2", Duration = 0},
             };
 
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
             dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), files))
                 .Returns(Task.CompletedTask);
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
@@ -73,18 +66,13 @@
                 new (),
             };
 
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), files))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            SetupUpdateDailyStatisticsAsync(files);
             emailMock.Setup(x => x.Send($"2 - {group}.{triggerKey}: Abnormal activity detected", It.IsAny<string>()))
                 .Verifiable();
-            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
-                .ReturnsAsync(files);
+            SetupExecuteAsync(files);
 
             var job = CreateJob("ArchiveJobTestsAbnormalActivity.json");
             await job.ExecuteAsync();
@@ -103,21 +91,16 @@
                 new (){ Duration = 1 },
             };
 
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
             dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
                 .ReturnsAsync(new List<MediaFile>());
             dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
                 .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), files))
-                .Returns(Task.CompletedTask);
+            SetupUpdateDailyStatisticsAsync(files);
 
-            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
-                .ReturnsAsync(files);
+            SetupExecuteAsync(files);
 
             var job = CreateJob();
             await job.ExecuteAsync();
@@ -128,14 +111,10 @@
         [Fact]
         public async Task ExecuteAsync_ExceptionFired_ExceptionLogged()
         {
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            SetupLogExceptionToAsync();
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ThrowsAsync(new Exception("Shit happens"));
@@ -150,14 +129,10 @@
         [Fact]
         public async Task ExecuteAsync_ExceptionFired_EmailWasSent()
         {
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            SetupLogExceptionToAsync();
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ThrowsAsync(new Exception("Shit happens"));
@@ -174,12 +149,9 @@
         [Fact]
         public async Task ExecuteAsync_FailedToLogException_Handled()
         {
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
             dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
                 .Throws<Exception>();
 
