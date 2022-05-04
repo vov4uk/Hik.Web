@@ -8,16 +8,10 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="quartz_jobs.debug.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="quartz_jobs.debug.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="quartz_jobs.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -42,12 +36,10 @@
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.0" />
   </ItemGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="..\Hik.DataAccess\Hik.DataAccess.csproj" />
     <ProjectReference Include="..\Job\Job.csproj" />
   </ItemGroup>
-
 
   <ItemGroup>
     <Content Update="appsettings.Development.json">
@@ -74,5 +66,15 @@
   <ItemGroup>
     <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="..\..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Exclude the project from analysis -->
+    <SonarQubeExclude>true</SonarQubeExclude>
+  </PropertyGroup>
 
 </Project>

@@ -3,10 +3,11 @@ using Hik.DataAccess.Metadata;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Hik.DataAccess.Data
 {
-    [Table(Tables.DownloadDuration)]
+    [ExcludeFromCodeCoverage, Table(Tables.DownloadDuration)]
     public class DownloadDuration: IHistory
     {
         [Key]

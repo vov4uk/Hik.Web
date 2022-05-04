@@ -1,10 +1,12 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Hik.DataAccess.Metadata;
 
 namespace Hik.DataAccess.Data
 {
+    [ExcludeFromCodeCoverage, Table(Tables.ExceptionLog)]
     public class ExceptionLog
     {
         [Key]

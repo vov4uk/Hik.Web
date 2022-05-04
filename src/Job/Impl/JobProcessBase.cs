@@ -1,6 +1,6 @@
 ﻿using Hik.Api;
 using Hik.Client.Events;
-using Hik.DataAccess;
+using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -16,64 +16,28 @@ namespace Job.Impl
 {
     public abstract class JobProcessBase
     {
-        private JobTrigger jobTrigger;
-
-        protected HikJob JobInstance { get; private set; }
-
-        protected readonly UnitOfWorkFactory unitOfWorkFactory;
-
         protected readonly Logger logger = LogManager.GetCurrentClassLogger();
+        protected readonly IHikDatabase db;
+        protected readonly IEmailHelper email;
+        protected JobTrigger jobTrigger;
 
-        public string TriggerKey { get; private set; }
-
-        public string ConfigPath { get; private set; }
-
-        public string ConnectionString { get; private set; }
-
-        public BaseConfig Config { get; protected set; }
-
-        public abstract Task<IReadOnlyCollection<MediaFileDTO>> RunAsync();
-
-        public abstract Task SaveHistoryAsync(IReadOnlyCollection<MediaFile> files, JobService service);
-
-        public virtual void InitializeProcessingPeriod()
-        {
-            var config = Config as CameraConfig;
-            DateTime jobStart = DateTime.Now;
-
-            DateTime? lastSync = jobTrigger.LastSync;
-            DateTime periodStart = lastSync?.AddMinutes(-1) ?? jobStart.AddHours(-1 * config?.ProcessingPeriodHours ?? 1);
-
-            this.JobInstance.PeriodStart = periodStart;
-            this.JobInstance.PeriodEnd = jobStart;
-
-            LogInfo($"Last sync from DB - {lastSync}, Period - {periodStart} - {jobStart}");
-        }
-
-        public virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files, JobService service)
-        {
-            JobInstance.FilesCount = files.Count;
-            var mediaFiles = await service.SaveFilesAsync(files);
-            await service.UpdateDailyStatisticsAsync(files);
-            await SaveHistoryAsync(mediaFiles, service);
-        }
-
-        protected JobProcessBase(string trigger, string configFilePath, string connectionString, Guid activityId)
+        protected JobProcessBase(string trigger, IHikDatabase db, IEmailHelper email, Guid activityId)
         {
             TriggerKey = trigger;
-            ConfigPath = configFilePath;
-            ConnectionString = connectionString;
             System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
-            this.unitOfWorkFactory = new UnitOfWorkFactory(ConnectionString);
+            this.db = db;
+            this.email = email;
         }
+
+        public BaseConfig Config { get; protected set; }
+        public string TriggerKey { get; private set; }
+        internal HikJob JobInstance { get; private set; }
 
         public async Task ExecuteAsync()
         {
             try
             {
-                await GetJobTriggerAsync();
-
-                await InitializeJobInstanceAsync();
+                await CreateJobInstanceAsync();
                 Config.Alias = TriggerKey;
                 var result = await RunAsync();
                 await SaveResultsInternalAsync(result);
@@ -84,30 +48,24 @@ namespace Job.Impl
             }
         }
 
-        private async Task InitializeJobInstanceAsync()
-        {
-            this.JobInstance = new HikJob
-            {
-                Started = DateTime.Now,
-                JobTriggerId = jobTrigger.Id
-            };
-
-            InitializeProcessingPeriod();
-
-            await SaveJobInstanceToDbAsync();
-        }
-
-        private async Task SaveJobInstanceToDbAsync()
-        {
-            using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
-            var jobRepo = unitOfWork.GetRepository<HikJob>();
-            await jobRepo.AddAsync(JobInstance);
-            await unitOfWork.SaveChangesAsync();
-        }
-
-        protected virtual void ExceptionFired(object sender, ExceptionEventArgs e)
+        protected void ExceptionFired(object sender, ExceptionEventArgs e)
         {
             HandleException(e.Exception);
+        }
+
+        protected void LogInfo(string msg)
+        {
+            logger.Info($"{TriggerKey} - {msg}");
+        }
+
+        protected abstract Task<IReadOnlyCollection<MediaFileDTO>> RunAsync();
+
+        protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        {
+            JobInstance.FilesCount = files.Count;
+            var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
+            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+            await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
 
         private void HandleException(Exception e)
@@ -115,15 +73,14 @@ namespace Job.Impl
             this.JobInstance.Success = false;
             try
             {
-                JobService jobResultSaver = new(this.unitOfWorkFactory, this.JobInstance);
-                Task.WaitAll(LogExceptionToDB(e), jobResultSaver.SaveJobResultAsync());
+                Task.WaitAll(LogExceptionToDB(e), db.SaveJobResultAsync(JobInstance));
             }
             catch (Exception ex) { logger.Error(ex.ToString()); }
 
             if (Config.SentEmailOnError)
             {
                 var details = JobInstance.ToHtmlTable(Config);
-                EmailHelper.Send(e, Config.Alias, details);
+                email.Send(e, Config.Alias, details);
             }
             else
             {
@@ -131,60 +88,39 @@ namespace Job.Impl
             }
         }
 
-        private async Task LogExceptionToDB(Exception e)
+        private async Task CreateJobInstanceAsync()
         {
-            using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
-            var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
+            this.jobTrigger = await db.GetOrCreateJobTriggerAsync(TriggerKey);
 
-            await jobRepo.AddAsync(new ExceptionLog
+            this.JobInstance = new HikJob
             {
-                CallStack = e.StackTrace,
-                JobId = JobInstance.Id,
-                Message = (e as HikException)?.ErrorMessage ?? e.ToString(),
-                HikErrorCode = (e as HikException)?.ErrorCode
-            });
-            await unitOfWork.SaveChangesAsync();
+                Started = DateTime.Now,
+                JobTriggerId = jobTrigger.Id
+            };
+
+            await db.CreateJobInstanceAsync(JobInstance);
         }
 
-        internal async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDTO> files)
+        private async Task LogExceptionToDB(Exception e)
         {
-            var jobResultSaver = new JobService(this.unitOfWorkFactory, this.JobInstance);
+            await db.LogExceptionToAsync(JobInstance.Id, (e as HikException)?.ErrorMessage ?? e.ToString(), e.StackTrace, (e as HikException)?.ErrorCode);
+        }
+
+        private async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDTO> files)
+        {
             if (files?.Any() == true)
             {
-                await SaveResultsAsync(files, jobResultSaver);
+                await SaveResultsAsync(files);
             }
             else
             {
                 logger.Warn($"{TriggerKey} - Results Empty");
             }
+
             if (this.JobInstance.Success)
             {
-                await jobResultSaver.SaveJobResultAsync();
+                await db.SaveJobResultAsync(JobInstance);
             }
-        }
-
-        protected async Task GetJobTriggerAsync()
-        {
-            if (this.jobTrigger == null)
-            {
-                var jobNameParts = TriggerKey.Split(".");
-                var triggerKey = jobNameParts[1];
-                var group = jobNameParts[0];
-                using var unitOfWork = this.unitOfWorkFactory.CreateUnitOfWork();
-                var repo = unitOfWork.GetRepository<JobTrigger>();
-                this.jobTrigger = await repo.FindByAsync(x => x.TriggerKey == triggerKey && x.Group == group);
-                if (this.jobTrigger == null)
-                {
-                    var triggerResult = await repo.AddAsync(new JobTrigger { TriggerKey = triggerKey, Group = group, ShowInSearch = Config.ShowInSearch });
-                    jobTrigger = triggerResult.Entity;
-                    await unitOfWork.SaveChangesAsync();
-                }
-            }
-        }
-
-        protected void LogInfo(string msg)
-        {
-            logger.Info($"{TriggerKey} - {msg}");
         }
     }
 }

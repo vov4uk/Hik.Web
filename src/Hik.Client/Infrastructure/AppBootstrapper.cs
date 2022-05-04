@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Autofac;
 using AutoMapper;
-using Hik.Client.Service;
 
 namespace Hik.Client.Infrastructure
 {
@@ -29,11 +27,13 @@ namespace Hik.Client.Infrastructure
             hikAssemblies.Add(Assembly.GetExecutingAssembly());
             RegisterAutoMapper(builder);
             builder.RegisterAssemblyTypes(hikAssemblies.ToArray()).AsImplementedInterfaces();
-            builder.RegisterType<VideoDownloaderService>();
-            builder.RegisterType<HikPhotoDownloaderService>();
-            builder.RegisterType<ArchiveService>();
 
             return builder.Build();
+        }
+
+        internal static void SetupTest(ContainerBuilder containerBuilder)
+        {
+            container = containerBuilder.Build();
         }
 
         private static void RegisterAutoMapper(ContainerBuilder builder)

@@ -2,10 +2,11 @@
 using Hik.DataAccess.Metadata;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Hik.DataAccess.Data
 {
-    [Table(Tables.DownloadHistory)]
+    [ExcludeFromCodeCoverage, Table(Tables.DownloadHistory)]
     public class DownloadHistory : IAuditable, IHistory
     {
         [Key]

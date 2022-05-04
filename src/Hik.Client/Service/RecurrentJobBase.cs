@@ -4,11 +4,12 @@ using System.Threading.Tasks;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.DTO.Config;
+using Hik.DTO.Contracts;
 using NLog;
 
 namespace Hik.Client.Service
 {
-    public abstract class RecurrentJobBase<T> : IRecurrentJob<T>
+    public abstract class RecurrentJobBase : IRecurrentJob
     {
         protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
         protected readonly IDirectoryHelper directoryHelper;
@@ -20,7 +21,7 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public async Task<IReadOnlyCollection<T>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public async Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             try
             {
@@ -39,7 +40,7 @@ namespace Hik.Client.Service
             }
         }
 
-        protected abstract Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to);
+        protected abstract Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to);
 
         protected virtual void OnExceptionFired(ExceptionEventArgs e, BaseConfig config)
         {

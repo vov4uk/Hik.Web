@@ -8,7 +8,7 @@ namespace Hik.DataAccess.Abstractions
 {
     public interface IBaseRepository<T> where T : class
     {
-        ValueTask<EntityEntry<T>> AddAsync(T entity);
+        ValueTask<T> AddAsync(T entity);
 
         EntityEntry<T> Add(T entity);
 

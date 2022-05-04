@@ -11,8 +11,7 @@ using Hik.DTO.Contracts;
 
 namespace Hik.Client.Service
 {
-    public abstract class HikDownloaderServiceBase<T> : RecurrentJobBase<T>
-        where T : MediaFileDTO
+    public abstract class HikDownloaderServiceBase : RecurrentJobBase
     {
         protected const int JobTimeout = 30;
         private readonly IClientFactory clientFactory;
@@ -46,12 +45,12 @@ namespace Hik.Client.Service
 
         public abstract Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
 
-        public abstract Task<IReadOnlyCollection<T>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token);
+        public abstract Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token);
 
-        protected override async Task<IReadOnlyCollection<T>> RunAsync(BaseConfig config, DateTime from, DateTime to)
+        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             CameraConfig cameraConfig = config as CameraConfig ?? throw new ArgumentNullException(nameof(config));
-            IReadOnlyCollection<T> jobResult = null;
+            IReadOnlyCollection<MediaFileDTO> jobResult = null;
 
             using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(cameraConfig.Timeout)))
             {
@@ -62,7 +61,7 @@ namespace Hik.Client.Service
                     taskCompletionSource.TrySetCanceled();
                 });
 
-                Task<IReadOnlyCollection<T>> downloadTask = InternalDownload(cameraConfig, from, to);
+                Task<IReadOnlyCollection<MediaFileDTO>> downloadTask = InternalDownload(cameraConfig, from, to);
                 Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
 
                 if (completedTask == downloadTask)
@@ -95,7 +94,7 @@ namespace Hik.Client.Service
             }
         }
 
-        private async Task<IReadOnlyCollection<T>> InternalDownload(CameraConfig config, DateTime from, DateTime to)
+        private async Task<IReadOnlyCollection<MediaFileDTO>> InternalDownload(CameraConfig config, DateTime from, DateTime to)
         {
             var result = await ProcessCameraAsync(config, from, to);
             if (result.Count > 0)
@@ -110,9 +109,9 @@ namespace Hik.Client.Service
             return result;
         }
 
-        private async Task<IReadOnlyCollection<T>> ProcessCameraAsync(CameraConfig config, DateTime periodStart, DateTime periodEnd)
+        private async Task<IReadOnlyCollection<MediaFileDTO>> ProcessCameraAsync(CameraConfig config, DateTime periodStart, DateTime periodEnd)
         {
-            var result = new List<T>();
+            var result = new List<MediaFileDTO>();
             using (Client = clientFactory.Create(config))
             {
                 Client.InitializeClient();

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hik.Client.Events;
 using Hik.DTO.Config;
+using Hik.DTO.Contracts;
 
 namespace Hik.Client.Abstraction
 {
-    public interface IRecurrentJob<T>
+    public interface IRecurrentJob
     {
         event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        Task<IReadOnlyCollection<T>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to);
+        Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to);
     }
 }

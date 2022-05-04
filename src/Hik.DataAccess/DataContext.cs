@@ -2,10 +2,12 @@
 using Hik.DataAccess.Mappings;
 using Microsoft.EntityFrameworkCore;
 using NLog;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Hik.DataAccess
 {
+    [ExcludeFromCodeCoverage]
     public class DataContext : DbContext
     {
         private readonly string ConnectionString;

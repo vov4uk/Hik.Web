@@ -1,9 +1,10 @@
 ﻿using Job.Extensions;
 using System;
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Job
 {
+    [ExcludeFromCodeCoverage]
     public class Parameters
     {
         public string ClassName { get; private set; }

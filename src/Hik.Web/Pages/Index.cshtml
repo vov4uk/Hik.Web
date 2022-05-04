@@ -136,7 +136,14 @@
 {
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", function () {
-            showCard();
+
+            var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                showCard();
+            }
+            else {
+                showTable();
+            }
         });
 
         function showTable() {

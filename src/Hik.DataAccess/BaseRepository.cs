@@ -3,12 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Hik.DataAccess
 {
+    [ExcludeFromCodeCoverage]
     public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
     {
         protected DbContext Database { get; }
@@ -21,9 +23,10 @@ namespace Hik.DataAccess
             this.DbSet = this.Database.Set<TEntity>();
         }
 
-        public virtual ValueTask<EntityEntry<TEntity>> AddAsync(TEntity entity)
+        public virtual async ValueTask<TEntity> AddAsync(TEntity entity)
         {
-            return DbSet.AddAsync(entity);
+            var result = await DbSet.AddAsync(entity);
+            return result.Entity;
         }
 
         public virtual EntityEntry<TEntity> Add(TEntity entity)

@@ -10,7 +10,7 @@ using Hik.DTO.Contracts;
 
 namespace Hik.Client.Service
 {
-    public class VideoDownloaderService : HikDownloaderServiceBase<MediaFileDTO>
+    public class VideoDownloaderService : HikDownloaderServiceBase, IHikVideoDownloaderService
     {
         public VideoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory)
             : base(directoryHelper, clientFactory)

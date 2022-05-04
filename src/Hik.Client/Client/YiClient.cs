@@ -20,22 +20,6 @@ namespace Hik.Client
         {
         }
 
-        public override async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
-        {
-            string destinationFilePath = GetPathSafety(remoteFile);
-            var filePath = remoteFile.Date.ToYiFilePathString(config.ClientType);
-
-            if (!filesHelper.FileExists(destinationFilePath))
-            {
-                return await DownloadInternalAsync(remoteFile, destinationFilePath, filePath, token);
-            }
-            else
-            {
-                LogDebugInfo($"{remoteFile.ToVideoUserFriendlyString()} - exist");
-                return false;
-            }
-        }
-
         public override Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             var result = new List<MediaFileDTO>();
@@ -57,34 +41,14 @@ namespace Hik.Client
             return Task.FromResult(result.AsReadOnly() as IReadOnlyCollection<MediaFileDTO>);
         }
 
-        private async Task<bool> DownloadInternalAsync(MediaFileDTO remoteFile, string targetFilePath, string remoteFilePath, CancellationToken token)
+        protected override string GetRemoteFileFath(MediaFileDTO remoteFile)
+            => remoteFile.Date.ToYiFilePathString(config.ClientType);
+
+        protected override Task<bool> PostDownloadFileProcessAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
         {
-            var remoteFileExist = await ftp.FileExistsAsync(remoteFilePath, token);
-
-            if (remoteFileExist)
-            {
-                LogDebugInfo($"{remoteFile.ToVideoUserFriendlyString()} - downloading");
-                var tempFile = filesHelper.GetTempFileName();
-                await ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
-
-                filesHelper.RenameFile(tempFile, targetFilePath);
-                remoteFile.Size = filesHelper.FileSize(targetFilePath);
-                remoteFile.Path = targetFilePath;
-                return true;
-            }
-            else
-            {
-                logger.Error($"{config.Alias} - File not found {remoteFilePath}");
-                return false;
-            }
-        }
-
-        private string GetPathSafety(MediaFileDTO remoteFile)
-        {
-            string workingDirectory = GetWorkingDirectory(remoteFile);
-            directoryHelper.CreateDirIfNotExist(workingDirectory);
-
-            return filesHelper.CombinePath(workingDirectory, remoteFile.ToYiFileNameString());
+            remoteFile.Size = filesHelper.FileSize(localFilePath);
+            remoteFile.Path = localFilePath;
+            return Task.FromResult(true);
         }
     }
 }

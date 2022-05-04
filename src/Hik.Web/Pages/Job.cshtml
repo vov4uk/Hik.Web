@@ -6,10 +6,15 @@
 <button onclick="javascript:history.back()">Go Back</button>
 @if (Model.Jobs != null && Model.Jobs.Any())
 {
+  <div class="row">
+      <div class="card-body text-center">
+          <h2 class="card-title">@Model.Jobs.FirstOrDefault().JobTrigger</h2>
+      </div>
+  </div>
+
 <table class="table table-bordered table-sm" aria-label="Jobs">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().JobTrigger)</th>
             <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().Started)</th>
             <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().Finished)</th>
             <th>@Html.DisplayNameFor(m => m.Jobs.FirstOrDefault().PeriodStart)</th>
@@ -23,9 +28,7 @@
         {
             string relativeDate = item.Started.GetRelativeTime();
             string relativeFinishedDate = item.Finished.GetRelativeTime();
-            string trigger = item.JobTrigger.ToString();
         <tr data-status="@item.Success" class="failed">
-            <td>@trigger</td>
             <td><span title="@item.Started">@relativeDate</span></td>
             <td><span title="@item.Finished">@relativeFinishedDate</span></td>
             <td>@Html.DisplayFor(m => item.PeriodStart)</td>

@@ -12,7 +12,7 @@ using Hik.DTO.Message;
 
 namespace Hik.Client.Service
 {
-    public class ArchiveService : RecurrentJobBase<MediaFileDTO>
+    public class ArchiveService : RecurrentJobBase, IArchiveService
     {
         private readonly IFilesHelper filesHelper;
         private readonly IVideoHelper videoHelper;
