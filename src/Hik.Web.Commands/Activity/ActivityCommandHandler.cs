@@ -1,7 +1,6 @@
-﻿using MediatR;
+﻿using Hik.Web.Commands.Activity;
+using MediatR;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Job.Commands
 {
@@ -10,7 +9,7 @@ namespace Job.Commands
     {
         public async Task<int> Handle(ActivityCommand request, CancellationToken cancellationToken)
         {
-            var activity = new Activity(request.Model);
+            var activity = new Activity(request.Parameters);
             await activity.Start();
             return activity.ProcessId;
         }

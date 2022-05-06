@@ -33,6 +33,7 @@ namespace Hik.Client.Helpers
                 }
 
                 byte[] imageArray = await File.ReadAllBytesAsync(fullPath);
+                File.Delete(fullPath);
                 return Convert.ToBase64String(imageArray);
             }
 

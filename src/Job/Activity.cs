@@ -117,7 +117,7 @@ namespace Job
         private async Task RunAsTask()
         {
             Type jobType = Type.GetType(Parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
-            IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(Parameters.ConnectionString);
+            IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(new DbConfiguration { ConnectionString = Parameters.ConnectionString });
             IHikDatabase db = new HikDatabase(unitOfWorkFactory);
 
             Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(

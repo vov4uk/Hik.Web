@@ -1,4 +1,5 @@
-﻿using Hik.DataAccess.Data;
+﻿using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Data;
 using Hik.DataAccess.Mappings;
 using Microsoft.EntityFrameworkCore;
 using NLog;
@@ -20,6 +21,12 @@ namespace Hik.DataAccess
             ConnectionString = connection;
         }
 
+        public DataContext(IDbConfiguration configuration)
+            : base()
+        {
+            ConnectionString = configuration.ConnectionString;
+        }
+
         public DbSet<HikJob> Jobs { get; set; }
         public DbSet<MediaFile> MediaFiles { get; set; }
         public DbSet<DownloadHistory> DownloadHistory { get; set; }
@@ -33,9 +40,12 @@ namespace Hik.DataAccess
             base.OnConfiguring(optionsBuilder);
             if (!string.IsNullOrEmpty(ConnectionString))
             {
+                optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+
                 optionsBuilder.UseSqlite(ConnectionString, options =>
                 {
                     options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
+                    options.CommandTimeout(30);
                 });
 #if DEBUG
                 optionsBuilder.EnableSensitiveDataLogging();

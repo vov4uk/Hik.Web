@@ -25,7 +25,7 @@ namespace JobHost
 
                 Type jobType = Type.GetType(parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{parameters.ClassName}'");
 
-                IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(parameters.ConnectionString);
+                IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(new DbConfiguration { ConnectionString = parameters.ConnectionString });
                 IHikDatabase db = new HikDatabase(unitOfWorkFactory);
                 Job.Impl.JobProcessBase job = (Job.Impl.JobProcessBase)Activator.CreateInstance(
                     jobType,

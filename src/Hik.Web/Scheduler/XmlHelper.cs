@@ -1,6 +1,4 @@
-﻿using Autofac;
-using Microsoft.Extensions.Configuration;
-using System.IO;
+﻿using System.IO;
 using System.Xml.Serialization;
 
 namespace Hik.Web.Scheduler
@@ -9,8 +7,7 @@ namespace Hik.Web.Scheduler
     {
         public static JobSchedulingData GetJobSchedulingData()
         {
-            var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
-            var options = new QuartzOption(configuration);
+            var options = new QuartzOption(Program.Configuration);
             var xmlFilePath = options.Plugin.JobInitializer.FileNames;
             var xml = File.ReadAllText(xmlFilePath);
 
@@ -23,8 +20,7 @@ namespace Hik.Web.Scheduler
 
         public static void UpdateJobSchedulingData(JobSchedulingData data)
         {
-            var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
-            var options = new QuartzOption(configuration);
+            var options = new QuartzOption(Program.Configuration);
             var xmlFilePath = options.Plugin.JobInitializer.FileNames;
 
             XmlSerializer serializer = new XmlSerializer(typeof(JobSchedulingData));

@@ -1,6 +1,9 @@
-﻿using Hik.DataAccess;
+﻿using Autofac;
+using Hik.DataAccess;
 using Hik.DataAccess.Data;
+using Hik.Web.Queries.JobDetails;
 using JW;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +19,12 @@ namespace Hik.Web.Pages
         private const int PageSize = 40;
         private const int MaxPages = 10;
         private readonly DataContext dataContext;
+        private readonly IMediator mediator;
 
-        public DetailsModel(DataContext dataContext)
+        public DetailsModel(DataContext dataContext, IMediator mediator)
         {
             this.dataContext = dataContext;
+            this.mediator = mediator;
         }
 
         public HikJob Job { get; set; }
@@ -36,6 +41,8 @@ namespace Hik.Web.Pages
         {
             if (id == null) { return NotFound(); }
             JobId = id;
+
+            await mediator.Send(new JobDetailsQuery { JobId = id.Value });
 
             var items = dataContext.Jobs.AsQueryable().Where(x => x.Id == id)
                 .Include(x => x.ExceptionLog)

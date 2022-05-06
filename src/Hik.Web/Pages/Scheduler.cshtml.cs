@@ -1,4 +1,3 @@
-using Autofac;
 using Hik.Web.Scheduler;
 using Job;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace Hik.Web.Pages
 {
@@ -21,8 +19,7 @@ namespace Hik.Web.Pages
 
         public void OnGet()
         {
-            var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
-            var options = new QuartzOption(configuration);
+            var options = new QuartzOption(Program.Configuration);
             var xmlFilePath = options.Plugin.JobInitializer.FileNames;
             var xml = System.IO.File.ReadAllText(xmlFilePath);
 
@@ -43,8 +40,7 @@ namespace Hik.Web.Pages
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
             var currentScheduler = await schedulerFactory.GetScheduler("default");
             await currentScheduler.Shutdown(false);
-            var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
-            var properties = new QuartzOption(configuration).ToProperties();
+            var properties = new QuartzOption(Program.Configuration).ToProperties();
 
             schedulerFactory = new StdSchedulerFactory(properties);
             var scheduler = await schedulerFactory.GetScheduler();

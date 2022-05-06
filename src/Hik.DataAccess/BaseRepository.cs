@@ -11,7 +11,8 @@ using System.Threading.Tasks;
 namespace Hik.DataAccess
 {
     [ExcludeFromCodeCoverage]
-    public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
+    public class BaseRepository<TEntity> : IBaseRepository<TEntity>
+        where TEntity : class
     {
         protected DbContext Database { get; }
 

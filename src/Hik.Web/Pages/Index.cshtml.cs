@@ -4,9 +4,9 @@ using Hik.Client.Helpers;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
+using Hik.Web.Commands.Activity;
 using Hik.Web.Scheduler;
 using Job;
-using Job.Commands;
 using Job.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -25,12 +25,14 @@ namespace Hik.Web.Pages
         private readonly DataContext dataContext;
         private readonly ActivityBag activities = new();
         private readonly IMediator _mediator;
+        private readonly IConfiguration configuration;
 
-        public IndexModel(DataContext dataContext)
+        public IndexModel(DataContext dataContext, IMediator mediator, IConfiguration configuration)
         {
             this.dataContext = dataContext;
             this.dataContext.Database.EnsureCreated();
-            _mediator = AutofacConfig.Container.Resolve<IMediator>();
+            _mediator = mediator;
+            this.configuration = configuration;
             JobTriggers = dataContext.JobTriggers.AsQueryable().ToList();
         }
 
@@ -95,9 +97,7 @@ namespace Hik.Web.Pages
             string configPath = trigger.GetConfig();
             bool runAsTask = trigger.GetRunAsTask();
 
-            var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
-
-            IConfigurationSection connStrings = configuration.GetSection("ConnectionStrings");
+            IConfigurationSection connStrings = this.configuration.GetSection("ConnectionStrings");
             string defaultConnection = connStrings.GetSection("HikConnectionString").Value;
 
             var parameters = new Parameters(className, group, name, configPath, defaultConnection, runAsTask);
