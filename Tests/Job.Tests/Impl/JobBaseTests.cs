@@ -1,38 +1,25 @@
-﻿using Autofac;
-using Hik.Client.Abstraction;
-using Hik.Client.Infrastructure;
-using Hik.DataAccess.Abstractions;
+﻿using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
-using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Moq;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Job.Tests.Impl
 {
-    public abstract class JobBaseTests<T>
-        where T : class, IRecurrentJob
+    public abstract class JobBaseTest
     {
         protected const string group = "Test";
         protected const string triggerKey = "Key";
-        
-        protected readonly Mock<T> serviceMock;
+
         protected readonly Mock<IHikDatabase> dbMock;
         protected readonly Mock<IEmailHelper> emailMock;
 
-        public JobBaseTests()
+        public JobBaseTest()
         {
-            serviceMock = new (MockBehavior.Strict);
             dbMock = new (MockBehavior.Strict);
             emailMock = new (MockBehavior.Strict);
-
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(serviceMock.Object);
-
-            AppBootstrapper.SetupTest(builder);
         }
 
         protected void SetupSaveJobResultAsync()
@@ -53,22 +40,16 @@ namespace Job.Tests.Impl
                 .ReturnsAsync(new JobTrigger());
         }
 
-        protected void SetupExecuteAsync()
-        {
-            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
-                .ReturnsAsync(new List<MediaFileDTO>());
-        }
-
         protected void SetupUpdateDailyStatisticsAsync(List<MediaFileDTO> files)
         {
             dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), files))
                 .Returns(Task.CompletedTask);
         }
 
-        protected void SetupExecuteAsync(List<MediaFileDTO> files)
+        protected void SetupUpdateDailyStatisticsAsync()
         {
-            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
-                .ReturnsAsync(files);
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+                .Returns(Task.CompletedTask);
         }
 
         protected void SetupLogExceptionToAsync()

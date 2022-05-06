@@ -10,6 +10,6 @@
 
         public string[] Triggers { get; set; }
 
-        public string FileExtention { get; set; } = "*.*";
+        public string FileExtention { get; set; }
     }
 }
