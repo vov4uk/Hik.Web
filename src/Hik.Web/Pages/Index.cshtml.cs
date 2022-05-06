@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -109,7 +108,7 @@ namespace Hik.Web.Pages
             return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
         }
 
-        public IActionResult OnPostKill(Guid activityId)
+        public IActionResult OnPostKill(string activityId)
         {
             var activity = activities.SingleOrDefault(a => a.Id == activityId);
 

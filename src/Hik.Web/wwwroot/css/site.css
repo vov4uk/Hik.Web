@@ -90,8 +90,12 @@ body {
   white-space: nowrap;
 }
 
-.failed[data-status="False"] {
+.failed[data-status="failed"] {
     background-color: #ffe6e6
+}
+
+.failed[data-status="running"] {
+    background-color: #E6E9ED
 }
 
 .failed td {

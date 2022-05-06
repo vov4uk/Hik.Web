@@ -21,7 +21,10 @@ namespace Hik.DataAccess.Mappings
                 .HasForeignKey(v => v.JobTriggerId);
 
             builder.Property(f => f.Success)
-                .HasDefaultValue("true");
+                .IsRequired()
+                .HasDefaultValueSql("(1)")
+                .ValueGeneratedNever();
+
             builder.Property(f => f.Started)
                 .IsRequired(true)
                 .HasColumnType("datetime2(0)");
