@@ -52,9 +52,9 @@
                           string lastSync = item.LastSync.GetRelativeTime();
                           string from = item.LastJobPeriodStart.GetRelativeTime();
                           string to = item.LastJobPeriodEnd.GetRelativeTime();
-                          string color = item.Success && item.ActivityId == null ? "" : item.ActivityId == null ? "failed" : "running";
+                          string status = item.Success && item.ActivityId == null ? "" : item.ActivityId == null ? "failed" : "running";
 
-                          <tr data-status="@color" class="failed">
+                          <tr data-status="@status" class="failed">
                               <td><span title="@item.CronSummary">@item.CronString</span></td>
                               <td><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></td>
                               <td>@Html.DisplayFor(x => item.Next)</td>
