@@ -71,23 +71,7 @@ namespace Hik.Client.FileProviders
             {
                 if (dates.Any() && dates.TryPop(out var lastDate))
                 {
-                    if (folders.ContainsKey(lastDate))
-                    {
-                        List<string> files = new List<string>();
-                        foreach (var folder in folders[lastDate])
-                        {
-                            if (!string.IsNullOrEmpty(fileExtention))
-                            {
-                                files.AddRange(directoryHelper.EnumerateFiles(folder, new[] { fileExtention }));
-                            }
-                            else
-                            {
-                                files.AddRange(directoryHelper.EnumerateFiles(folder));
-                            }
-                        }
-
-                        result.AddRange(files.Select(x => new MediaFileDTO { Path = x, Date = lastDate }));
-                    }
+                    result.AddRange(GetFiles(fileExtention, lastDate).Select(x => new MediaFileDTO { Path = x, Date = lastDate }));
                 }
                 else
                 {
@@ -135,6 +119,27 @@ namespace Hik.Client.FileProviders
             }
 
             return result;
+        }
+
+        private List<string> GetFiles(string fileExtention, DateTime lastDate)
+        {
+            List<string> files = new List<string>();
+            if (folders.ContainsKey(lastDate))
+            {
+                foreach (var folder in folders[lastDate])
+                {
+                    if (!string.IsNullOrEmpty(fileExtention))
+                    {
+                        files.AddRange(directoryHelper.EnumerateFiles(folder, new[] { fileExtention }));
+                    }
+                    else
+                    {
+                        files.AddRange(directoryHelper.EnumerateFiles(folder));
+                    }
+                }
+            }
+
+            return files;
         }
     }
 }
