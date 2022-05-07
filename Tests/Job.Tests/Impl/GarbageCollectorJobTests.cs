@@ -2,11 +2,9 @@
 using Hik.Client.Abstraction;
 using Hik.Client.FileProviders;
 using Hik.Client.Infrastructure;
-using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using Job.Email;
 using Job.Impl;
 using Moq;
 using System;
@@ -17,20 +15,15 @@ using Xunit;
 
 namespace Job.Tests.Impl
 {
-    public class GarbageCollectorJobTests
+    public class GarbageCollectorJobTests : JobBaseTest
     {
-        protected const string group = "Test";
-        protected const string triggerKey = "Key";
-        protected readonly Mock<IHikDatabase> dbMock;
-        protected readonly Mock<IEmailHelper> emailMock;
         protected readonly Mock<IDirectoryHelper> directoryHelper;
         protected readonly Mock<IFilesHelper> filesHelper;
         protected readonly Mock<IFileProvider> filesProvider;
 
         public GarbageCollectorJobTests()
+            : base()
         {
-            dbMock = new (MockBehavior.Strict);
-            emailMock = new (MockBehavior.Strict);
             directoryHelper = new(MockBehavior.Strict);
             filesHelper = new ();
             filesProvider = new (MockBehavior.Strict);
@@ -48,19 +41,15 @@ namespace Job.Tests.Impl
         {
             var topFolders = new[] { "C:\\Junk" };
 
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            SetupUpdateDailyStatisticsAsync();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\Junk"));
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
-            filesProvider.Setup(x => x.GetFilesOlderThan("*.*", It.IsAny<DateTime>()))
-                .Returns(new List<MediaFileDTO>() { new MediaFileDTO () })
+            filesProvider.Setup(x => x.GetFilesOlderThan(null, It.IsAny<DateTime>()))
+                .Returns(new List<MediaFileDTO>() { new () })
                 .Verifiable();
             filesHelper.Setup(x => x.FileSize(It.IsAny<string>()))
                 .Returns(0);
@@ -76,20 +65,16 @@ namespace Job.Tests.Impl
         {
             var topFolders = new[] { "C:\\Junk" };
 
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            SetupUpdateDailyStatisticsAsync();
             dbMock.Setup(x => x.DeleteObsoleteJobsAsync(It.IsAny<string[]>(), It.IsAny<DateTime>()))
                 .Returns(Task.CompletedTask);
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\Junk"));
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
-            filesProvider.Setup(x => x.GetFilesOlderThan("*.*", It.IsAny<DateTime>()))
+            filesProvider.Setup(x => x.GetFilesOlderThan(null, It.IsAny<DateTime>()))
                 .Returns(new List<MediaFileDTO>() {
                     new () { Date = new (2022, 01,01)},
                     new () { Date = new (2022, 01,11)},
@@ -114,14 +99,10 @@ namespace Job.Tests.Impl
         {
             var topFolders = new[] { "C:\\FTP\\Floor0" };
 
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            SetupUpdateDailyStatisticsAsync();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\FTP\\Floor0"));
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
@@ -153,12 +134,9 @@ namespace Job.Tests.Impl
         {
             var topFolders = new[] { "C:\\FTP\\Floor0" };
 
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger());
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\FTP\\Floor0"));
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();

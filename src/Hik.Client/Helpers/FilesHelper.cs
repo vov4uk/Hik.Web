@@ -93,7 +93,7 @@ namespace Hik.Client.Helpers
 
         public string GetTempFileName()
         {
-            return Path.GetRandomFileName();
+            return Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         }
 
         public string GetDirectoryName(string path)

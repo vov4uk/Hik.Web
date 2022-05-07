@@ -52,12 +52,13 @@
                           string lastSync = item.LastSync.GetRelativeTime();
                           string from = item.LastJobPeriodStart.GetRelativeTime();
                           string to = item.LastJobPeriodEnd.GetRelativeTime();
+                          string status = item.Success && item.ActivityId == null ? "" : item.ActivityId == null ? "failed" : "running";
 
-                          <tr data-status="@item.Success" class="failed">
+                          <tr data-status="@status" class="failed">
                               <td><span title="@item.CronSummary">@item.CronString</span></td>
                               <td><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></td>
                               <td>@Html.DisplayFor(x => item.Next)</td>
-                              <td>@Html.DisplayFor(x => item.ConfigPath)</td>
+                              <td><a asp-page="./ConfigEdit" asp-route-name="@item.Name" asp-route-group="@item.Group">@Html.DisplayFor(x => item.ConfigPath)</a></td>
                               <td><span title="@lastSync">@item.LastSync.GetString()</span></td>
                               <td><span title="@from">@Html.DisplayFor(x => item.LastJobPeriodStart)</span></td>
                               <td><span title="@to">@Html.DisplayFor(x => item.LastJobPeriodEnd)</span></td>
@@ -100,7 +101,7 @@
                           <ul class=" ">
                               <li><span title="@item.CronSummary">@item.CronString</span></li>
                               <li>Next - @Html.DisplayFor(x => item.Next)</li>
-                              <li>@Html.DisplayFor(x => item.ConfigPath)</li>
+                              <li><a asp-page="./ConfigEdit" asp-route-name="@item.Name" asp-route-group="@item.Group">@Html.DisplayFor(x => item.ConfigPath)</a></li>
                               <li><span title="@lastSync">Sync -  @Html.DisplayFor(x => item.LastSync)</span></li>
                               <li><span title="@from">From -  @Html.DisplayFor(x => item.LastJobPeriodStart)</span></li>
                               <li><span title="@to">To -    @Html.DisplayFor(x => item.LastJobPeriodEnd)</span></li>
@@ -136,7 +137,6 @@
 {
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", function () {
-
             var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             if (isMobile) {
                 showCard();

@@ -60,7 +60,6 @@ namespace Hik.Client.Tests.FileProviders
         [Fact]
         public void GetNextBatch_Initialized_ReturnsFilesList()
         {
-
             dirMock.Setup(x => x.EnumerateAllDirectories(folder1))
                 .Returns(new List<string>() { subFolder1, subFolder2 })
                 .Verifiable();
@@ -105,6 +104,36 @@ namespace Hik.Client.Tests.FileProviders
             Assert.True(firstBatch.TrueForAll(x => x.Date == new DateTime(2022, 01, 03, 13, 0, 0)));
             Assert.Equal(2, secondBatch.Count);
             Assert.True(secondBatch.TrueForAll(x => x.Date == new DateTime(2022, 01, 03, 14, 0, 0)));
+        }
+
+        [Fact]
+        public void GetNextBatch_NoExtention_ReturnsAllFiles()
+        {
+            dirMock.Setup(x => x.EnumerateAllDirectories(folder1))
+                .Returns(new List<string>() { subFolder1 })
+                .Verifiable();
+
+            dirMock.Setup(x => x.EnumerateFiles(subFolder1))
+                .Returns(new List<string>
+                {
+                    Path.Combine(subFolder1, "20220103_135655.jpg"),
+                    Path.Combine(subFolder1, "20220103_135656.jpg"),
+                    Path.Combine(subFolder1, "20220103_135657.jpg"),
+                    Path.Combine(subFolder1, "20220103_135658.jpg"),
+                    Path.Combine(subFolder1, "20220103_135659.jpg"),
+                });
+
+            dirMock.Setup(x => x.EnumerateFiles(folder1))
+                .Returns(new List<string>());
+
+            var fileProvider = GetFileProvider();
+            fileProvider.Initialize(new string[] { folder1 });
+
+            var firstBatch = fileProvider.GetNextBatch(null, 5).ToList();
+
+            dirMock.VerifyAll();
+            Assert.Equal(5, firstBatch.Count);
+            Assert.True(firstBatch.TrueForAll(x => x.Date == new DateTime(2022, 01, 03, 13, 0, 0)));
         }
 
         [Fact]

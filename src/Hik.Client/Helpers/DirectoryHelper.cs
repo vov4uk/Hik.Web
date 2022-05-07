@@ -80,6 +80,12 @@ namespace Hik.Client.Helpers
                     .ToList();
         }
 
+        public List<string> EnumerateFiles(string path)
+        {
+            return Directory.EnumerateFiles(path, AllFilter, SearchOption.AllDirectories)
+                .ToList();
+        }
+
         public List<string> EnumerateAllDirectories(string path)
         {
             return Directory.EnumerateDirectories(path, AllFilter, SearchOption.AllDirectories).OrderBy(x => x).ToList();

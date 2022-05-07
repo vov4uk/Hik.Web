@@ -18,6 +18,8 @@ namespace Hik.Client.Abstraction
 
         List<string> EnumerateFiles(string path, string[] extentions);
 
+        List<string> EnumerateFiles(string path);
+
         List<string> EnumerateAllDirectories(string path);
     }
 }

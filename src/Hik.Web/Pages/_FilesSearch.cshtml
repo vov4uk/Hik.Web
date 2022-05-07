@@ -9,6 +9,7 @@
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Date)</th>
             <th>End</th>
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Duration)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().DownloadDuration.Duration)</th>
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Size)</th>
             <th/>
             <th/>
@@ -19,12 +20,14 @@
         {
             string size = item.Size.FormatBytes();
             string duration = item.Duration.FormatSeconds();
+            string downloaded = (item.DownloadDuration?.Duration).FormatSeconds();
             string end = item.Date.AddSeconds(item.Duration ?? 0).ToString(Consts.DisplayDateTimeStringFormat);
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Path)</td>
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>
                 <td>@end</td>
                 <td>@duration</td>
+                <td>@downloaded</td>
                 <td>@size</td>
                 <td>
                     <a href="@Url.Page("Search", "DownloadFile", new { fileId = item.Id })">Download</a>
