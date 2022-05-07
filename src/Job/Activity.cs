@@ -5,7 +5,6 @@ using NLog;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Job
@@ -16,9 +15,11 @@ namespace Job
         protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private DateTime started = default;
         private readonly EmailHelper email = new EmailHelper();
-        public readonly Guid Id;
+        private readonly Guid ActivityId;
         public Parameters Parameters { get; private set; }
         public int ProcessId => hostProcess?.Id ?? -1;
+
+        public string Id => $"{Parameters.Group}.{Parameters.TriggerKey}";
 
         public DateTime StartTime => hostProcess?.StartTime ?? started;
 
@@ -26,26 +27,34 @@ namespace Job
 
         public Activity(Parameters parameters)
         {
-            Id = Guid.NewGuid();
+            ActivityId = Guid.NewGuid();
+            parameters.ActivityId = ActivityId;
             Parameters = parameters;
-            Parameters.ActivityId = Id;
+
             Log($"Activity. Activity created with parameters {parameters}.");
         }
 
-        public Task Start()
+        public async Task Start()
         {
             try
             {
-                using var instance = new Mutex(true, $@"Global\{Parameters.TriggerKey}", out bool singleInstance);
-                if (singleInstance)
+                if (ActivityBag.Add(this))
                 {
-                    Log("Activity. StartProcess...");
-                    return StartProcess();
+                    Log($"Activity. Starting : {Parameters}");
+                    if (Parameters.RunAsTask)
+                    {
+                        await RunAsTask();
+                    }
+                    else
+                    {
+                        await StartProcess();
+                    }
                 }
                 else
                 {
                     Log($"Activity. Cannot start, {Parameters.TriggerKey} is already running.");
                 }
+
             }
             catch (Exception ex)
             {
@@ -56,7 +65,6 @@ namespace Job
             {
                 Log("Activity. StartProcess. Done.");
             }
-            return Task.CompletedTask;
         }
 
         public void Kill()
@@ -70,12 +78,6 @@ namespace Job
 
         private Task StartProcess()
         {
-            if (Parameters.RunAsTask)
-            {
-                Logger.Info($"Activity. Starting Task: {Parameters}");
-                return RunAsTask();
-            }
-
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
             hostProcess = new Process
             {
@@ -86,17 +88,13 @@ namespace Job
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                }
+                    RedirectStandardError = true,
+                },
+                EnableRaisingEvents = true,
             };
 
             hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
             hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
-            Logger.Info($"Activity. Starting Process: {Parameters}");
-            Logger.Info($"Expected Path : {Parameters.Group}\\JobHost.exe, Actual Path : {hostProcess.StartInfo.FileName}, Working Directory : {Environment.CurrentDirectory}");
-            hostProcess.Start();
-
-            hostProcess.EnableRaisingEvents = true;
             hostProcess.Exited += (object sender, EventArgs e) =>
             {
                 tcs.SetResult(null);
@@ -107,7 +105,8 @@ namespace Job
                 }
             };
 
-            ActivityBag.Add(this);
+            hostProcess.Start();
+
             hostProcess.BeginOutputReadLine();
             hostProcess.BeginErrorReadLine();
 
@@ -127,7 +126,7 @@ namespace Job
                     email,
                     Parameters.ActivityId);
             started = DateTime.Now;
-            ActivityBag.Add(this);
+
             try
             {
                 await job.ExecuteAsync();
@@ -147,7 +146,7 @@ namespace Job
             if (!string.IsNullOrEmpty(e.Data))
             {
                 Guid prevId = Trace.CorrelationManager.ActivityId;
-                Trace.CorrelationManager.ActivityId = this.Id;
+                Trace.CorrelationManager.ActivityId = this.ActivityId;
                 Logger.Info($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
                 Trace.CorrelationManager.ActivityId = prevId;
             }
@@ -164,7 +163,7 @@ namespace Job
         private void Log(string str)
         {
             Guid prevId = Trace.CorrelationManager.ActivityId;
-            Trace.CorrelationManager.ActivityId = this.Id;
+            Trace.CorrelationManager.ActivityId = this.ActivityId;
 
             Logger.Info($"{Parameters.TriggerKey} - {str}");
 

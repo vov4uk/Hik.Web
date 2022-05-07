@@ -25,7 +25,7 @@ namespace Hik.DTO.Contracts
         [Display(Name = "Next"), DisplayFormat(DataFormatString = DisplayTimeFormat), DataType(DataType.DateTime)]
         public DateTime? Next { get; set; }
 
-        public Guid? ActivityId { get; set; }
+        public string ActivityId { get; set; }
 
         public int JobTriggerId { get; set; }
 
@@ -38,7 +38,7 @@ namespace Hik.DTO.Contracts
         public DateTime? LastJobPeriodStart { get; set; }
 
         [Display(Name = "To"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
-        public DateTime? LastJobPeriodEnd { get; set; }    
+        public DateTime? LastJobPeriodEnd { get; set; }
 
         [Display(Name = "Started"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastJobStarted { get; set; }

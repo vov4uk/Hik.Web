@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Job.Tests.Impl
 {
-    public class HikPhotoDownloaderJobTests : JobBaseTests<IHikPhotoDownloaderService>
+    public class HikPhotoDownloaderJobTests : ServiceJobBaseTests<IHikPhotoDownloaderService>
     {
         public HikPhotoDownloaderJobTests() : base() { }
 

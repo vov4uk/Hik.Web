@@ -20,6 +20,7 @@ namespace JobHost
             try
             {
                 var parameters = Parameters.Parse(args);
+                var prevActivityId = System.Diagnostics.Trace.CorrelationManager.ActivityId;
                 System.Diagnostics.Trace.CorrelationManager.ActivityId = parameters.ActivityId;
                 Logger.Info($"JobHost. Parameters resolved. {parameters}. Activity started execution.");
 
@@ -38,6 +39,8 @@ namespace JobHost
                 await job.ExecuteAsync();
 
                 Logger.Info("JobHost. Activity completed execution.");
+
+                System.Diagnostics.Trace.CorrelationManager.ActivityId = prevActivityId;
             }
             catch (Exception exception)
             {

@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Contracts;
+using NLog;
 
 namespace Hik.Client.FileProviders
 {
     public class WindowsFileProvider : IFileProvider
     {
+        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly IFilesHelper filesHelper;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IVideoHelper videoHelper;
@@ -30,6 +32,7 @@ namespace Hik.Client.FileProviders
         {
             if (!isInitialized)
             {
+                logger.Info("Initialize!");
                 folders = new Dictionary<DateTime, IList<string>>();
                 foreach (var topDirectory in directories)
                 {
@@ -48,6 +51,7 @@ namespace Hik.Client.FileProviders
                 }
 
                 dates = new Stack<DateTime>(folders.Keys.OrderByDescending(x => x).ToList());
+                logger.Info($"{dates.Count} dates found");
             }
 
             isInitialized = true;
@@ -58,21 +62,16 @@ namespace Hik.Client.FileProviders
             var result = new List<MediaFileDTO>();
             if (!isInitialized)
             {
+                logger.Info("GetNextBatch !isInitialized");
                 return result;
             }
 
+            logger.Info("GetNextBatch");
             while (result.Count <= batchSize)
             {
                 if (dates.Any() && dates.TryPop(out var lastDate))
                 {
-                    if (folders.ContainsKey(lastDate))
-                    {
-                        foreach (var folder in folders[lastDate])
-                        {
-                            result.AddRange(directoryHelper.EnumerateFiles(folder, new[] { fileExtention })
-                                .Select(x => new MediaFileDTO { Path = x, Date = lastDate }));
-                        }
-                    }
+                    result.AddRange(GetFiles(fileExtention, lastDate).Select(x => new MediaFileDTO { Path = x, Date = lastDate }));
                 }
                 else
                 {
@@ -80,6 +79,7 @@ namespace Hik.Client.FileProviders
                 }
             }
 
+            logger.Info($"GetNextBatch result {result.Count}");
             return result;
         }
 
@@ -119,6 +119,27 @@ namespace Hik.Client.FileProviders
             }
 
             return result;
+        }
+
+        private List<string> GetFiles(string fileExtention, DateTime lastDate)
+        {
+            List<string> files = new List<string>();
+            if (folders.ContainsKey(lastDate))
+            {
+                foreach (var folder in folders[lastDate])
+                {
+                    if (!string.IsNullOrEmpty(fileExtention))
+                    {
+                        files.AddRange(directoryHelper.EnumerateFiles(folder, new[] { fileExtention }));
+                    }
+                    else
+                    {
+                        files.AddRange(directoryHelper.EnumerateFiles(folder));
+                    }
+                }
+            }
+
+            return files;
         }
     }
 }

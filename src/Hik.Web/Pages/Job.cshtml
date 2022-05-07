@@ -28,7 +28,8 @@
         {
             string relativeDate = item.Started.GetRelativeTime();
             string relativeFinishedDate = item.Finished.GetRelativeTime();
-        <tr data-status="@item.Success" class="failed">
+            var status = item.Success ? "" : "failed";
+            <tr data-status="@status" class="failed">
             <td><span title="@item.Started">@relativeDate</span></td>
             <td><span title="@item.Finished">@relativeFinishedDate</span></td>
             <td>@Html.DisplayFor(m => item.PeriodStart)</td>

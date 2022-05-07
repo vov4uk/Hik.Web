@@ -13,7 +13,7 @@
     using Newtonsoft.Json;
     using Xunit;
 
-    public class ArchiveJobTests : JobBaseTests<IArchiveService>
+    public class ArchiveJobTests : ServiceJobBaseTests<IArchiveService>
     {
         public ArchiveJobTests() : base() { }
 
