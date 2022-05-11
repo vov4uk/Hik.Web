@@ -25,14 +25,12 @@ namespace Hik.Web.Pages
         private readonly DataContext dataContext;
         private readonly ActivityBag activities = new();
         private readonly IMediator _mediator;
-        private readonly IConfiguration configuration;
 
-        public IndexModel(DataContext dataContext, IMediator mediator, IConfiguration configuration)
+        public IndexModel(DataContext dataContext, IMediator mediator)
         {
             this.dataContext = dataContext;
             this.dataContext.Database.EnsureCreated();
-            _mediator = mediator;
-            this.configuration = configuration;
+            this._mediator = mediator;
             JobTriggers = dataContext.JobTriggers.AsQueryable().ToList();
         }
 
@@ -97,10 +95,7 @@ namespace Hik.Web.Pages
             string configPath = trigger.GetConfig();
             bool runAsTask = Debugger.IsAttached || trigger.GetRunAsTask();
 
-            IConfigurationSection connStrings = this.configuration.GetSection("ConnectionStrings");
-            string defaultConnection = connStrings.GetSection("HikConnectionString").Value;
-
-            var parameters = new Parameters(className, group, name, configPath, defaultConnection, runAsTask);
+            var parameters = new Parameters(className, group, name, configPath, Program.ConnectionString, runAsTask);
 
             var command = new ActivityCommand(parameters);
             _mediator.Send(command).ConfigureAwait(false).GetAwaiter();

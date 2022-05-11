@@ -1,11 +1,9 @@
-﻿using Autofac;
-using Hik.Client.Abstraction;
-using Hik.Client.Infrastructure;
+﻿using Hik.Client.Abstraction;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using Job.Extensions;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,22 +11,20 @@ using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public class ArchiveJob : JobProcessBase
+    public class ArchiveJob : JobProcessBase<ArchiveConfig>
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
+        private readonly IArchiveService worker;
 
-        public ArchiveJob(string trigger, string configFilePath, IHikDatabase db, IEmailHelper email, Guid activityId)
-            : base(trigger, db, email, activityId)
+        public ArchiveJob(string trigger, ArchiveConfig config, IArchiveService worker, IHikDatabase db, IEmailHelper email, ILogger logger)
+            : base(trigger, config, db, email, logger)
         {
-            Config = HikConfigExtensions.GetConfig<ArchiveConfig>(configFilePath);
-            LogInfo(Config?.ToString());
+            this.worker = worker;
         }
 
         protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
         {
-            IArchiveService worker = AppBootstrapper.Container.Resolve<IArchiveService>();
             worker.ExceptionFired += base.ExceptionFired;
-
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MaxValue);
         }
 
@@ -38,7 +34,7 @@ namespace Job.Impl
             JobInstance.PeriodEnd = files.Max(x => x.Date);
             JobInstance.FilesCount = files.Count;
 
-            var abnormalFilesCount = ((ArchiveConfig)Config).AbnormalFilesCount;
+            var abnormalFilesCount = Config.AbnormalFilesCount;
             if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
             {
                 email.Send(

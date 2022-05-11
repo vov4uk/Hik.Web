@@ -1,6 +1,4 @@
-﻿using Autofac;
-using Hik.Client.Abstraction;
-using Hik.Client.Infrastructure;
+﻿using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Moq;
@@ -18,10 +16,6 @@ namespace Job.Tests.Impl
             : base()
         {
             serviceMock = new (MockBehavior.Strict);
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(serviceMock.Object);
-
-            AppBootstrapper.SetupTest(builder);
         }
 
         protected void SetupExecuteAsync()

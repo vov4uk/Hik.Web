@@ -1,15 +1,11 @@
-﻿using Autofac;
-using Hik.Client.Abstraction;
+﻿using Hik.Client.Abstraction;
 using Hik.Client.FileProviders;
-using Hik.Client.Infrastructure;
-using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Impl;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -27,13 +23,6 @@ namespace Job.Tests.Impl
             directoryHelper = new(MockBehavior.Strict);
             filesHelper = new ();
             filesProvider = new (MockBehavior.Strict);
-
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(directoryHelper.Object);
-            builder.RegisterInstance(filesHelper.Object);
-            builder.RegisterInstance(filesProvider.Object);
-
-            AppBootstrapper.SetupTest(builder);
         }
 
         [Fact]
@@ -168,7 +157,9 @@ namespace Job.Tests.Impl
         }
 
         private GarbageCollectorJob CreateJob(string configFileName = "GCTests.json")
-            => new GarbageCollectorJob($"{group}.{triggerKey}", Path.Combine(TestsHelper.CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
-
+        {
+            var config = GetConfig<GarbageCollectorConfig>(configFileName);
+            return new GarbageCollectorJob($"{group}.{triggerKey}", config, directoryHelper.Object, filesHelper.Object, filesProvider.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+        }
     }
 }

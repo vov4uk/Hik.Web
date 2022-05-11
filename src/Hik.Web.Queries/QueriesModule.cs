@@ -14,7 +14,7 @@ namespace Hik.Web.Queries
         {
             builder
                 .Register<IDbConfiguration>(context =>
-                context.Resolve<IOptionsSnapshot<Hik.DataAccess.DbConfiguration>>().Value);
+                context.Resolve<IOptionsSnapshot<DbConfiguration>>().Value);
 
             builder
                 .RegisterType<DataContext>()

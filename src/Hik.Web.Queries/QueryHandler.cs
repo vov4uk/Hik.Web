@@ -22,6 +22,5 @@ namespace Hik.Web.Queries
         }
 
         protected abstract Task<IHandlerResult> HandleAsync(TRequest query, CancellationToken cancellationToken);
-
     }
 }

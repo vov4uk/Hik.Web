@@ -27,9 +27,15 @@ namespace Hik.Web
         public void ConfigureServices(IServiceCollection services)
         {
             Assembly assembly = typeof(Startup).Assembly;
+            Assembly[] projectsAssemblies = assembly.GetReferencedAssemblies()
+                .Where(assemblyName => assemblyName.FullName.StartsWith("Hik.", StringComparison.InvariantCulture))
+                .Select(Assembly.Load)
+                .Union(new[] { assembly })
+                .ToArray();
 
             services
                 .AddDataBaseConfiguration(this.configuration)
+                .AddAutoMapper(projectsAssemblies)
                 .Configure<ApiBehaviorOptions>(options =>
                 {
                     options.SuppressInferBindingSourcesForParameters = true;
@@ -40,16 +46,9 @@ namespace Hik.Web
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 });
 
-            Assembly[] projectsAssemblies = assembly.GetReferencedAssemblies()
-                .Where(assemblyName => assemblyName.FullName.StartsWith("Hik.", StringComparison.InvariantCulture))
-                .Select(Assembly.Load)
-                .Union(new[] { assembly })
-                .ToArray();
-
             services
-                .AddAutoMapper(projectsAssemblies);
+                .AddRazorPages();
 
-            services.AddRazorPages();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -58,7 +57,6 @@ namespace Hik.Web
             builder.RegisterModule(new CommandsModule());
             builder.RegisterModule(new QueriesModule());
             builder.RegisterSource(new ContravariantRegistrationSource());
-            builder.RegisterInstance(this.configuration).SingleInstance();
         }
 
         public void Configure(IApplicationBuilder app,

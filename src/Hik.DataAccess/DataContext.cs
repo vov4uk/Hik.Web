@@ -15,12 +15,6 @@ namespace Hik.DataAccess
         public DataContext(DbContextOptions<DataContext> options)
             : base(options) { }
 
-        public DataContext(string connection)
-            : base()
-        {
-            ConnectionString = connection;
-        }
-
         public DataContext(IDbConfiguration configuration)
             : base()
         {

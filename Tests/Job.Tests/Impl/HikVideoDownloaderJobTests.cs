@@ -7,7 +7,6 @@ using Job.Impl;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -83,6 +82,10 @@ namespace Job.Tests.Impl
         }
 
         private HikVideoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
-            => new HikVideoDownloaderJob($"{group}.{triggerKey}", Path.Combine(TestsHelper.CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
+        {
+            var config = GetConfig<CameraConfig>(configFileName);
+            return new HikVideoDownloaderJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object );
+        }
+
     }
 }

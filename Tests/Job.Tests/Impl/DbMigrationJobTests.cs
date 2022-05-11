@@ -1,14 +1,10 @@
-﻿using Autofac;
-using Hik.Client.FileProviders;
-using Hik.Client.Infrastructure;
+﻿using Hik.Client.FileProviders;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Impl;
 using Moq;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -22,11 +18,13 @@ namespace Job.Tests.Impl
             : base()
         {
             filesProvider = new(MockBehavior.Strict);
+        }
 
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(filesProvider.Object);
-
-            AppBootstrapper.SetupTest(builder);
+        [Fact]
+        public void Constructor_ValidConfig_ValidConfigType()
+        {
+            var job = CreateJob();
+            Assert.IsType<MigrationConfig>(job.Config);
         }
 
         [Fact]
@@ -67,15 +65,10 @@ namespace Job.Tests.Impl
             filesProvider.VerifyAll();
             Assert.Equal(8, job.JobInstance.FilesCount);
         }
-
-        [Fact]
-        public void Constructor_ValidConfig_ValidConfigType()
-        {
-            var job = CreateJob();
-            Assert.IsType<MigrationConfig>(job.Config);
-        }
-
         private DbMigrationJob CreateJob(string configFileName = "DBMigrationTests.json")
-            => new DbMigrationJob($"{group}.{triggerKey}", Path.Combine(TestsHelper.CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
+        {
+            var config = GetConfig<MigrationConfig>(configFileName);
+            return new DbMigrationJob(config, filesProvider.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+        }
     }
 }

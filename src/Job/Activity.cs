@@ -1,6 +1,4 @@
-﻿using Hik.DataAccess;
-using Hik.DataAccess.Abstractions;
-using Job.Email;
+﻿using Job.Email;
 using NLog;
 using System;
 using System.Diagnostics;
@@ -115,16 +113,7 @@ namespace Job
 
         private async Task RunAsTask()
         {
-            Type jobType = Type.GetType(Parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
-            IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(new DbConfiguration { ConnectionString = Parameters.ConnectionString });
-            IHikDatabase db = new HikDatabase(unitOfWorkFactory);
-
-            Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(
-                    jobType, $"{Parameters.Group}.{Parameters.TriggerKey}",
-                    Parameters.ConfigFilePath,
-                    db,
-                    email,
-                    Parameters.ActivityId);
+            IJobProcess job = JobFactory.GetJob(Parameters, Logger, email);
             started = DateTime.Now;
 
             try

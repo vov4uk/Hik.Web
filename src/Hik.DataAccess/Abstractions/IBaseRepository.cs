@@ -24,6 +24,10 @@ namespace Hik.DataAccess.Abstractions
 
         Task<List<T>> FindManyAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
 
+        Task<List<T>> FindManyAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> keySelector, int skip, int top, params Expression<Func<T, object>>[] includes);
+
+        Task<int> CountAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
+
         void Update(T entity);
 
         void Remove(params object[] keys);

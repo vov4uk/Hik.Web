@@ -88,6 +88,35 @@ namespace Hik.DataAccess
             return await result?.ToListAsync();
         }
 
+        public virtual async Task<List<TEntity>> FindManyAsync(Expression<Func<TEntity, bool>> predicate,
+            Expression<Func<TEntity, object>> keySelector, int skip, int top,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+
+            result = result.OrderByDescending(keySelector).Skip(skip).Take(top);
+
+            return await result?.ToListAsync();
+        }
+
+        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+
+            return await result?.CountAsync();
+        }
+
         public void Update(TEntity entity)
         {
             DbSet.Attach(entity);

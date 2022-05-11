@@ -13,7 +13,7 @@ namespace Hik.DataAccess
     public class HikDatabase : IHikDatabase
     {
         private readonly IUnitOfWorkFactory factory;
-        private static readonly IMapper mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
+        public static readonly IMapper Mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
         protected readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public HikDatabase(IUnitOfWorkFactory factory)
@@ -86,11 +86,11 @@ namespace Hik.DataAccess
             var mediaFileDuration = new List<DownloadDuration>();
             foreach (var item in files)
             {
-                MediaFile file = mapper.Map<MediaFile>(item);
+                MediaFile file = Mapper.Map<MediaFile>(item);
                 file.JobTriggerId = job.JobTriggerId;
                 if (item.DownloadDuration != null)
                 {
-                    DownloadDuration duration = mapper.Map<DownloadDuration>(item);
+                    DownloadDuration duration = Mapper.Map<DownloadDuration>(item);
                     duration.MediaFile = file;
                     mediaFileDuration.Add(duration);
                 }
@@ -209,7 +209,7 @@ namespace Hik.DataAccess
 
         static void configureAutoMapper(IMapperConfigurationExpression x)
         {
-            x.AddProfile<AutoMapperProfile>();
+            x.AddProfile<DataAccessProfile>();
         }
     }
 }

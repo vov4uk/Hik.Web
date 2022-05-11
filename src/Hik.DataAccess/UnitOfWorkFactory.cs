@@ -6,16 +6,16 @@ namespace Hik.DataAccess
     [ExcludeFromCodeCoverage]
     public class UnitOfWorkFactory : IUnitOfWorkFactory
     {
-        private readonly string connectionString;
+        private readonly IDbConfiguration connection;
 
         public UnitOfWorkFactory(IDbConfiguration connection)
         {
-            this.connectionString = connection.ConnectionString;
+            this.connection = connection;
         }
 
         public IUnitOfWork CreateUnitOfWork()
         {
-            var db = new DataContext(this.connectionString);
+            var db = new DataContext(this.connection);
             db.Database.EnsureCreated();
             return new UnitOfWork<DataContext>(db);
         }

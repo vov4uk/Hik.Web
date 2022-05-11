@@ -14,22 +14,25 @@ using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public abstract class JobProcessBase
+    public abstract class JobProcessBase<T> : IJobProcess
+        where T : BaseConfig
     {
-        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
+        protected readonly ILogger logger;
         protected readonly IHikDatabase db;
         protected readonly IEmailHelper email;
         protected JobTrigger jobTrigger;
 
-        protected JobProcessBase(string trigger, IHikDatabase db, IEmailHelper email, Guid activityId)
+        protected JobProcessBase(string trigger, T config, IHikDatabase db, IEmailHelper email, ILogger logger)
         {
             TriggerKey = trigger;
-            System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
+            this.logger = logger;
             this.db = db;
             this.email = email;
+            Config = config;
+            LogInfo(Config.ToString());
         }
 
-        public BaseConfig Config { get; protected set; }
+        public T Config { get; protected set; }
         public string TriggerKey { get; private set; }
         internal HikJob JobInstance { get; private set; }
 

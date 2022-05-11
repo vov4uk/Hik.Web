@@ -51,6 +51,7 @@ namespace Hik.Web
 
             var port = config.GetSection("Hosting:Port").Value;
 
+            Configuration = config;
             ConnectionString = config.GetSection("ConnectionStrings").GetSection("HikConnectionString").Value;
 
             var host = Host.CreateDefaultBuilder(args)
