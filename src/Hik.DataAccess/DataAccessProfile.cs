@@ -22,6 +22,7 @@ namespace Hik.DataAccess
                 .ForMember(x => x.Started, opt => opt.MapFrom(y => y.DownloadStarted));
 
             this.CreateMap<ExceptionLog, ExceptionLogDto>(MemberList.None);
+            this.CreateMap<DailyStatistic, DailyStatisticDto>(MemberList.None);
             this.CreateMap<HikJob, HikJobDto>(MemberList.None)
                 .ForMember(x => x.Error, opt => opt.MapFrom(y => y.ExceptionLog))
                 .ForMember(x => x.JobTrigger, opt => opt.MapFrom(y => y.JobTrigger.TriggerKey));

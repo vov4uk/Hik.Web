@@ -17,7 +17,6 @@ namespace Hik.DataAccess.Data
         [ForeignKey("Job")]
         public int JobId { get; set; }
 
-        [Display(Name = "Taken"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime Created { get; set; }
 
         public uint? HikErrorCode { get; set; }

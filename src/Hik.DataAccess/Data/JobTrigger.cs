@@ -25,7 +25,6 @@ namespace Hik.DataAccess.Data
 
         public List<HikJob> Jobs { get; set; } = new List<HikJob>();
 
-        [Display(Name = "Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastSync { get; set; }
 
         public virtual List<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();

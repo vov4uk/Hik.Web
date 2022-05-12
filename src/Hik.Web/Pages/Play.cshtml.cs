@@ -1,7 +1,7 @@
 using Hik.Client.Helpers;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
-using Hik.DataAccess.Metadata;
+using Hik.DTO;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;

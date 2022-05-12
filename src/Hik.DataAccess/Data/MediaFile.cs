@@ -23,7 +23,6 @@ namespace Hik.DataAccess.Data
 
         public string Path { get; set; }
 
-        [Display(Name = "Date"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime Date { get; set; }
 
         public int? Duration { get; set; }

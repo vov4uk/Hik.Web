@@ -1,11 +1,10 @@
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
+using Hik.Web.Queries.Statistic;
 using JW;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
@@ -14,35 +13,24 @@ namespace Hik.Web.Pages
     {
         private const int PageSize = 40;
         private const int MaxPages = 10;
-        private readonly DataContext dataContext;
+        private readonly IMediator mediator;
 
-        public StatisticModel(DataContext dataContext)
+        public StatisticModel(IMediator mediator)
         {
-            this.dataContext = dataContext;
+            this.mediator = mediator;
         }
-
-        public IList<DailyStatistic> Statistics { get; set; }
-
-        public JobTrigger Trigger { get; set; }
 
         public Pager Pager { get; set; }
 
-        private int TotalItems { get; set; }
+        public StatisticDto Dto { get; set; }
 
-        public async Task OnGetAsync(int triggerId, int p = 1)
+        public async Task<IActionResult> OnGetAsync(int triggerId, int p = 1)
         {
-            TotalItems = await dataContext.DailyStatistics.AsQueryable().CountAsync(x => x.JobTriggerId == triggerId);
-            Pager = new Pager(TotalItems, p, PageSize, MaxPages);
+            if (triggerId <= 0) { return NotFound(); }
+            Dto = await mediator.Send(new StatisticQuery { TriggerId = triggerId, CurrentPage = p, MaxPages = MaxPages, PageSize = PageSize }) as StatisticDto;
 
-            var stats = dataContext.DailyStatistics
-                .AsQueryable()
-                .Where(x => x.JobTriggerId == triggerId)
-                .OrderByDescending(x => x.Period)
-                .Skip(Math.Max(0, Pager.CurrentPage - 1) * Pager.PageSize)
-                .Take(Pager.PageSize);
-
-            Statistics = await stats.ToListAsync();
-            Trigger = await dataContext.JobTriggers.FindAsync(triggerId);
+            Pager = new Pager(Dto.TotalItems, p, PageSize, MaxPages);
+            return Page();
         }
     }
 }

@@ -14,19 +14,14 @@ namespace Hik.DataAccess.Data
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey("JobTrigger")]
         public int JobTriggerId { get; set; }
 
-        [Display(Name = "Day"), DisplayFormat(DataFormatString = Consts.DisplayDayFormat), DataType(DataType.DateTime)]
         public DateTime Period { get; set; }
 
-        [Display(Name = "Count")]
         public int FilesCount { get; set; }
 
-        [Display(Name = "Size")]
         public long FilesSize { get; set; }
-        
-        [Display(Name = "Duration")]
+
         public int? TotalDuration { get; set; }
 
         public virtual JobTrigger JobTrigger { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Hik.DTO.Contracts
 {
@@ -8,6 +9,7 @@ namespace Hik.DTO.Contracts
 
         public int JobId { get; set; }
 
+        [Display(Name = "Taken"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime Created { get; set; }
 
         public uint? HikErrorCode { get; set; }

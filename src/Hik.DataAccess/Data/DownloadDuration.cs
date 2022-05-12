@@ -17,10 +17,8 @@ namespace Hik.DataAccess.Data
         [ForeignKey(nameof(MediaFile))]
         public int MediaFileId { get; set; }
 
-        [Display(Name = "Started"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? Started { get; set; }
 
-        [Display(Name = "Downloaded")]
         public int? Duration { get; set; }
 
         public virtual MediaFile MediaFile { get; set; }

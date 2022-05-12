@@ -5,9 +5,6 @@ namespace Hik.DTO.Contracts
 {
     public class TriggerDTO
     {
-        public const string DisplayDateTimeFormat = "{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss}";
-        public const string DisplayTimeFormat = "{0:HH':'mm':'ss}";
-
         public string Group { get; set; }
 
         public string Name { get; set; }
@@ -17,12 +14,13 @@ namespace Hik.DTO.Contracts
 
         [Display(Name = "Cron")]
         public string CronString { get; set; }
+
         public string CronSummary { get; set; }
 
-        [Display(Name = "Trigger"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
+        [Display(Name = "Trigger"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime TriggerStarted { get; set; }
 
-        [Display(Name = "Next"), DisplayFormat(DataFormatString = DisplayTimeFormat), DataType(DataType.DateTime)]
+        [Display(Name = "Next"), DisplayFormat(DataFormatString = Consts.DisplayTimeFormat), DataType(DataType.DateTime)]
         public DateTime? Next { get; set; }
 
         public string ActivityId { get; set; }
@@ -31,19 +29,19 @@ namespace Hik.DTO.Contracts
 
         public int? JobId { get; set; }
 
-        [Display(Name = "Sync"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
+        [Display(Name = "Synced"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastSync { get; set; }
 
-        [Display(Name = "From"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
+        [Display(Name = "From"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastJobPeriodStart { get; set; }
 
-        [Display(Name = "To"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
+        [Display(Name = "To"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastJobPeriodEnd { get; set; }
 
-        [Display(Name = "Started"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
+        [Display(Name = "Started"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastJobStarted { get; set; }
 
-        [Display(Name = "Finished"), DisplayFormat(DataFormatString = DisplayDateTimeFormat), DataType(DataType.DateTime)]
+        [Display(Name = "Finished"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? LastJobFinished { get; set; }
 
         [Display(Name = "Files")]

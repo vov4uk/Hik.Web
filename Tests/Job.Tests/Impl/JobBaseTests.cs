@@ -63,7 +63,7 @@ namespace Job.Tests.Impl
                 .Returns(Task.CompletedTask);
         }
 
-        protected T GetConfig<T>(string configFileName)
+        protected static T GetConfig<T>(string configFileName)
         {
             return HikConfigExtensions.GetConfig<T>(Path.Combine(TestsHelper.CurrentDirectory, configFileName));
         }

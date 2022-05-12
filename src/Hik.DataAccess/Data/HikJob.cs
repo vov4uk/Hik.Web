@@ -18,22 +18,16 @@ namespace Hik.DataAccess.Data
         [ForeignKey("JobTrigger")]
         public int JobTriggerId { get; set; }
 
-        [Display(Name = "Success")]
         public bool Success { get; set; } = true;
 
-        [Display(Name = "From"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public  DateTime? PeriodStart { get; set; }
 
-        [Display(Name = "To"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? PeriodEnd { get; set; }
 
-        [DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime Started { get; set; }
 
-        [DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime? Finished { get; set; }
 
-        [Display(Name = "Files")]
         public int FilesCount { get; set; }
 
         public JobTrigger JobTrigger { get; set; }
