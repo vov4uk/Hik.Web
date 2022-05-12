@@ -2,6 +2,7 @@
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hik.Web.Queries.Statistic
 {
@@ -16,7 +17,7 @@ namespace Hik.Web.Queries.Statistic
 
         protected async override Task<IHandlerResult> HandleAsync(StatisticQuery query, CancellationToken cancellationToken)
         {
-            using (var uow = factory.CreateUnitOfWork())
+            using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var statRepo = uow.GetRepository<DailyStatistic>();
                 var jobTriggerRepo = uow.GetRepository<JobTrigger>();
@@ -38,7 +39,7 @@ namespace Hik.Web.Queries.Statistic
                         JobTriggerId = query.TriggerId,
                         JobTriggerName = trigger.TriggerKey,
                         TotalItems = totalItems,
-                        Days = files.ConvertAll(x => HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>(x)),
+                        Items = files.ConvertAll(x => HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>(x)),
                     };
                 }
                 return default(StatisticDto);

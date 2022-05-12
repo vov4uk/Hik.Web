@@ -42,7 +42,8 @@ namespace Hik.Web.Pages
             var latestMediaFiles = await this.dataContext.MediaFiles
                 .AsQueryable()
                 .GroupBy(x => x.JobTriggerId)
-                .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.Date))).ToListAsync();
+                .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.Date)))
+                .ToListAsync();
 
             LatestFiles = latestMediaFiles.ToDictionary(x => x.Key, y => y.Value);
 
@@ -50,7 +51,8 @@ namespace Hik.Web.Pages
                 .AsQueryable()
                 .Where(x => x.Finished != null)
                 .GroupBy(x => x.JobTriggerId)
-                .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.PeriodEnd ?? new DateTime()))).ToListAsync();
+                .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.PeriodEnd ?? new DateTime())))
+                .ToListAsync();
 
             foreach (var period in latestPeriodEnd)
             {

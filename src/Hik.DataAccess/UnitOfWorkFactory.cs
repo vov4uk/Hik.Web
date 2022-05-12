@@ -1,4 +1,5 @@
 ﻿using Hik.DataAccess.Abstractions;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Hik.DataAccess
@@ -13,10 +14,11 @@ namespace Hik.DataAccess
             this.connection = connection;
         }
 
-        public IUnitOfWork CreateUnitOfWork()
+        public IUnitOfWork CreateUnitOfWork(QueryTrackingBehavior trackingBehavior = QueryTrackingBehavior.TrackAll)
         {
             var db = new DataContext(this.connection);
             db.Database.EnsureCreated();
+            db.ChangeTracker.QueryTrackingBehavior = trackingBehavior;
             return new UnitOfWork<DataContext>(db);
         }
     }

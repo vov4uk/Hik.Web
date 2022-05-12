@@ -2,6 +2,7 @@ using AutoFixture.Xunit2;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace Hik.DataAccess.Tests
         {
             this.uow = new(MockBehavior.Strict);
             this.uowFactory = new(MockBehavior.Strict);
-            this.uowFactory.Setup(x => x.CreateUnitOfWork())
+            this.uowFactory.Setup(x => x.CreateUnitOfWork(QueryTrackingBehavior.TrackAll))
                 .Returns(uow.Object);
             this.uow.Setup(x => x.Dispose());
         }

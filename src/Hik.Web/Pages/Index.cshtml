@@ -3,7 +3,11 @@
 @model Hik.Web.Pages.IndexModel
 @{ViewData["Title"] = "Home";}
 
-<h3>@Model.ResponseMsg</h3>
+<div class="row">
+    <div class="card-body text-center">
+        <h3>@Model.ResponseMsg</h3>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-lg-12 my-3">
@@ -33,12 +37,12 @@
                       <tr>
                           <th>Cron</th>
                           <th>Title</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().Next)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().ConfigPath)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastSync)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobPeriodStart)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobPeriodEnd)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobFilesCount)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().Next)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().ConfigPath)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().LastSync)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().LastJobPeriodStart)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().LastJobPeriodEnd)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().LastJobFilesCount)</th>
                           <th>Started</th>
                           <th>Finished</th>
                           <th></th>

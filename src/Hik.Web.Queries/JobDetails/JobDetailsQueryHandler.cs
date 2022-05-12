@@ -3,6 +3,7 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Hik.Web.Queries.JobDetails;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hik.Web.Queries
 {
@@ -17,7 +18,7 @@ namespace Hik.Web.Queries
 
         protected async override Task<IHandlerResult> HandleAsync(JobDetailsQuery query, CancellationToken cancellationToken)
         {
-            using (var uow = factory.CreateUnitOfWork())
+            using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var jobsRepo = uow.GetRepository<HikJob>();
 
@@ -38,10 +39,11 @@ namespace Hik.Web.Queries
                         x => x.DownloadHistory,
                         x => x.DownloadDuration);
 
-                    return new JobDetailsDto() {
+                    return new JobDetailsDto()
+                    {
                         Job = HikDatabase.Mapper.Map<HikJob, HikJobDto>(job),
                         TotalItems = totalItems,
-                        Files = files.ConvertAll(x => HikDatabase.Mapper.Map <MediaFile, MediaFileDTO>(x)),
+                        Items = files.ConvertAll(x => HikDatabase.Mapper.Map <MediaFile, MediaFileDTO>(x)),
                     };
                 }
 

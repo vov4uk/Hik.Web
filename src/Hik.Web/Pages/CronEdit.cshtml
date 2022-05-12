@@ -5,7 +5,11 @@
 
 @{
     var title =$"{@Model.CronDTO.Group}.{@Model.CronDTO.Name}";
-    <h4>@title</h4>
+<div class="row">
+    <div class="card-body text-center">
+        <h2 class="card-title">@title</h2>
+    </div>
+</div>
 }
 <div>
     <a asp-page="./Scheduler">Back to List</a>

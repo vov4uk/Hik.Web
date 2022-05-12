@@ -1,8 +1,6 @@
-﻿using MediatR;
-
-namespace Hik.Web.Queries.JobDetails
+﻿namespace Hik.Web.Queries.JobDetails
 {
-    public class JobDetailsQuery : RequestBase, IRequest<IHandlerResult>
+    public class JobDetailsQuery : RequestBase
     {
         public int JobId { get; set; }
     }

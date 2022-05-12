@@ -3,92 +3,60 @@
 @{ViewData["Title"] = "Details";}
 
 <button onclick="javascript:history.back()">Go Back</button>
-@if (Model.JobDetailsDto.Job != null)
+@if (Model.Dto.Job != null)
 {
   <div class="row">
       <div class="card-body text-center">
-          <h2 class="card-title">@Model.JobDetailsDto.Job.JobTrigger</h2>
+          <h2 class="card-title">@Model.Dto.Job.JobTrigger</h2>
       </div>
   </div>
 
 <table class="table table-bordered table-sm" aria-label="Job">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(m => m.JobDetailsDto.Job.Id)</th>
-            <th>@Html.DisplayNameFor(m => m.JobDetailsDto.Job.PeriodStart)</th>
-            <th>@Html.DisplayNameFor(m => m.JobDetailsDto.Job.PeriodEnd)</th>
-            <th>@Html.DisplayNameFor(m => m.JobDetailsDto.Job.Started)</th>
-            <th>@Html.DisplayNameFor(m => m.JobDetailsDto.Job.Finished)</th>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.Id)</th>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.PeriodStart)</th>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.PeriodEnd)</th>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.Started)</th>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.Finished)</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td>@Html.DisplayFor(m => Model.JobDetailsDto.Job.Id)</td>
-            <td>@Html.DisplayFor(m => Model.JobDetailsDto.Job.PeriodStart)</td>
-            <td>@Html.DisplayFor(m => Model.JobDetailsDto.Job.PeriodEnd)</td>
-            <td>@Html.DisplayFor(m => Model.JobDetailsDto.Job.Started)</td>
-            <td>@Html.DisplayFor(m => Model.JobDetailsDto.Job.Finished)</td>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.Id)</td>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.PeriodStart)</td>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.PeriodEnd)</td>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.Started)</td>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.Finished)</td>
         </tr>
     </tbody>
 </table>
 }
 
-@if (Model.JobDetailsDto.Job?.Error != null)
+@if (Model.Dto.Job?.Error != null)
 {
     <table class="table table-bordered table-sm" aria-label="Exceptions">
         <thead>
             <tr>
-                <th>@Html.DisplayNameFor(m => m.JobDetailsDto.Job.Error.Created)</th>
-                <th>@Html.DisplayNameFor(m => m.JobDetailsDto.Job.Error.HikErrorCode)</th>
-                <th>@Html.DisplayNameFor(m => m.JobDetailsDto.Job.Error.Message)</th>
+                <th>@Html.DisplayNameFor(m => m.Dto.Job.Error.Created)</th>
+                <th>@Html.DisplayNameFor(m => m.Dto.Job.Error.HikErrorCode)</th>
+                <th>@Html.DisplayNameFor(m => m.Dto.Job.Error.Message)</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>@Html.DisplayFor(m => Model.JobDetailsDto.Job.Error.Created)</td>
-                <td>@Html.DisplayFor(m => Model.JobDetailsDto.Job.Error.HikErrorCode)</td>
-                <td>@Html.DisplayFor(m => Model.JobDetailsDto.Job.Error.Message)</td>
+                <td>@Html.DisplayFor(m => Model.Dto.Job.Error.Created)</td>
+                <td>@Html.DisplayFor(m => Model.Dto.Job.Error.HikErrorCode)</td>
+                <td>@Html.DisplayFor(m => Model.Dto.Job.Error.Message)</td>
             </tr>
         </tbody>
     </table>
 }
 
-@if (Model.JobDetailsDto.Files != null && Model.JobDetailsDto.Files.Any())
+@if (Model.Dto.Items != null && Model.Dto.Items.Any())
 {
-    @await Html.PartialAsync("_Files.cshtml", Model.JobDetailsDto.Files)
+    @await Html.PartialAsync("_Files.cshtml", Model.Dto.Items)
 }
 
 <!-- pager -->
-@if (Model.Pager != null && Model.Pager.Pages.Any())
-{
-    <nav class="table-responsive">
-        <ul class="pagination justify-content-center d-flex flex-wrap">
-            @if (Model.Pager.CurrentPage > 1)
-            {
-                <li class="page-item">
-                    <a class="page-link" href="?id=@Model.JobId">First</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?id=@Model.JobId&p=@(Model.Pager.CurrentPage - 1)">Previous</a>
-                </li>
-            }
-
-            @foreach (var p in Model.Pager.Pages)
-            {
-                <li class="page-item @(p == Model.Pager.CurrentPage ? "active" : "")">
-                    <a class="page-link" href="?id=@Model.JobId&p=@p">@p</a>
-                </li>
-            }
-
-            @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
-            {
-                <li class="page-item">
-                    <a class="page-link" href="?id=@Model.JobId&p=@(Model.Pager.CurrentPage + 1)">Next</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?id=@Model.JobId&p=@(Model.Pager.TotalPages)">Last</a>
-                </li>
-            }
-        </ul>
-    </nav>
-}
+@await Html.PartialAsync("_Pager.cshtml", Model.Pager)

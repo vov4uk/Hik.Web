@@ -9,19 +9,19 @@
 </div>
 
 <button onclick="javascript:history.back()">Go Back</button>
-@if(Model.Dto != null && Model.Dto.Days.Any())
+@if(Model.Dto != null && Model.Dto.Items.Any())
 {
 <table class="table table-bordered table-sm" aria-label="Statistic">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.Dto.Days.First().Period)</th>
-            <th>@Html.DisplayNameFor(model => model.Dto.Days.First().FilesCount)</th>
-            <th>@Html.DisplayNameFor(model => model.Dto.Days.First().FilesSize)</th>
-            <th>@Html.DisplayNameFor(model => model.Dto.Days.First().TotalDuration)</th>
+            <th>@Html.DisplayNameFor(model => model.Dto.Items.First().Period)</th>
+            <th>@Html.DisplayNameFor(model => model.Dto.Items.First().FilesCount)</th>
+            <th>@Html.DisplayNameFor(model => model.Dto.Items.First().FilesSize)</th>
+            <th>@Html.DisplayNameFor(model => model.Dto.Items.First().TotalDuration)</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Dto.Days)
+        @foreach (var item in Model.Dto.Items)
         {
             string size = Hik.Client.Helpers.Utils.FormatBytes(item.FilesSize);
             string dur = Hik.Client.Helpers.Utils.FormatSeconds((double)(item.TotalDuration ?? 0));
@@ -38,36 +38,4 @@
 }
 
 <!-- pager -->
-@if (Model.Pager.Pages.Any())
-{
-<nav class="table-responsive">
-    <ul class="pagination justify-content-center d-flex flex-wrap">
-        @if (Model.Pager.CurrentPage > 1)
-         {
-          <li class="page-item">
-              <a class="page-link" href="?triggerId=@Model.Dto.JobTriggerId&p=1">First</a>
-          </li>
-          <li class="page-item">
-              <a class="page-link" href="?triggerId=@Model.Dto.JobTriggerId&p=@(Model.Pager.CurrentPage - 1)">Previous</a>
-          </li>
-         }
-
-        @foreach (var p in Model.Pager.Pages)
-         {
-          <li class="page-item @(p == Model.Pager.CurrentPage ? "active" : "")">
-              <a class="page-link" href="?triggerId=@Model.Dto.JobTriggerId&p=@p">@p</a>
-          </li>
-         }
-
-        @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
-         {
-          <li class="page-item">
-              <a class="page-link" href="?triggerId=@Model.Dto.JobTriggerId&p=@(Model.Pager.CurrentPage + 1)">Next</a>
-          </li>
-          <li class="page-item">
-              <a class="page-link" href="?triggerId=@Model.Dto.JobTriggerId&p=@(Model.Pager.TotalPages)">Last</a>
-          </li>
-         }
-    </ul>
-</nav>
-}
+@await Html.PartialAsync("_Pager.cshtml", Model.Pager)

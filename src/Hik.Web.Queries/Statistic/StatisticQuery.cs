@@ -1,8 +1,6 @@
-﻿using MediatR;
-
-namespace Hik.Web.Queries.Statistic
+﻿namespace Hik.Web.Queries.Statistic
 {
-    public class StatisticQuery : RequestBase, IRequest<IHandlerResult>
+    public class StatisticQuery : RequestBase
     {
         public int TriggerId { get; set; }
     }

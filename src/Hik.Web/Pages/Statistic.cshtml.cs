@@ -1,7 +1,5 @@
-using Hik.DataAccess;
-using Hik.DataAccess.Data;
+using Hik.Web.Pages.Shared;
 using Hik.Web.Queries.Statistic;
-using JW;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,8 +9,6 @@ namespace Hik.Web.Pages
 {
     public class StatisticModel : PageModel
     {
-        private const int PageSize = 40;
-        private const int MaxPages = 10;
         private readonly IMediator mediator;
 
         public StatisticModel(IMediator mediator)
@@ -20,16 +16,16 @@ namespace Hik.Web.Pages
             this.mediator = mediator;
         }
 
-        public Pager Pager { get; set; }
+        public PagerControl Pager { get; set; }
 
         public StatisticDto Dto { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int triggerId, int p = 1)
         {
             if (triggerId <= 0) { return NotFound(); }
-            Dto = await mediator.Send(new StatisticQuery { TriggerId = triggerId, CurrentPage = p, MaxPages = MaxPages, PageSize = PageSize }) as StatisticDto;
+            Dto = await mediator.Send(new StatisticQuery { TriggerId = triggerId, CurrentPage = p}) as StatisticDto;
 
-            Pager = new Pager(Dto.TotalItems, p, PageSize, MaxPages);
+            Pager = new (triggerId, "?triggerId=", Dto.TotalItems, p);
             return Page();
         }
     }
