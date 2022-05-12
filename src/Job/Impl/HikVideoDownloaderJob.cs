@@ -29,6 +29,7 @@ namespace Job.Impl
             LogInfo($"Last sync from DB - {jobTrigger.LastSync}, Period - {period.PeriodStart} - {period.PeriodEnd}");
             JobInstance.PeriodStart = period.PeriodStart;
             JobInstance.PeriodEnd = period.PeriodEnd;
+            await db.UpdateJobAsync(JobInstance);
 
             var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
             downloader.ExceptionFired -= base.ExceptionFired;
@@ -46,8 +47,10 @@ namespace Job.Impl
             JobInstance.FilesCount++;
             var files = new[] { e.File };
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
-            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+
+            await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
+            await db.UpdateJobAsync(JobInstance);
         }
     }
 }

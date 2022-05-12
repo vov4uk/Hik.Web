@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
-using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 
@@ -97,11 +96,7 @@ namespace Hik.Client.Service
         private async Task<IReadOnlyCollection<MediaFileDTO>> InternalDownload(CameraConfig config, DateTime from, DateTime to)
         {
             var result = await ProcessCameraAsync(config, from, to);
-            if (result.Count > 0)
-            {
-                PrintStatistic(config?.DestinationFolder);
-            }
-            else
+            if (!result.Any())
             {
                 logger.Warn($"{config.Alias}, {from} - {to} : No files downloaded");
             }
@@ -137,16 +132,6 @@ namespace Hik.Client.Service
             }
 
             return result;
-        }
-
-        private void PrintStatistic(string destinationFolder)
-        {
-            StringBuilder statisticsSb = new StringBuilder();
-            statisticsSb.AppendLine();
-            statisticsSb.AppendLine($"{"Directory Size",-24}: {directoryHelper.DirSize(destinationFolder).FormatBytes()}");
-            statisticsSb.AppendLine($"{"Free space",-24}: {directoryHelper.GetTotalFreeSpaceBytes(destinationFolder).FormatBytes()}");
-
-            logger.Info(statisticsSb.ToString());
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Autofac;
-using CronExpressionDescriptor;
+﻿using CronExpressionDescriptor;
 using Hik.Client.Helpers;
 using Hik.DataAccess;
 using Hik.DataAccess.Data;
@@ -12,7 +11,6 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -23,7 +21,7 @@ namespace Hik.Web.Pages
     public class IndexModel : PageModel
     {
         private readonly DataContext dataContext;
-        private readonly ActivityBag activities = new();
+        private readonly RunningActivities activities = new();
         private readonly IMediator _mediator;
 
         public IndexModel(DataContext dataContext, IMediator mediator)

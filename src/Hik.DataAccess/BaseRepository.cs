@@ -12,7 +12,7 @@ namespace Hik.DataAccess
 {
     [ExcludeFromCodeCoverage]
     public class BaseRepository<TEntity> : IBaseRepository<TEntity>
-        where TEntity : class
+        where TEntity : class, IEntity
     {
         protected DbContext Database { get; }
 

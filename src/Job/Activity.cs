@@ -11,8 +11,8 @@ namespace Job
     public class Activity
     {
         protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        private static readonly EmailHelper email = new EmailHelper();
         private DateTime started = default;
-        private readonly EmailHelper email = new EmailHelper();
         private readonly Guid ActivityId;
         public Parameters Parameters { get; private set; }
         public int ProcessId => hostProcess?.Id ?? -1;
@@ -36,7 +36,7 @@ namespace Job
         {
             try
             {
-                if (ActivityBag.Add(this))
+                if (RunningActivities.Add(this))
                 {
                     Log($"Activity. Starting : {Parameters}");
                     if (Parameters.RunAsTask)
@@ -97,7 +97,7 @@ namespace Job
             {
                 tcs.SetResult(null);
                 Log($"Activity. Process exit with code: {hostProcess.ExitCode}");
-                if (!ActivityBag.Remove(this))
+                if (!RunningActivities.Remove(this))
                 {
                     Log("Cannot remove activity from ActivityBag");
                 }
@@ -126,7 +126,7 @@ namespace Job
             }
             finally
             {
-                ActivityBag.Remove(this);
+                RunningActivities.Remove(this);
             }
         }
 

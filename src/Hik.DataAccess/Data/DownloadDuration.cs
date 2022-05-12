@@ -8,12 +8,13 @@ using System.Diagnostics.CodeAnalysis;
 namespace Hik.DataAccess.Data
 {
     [ExcludeFromCodeCoverage, Table(Tables.DownloadDuration)]
-    public class DownloadDuration: IHistory
+    public class DownloadDuration: IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        [ForeignKey(nameof(MediaFile))]
         public int MediaFileId { get; set; }
 
         [Display(Name = "Started"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]

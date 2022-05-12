@@ -42,7 +42,7 @@ namespace Job.Impl
                     $"{files.Count} taken in period from {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(DateTimeFormat)}");
             }
 
-            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+            await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
 
             if (files.Sum(x => x.Duration ?? 0) > 0)
             {

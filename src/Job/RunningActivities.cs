@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Job
 {
     [ExcludeFromCodeCoverage]
-    public class ActivityBag : IEnumerable<Activity>
+    public class RunningActivities : IEnumerable<Activity>
     {
         private static readonly ConcurrentDictionary<string, Activity> Bag = new ();
 

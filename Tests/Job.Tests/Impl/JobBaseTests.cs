@@ -36,7 +36,7 @@ namespace Job.Tests.Impl
         protected void SetupCreateJobInstanceAsync()
         {
             dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(new HikJob());
         }
 
         protected void SetupGetOrCreateJobTriggerAsync()
@@ -47,13 +47,13 @@ namespace Job.Tests.Impl
 
         protected void SetupUpdateDailyStatisticsAsync(List<MediaFileDTO> files)
         {
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), files))
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), files))
                 .Returns(Task.CompletedTask);
         }
 
         protected void SetupUpdateDailyStatisticsAsync()
         {
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
                 .Returns(Task.CompletedTask);
         }
 

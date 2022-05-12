@@ -23,6 +23,8 @@ namespace Job.Tests.Impl
 
             dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
                 .ReturnsAsync(new JobTrigger() { LastSync = lastSync });
+            dbMock.Setup(x => x.UpdateJobAsync(It.IsAny<HikJob>()))
+                .Returns(Task.CompletedTask);
             SetupCreateJobInstanceAsync();
             SetupSaveJobResultAsync();
             dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))

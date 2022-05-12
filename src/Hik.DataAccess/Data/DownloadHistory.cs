@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Hik.DataAccess.Data
 {
     [ExcludeFromCodeCoverage, Table(Tables.DownloadHistory)]
-    public class DownloadHistory : IAuditable, IHistory
+    public class DownloadHistory : IAuditable, IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

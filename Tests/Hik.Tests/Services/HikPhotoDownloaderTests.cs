@@ -75,7 +75,6 @@ namespace Hik.Client.Tests.Services
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
             this.clientMock.Verify(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()), Times.Exactly(filesCount));
-            this.VerifyStatisticWasPrinted();
         }
 
         [Fact]
@@ -231,12 +230,6 @@ namespace Hik.Client.Tests.Services
         private void SetupClientDispose()
         {
             this.clientMock.Setup(x => x.Dispose());
-        }
-
-        private void VerifyStatisticWasPrinted()
-        {
-            this.directoryMock.Verify(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>()), Times.Once);
-            this.directoryMock.Verify(x => x.DirSize(It.IsAny<string>()), Times.Once);
         }
 
         private HikPhotoDownloaderService CreateHikDownloader()

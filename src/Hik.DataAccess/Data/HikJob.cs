@@ -1,4 +1,5 @@
-﻿using Hik.DataAccess.Metadata;
+﻿using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Metadata;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,9 +9,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Hik.DataAccess.Data
 {
     [ExcludeFromCodeCoverage, Table(Tables.Job)]
-    public class HikJob
+    public class HikJob : IEntity
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [ForeignKey("JobTrigger")]

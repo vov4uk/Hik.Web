@@ -34,7 +34,7 @@ namespace Hik.DataAccess
             base.OnConfiguring(optionsBuilder);
             if (!string.IsNullOrEmpty(ConnectionString))
             {
-                optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                //optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
                 optionsBuilder.UseSqlite(ConnectionString, options =>
                 {

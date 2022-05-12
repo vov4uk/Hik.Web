@@ -67,7 +67,7 @@ namespace Job.Impl
         {
             JobInstance.FilesCount = files.Count;
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
-            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+            await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
 
@@ -95,13 +95,12 @@ namespace Job.Impl
         {
             this.jobTrigger = await db.GetOrCreateJobTriggerAsync(TriggerKey);
 
-            this.JobInstance = new HikJob
+            JobInstance = await db.CreateJobInstanceAsync(new HikJob
             {
                 Started = DateTime.Now,
-                JobTriggerId = jobTrigger.Id
-            };
-
-            await db.CreateJobInstanceAsync(JobInstance);
+                JobTriggerId = jobTrigger.Id,
+                Success = true
+            });
         }
 
         private async Task LogExceptionToDB(Exception e)
@@ -120,7 +119,7 @@ namespace Job.Impl
                 logger.Warn($"{TriggerKey} - Results Empty");
             }
 
-            if (this.JobInstance.Success)
+            if (JobInstance.Success)
             {
                 await db.SaveJobResultAsync(JobInstance);
             }

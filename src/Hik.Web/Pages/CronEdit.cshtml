@@ -34,7 +34,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="CronDTO.RunAsTask" class="control-label"></label>
-                <input asp-for="CronDTO.RunAsTask" class="form-control" />
+                @Html.CheckBoxFor(m => m.CronDTO.RunAsTask)
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

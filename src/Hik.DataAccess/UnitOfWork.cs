@@ -22,7 +22,8 @@ namespace Hik.DataAccess
             Context.Database.EnsureCreated();
         }
 
-        public IBaseRepository<TEntity> GetRepository<TEntity>() where TEntity : class
+        public IBaseRepository<TEntity> GetRepository<TEntity>()
+            where TEntity : class, IEntity
         {
             if (repositories == null) repositories = new ConcurrentDictionary<Type, object>();
 

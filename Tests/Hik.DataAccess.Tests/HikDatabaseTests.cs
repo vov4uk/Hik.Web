@@ -128,12 +128,13 @@ namespace Hik.DataAccess.Tests
             hikJobRepo.Setup(x => x.Update(job));
             jobRepo.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<JobTrigger, bool>>>(), It.IsAny<Expression<Func<JobTrigger, object>>[]>()))
                 .ReturnsAsync(trigger);
+            jobRepo.Setup(x => x.Update(It.IsAny<JobTrigger>()));
 
             uow.Setup(x => x.GetRepository<JobTrigger>())
                 .Returns(jobRepo.Object);
             uow.Setup(x => x.GetRepository<HikJob>())
                 .Returns(hikJobRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync(job))
+            uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
             var db = new HikDatabase(uowFactory.Object);
@@ -155,7 +156,7 @@ namespace Hik.DataAccess.Tests
 
             uow.Setup(x => x.GetRepository<HikJob>())
                 .Returns(hikJobRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync(job))
+            uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
             var db = new HikDatabase(uowFactory.Object);
@@ -263,8 +264,6 @@ namespace Hik.DataAccess.Tests
         [Fact]
         public async Task UpdateDailyStatisticsAsync_StatisticsUpdated()
         {
-            HikJob job = new () { Started = new DateTime(2022, 01, 01), Success = true };
-
             var newStatistics = new List<DailyStatistic>();
 
             var statistics = new List<DailyStatistic>
@@ -289,18 +288,19 @@ namespace Hik.DataAccess.Tests
 
             statRepo.Setup(x => x.FindManyAsync(It.IsAny<Expression<Func<DailyStatistic, bool>>>(), It.IsAny<Expression<Func<DailyStatistic, object>>[]>()))
                 .ReturnsAsync(statistics);
+            statRepo.Setup(x => x.Update(It.IsAny<DailyStatistic>()));
             statRepo.Setup(x => x.AddRangeAsync(It.IsAny<List<DailyStatistic>>()))
                 .Callback<IEnumerable<DailyStatistic>>(x => newStatistics.AddRange(x))
                 .Returns(Task.CompletedTask);
 
             uow.Setup(x => x.GetRepository<DailyStatistic>())
                 .Returns(statRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync(job))
+            uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
             var db = new HikDatabase(uowFactory.Object);
 
-            await db.UpdateDailyStatisticsAsync(job, files);
+            await db.UpdateDailyStatisticsAsync(0, files);
 
             Assert.Equal(2, newStatistics.Count);
             Assert.Equal(5, statistics.Count);

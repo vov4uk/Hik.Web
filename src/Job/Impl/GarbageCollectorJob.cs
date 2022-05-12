@@ -62,7 +62,7 @@ namespace Job.Impl
             JobInstance.PeriodEnd = files.Max(x => x.Date);
             JobInstance.FilesCount = files.Count;
 
-            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+            await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
 
             if (JobInstance.PeriodEnd.HasValue && JobInstance.FilesCount > 0 && Config.Triggers?.Any() == true)
             {

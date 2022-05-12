@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Hik.DataAccess.Abstractions
 {
-    public interface IBaseRepository<T> where T : class
+    public interface IBaseRepository<T>
+        where T : class, IEntity
     {
         ValueTask<T> AddAsync(T entity);
 

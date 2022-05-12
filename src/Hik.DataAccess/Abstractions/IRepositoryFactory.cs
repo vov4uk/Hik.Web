@@ -2,6 +2,7 @@
 {
     internal interface IRepositoryFactory
     {
-        IBaseRepository<T> GetRepository<T>() where T : class;
+        IBaseRepository<T> GetRepository<T>()
+            where T : class, IEntity;
     }
 }

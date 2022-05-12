@@ -71,7 +71,7 @@ namespace Hik.Client.FileProviders
             {
                 if (dates.Any() && dates.TryPop(out var lastDate))
                 {
-                    result.AddRange(GetFiles(fileExtention, lastDate).Select(x => new MediaFileDTO { Path = x, Date = lastDate }));
+                    result.AddRange(GetFiles(fileExtention, lastDate));
                 }
                 else
                 {
@@ -110,18 +110,14 @@ namespace Hik.Client.FileProviders
             {
                 foreach (var fileDateTime in folders.Keys.Where(x => x <= date && folders.ContainsKey(x)))
                 {
-                    foreach (var folder in folders[fileDateTime])
-                    {
-                        result.AddRange(directoryHelper.EnumerateFiles(folder, new[] { fileExtention })
-                            .Select(x => new MediaFileDTO { Path = x, Date = fileDateTime }));
-                    }
+                    result.AddRange(GetFiles(fileExtention, fileDateTime));
                 }
             }
 
             return result;
         }
 
-        private List<string> GetFiles(string fileExtention, DateTime lastDate)
+        private List<MediaFileDTO> GetFiles(string fileExtention, DateTime lastDate)
         {
             List<string> files = new List<string>();
             if (folders.ContainsKey(lastDate))
@@ -139,7 +135,7 @@ namespace Hik.Client.FileProviders
                 }
             }
 
-            return files;
+            return files.ConvertAll(x => new MediaFileDTO { Path = x, Date = lastDate });
         }
     }
 }

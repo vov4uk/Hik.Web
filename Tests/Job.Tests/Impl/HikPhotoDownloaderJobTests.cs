@@ -25,7 +25,7 @@ namespace Job.Tests.Impl
                 .ReturnsAsync(new JobTrigger() { LastSync = lastSync });
             SetupCreateJobInstanceAsync();
             SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
                 .Returns(Task.CompletedTask);
             dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
                 .ReturnsAsync(new List<MediaFile>());

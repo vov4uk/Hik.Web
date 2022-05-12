@@ -1,4 +1,5 @@
-﻿using Hik.DataAccess.Metadata;
+﻿using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Metadata;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,7 +10,7 @@ using System.IO;
 namespace Hik.DataAccess.Data
 {
     [ExcludeFromCodeCoverage, Table(Tables.MediaFile)]
-    public class MediaFile
+    public class MediaFile : IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

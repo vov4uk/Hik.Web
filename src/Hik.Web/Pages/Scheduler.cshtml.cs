@@ -51,7 +51,7 @@ namespace Hik.Web.Pages
 
         public IActionResult OnPostKillAll()
         {
-            ActivityBag activities = new();
+            RunningActivities activities = new();
             foreach (var item in activities)
             {
                 item?.Kill();
