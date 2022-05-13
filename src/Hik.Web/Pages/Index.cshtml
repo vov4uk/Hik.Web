@@ -3,12 +3,14 @@
 @model Hik.Web.Pages.IndexModel
 @{ViewData["Title"] = "Home";}
 
-<div class="row">
-    <div class="card-body text-center">
-        <h3>@Model.ResponseMsg</h3>
+@if (!string.IsNullOrEmpty(@Model.ResponseMsg))
+{
+    <div class="row">
+        <div class="card-body text-center">
+            <h3>@Model.ResponseMsg</h3>
+        </div>
     </div>
-</div>
-
+}
 <div class="row">
     <div class="col-lg-12 my-3">
         <div class="pull-right">

@@ -10,10 +10,10 @@ namespace Hik.DataAccess.Data
     [ExcludeFromCodeCoverage, Table(Tables.DailyStatistics)]
     public class DailyStatistic : IEntity
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        [ForeignKey("JobTrigger")]
         public int JobTriggerId { get; set; }
 
         public DateTime Period { get; set; }

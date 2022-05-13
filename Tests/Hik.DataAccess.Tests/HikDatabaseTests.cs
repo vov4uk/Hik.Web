@@ -274,15 +274,15 @@ namespace Hik.DataAccess.Tests
                 new () { Period = new (2022, 01,02), FilesCount = 1, FilesSize = 1024 },
             };
 
-            List<MediaFileDTO> files = new ()
+            List<MediaFileDTO> files = new()
             {
-                new () { Date = new (2022, 01,01), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,02), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,03), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,03), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,03), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,04), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,04), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 01), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 02), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 03), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 03), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 03), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 04), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 04), Size = 1024, Duration = 60 },
             };
 
             var statRepo = new Mock<IBaseRepository<DailyStatistic>>(MockBehavior.Strict);

@@ -141,7 +141,6 @@ namespace Hik.DataAccess
                     day.FilesCount += item.Count;
                     day.FilesSize += item.Size;
                     day.TotalDuration += item.Duration;
-                    repo.Update(day);
                 }
 
                 await unitOfWork.SaveChangesAsync();
