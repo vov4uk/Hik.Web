@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -17,7 +18,7 @@ namespace Hik.DataAccess.Abstractions
 
         Task<List<T>> GetAllAsync();
 
-        Task<List<T>> GetAllAsync(params Expression<Func<T, object>>[] includes);
+        IQueryable<T> GetAll(params Expression<Func<T, object>>[] includes);
 
         Task<List<T>> LastAsync(int last);
 

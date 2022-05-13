@@ -9,22 +9,22 @@
 
 @if (Model.JobTriggers != null && Model.JobTriggers.Any())
 {
-    @foreach (var key in Model.JobTriggers.Keys.OrderBy(x => x))
+    @foreach (var className in Model.JobTriggers.Keys.OrderBy(x => x))
     {
-     var jobType = Model.JobTriggers[key];
+     var jobType = Model.JobTriggers[className];
      @if(jobType != null && jobType.Any())
      {
-             var row = jobType.OrderBy(x => x.TriggerKey).ToList();
+             var jobTriggers = jobType.OrderBy(x => x.Name).ToList();
              <div class="row">
                  <div class="card-body text-center">
-                     <h4 class="card-title">@Html.DisplayFor(x => key)</h4>
+                     <h4 class="card-title">@Html.DisplayFor(x => className)</h4>
                  </div>
              </div>
              <div class="row">
                  <table class="table table-bordered table-sm" aria-label="Dashboard">
                      <thead>
                          <tr>
-                             <th>@Html.DisplayNameFor(model => row.FirstOrDefault().TriggerKey)</th>
+                             <th>@Html.DisplayNameFor(model => jobTriggers.FirstOrDefault().Name)</th>
                              <th>Last Job</th>
                              <th>Last File</th>
                              <th>Delta</th>
@@ -34,29 +34,29 @@
                          </tr>
                      </thead>
                      <tbody>
-                         @foreach (var jobTrigger in row)
+                         @foreach (var jobTrigger in jobTriggers)
                          {
-                             long statSize = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id)?.FilesSize ?? 0;
-                             int statDuration = Model.Statistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id)?.TotalDuration ?? 0;
+                             long statSize = Model.Dto.Items.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId)?.FilesSize ?? 0;
+                             int statDuration = Model.Dto.Items.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId)?.TotalDuration ?? 0;
                              string size = statSize.FormatBytes();
                              string duration = ((double)statDuration).FormatSeconds();
                              string triggerString = jobTrigger.ToString();
                              var latestFile = new DateTime();
-                             @if(Model.LatestFiles.ContainsKey(jobTrigger.Id))
+                             @if(Model.Dto.Files.ContainsKey(jobTrigger.JobTriggerId))
                              {
-                                 latestFile = Model.LatestFiles[jobTrigger.Id];
+                                 latestFile = Model.Dto.Files[jobTrigger.JobTriggerId];
                              }
 
                             var lastFileDelta = (jobTrigger.LastSync ?? DateTime.Now) - latestFile;
                             var lastSyncDelta = DateTime.Now - (jobTrigger.LastSync ?? new DateTime());
-                            var success = (lastFileDelta.TotalHours < 2 && lastSyncDelta.TotalHours < 2) || key == "Job.Impl.GarbageCollectorJob, Job";
+                            var success = (lastFileDelta.TotalHours < 2 && lastSyncDelta.TotalHours < 2) || className == "Job.Impl.GarbageCollectorJob, Job";
                             var status = success ? "" : "failed";
                             <tr data-status="@status" class="failed">
-                                <td><a asp-page="./Statistic" asp-route-triggerId="@jobTrigger.Id">@triggerString</a></td>
+                                <td><a asp-page="./Statistic" asp-route-triggerId="@jobTrigger.JobTriggerId">@triggerString</a></td>
                                 <td><span title="@jobTrigger.LastSync?.GetRelativeTime()">@jobTrigger.LastSync?.GetString()</span></td>
                                 <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
                                 <td>@lastFileDelta.GetRelativeTime()</td>
-                                <td>@Html.DisplayFor(modelItem => Model.Statistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id).FilesCount)</td>
+                                <td>@Html.DisplayFor(modelItem => Model.Dto.Items.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId).FilesCount)</td>
                                 <td>@size</td>
                                 <td>@duration</td>
                             </tr>

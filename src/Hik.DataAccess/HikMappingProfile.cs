@@ -4,9 +4,9 @@ using Hik.DTO.Contracts;
 
 namespace Hik.DataAccess
 {
-    public class DataAccessProfile : Profile
+    public class HikMappingProfile : Profile
     {
-        public DataAccessProfile()
+        public HikMappingProfile()
         {
             this.CreateMap<MediaFileDTO, MediaFile>(MemberList.None)
                 .ForMember(x => x.DownloadHistory, opt => opt.Ignore())
@@ -21,6 +21,10 @@ namespace Hik.DataAccess
                 .ForMember(x => x.Duration, opt => opt.MapFrom(y => y.DownloadDuration))
                 .ForMember(x => x.Started, opt => opt.MapFrom(y => y.DownloadStarted));
 
+            this.CreateMap<JobTrigger, TriggerDTO>(MemberList.None)
+                .ForMember(x => x.JobTriggerId, opt => opt.MapFrom(y => y.Id))
+                .ForMember(x => x.Name, opt => opt.MapFrom(y => y.TriggerKey))
+                .ForMember(x => x.JobId, opt => opt.Ignore());
             this.CreateMap<ExceptionLog, ExceptionLogDto>(MemberList.None);
             this.CreateMap<DailyStatistic, DailyStatisticDto>(MemberList.None);
             this.CreateMap<HikJob, HikJobDto>(MemberList.None)

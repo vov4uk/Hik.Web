@@ -5,6 +5,8 @@ namespace Hik.DTO.Contracts
 {
     public class DailyStatisticDto
     {
+        public int JobTriggerId { get; set; }
+
         [Display(Name = "Day"), DisplayFormat(DataFormatString = Consts.DisplayDayFormat), DataType(DataType.DateTime)]
         public DateTime Period { get; set; }
 

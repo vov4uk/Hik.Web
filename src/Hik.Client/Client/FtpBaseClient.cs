@@ -9,6 +9,7 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using NLog;
+using Polly;
 
 namespace Hik.Client.Client
 {
@@ -96,7 +97,12 @@ namespace Hik.Client.Client
             {
                 LogDebugInfo($"{remoteFile.Name} - downloading");
                 var tempFile = filesHelper.GetTempFileName();
-                await ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
+
+                await Policy
+                    .Handle<FtpException>()
+                    .Or<TimeoutException>()
+                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(3))
+                    .ExecuteAsync(() => ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token));
 
                 filesHelper.RenameFile(tempFile, localFilePath);
 

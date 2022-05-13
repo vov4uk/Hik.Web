@@ -45,7 +45,7 @@ namespace Hik.DataAccess
             return DbSet.ToListAsync();
         }
 
-        public virtual async Task<List<TEntity>> GetAllAsync(params Expression<Func<TEntity, object>>[] includes)
+        public virtual IQueryable<TEntity> GetAll(params Expression<Func<TEntity, object>>[] includes)
         {
             var result = DbSet.Where(i => true);
 
@@ -54,7 +54,7 @@ namespace Hik.DataAccess
                 result = result.Include(includeExpression);
             }
 
-            return await result.ToListAsync();
+            return result;
         }
 
         public virtual Task<List<TEntity>> LastAsync(int last)

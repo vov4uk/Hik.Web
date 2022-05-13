@@ -50,5 +50,10 @@ namespace Hik.DTO.Contracts
         public bool Success { get; set; }
 
         public int? ProcessId { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Group}.{Name}";
+        }
     }
 }

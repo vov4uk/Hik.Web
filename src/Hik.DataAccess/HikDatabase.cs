@@ -181,7 +181,7 @@ namespace Hik.DataAccess
                         await unitOfWork.SaveChangesAsync();
                         logger.Info($"{trigger} files cleared");
 
-                        var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.PeriodEnd <= to, x => x.DownloadedFiles);
+                        var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Finished <= to, x => x.DownloadedFiles);
                         jobRepo.RemoveRange(jobs);
                         await unitOfWork.SaveChangesAsync();
                         logger.Info($"{trigger} jobs cleared");
@@ -230,7 +230,7 @@ namespace Hik.DataAccess
 
         static void configureAutoMapper(IMapperConfigurationExpression x)
         {
-            x.AddProfile<DataAccessProfile>();
+            x.AddProfile<HikMappingProfile>();
         }
     }
 }
