@@ -1,5 +1,5 @@
 using Hik.Web.Pages.Shared;
-using Hik.Web.Queries.Statistic;
+using Hik.Web.Queries.DashboardDetails;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -16,14 +16,12 @@ namespace Hik.Web.Pages
             this.mediator = mediator;
         }
 
+        public DashboardDetailsDto Dto { get; set; }
         public PagerControl Pager { get; set; }
-
-        public StatisticDto Dto { get; set; }
-
         public async Task<IActionResult> OnGetAsync(int triggerId, int p = 1)
         {
             if (triggerId <= 0) { return NotFound(); }
-            Dto = await mediator.Send(new StatisticQuery { TriggerId = triggerId, CurrentPage = p}) as StatisticDto;
+            Dto = await mediator.Send(new DashboardDetailsQuery { TriggerId = triggerId, CurrentPage = p}) as DashboardDetailsDto;
 
             Pager = new (triggerId, "?triggerId=", Dto.TotalItems, p);
             return Page();

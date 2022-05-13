@@ -16,16 +16,14 @@ namespace Hik.Web.Pages
     {
         private readonly IMediator mediator;
 
-        public Dictionary<string, IList<TriggerDTO>> JobTriggers { get; }
-
-        public DashboardDto Dto { get; private set; }
-
         public DashboardModel(IMediator mediator)
         {
             this.mediator = mediator;
             JobTriggers = new();
         }
 
+        public DashboardDto Dto { get; private set; }
+        public Dictionary<string, IList<TriggerDTO>> JobTriggers { get; }
         public async Task<IActionResult> OnGet()
         {
             this.Dto = await mediator.Send(new DashboardQuery()) as DashboardDto;

@@ -4,18 +4,18 @@ using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hik.Web.Queries.Statistic
+namespace Hik.Web.Queries.DashboardDetails
 {
-    public class StatisticQueryHandler : QueryHandler<StatisticQuery>
+    public class DashboardDetailsQueryHandler : QueryHandler<DashboardDetailsQuery>
     {
         private readonly IUnitOfWorkFactory factory;
 
-        public StatisticQueryHandler(IUnitOfWorkFactory factory)
+        public DashboardDetailsQueryHandler(IUnitOfWorkFactory factory)
         {
             this.factory = factory;
         }
 
-        protected async override Task<IHandlerResult> HandleAsync(StatisticQuery query, CancellationToken cancellationToken)
+        protected async override Task<IHandlerResult> HandleAsync(DashboardDetailsQuery query, CancellationToken cancellationToken)
         {
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
@@ -34,7 +34,7 @@ namespace Hik.Web.Queries.Statistic
                         Math.Max(0, query.CurrentPage - 1) * query.PageSize,
                         query.PageSize);
 
-                    return new StatisticDto()
+                    return new DashboardDetailsDto()
                     {
                         JobTriggerId = query.TriggerId,
                         JobTriggerName = trigger.TriggerKey,
@@ -42,7 +42,7 @@ namespace Hik.Web.Queries.Statistic
                         Items = files.ConvertAll(x => HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>(x)),
                     };
                 }
-                return default(StatisticDto);
+                return default(DashboardDetailsDto);
             }
         }
     }

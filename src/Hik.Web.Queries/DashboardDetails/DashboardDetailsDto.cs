@@ -1,8 +1,8 @@
 ﻿using Hik.DTO.Contracts;
 
-namespace Hik.Web.Queries.Statistic
+namespace Hik.Web.Queries.DashboardDetails
 {
-    public class StatisticDto : ResponseBase<DailyStatisticDto>
+    public class DashboardDetailsDto : ResponseBase<DailyStatisticDto>
     {
         public int JobTriggerId { get; set; }
 
