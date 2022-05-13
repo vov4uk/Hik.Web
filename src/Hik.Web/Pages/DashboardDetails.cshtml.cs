@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
-    public class StatisticModel : PageModel
+    public class DashboardDetailsModel : PageModel
     {
         private readonly IMediator mediator;
 
-        public StatisticModel(IMediator mediator)
+        public DashboardDetailsModel(IMediator mediator)
         {
             this.mediator = mediator;
         }

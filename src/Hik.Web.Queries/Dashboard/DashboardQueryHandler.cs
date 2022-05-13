@@ -30,20 +30,20 @@ namespace Hik.Web.Queries.Dashboard
                     .GetAll(x => x.DailyStatistics)
                     .Where(x => x.DailyStatistics.Any())
                     .Select(x => x.DailyStatistics.OrderByDescending(y => y.Period).First())
-                    .ToListAsync();
+                    .ToListAsync(cancellationToken);
 
                 Dictionary<int, DateTime> latestFiles = await filesRepo
                     .GetAll()
                     .GroupBy(x => x.JobTriggerId)
                     .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.Date)))
-                    .ToDictionaryAsync(x => x.Key, y => y.Value);
+                    .ToDictionaryAsync(x => x.Key, y => y.Value, cancellationToken);
 
                 var latestPeriodEnd = await jobRepo
                     .GetAll()
                     .Where(x => x.Finished != null)
                     .GroupBy(x => x.JobTriggerId)
                     .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.PeriodEnd ?? new DateTime())))
-                    .ToListAsync();
+                    .ToListAsync(cancellationToken);
 
                 foreach (var period in latestPeriodEnd)
                 {

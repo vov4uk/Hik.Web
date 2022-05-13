@@ -49,10 +49,11 @@
 
                             var lastFileDelta = (jobTrigger.LastSync ?? DateTime.Now) - latestFile;
                             var lastSyncDelta = DateTime.Now - (jobTrigger.LastSync ?? new DateTime());
-                            var success = (lastFileDelta.TotalHours < 2 && lastSyncDelta.TotalHours < 2) || className == "Job.Impl.GarbageCollectorJob, Job";
+                            var success = (lastFileDelta.TotalHours < 2 && lastSyncDelta.TotalHours < 2)
+                                       || (className == "Job.Impl.GarbageCollectorJob, Job" && lastSyncDelta.TotalHours < 24);
                             var status = success ? "" : "failed";
                             <tr data-status="@status" class="failed">
-                                <td><a asp-page="./Statistic" asp-route-triggerId="@jobTrigger.JobTriggerId">@triggerString</a></td>
+                                <td><a asp-page="./DashboardDetails" asp-route-triggerId="@jobTrigger.JobTriggerId">@triggerString</a></td>
                                 <td><span title="@jobTrigger.LastSync?.GetRelativeTime()">@jobTrigger.LastSync?.GetString()</span></td>
                                 <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
                                 <td>@lastFileDelta.GetRelativeTime()</td>
