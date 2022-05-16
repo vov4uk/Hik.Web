@@ -52,7 +52,7 @@ namespace Hik.Web
             var port = config.GetSection("Hosting:Port").Value;
 
             Configuration = config;
-            ConnectionString = config.GetSection("ConnectionStrings").GetSection("HikConnectionString").Value;
+            ConnectionString = config.GetSection("DBConfiguration").GetSection("ConnectionString").Value;
 
             var host = Host.CreateDefaultBuilder(args)
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory())

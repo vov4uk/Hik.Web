@@ -46,6 +46,7 @@ namespace Hik.Web.Pages
                 .AsQueryable()
                 .Include(x => x.Jobs)
                 .Select(x => x.Jobs.OrderByDescending(y => y.Started).FirstOrDefault())
+                .Where(x => x != null)
                 .ToListAsync();
 
             IEnumerable<Quartz.Impl.Triggers.CronTriggerImpl> cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
@@ -58,6 +59,12 @@ namespace Hik.Web.Pages
                 var act = activities.FirstOrDefault(x => x.Parameters.TriggerKey == name && x.Parameters.Group == group);
                 var tri = JobTriggers.FirstOrDefault(x => x.TriggerKey == name && x.Group == group);
                 var job = jobs.FirstOrDefault(x => x.JobTriggerId == tri?.Id);
+
+                if (job == null || tri == null)
+                {
+                    continue;
+                }
+
                 var dto = new TriggerDTO
                 {
                     Group = group,

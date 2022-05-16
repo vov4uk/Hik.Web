@@ -32,8 +32,8 @@ namespace Hik.Client.Client
 
         public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
         {
-            string localFilePath = GetPathSafety(remoteFile);
-            var remoteFilePath = GetRemoteFileFath(remoteFile);
+            string localFilePath = GetLocalFilePath(remoteFile);
+            string remoteFilePath = GetRemoteFilePath(remoteFile);
 
             if (!filesHelper.FileExists(localFilePath))
             {
@@ -117,7 +117,9 @@ namespace Hik.Client.Client
 
         protected abstract Task<bool> PostDownloadFileProcessAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token);
 
-        protected abstract string GetRemoteFileFath(MediaFileDTO remoteFile);
+        protected abstract string GetRemoteFilePath(MediaFileDTO remoteFile);
+
+        protected abstract string GetLocalFilePath(MediaFileDTO remoteFile);
 
         protected string GetWorkingDirectory(MediaFileDTO file)
         {
@@ -127,14 +129,6 @@ namespace Hik.Client.Client
         protected void LogDebugInfo(string msg)
         {
             logger.Debug($"{config.Alias} - {msg}");
-        }
-
-        private string GetPathSafety(MediaFileDTO remoteFile)
-        {
-            string workingDirectory = GetWorkingDirectory(remoteFile);
-            directoryHelper.CreateDirIfNotExist(workingDirectory);
-
-            return filesHelper.CombinePath(workingDirectory, remoteFile.ToYiFileNameString());
         }
     }
 }

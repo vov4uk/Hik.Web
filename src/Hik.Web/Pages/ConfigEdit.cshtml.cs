@@ -49,6 +49,9 @@ namespace Hik.Web.Pages
 
         private static string PrettyJson(string unPrettyJson)
         {
+            if(string.IsNullOrEmpty(unPrettyJson))
+                return string.Empty;
+
             var options = new JsonSerializerOptions()
             {
                 WriteIndented = true

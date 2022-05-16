@@ -34,8 +34,11 @@ namespace Hik.Client
             return files.AsReadOnly();
         }
 
-        protected override string GetRemoteFileFath(MediaFileDTO remoteFile)
+        protected override string GetRemoteFilePath(MediaFileDTO remoteFile)
             => remoteFile.Path;
+
+        protected override string GetLocalFilePath(MediaFileDTO remoteFile)
+            => filesHelper.CombinePath(config.DestinationFolder, remoteFile.Name);
 
         protected override async Task<bool> PostDownloadFileProcessAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
         {
