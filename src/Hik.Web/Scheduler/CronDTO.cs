@@ -6,7 +6,7 @@ namespace Hik.Web.Scheduler
 {
     public class CronDTO
     {
-        internal static readonly Options Options = new() { DayOfWeekStartIndexZero = false, Use24HourTimeFormat = true };
+        internal static readonly Options CronFormatOptions = new() { DayOfWeekStartIndexZero = false, Use24HourTimeFormat = true };
 
         public CronDTO() { }
         public CronDTO(Cron cron)
@@ -29,7 +29,7 @@ namespace Hik.Web.Scheduler
         public string Cronexpression { get; set; }
         public string CronDescription => string.IsNullOrEmpty(Cronexpression) ?
             string.Empty :
-            ExpressionDescriptor.GetDescription(Cronexpression, Options);
+            ExpressionDescriptor.GetDescription(Cronexpression, CronFormatOptions);
 
         public Cron ToCron()
         {

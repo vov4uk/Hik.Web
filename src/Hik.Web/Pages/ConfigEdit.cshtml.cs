@@ -9,7 +9,7 @@ namespace Hik.Web.Pages
     public class ConfigEditModel : PageModel
     {
         [BindProperty]
-        public ConfigDTO ConfigDTO { get; set; }
+        public CronConfigDTO ConfigDTO { get; set; }
 
         public void OnGet(string name, string group)
         {
@@ -20,7 +20,7 @@ namespace Hik.Web.Pages
                 var cron = data.Schedule.Trigger.Select(x => x.Cron).FirstOrDefault(x => x.Group == group && x.Name == name);
                 if (cron != null)
                 {
-                    ConfigDTO = new ConfigDTO(cron);
+                    ConfigDTO = new CronConfigDTO(cron);
                     if (System.IO.File.Exists(ConfigDTO.Path))
                     {
                         ConfigDTO.Json = PrettyJson(System.IO.File.ReadAllText(ConfigDTO.Path));

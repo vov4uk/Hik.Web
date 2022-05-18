@@ -1,16 +1,14 @@
 ﻿using CronExpressionDescriptor;
 using Hik.Client.Helpers;
-using Hik.DataAccess;
-using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Hik.Web.Commands.Activity;
+using Hik.Web.Queries.JobTriggers;
 using Hik.Web.Scheduler;
 using Job;
 using Job.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -20,19 +18,13 @@ namespace Hik.Web.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly DataContext dataContext;
         private readonly RunningActivities activities = new();
         private readonly IMediator _mediator;
 
-        public IndexModel(DataContext dataContext, IMediator mediator)
+        public IndexModel(IMediator mediator)
         {
-            this.dataContext = dataContext;
-            this.dataContext.Database.EnsureCreated();
             this._mediator = mediator;
-            JobTriggers = dataContext.JobTriggers.AsQueryable().ToList();
         }
-
-        private IList<JobTrigger> JobTriggers { get; }
 
         public Dictionary<string, IList<TriggerDTO>> TriggersDtos { get; private set; }
 
@@ -42,52 +34,35 @@ namespace Hik.Web.Pages
         {
             ResponseMsg = msg;
             TriggersDtos = new Dictionary<string, IList<TriggerDTO>>();
-            var jobs = await dataContext.JobTriggers
-                .AsQueryable()
-                .Include(x => x.Jobs)
-                .Select(x => x.Jobs.OrderByDescending(y => y.Started).FirstOrDefault())
-                .Where(x => x != null)
-                .ToListAsync();
+
+            var triggers = await this._mediator.Send(new JobTriggersQuery()) as JobTriggersDto;
 
             IEnumerable<Quartz.Impl.Triggers.CronTriggerImpl> cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
 
-            foreach (var item in cronTriggers)
+            foreach (var cronTrigger in cronTriggers)
             {
-                var className = item.GetJobClass();
-                var group = item.Key.Group;
-                var name = item.Key.Name;
+                var className = cronTrigger.GetJobClass();
+                var group = cronTrigger.Key.Group;
+                var name = cronTrigger.Key.Name;
                 var act = activities.FirstOrDefault(x => x.Parameters.TriggerKey == name && x.Parameters.Group == group);
-                var tri = JobTriggers.FirstOrDefault(x => x.TriggerKey == name && x.Group == group);
-                var job = jobs.FirstOrDefault(x => x.JobTriggerId == tri?.Id);
+                var tri = triggers.Items.FirstOrDefault(x => x.Name == name && x.Group == group);
 
-                if (job == null || tri == null)
+                if (tri == null || tri.LastJob == null)
                 {
                     continue;
                 }
 
-                var dto = new TriggerDTO
-                {
-                    Group = group,
-                    Name = name,
-                    TriggerStarted = item.StartTimeUtc.DateTime.ToLocalTime(),
-                    ConfigPath = item.GetConfig(),
-                    Next = item.GetNextFireTimeUtc().Value.DateTime.ToLocalTime(),
-                    ActivityId = act?.Id,
-                    CronSummary = ExpressionDescriptor.GetDescription(item.CronExpressionString, CronDTO.Options),
-                    CronString = item.CronExpressionString,
-                    ProcessId = act?.ProcessId,
-                    JobTriggerId = tri?.Id ?? -1,
-                    JobId = job?.Id,
-                    LastSync = tri?.LastSync,
-                    Success = job?.Success == true,
-                    LastJobPeriodEnd = job?.PeriodEnd,
-                    LastJobPeriodStart = job?.PeriodStart,
-                    LastJobFilesCount = job?.FilesCount,
-                    LastJobStarted = job?.Started,
-                    LastJobFinished = job?.Finished
-                };
+                var ctronTriggerDto = new CronTriggerDto(
+                    cronTrigger.GetConfig(),
+                    cronTrigger.CronExpressionString,
+                    ExpressionDescriptor.GetDescription(cronTrigger.CronExpressionString, CronDTO.CronFormatOptions),
+                    cronTrigger.StartTimeUtc.DateTime.ToLocalTime(),
+                    cronTrigger.GetNextFireTimeUtc().Value.DateTime.ToLocalTime());
 
-                TriggersDtos.SafeAdd(className, dto);
+                tri.ProcessId = act?.ProcessId;
+                tri.Cron = ctronTriggerDto;
+
+                TriggersDtos.SafeAdd(className, tri);
             }
         }
 
