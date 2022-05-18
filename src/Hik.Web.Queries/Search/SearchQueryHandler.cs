@@ -60,7 +60,7 @@ namespace Hik.Web.Queries.Search
             }
         }
 
-        private async Task<List<MediaFileDTO>> GetMediaFilesAsync(IBaseRepository<MediaFile> filesRepo, Expression<Func<MediaFile, bool>> predicate, int top = 5)
+        private static async Task<List<MediaFileDTO>> GetMediaFilesAsync(IBaseRepository<MediaFile> filesRepo, Expression<Func<MediaFile, bool>> predicate, int top = 5)
         {
             var files = await filesRepo.FindManyAsync(
                         predicate,

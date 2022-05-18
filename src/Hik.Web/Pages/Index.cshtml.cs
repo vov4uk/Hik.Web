@@ -113,7 +113,7 @@ namespace Hik.Web.Pages
             var activity = activities.SingleOrDefault(a => a.Id == activityId);
 
             activity?.Kill();
-            return RedirectToPage("./Index", new { msg = $"Activity {activityId} dead" });
+            return RedirectToPage("./Index", new { msg = $"Activity {activityId} stoped" });
         }
     }
 }

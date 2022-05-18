@@ -15,7 +15,17 @@ namespace Job
         private DateTime started = default;
         private readonly Guid ActivityId;
         public Parameters Parameters { get; private set; }
-        public int ProcessId => hostProcess?.Id ?? -1;
+        public int ProcessId
+        {
+            get
+            {
+                if (hostProcess != null && !hostProcess.HasExited)
+                {
+                    return hostProcess.Id;
+                }
+                return -1;
+            }
+        }
 
         public string Id => $"{Parameters.Group}.{Parameters.TriggerKey}";
 
