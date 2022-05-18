@@ -67,10 +67,14 @@ namespace Job
 
         public void Kill()
         {
-            if (!hostProcess.HasExited)
+            if (hostProcess != null && !hostProcess.HasExited)
             {
                 Log("Killing process manual");
                 hostProcess.Kill();
+            }
+            else
+            {
+                Log("No process found");
             }
         }
 

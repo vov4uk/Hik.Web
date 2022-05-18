@@ -51,7 +51,7 @@ namespace Hik.Client.Tests
         {
             ftpMock.Setup(x => x.GetListingAsync("/CameraName", default(CancellationToken))).ReturnsAsync(new FtpListItem[]
             {
-                new FtpListItem(){Name = "00M00S"}
+                new FtpListItem(){Name = "192.168.8.103_01_20220517095135158_MOTION_DETECTION", FullName = "/192.168.8.103_01_20220517095135158_MOTION_DETECTION.jpg"}
             });
 
             var config = new CameraConfig { Alias = "Group.CameraName" };
@@ -62,7 +62,8 @@ namespace Hik.Client.Tests
             Assert.Single(mediaFiles);
             var firstFile = mediaFiles.First();
             Assert.Equal(1, firstFile.Duration);
-            Assert.Equal("00M00S", firstFile.Name);
+            Assert.Equal("192.168.8.103_01_20220517095135158_MOTION_DETECTION", firstFile.Name);
+            Assert.Equal("/192.168.8.103_01_20220517095135158_MOTION_DETECTION.jpg", firstFile.Path);
         }
 
         [Fact]

@@ -14,7 +14,7 @@ namespace Hik.Client.Helpers
     {
         private static readonly string[] VideoExtentions = new[] { ".mp4", ".avi" };
 
-        public static async Task<string> GetThumbnailAsync(string path)
+        public async Task<string> GetThumbnailStringAsync(string path)
         {
             if (VideoExtentions.Contains(Path.GetExtension(path)))
             {
@@ -34,7 +34,7 @@ namespace Hik.Client.Helpers
 
                 byte[] imageArray = await File.ReadAllBytesAsync(fullPath);
                 File.Delete(fullPath);
-                return Convert.ToBase64String(imageArray);
+                return $"data:image/jpg;base64,{Convert.ToBase64String(imageArray)}";
             }
 
             return string.Empty;

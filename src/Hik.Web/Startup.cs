@@ -3,15 +3,21 @@ using Autofac.Features.Variance;
 using Hik.Web.Commands;
 using Hik.Web.Queries;
 using Hik.Web.Scheduler;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Hik.Web
 {
@@ -44,11 +50,22 @@ namespace Hik.Web
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 });
 
+            services.AddAuthentication("BasicAuthentication")
+                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
+                ("BasicAuthentication", null);
+
             services
+                .AddAuthorization()
                 .AddRazorPages();
 
+            services.AddHttpLogging(options =>
+            {
+                options.LoggingFields = HttpLoggingFields.RequestPropertiesAndHeaders |
+                                        HttpLoggingFields.RequestBody;
+            });
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -68,13 +85,17 @@ namespace Hik.Web
             lifetime.ApplicationStopping.Register(quartz.Stop);
 
             app.UseDeveloperExceptionPage()
-            .UseStaticFiles()
-            .UseRouting()
-            .UseAuthorization()
-            .UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorPages();
-            });
+                .UseAuthentication()
+                .UseAuthorization()
+                .UseStaticFiles()
+                .UseRouting()
+                .UseAuthorization()
+                .UseHttpsRedirection()
+                .UseHsts()
+                .UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorPages();
+                });
         }
     }
 }
