@@ -2,9 +2,9 @@
 using AutoMapper;
 using Hik.Api.Abstraction;
 using Hik.Api.Data;
-using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using NLog;
 
 namespace Hik.Client

@@ -5,6 +5,7 @@ using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using NLog;
 
 namespace Hik.Client.Service

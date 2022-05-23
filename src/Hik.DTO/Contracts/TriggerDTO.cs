@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hik.Quartz.Contracts;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Hik.DTO.Contracts
@@ -18,7 +19,7 @@ namespace Hik.DTO.Contracts
 
         public HikJobDto LastJob { get; set; }
 
-        public CronTriggerDto Cron { get; set; }
+        public CronDTO Cron { get; set; }
 
         public override string ToString()
         {

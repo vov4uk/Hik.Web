@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
-using Hik.Client.Abstraction;
 using Hik.Client.Client;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client
 {

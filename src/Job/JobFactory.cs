@@ -5,6 +5,7 @@ using Hik.Client.Infrastructure;
 using Hik.DataAccess;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
+using Hik.Helpers.Abstraction;
 using Job.Email;
 using Job.Extensions;
 using Job.Impl;

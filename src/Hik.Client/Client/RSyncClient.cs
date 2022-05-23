@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
-using Hik.Client.Abstraction;
 using Hik.Client.Client;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client
 {

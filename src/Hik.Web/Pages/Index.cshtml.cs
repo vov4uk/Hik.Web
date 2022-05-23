@@ -1,11 +1,9 @@
-﻿using CronExpressionDescriptor;
-using Hik.Client.Helpers;
+﻿using Hik.Helpers;
 using Hik.DTO.Contracts;
 using Hik.Web.Commands.Activity;
 using Hik.Web.Queries.JobTriggers;
-using Hik.Web.Scheduler;
+using Hik.Web.Queries.QuartzTriggers;
 using Job;
-using Job.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -35,15 +33,14 @@ namespace Hik.Web.Pages
             ResponseMsg = msg;
             TriggersDtos = new Dictionary<string, IList<TriggerDTO>>();
 
-            var triggers = await this._mediator.Send(new JobTriggersQuery()) as JobTriggersDto;
+            var triggers = await _mediator.Send(new JobTriggersQuery()) as JobTriggersDto;
 
-            IEnumerable<Quartz.Impl.Triggers.CronTriggerImpl> cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
+            var cronTriggers = await _mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
 
-            foreach (var cronTrigger in cronTriggers)
+            foreach (var cronTrigger in cronTriggers.Items)
             {
-                var className = cronTrigger.GetJobClass();
-                var group = cronTrigger.Key.Group;
-                var name = cronTrigger.Key.Name;
+                var group = cronTrigger.Group;
+                var name = cronTrigger.Name;
                 var act = activities.FirstOrDefault(x => x.Parameters.TriggerKey == name && x.Parameters.Group == group);
                 var tri = triggers.Items.FirstOrDefault(x => x.Name == name && x.Group == group);
 
@@ -52,33 +49,23 @@ namespace Hik.Web.Pages
                     continue;
                 }
 
-                var ctronTriggerDto = new CronTriggerDto(
-                    cronTrigger.GetConfig(),
-                    cronTrigger.CronExpressionString,
-                    ExpressionDescriptor.GetDescription(cronTrigger.CronExpressionString, CronDTO.CronFormatOptions),
-                    cronTrigger.StartTimeUtc.DateTime.ToLocalTime(),
-                    cronTrigger.GetNextFireTimeUtc().Value.DateTime.ToLocalTime());
-
                 tri.ProcessId = act?.ProcessId;
-                tri.Cron = ctronTriggerDto;
+                tri.Cron = cronTrigger;
 
-                TriggersDtos.SafeAdd(className, tri);
+                TriggersDtos.SafeAdd(cronTrigger.ClassName, tri);
             }
         }
 
         public async Task<IActionResult> OnPostRun(string group, string name)
         {
-            var cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
-            var trigger = cronTriggers.Single(t => t.Key.Group == group && t.Key.Name == name);
+            var cronTriggers = await this._mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
+            var trigger = cronTriggers.Items.Single(t => t.Group == group && t.Name == name);
 
-            string className = trigger.GetJobClass();
-            string configPath = trigger.GetConfig();
-            bool runAsTask = Debugger.IsAttached || trigger.GetRunAsTask();
+            bool runAsTask = Debugger.IsAttached || trigger.RunAsTask;
 
-            var parameters = new Parameters(className, group, name, configPath, Program.ConnectionString, runAsTask);
+            var parameters = new Parameters(trigger.ClassName, group, name, trigger.ConfigPath, Program.ConnectionString, runAsTask);
 
-            var command = new ActivityCommand(parameters);
-            _mediator.Send(command).ConfigureAwait(false).GetAwaiter();
+            _mediator.Send(new StartActivityCommand(parameters)).ConfigureAwait(false).GetAwaiter();
 
             return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
         }

@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Hik.Quartz\Hik.Quartz.csproj" />
     <ProjectReference Include="..\Job\Job.csproj" />
   </ItemGroup>
 

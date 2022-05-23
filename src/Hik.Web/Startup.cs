@@ -1,12 +1,10 @@
 using Autofac;
 using Autofac.Features.Variance;
+using Hik.Quartz;
 using Hik.Web.Commands;
 using Hik.Web.Queries;
-using Hik.Web.Scheduler;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -14,10 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Hik.Web
 {

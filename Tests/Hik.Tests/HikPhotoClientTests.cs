@@ -12,10 +12,10 @@
     using Hik.Api.Data;
     using Hik.Api.Services;
     using Hik.Client;
-    using Hik.Client.Abstraction;
     using Hik.Client.Infrastructure;
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
+    using Hik.Helpers.Abstraction;
     using Moq;
     using Xunit;
 
@@ -34,14 +34,14 @@
         {
             photoServiceMock = new (MockBehavior.Strict);
 
-            sdkMock = new (MockBehavior.Strict);
+            sdkMock = new(MockBehavior.Strict);
             sdkMock.SetupGet(x => x.PhotoService)
                 .Returns(photoServiceMock.Object);
 
-            filesMock = new (MockBehavior.Strict);
-            dirMock = new (MockBehavior.Strict);
-            imageMock = new (MockBehavior.Strict);
-            fixture = new ();
+            filesMock = new(MockBehavior.Strict);
+            dirMock = new(MockBehavior.Strict);
+            imageMock = new(MockBehavior.Strict);
+            fixture = new();
             Action<IMapperConfigurationExpression> configureAutoMapper = x =>
             {
                 x.AddProfile<HikConsoleProfile>();

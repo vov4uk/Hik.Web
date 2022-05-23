@@ -7,6 +7,7 @@ using Hik.Client.Abstraction;
 using Hik.Client.Service;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using Moq;
 using Xunit;
 

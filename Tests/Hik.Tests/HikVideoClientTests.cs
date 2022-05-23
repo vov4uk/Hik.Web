@@ -12,12 +12,11 @@
     using Hik.Api.Data;
     using Hik.Api.Services;
     using Hik.Client;
-    using Hik.Client.Abstraction;
     using Hik.Client.Infrastructure;
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
+    using Hik.Helpers.Abstraction;
     using Moq;
-    using NLog;
     using Xunit;
 
     public class HikVideoClientTests
@@ -34,13 +33,13 @@
         {
             this.videoServiceMock = new (MockBehavior.Strict);
 
-            this.sdkMock = new (MockBehavior.Strict);
+            this.sdkMock = new(MockBehavior.Strict);
             this.sdkMock.SetupGet(x => x.VideoService)
                 .Returns(this.videoServiceMock.Object);
 
-            this.filesMock = new (MockBehavior.Strict);
-            this.dirMock = new (MockBehavior.Strict);
-            this.fixture = new ();
+            this.filesMock = new(MockBehavior.Strict);
+            this.dirMock = new(MockBehavior.Strict);
+            this.fixture = new();
             Action<IMapperConfigurationExpression> configureAutoMapper = x =>
             {
                 x.AddProfile<HikConsoleProfile>();

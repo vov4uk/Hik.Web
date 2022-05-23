@@ -7,6 +7,7 @@ using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client.Service
 {

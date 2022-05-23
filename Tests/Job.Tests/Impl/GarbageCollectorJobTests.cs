@@ -1,7 +1,7 @@
-﻿using Hik.Client.Abstraction;
-using Hik.Client.FileProviders;
+﻿using Hik.Client.FileProviders;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using Job.Impl;
 using Moq;
 using System;
@@ -21,8 +21,8 @@ namespace Job.Tests.Impl
             : base()
         {
             directoryHelper = new(MockBehavior.Strict);
-            filesHelper = new ();
-            filesProvider = new (MockBehavior.Strict);
+            filesHelper = new();
+            filesProvider = new(MockBehavior.Strict);
         }
 
         [Fact]

@@ -1,8 +1,8 @@
-﻿using Hik.Client.Abstraction;
-using Hik.Client.FileProviders;
+﻿using Hik.Client.FileProviders;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using Job.Email;
 using NLog;
 using System;

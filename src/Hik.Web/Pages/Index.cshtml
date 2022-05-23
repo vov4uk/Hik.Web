@@ -39,7 +39,7 @@
                       <tr>
                           <th>Cron</th>
                           <th>Title</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.First().Cron.Next)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().Cron.NextRun)</th>
                           <th>@Html.DisplayNameFor(m => jobTrigger.First().Cron.ConfigPath)</th>
                           <th>@Html.DisplayNameFor(m => jobTrigger.First().LastSync)</th>
                           <th>@Html.DisplayNameFor(m => jobTrigger.First().LastJob.PeriodStart)</th>
@@ -63,7 +63,7 @@
                           <tr data-status="@status" class="failed">
                               <td><span title="@job.Cron.ExpressionString">@job.Cron.Expression</span></td>
                               <td><a asp-page="./Job" asp-route-jobTriggerId="@job.JobTriggerId">@job.Name</a></td>
-                              <td>@Html.DisplayFor(x => job.Cron.Next)</td>
+                              <td>@Html.DisplayFor(x => job.Cron.NextRun)</td>
                               <td><a asp-page="./ConfigEdit" asp-route-name="@job.Name" asp-route-group="@job.Group">@Html.DisplayFor(x => job.Cron.ConfigPath)</a></td>
                               <td><span title="@lastSyncTooltip">@job.LastSync.GetString()</span></td>
                               <td><span title="@fromTooltip">@Html.DisplayFor(x => job.LastJob.PeriodStart)</span></td>
@@ -106,7 +106,7 @@
                           </div>
                           <ul class=" ">
                               <li><span title="@job.Cron.ExpressionString">@job.Cron.Expression</span></li>
-                              <li>Next - @Html.DisplayFor(x => job.Cron.Next)</li>
+                              <li>Next - @Html.DisplayFor(x => job.Cron.NextRun)</li>
                               <li><a asp-page="./ConfigEdit" asp-route-name="@job.Name" asp-route-group="@job.Group">@Html.DisplayFor(x => job.Cron.ConfigPath)</a></li>
                               <li><span title="@lastSyncTooltip">Sync -  @Html.DisplayFor(x => job.LastSync)</span></li>
                               <li><span title="@fromTooltip">From -  @Html.DisplayFor(x => job.LastJob.PeriodStart)</span></li>

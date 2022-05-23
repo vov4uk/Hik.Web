@@ -1,5 +1,5 @@
-﻿using Hik.Client.Abstraction;
-using Hik.Client.FileProviders;
+﻿using Hik.Client.FileProviders;
+using Hik.Helpers.Abstraction;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -26,9 +26,9 @@ namespace Hik.Client.Tests.FileProviders
 
         public WindowsFileProviderTests()
         {
-            this.videoMock = new (MockBehavior.Strict);
-            this.dirMock = new (MockBehavior.Strict);
-            this.filesMock = new (MockBehavior.Strict);
+            this.videoMock = new(MockBehavior.Strict);
+            this.dirMock = new(MockBehavior.Strict);
+            this.filesMock = new(MockBehavior.Strict);
         }
 
         [Fact]

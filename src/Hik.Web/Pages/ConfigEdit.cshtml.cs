@@ -1,37 +1,27 @@
-using Hik.Web.Scheduler;
+using Hik.Web.Queries.QuartzJobConfig;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Linq;
-using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
     public class ConfigEditModel : PageModel
     {
-        [BindProperty]
-        public CronConfigDTO ConfigDTO { get; set; }
+        private readonly IMediator _mediator;
 
-        public void OnGet(string name, string group)
+        public ConfigEditModel(IMediator mediator)
         {
-            var data = XmlHelper.GetJobSchedulingData();
+            this._mediator = mediator;
+        }
 
-            if (data.Schedule.Trigger.Any())
-            {
-                var cron = data.Schedule.Trigger.Select(x => x.Cron).FirstOrDefault(x => x.Group == group && x.Name == name);
-                if (cron != null)
-                {
-                    ConfigDTO = new CronConfigDTO(cron);
-                    if (System.IO.File.Exists(ConfigDTO.Path))
-                    {
-                        ConfigDTO.Json = PrettyJson(System.IO.File.ReadAllText(ConfigDTO.Path));
-                    }
-                    else
-                    {
-                        var stream = System.IO.File.Create(ConfigDTO.Path);
-                        stream.Dispose();
-                    }
-                }
-            }
+        [BindProperty]
+        public QuartzJobConfigDto Dto { get; set; }
+
+        public async Task OnGetAsync(string name, string group)
+        {
+            Dto = await this._mediator.Send(new QuartzJobConfigQuery { Name = name, Group = group }) as QuartzJobConfigDto;
         }
 
         public IActionResult OnPost()
@@ -41,25 +31,10 @@ namespace Hik.Web.Pages
                 return Page();
             }
 
-            var json = (ModelState["ConfigDTO.Json"].RawValue as string[])?.Last();
+            var json = (ModelState["Dto.ConfigDTO.Json"].RawValue as string[])?.Last();
 
-            System.IO.File.WriteAllText(ConfigDTO.Path, json);
+            System.IO.File.WriteAllText(Dto.ConfigDTO.GetConfigPath(), json);
             return RedirectToPage("./Scheduler");
-        }
-
-        private static string PrettyJson(string unPrettyJson)
-        {
-            if(string.IsNullOrEmpty(unPrettyJson))
-                return string.Empty;
-
-            var options = new JsonSerializerOptions()
-            {
-                WriteIndented = true
-            };
-
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>(unPrettyJson);
-
-            return JsonSerializer.Serialize(jsonElement, options);
         }
     }
 }

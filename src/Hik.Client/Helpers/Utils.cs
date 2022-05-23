@@ -15,6 +15,7 @@ namespace Hik.Client.Helpers
         private const string YiFilePathFormat = "yyyy'Y'MM'M'dd'D'HH'H'";
         private const string YiFileNameFormat = "mm'M00S'";
         private const string Yi720PFileNameFormat = "mm'M00S60'";
+        private const string NA = "N/A";
         private const int SECOND = 1;
         private const int MINUTE = 60 * SECOND;
         private const int HOUR = 60 * MINUTE;
@@ -64,7 +65,7 @@ namespace Hik.Client.Helpers
 
         public static string GetString(this DateTime? yourDate)
         {
-            return !yourDate.HasValue ? "N/A" : GetString(yourDate.Value);
+            return !yourDate.HasValue ? NA : GetString(yourDate.Value);
         }
 
         public static string GetString(this DateTime yourDate)
@@ -75,7 +76,7 @@ namespace Hik.Client.Helpers
 
         public static string GetRelativeTime(this DateTime? yourDate)
         {
-            return !yourDate.HasValue ? "N/A" : GetRelativeTime(yourDate.Value);
+            return !yourDate.HasValue ? NA : GetRelativeTime(yourDate.Value);
         }
 
         public static string GetRelativeTime(this DateTime yourDate)
@@ -99,7 +100,7 @@ namespace Hik.Client.Helpers
 
             if (delta < 24 * HOUR)
             {
-                return ts.Hours + " hours";
+                return $"{ts.Hours} h {ts.Minutes} m";
             }
 
             if (delta < 30 * DAY)

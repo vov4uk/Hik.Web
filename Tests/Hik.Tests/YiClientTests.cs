@@ -5,11 +5,11 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using Abstraction;
     using AutoFixture;
     using DTO.Config;
     using DTO.Contracts;
     using FluentFTP;
+    using Hik.Helpers.Abstraction;
     using Moq;
     using Xunit;
 
@@ -22,10 +22,10 @@
 
         public YiClientTests()
         {
-            this.ftpMock = new (MockBehavior.Strict);
-            this.filesMock = new (MockBehavior.Strict);
-            this.dirMock = new (MockBehavior.Strict);
-            this.fixture = new ();
+            this.ftpMock = new(MockBehavior.Strict);
+            this.filesMock = new(MockBehavior.Strict);
+            this.dirMock = new(MockBehavior.Strict);
+            this.fixture = new();
         }
 
         [Fact]

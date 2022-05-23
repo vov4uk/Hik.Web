@@ -1,8 +1,7 @@
-﻿using Hik.Client.Helpers;
+﻿using Hik.Helpers;
 using Hik.DTO.Contracts;
 using Hik.Web.Queries.Dashboard;
-using Hik.Web.Scheduler;
-using Job.Extensions;
+using Hik.Web.Queries.QuartzTriggers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -28,14 +27,11 @@ namespace Hik.Web.Pages
         {
             this.Dto = await mediator.Send(new DashboardQuery()) as DashboardDto;
 
-            var cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
-            foreach (var item in cronTriggers)
+            var cronTriggers = await mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
+            foreach (var item in cronTriggers.Items)
             {
-                var className = item.GetJobClass();
-                var group = item.Key.Group;
-                var name = item.Key.Name;
-                var tri = Dto.Triggers.FirstOrDefault(x => x.Name == name && x.Group == group);
-                JobTriggers.SafeAdd(className, tri);
+                var tri = Dto.Triggers.FirstOrDefault(x => x.Name == item.Name && x.Group == item.Group);
+                JobTriggers.SafeAdd(item.ClassName, tri);
             }
 
             return Page();

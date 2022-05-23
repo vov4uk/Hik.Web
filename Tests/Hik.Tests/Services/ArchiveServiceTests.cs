@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
-using Hik.Client.Abstraction;
 using Hik.Client.Service;
 using Hik.DTO.Config;
+using Hik.Helpers.Abstraction;
 using Moq;
 using Xunit;
 

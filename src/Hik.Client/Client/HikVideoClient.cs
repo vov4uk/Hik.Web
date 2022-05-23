@@ -8,6 +8,7 @@ using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client
 {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Hik.Client.Abstraction;
-using Hik.Client.Helpers;
 using Hik.DTO.Contracts;
+using Hik.Helpers;
+using Hik.Helpers.Abstraction;
 using NLog;
 
 namespace Hik.Client.FileProviders

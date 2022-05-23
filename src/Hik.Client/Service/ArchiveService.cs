@@ -9,6 +9,8 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.DTO.Message;
+using Hik.Helpers;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client.Service
 {

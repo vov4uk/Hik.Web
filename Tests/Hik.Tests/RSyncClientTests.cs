@@ -1,8 +1,8 @@
 ﻿using AutoFixture;
 using FluentFTP;
-using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using Moq;
 using System;
 using System.Linq;
@@ -21,10 +21,10 @@ namespace Hik.Client.Tests
 
         public RSyncClientTests()
         {
-            this.ftpMock = new (MockBehavior.Strict);
-            this.filesMock = new (MockBehavior.Strict);
-            this.dirMock = new (MockBehavior.Strict);
-            this.fixture = new ();
+            this.ftpMock = new(MockBehavior.Strict);
+            this.filesMock = new(MockBehavior.Strict);
+            this.dirMock = new(MockBehavior.Strict);
+            this.fixture = new();
         }
 
         [Fact]
