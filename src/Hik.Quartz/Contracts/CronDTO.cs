@@ -8,12 +8,12 @@ using System.Linq;
 
 namespace Hik.Quartz.Contracts
 {
-    public class CronDTO
+    public class CronDto
     {
         internal static readonly CronExpressionDescriptor.Options CronFormatOptions = new CronExpressionDescriptor.Options() { DayOfWeekStartIndexZero = false, Use24HourTimeFormat = true };
 
-        public CronDTO() { }
-        public CronDTO(Cron cron)
+        public CronDto() { }
+        public CronDto(Cron cron)
         {
             Name = cron.Name;
             Description = cron.Description;
@@ -24,7 +24,7 @@ namespace Hik.Quartz.Contracts
             RunAsTask = bool.Parse(cron.Jobdatamap.Entry.FirstOrDefault(x => x.Key == CronTriggerImplExtensions.RunAsTask)?.Value);
         }
 
-        public CronDTO(string configPath, string expression, DateTime triggerStarted, DateTime? next)
+        public CronDto(string configPath, string expression, DateTime triggerStarted, DateTime? next)
         {
             ConfigPath = configPath;
             Expression = expression;
@@ -32,7 +32,7 @@ namespace Hik.Quartz.Contracts
             NextRun = next;
         }
 
-        public CronDTO(CronTriggerImpl cron)
+        public CronDto(CronTriggerImpl cron)
         {
             ConfigPath = cron.GetConfig();
             Expression = cron.CronExpressionString;

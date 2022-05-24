@@ -11,6 +11,6 @@ namespace Hik.Client.Abstraction
     {
         event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to);
+        Task<IReadOnlyCollection<MediaFileDto>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to);
     }
 }

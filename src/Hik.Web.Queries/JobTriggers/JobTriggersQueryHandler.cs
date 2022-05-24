@@ -22,16 +22,16 @@ namespace Hik.Web.Queries.JobTriggers
                 var triggerRepo = uow.GetRepository<JobTrigger>();
                 var triggers = await triggerRepo.GetAllAsync();
 
-                var jobs = await triggerRepo.GetAll(x => x.Jobs)
+                var jobs = triggerRepo.GetAll(x => x.Jobs)
                     .Select(x => x.Jobs.OrderByDescending(y => y.Started).FirstOrDefault())
                     .Where(x => x != null)
-                    .ToListAsync(CancellationToken.None);
+                    .ToList();
 
-                var items = new List<TriggerDTO>();
+                var items = new List<TriggerDto>();
 
                 foreach (var trigger in triggers)
                 {
-                    var triggerDto = HikDatabase.Mapper.Map<JobTrigger, TriggerDTO>(trigger);
+                    var triggerDto = HikDatabase.Mapper.Map<JobTrigger, TriggerDto>(trigger);
                     var latestJob = jobs.FirstOrDefault(x => x.JobTriggerId == trigger.Id);
                     if (latestJob != null)
                     {

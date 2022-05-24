@@ -1,19 +1,15 @@
-﻿using Hik.Quartz.Contracts.Xml;
-using Hik.Quartz.Extensions;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace Hik.Quartz.Contracts
 {
-    public class CronConfigDTO
+    public class CronConfigDto
     {
-        public CronConfigDTO() { }
+        public CronConfigDto() { }
 
-        public CronConfigDTO(Cron cron)
+        public CronConfigDto(CronDto cron)
         {
-            var configFileName = cron.Jobdatamap.Entry.FirstOrDefault(x => x.Key == CronTriggerImplExtensions.Config)?.Value;
-            Path = configFileName;
+            Path = cron.ConfigPath;
             JobName = cron.Name;
         }
 

@@ -8,10 +8,10 @@ namespace Hik.Web.Queries.Play
         public string FileTo { get; set; }
         public string Poster { get; set; }
 
-        public MediaFileDTO PreviousFile { get; set; }
+        public MediaFileDto PreviousFile { get; set; }
 
-        public MediaFileDTO CurrentFile { get; set; }
+        public MediaFileDto CurrentFile { get; set; }
 
-        public MediaFileDTO NextFile { get; set; }
+        public MediaFileDto NextFile { get; set; }
     }
 }

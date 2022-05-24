@@ -4,6 +4,6 @@ namespace Hik.Web.Queries.QuartzTriggers
 {
     public class QuartzTriggersDto : IHandlerResult
     {
-        public IReadOnlyCollection<CronDTO> Items { get; set; }
+        public IReadOnlyCollection<CronDto> Items { get; set; }
     }
 }

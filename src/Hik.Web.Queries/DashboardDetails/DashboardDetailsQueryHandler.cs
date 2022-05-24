@@ -22,21 +22,21 @@ namespace Hik.Web.Queries.DashboardDetails
                 var statRepo = uow.GetRepository<DailyStatistic>();
                 var jobTriggerRepo = uow.GetRepository<JobTrigger>();
 
-                var trigger = await jobTriggerRepo.FindByAsync(x => x.Id == query.TriggerId);
+                var trigger = await jobTriggerRepo.FindByAsync(x => x.Id == query.JobTriggerId);
 
                 if (trigger != null)
                 {
-                    var totalItems = await statRepo.CountAsync(x => x.JobTriggerId == query.TriggerId);
+                    var totalItems = await statRepo.CountAsync(x => x.JobTriggerId == query.JobTriggerId);
 
                     var files = await statRepo.FindManyAsync(
-                        x => x.JobTriggerId == query.TriggerId,
+                        x => x.JobTriggerId == query.JobTriggerId,
                         x => x.Period,
                         Math.Max(0, query.CurrentPage - 1) * query.PageSize,
                         query.PageSize);
 
                     return new DashboardDetailsDto()
                     {
-                        JobTriggerId = query.TriggerId,
+                        JobTriggerId = query.JobTriggerId,
                         JobTriggerName = trigger.TriggerKey,
                         TotalItems = totalItems,
                         Items = files.ConvertAll(x => HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>(x)),

@@ -31,7 +31,7 @@ namespace Hik.Client.Client
             this.ftp = ftp;
         }
 
-        public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
+        public async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
         {
             string localFilePath = GetLocalFilePath(remoteFile);
             string remoteFilePath = GetRemoteFilePath(remoteFile);
@@ -47,7 +47,7 @@ namespace Hik.Client.Client
             }
         }
 
-        public abstract Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
+        public abstract Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
 
         public void ForceExit()
         {
@@ -90,7 +90,7 @@ namespace Hik.Client.Client
             }
         }
 
-        protected async Task<bool> DownloadInternalAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
+        protected async Task<bool> DownloadInternalAsync(MediaFileDto remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
         {
             var remoteFileExist = await ftp.FileExistsAsync(remoteFilePath, token);
 
@@ -116,13 +116,13 @@ namespace Hik.Client.Client
             }
         }
 
-        protected abstract Task<bool> PostDownloadFileProcessAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token);
+        protected abstract Task<bool> PostDownloadFileProcessAsync(MediaFileDto remoteFile, string localFilePath, string remoteFilePath, CancellationToken token);
 
-        protected abstract string GetRemoteFilePath(MediaFileDTO remoteFile);
+        protected abstract string GetRemoteFilePath(MediaFileDto remoteFile);
 
-        protected abstract string GetLocalFilePath(MediaFileDTO remoteFile);
+        protected abstract string GetLocalFilePath(MediaFileDto remoteFile);
 
-        protected string GetWorkingDirectory(MediaFileDTO file)
+        protected string GetWorkingDirectory(MediaFileDto file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, file.ToVideoDirectoryNameString());
         }

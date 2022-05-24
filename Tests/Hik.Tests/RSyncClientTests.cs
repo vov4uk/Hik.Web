@@ -76,7 +76,7 @@ namespace Hik.Client.Tests
                 .Returns(true);
 
             var client = this.GetClient();
-            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
+            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
 
             Assert.False(isDownloaded);
         }
@@ -93,7 +93,7 @@ namespace Hik.Client.Tests
                 .ReturnsAsync(false);
 
             var client = this.GetClient();
-            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
+            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
 
             Assert.False(isDownloaded);
         }
@@ -119,7 +119,7 @@ namespace Hik.Client.Tests
                 .ReturnsAsync(FtpStatus.Success);
 
             var client = this.GetClient();
-            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
+            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
 
             Assert.False(isDownloaded);
         }
@@ -128,7 +128,7 @@ namespace Hik.Client.Tests
         public async Task DownloadFileAsync_SizeMatch_DownloadTrue()
         {
             string randomName = "RandomName";
-            var file = this.fixture.Create<MediaFileDTO>();
+            var file = this.fixture.Create<MediaFileDto>();
 
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
                 .Returns(string.Empty);
@@ -157,7 +157,7 @@ namespace Hik.Client.Tests
         public async Task DownloadFileAsync_DeleteFailed_DownloadFalse()
         {
             string randomName = "RandomName";
-            var file = this.fixture.Create<MediaFileDTO>();
+            var file = this.fixture.Create<MediaFileDto>();
 
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
                 .Returns(string.Empty);

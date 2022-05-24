@@ -30,26 +30,26 @@ namespace Hik.Web.Queries.Play
 
                 var file = await filesRepo.FindByAsync(x => x.Id == request.FileId);
 
-                if (filesHelper.FileExists(file.GetPath()))
+                if (file != null && filesHelper.FileExists(file.GetPath()))
                 {
-                    var beforeFile = await filesRepo.GetAll()
+                    var beforeFile = filesRepo.GetAll()
                         .Where(x => x.JobTriggerId == file.JobTriggerId && x.Id < file.Id)
-                        .OrderByDescending(x => x.Date).FirstOrDefaultAsync(CancellationToken.None);
+                        .OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).FirstOrDefault();
 
-                    MediaFileDTO previousFile = default;
+                    MediaFileDto previousFile = default;
                     if (beforeFile != null)
                     {
-                        previousFile = HikDatabase.Mapper.Map<MediaFile, MediaFileDTO>(beforeFile);
+                        previousFile = HikDatabase.Mapper.Map<MediaFile, MediaFileDto>(beforeFile);
                     }
 
-                    var afterFile = await filesRepo.GetAll()
+                    var afterFile = filesRepo.GetAll()
                         .Where(x => x.JobTriggerId == file.JobTriggerId && x.Id > file.Id)
-                        .OrderBy(x => x.Date).FirstOrDefaultAsync(CancellationToken.None);
+                        .OrderBy(x => x.Date).ThenBy(x => x.Id).FirstOrDefault();
 
-                    MediaFileDTO nextFile = default;
+                    MediaFileDto nextFile = default;
                     if (afterFile != null)
                     {
-                        nextFile = HikDatabase.Mapper.Map<MediaFile, MediaFileDTO>(afterFile);
+                        nextFile = HikDatabase.Mapper.Map<MediaFile, MediaFileDto>(afterFile);
                     }
 
                     var title = $"{file.Name} ({file.Duration.FormatSeconds()})";
@@ -58,7 +58,7 @@ namespace Hik.Web.Queries.Play
                     return new PlayDto
                     {
                         PreviousFile = previousFile,
-                        CurrentFile = HikDatabase.Mapper.Map<MediaFile, MediaFileDTO>(file),
+                        CurrentFile = HikDatabase.Mapper.Map<MediaFile, MediaFileDto>(file),
                         NextFile = nextFile,
                         FileTitle = title,
                         Poster = poster,

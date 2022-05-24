@@ -19,7 +19,7 @@ namespace Job.Impl
             this.service = service;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
         {
             service.ExceptionFired += base.ExceptionFired;
 

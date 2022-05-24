@@ -55,14 +55,14 @@ namespace Hik.Client.Tests.Services
 
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
-            var files = this.fixture.Build<MediaFileDTO>()
+            var files = this.fixture.Build<MediaFileDto>()
                 .CreateMany(filesCount)
                 .ToArray();
 
             this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
-            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()))
+            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
             this.clientMock.Setup(x => x.GetFilesListAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
                 .ReturnsAsync(files);
@@ -75,7 +75,7 @@ namespace Hik.Client.Tests.Services
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
-            this.clientMock.Verify(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()), Times.Exactly(filesCount));
+            this.clientMock.Verify(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()), Times.Exactly(filesCount));
         }
 
         [Fact]
@@ -85,14 +85,14 @@ namespace Hik.Client.Tests.Services
 
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
-            var files = this.fixture.Build<MediaFileDTO>()
+            var files = this.fixture.Build<MediaFileDto>()
                 .CreateMany(filesCount)
                 .ToArray();
 
             this.SetupClientSuccessLogin();
             this.SetupDirectoryHelper();
             this.SetupClientDispose();
-            this.clientMock.SetupSequence(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()))
+            this.clientMock.SetupSequence(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false)
                 .ReturnsAsync(false)
                 .ReturnsAsync(false)
@@ -109,7 +109,7 @@ namespace Hik.Client.Tests.Services
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
-            this.clientMock.Verify(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()), Times.Exactly(filesCount));
+            this.clientMock.Verify(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()), Times.Exactly(filesCount));
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Hik.Client.Tests.Services
 
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
-            var files = this.fixture.Build<MediaFileDTO>()
+            var files = this.fixture.Build<MediaFileDto>()
                 .CreateMany(filesCount)
                 .ToArray();
 
@@ -155,7 +155,7 @@ namespace Hik.Client.Tests.Services
 
             // act
             var downloader = this.CreateHikDownloader();
-            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()))
+            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()))
                 .Callback(downloader.Cancel)
                 .ReturnsAsync(true);
             downloader.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
@@ -169,7 +169,7 @@ namespace Hik.Client.Tests.Services
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
-            this.clientMock.Verify(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()), Times.Once);
+            this.clientMock.Verify(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()), Times.Once);
             Assert.True(isOperationCanceledException);
         }
 
@@ -190,7 +190,7 @@ namespace Hik.Client.Tests.Services
 
             // act
             var downloader = this.CreateHikDownloader();
-            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDTO>(), It.IsAny<CancellationToken>()));
+            this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()));
             this.clientMock.Setup(x => x.Login()).Callback(downloader.Cancel)
                 .Returns(true);
             downloader.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>

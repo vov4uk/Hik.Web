@@ -38,7 +38,7 @@ namespace Job.Tests.Impl
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
             filesProvider.Setup(x => x.GetFilesOlderThan(null, It.IsAny<DateTime>()))
-                .Returns(new List<MediaFileDTO>() { new () })
+                .Returns(new List<MediaFileDto>() { new () })
                 .Verifiable();
             filesHelper.Setup(x => x.FileSize(It.IsAny<string>()))
                 .Returns(0);
@@ -64,7 +64,7 @@ namespace Job.Tests.Impl
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
             filesProvider.Setup(x => x.GetFilesOlderThan(null, It.IsAny<DateTime>()))
-                .Returns(new List<MediaFileDTO>() {
+                .Returns(new List<MediaFileDto>() {
                     new () { Date = new (2022, 01,01)},
                     new () { Date = new (2022, 01,11)},
                     new () { Date = new (2022, 01,21)},
@@ -107,7 +107,7 @@ namespace Job.Tests.Impl
                 .Returns(3);
 
             filesProvider.Setup(x => x.GetNextBatch(It.IsAny<string>(), 100))
-                .Returns(new List<MediaFileDTO>() { new MediaFileDTO() { Date = new DateTime(2022, 01,01)} })
+                .Returns(new List<MediaFileDto>() { new MediaFileDto() { Date = new DateTime(2022, 01,01)} })
                 .Verifiable();
 
             var job = CreateJob();
@@ -138,7 +138,7 @@ namespace Job.Tests.Impl
                 .Returns(3);
 
             filesProvider.Setup(x => x.GetNextBatch(It.IsAny<string>(), 100))
-                .Returns(new List<MediaFileDTO>())
+                .Returns(new List<MediaFileDto>())
                 .Verifiable();
 
             var job = CreateJob();

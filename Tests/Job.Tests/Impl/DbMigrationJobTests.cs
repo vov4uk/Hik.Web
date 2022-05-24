@@ -36,7 +36,7 @@ namespace Job.Tests.Impl
             base.SetupCreateJobInstanceAsync();
             base.SetupSaveJobResultAsync();
             base.SetupUpdateDailyStatisticsAsync();
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
                 .ReturnsAsync(new List<MediaFile>());
             dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
                 .Returns(Task.CompletedTask);
@@ -44,21 +44,21 @@ namespace Job.Tests.Impl
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
             filesProvider.SetupSequence(x => x.GetOldestFilesBatch(false))
-                .ReturnsAsync(new List<MediaFileDTO>()
+                .ReturnsAsync(new List<MediaFileDto>()
                 {
                     new () { Date = new (2022, 01,01)},
                     new () { Date = new (2022, 01,11)},
                     new () { Date = new (2022, 01,21)},
                     new () { Date = new (2022, 01,31)},
                 })
-                .ReturnsAsync(new List<MediaFileDTO>()
+                .ReturnsAsync(new List<MediaFileDto>()
                 {
                     new () { Date = new (2022, 02,01)},
                     new () { Date = new (2022, 02,11)},
                     new () { Date = new (2022, 02,21)},
                     new () { Date = new (2022, 02,28)},
                 })
-                .ReturnsAsync(new List<MediaFileDTO>());
+                .ReturnsAsync(new List<MediaFileDto>());
 
             var job = CreateJob();
             await job.ExecuteAsync();

@@ -36,8 +36,8 @@
                      <tbody>
                          @foreach (var jobTrigger in jobTriggers)
                          {
-                             long statSize = Model.Dto.Items.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId)?.FilesSize ?? 0;
-                             int statDuration = Model.Dto.Items.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId)?.TotalDuration ?? 0;
+                             long statSize = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId)?.FilesSize ?? 0;
+                             int statDuration = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId)?.TotalDuration ?? 0;
                              string size = statSize.FormatBytes();
                              string duration = ((double)statDuration).FormatSeconds();
                              string triggerString = jobTrigger.ToString();
@@ -57,7 +57,7 @@
                                 <td><span title="@jobTrigger.LastSync?.GetRelativeTime()">@jobTrigger.LastSync?.GetString()</span></td>
                                 <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
                                 <td>@lastFileDelta.GetRelativeTime()</td>
-                                <td>@Html.DisplayFor(modelItem => Model.Dto.Items.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId).FilesCount)</td>
+                                <td>@Html.DisplayFor(modelItem => Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId).FilesCount)</td>
                                 <td>@size</td>
                                 <td>@duration</td>
                             </tr>

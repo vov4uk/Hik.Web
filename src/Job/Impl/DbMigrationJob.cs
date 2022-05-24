@@ -20,13 +20,13 @@ namespace Job.Impl
             this.filesProvider = fileProvider;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
         {
             filesProvider.Initialize(new[] { Config.DestinationFolder });
 
             bool readVideoDuration = Config.ReadVideoDuration;
 
-            List<MediaFileDTO> files = new();
+            List<MediaFileDto> files = new();
             do
             {
                 var batch = await filesProvider.GetOldestFilesBatch(readVideoDuration);

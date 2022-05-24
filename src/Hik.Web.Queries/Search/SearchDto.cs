@@ -6,10 +6,10 @@ namespace Hik.Web.Queries.Search
     {
         public string Message { get; set; }
 
-        public IReadOnlyCollection<MediaFileDTO> BeforeRange { get; set; }
+        public IReadOnlyCollection<MediaFileDto> BeforeRange { get; set; }
 
-        public IReadOnlyCollection<MediaFileDTO> InRange { get; set; }
+        public IReadOnlyCollection<MediaFileDto> InRange { get; set; }
 
-        public IReadOnlyCollection<MediaFileDTO> AfterRange { get; set; }
+        public IReadOnlyCollection<MediaFileDto> AfterRange { get; set; }
     }
 }

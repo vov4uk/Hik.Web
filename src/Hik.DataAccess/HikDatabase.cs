@@ -92,7 +92,7 @@ namespace Hik.DataAccess
             }
         }
 
-        public async Task<List<MediaFile>> SaveFilesAsync(HikJob job, IReadOnlyCollection<MediaFileDTO> files)
+        public async Task<List<MediaFile>> SaveFilesAsync(HikJob job, IReadOnlyCollection<MediaFileDto> files)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
 
@@ -121,7 +121,7 @@ namespace Hik.DataAccess
             return mediaFiles;
         }
 
-        public async Task UpdateDailyStatisticsAsync(int jobTriggerId, IReadOnlyCollection<MediaFileDTO> files)
+        public async Task UpdateDailyStatisticsAsync(int jobTriggerId, IReadOnlyCollection<MediaFileDto> files)
         {
             using (var unitOfWork = factory.CreateUnitOfWork())
             {

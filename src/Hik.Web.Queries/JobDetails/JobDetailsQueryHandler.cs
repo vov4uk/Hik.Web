@@ -43,7 +43,7 @@ namespace Hik.Web.Queries
                     {
                         Job = HikDatabase.Mapper.Map<HikJob, HikJobDto>(job),
                         TotalItems = totalItems,
-                        Items = files.ConvertAll(x => HikDatabase.Mapper.Map <MediaFile, MediaFileDTO>(x)),
+                        Items = files.ConvertAll(x => HikDatabase.Mapper.Map <MediaFile, MediaFileDto>(x)),
                     };
                 }
 

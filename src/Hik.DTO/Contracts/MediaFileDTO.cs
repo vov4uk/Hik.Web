@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Hik.DTO.Contracts
 {
-    public class MediaFileDTO
+    public class MediaFileDto
     {
         public int Id { get; set; }
 

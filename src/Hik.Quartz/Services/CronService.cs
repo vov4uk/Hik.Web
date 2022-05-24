@@ -18,32 +18,32 @@ namespace Hik.Quartz.Services
 {
     public class CronService : ICronService
     {
-        XmlSerializer serializer = new XmlSerializer(typeof(JobSchedulingData));
+        private readonly XmlSerializer serializer = new XmlSerializer(typeof(JobSchedulingData));
         private readonly IFilesHelper filesHelper;
         public CronService(IFilesHelper filesHelper)
         {
             this.filesHelper = filesHelper;
         }
 
-        public async Task<IReadOnlyCollection<CronDTO>> GetAllCronsAsync()
+        public async Task<IReadOnlyCollection<CronDto>> GetAllCronsAsync()
         {
             IScheduler scheduler = await new StdSchedulerFactory().GetScheduler("default") ?? throw new InvalidOperationException("Unable to load default scheduler");
 
             IReadOnlyCollection<TriggerKey> triggerKeys = await scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup());
 
-            List<CronDTO> resultList = new List<CronDTO>();
+            List<CronDto> resultList = new List<CronDto>();
             foreach (var cronTrigger in triggerKeys)
             {
                 var triggerImpl = await scheduler.GetTrigger(cronTrigger) as CronTriggerImpl;
 
-                var ctronTriggerDto = new CronDTO(triggerImpl);
+                var ctronTriggerDto = new CronDto(triggerImpl);
 
                 resultList.Add(ctronTriggerDto);
             }
             return resultList.OrderBy(x => x.Name).ToList();
         }
 
-        public async Task<CronDTO> GetCronAsync(IConfiguration configuration, string name, string group)
+        public async Task<CronDto> GetCronAsync(IConfiguration configuration, string name, string group)
         {
             var options = new QuartzOption(configuration);
             var xmlFilePath = options.Plugin.JobInitializer.FileNames;
@@ -58,11 +58,11 @@ namespace Hik.Quartz.Services
                     Cron cron = data.Schedule.Trigger.Select(x => x.Cron).FirstOrDefault(x => x.Group == group && x.Name == name);
                     if (cron != null)
                     {
-                        return new CronDTO(cron);
+                        return new CronDto(cron);
                     }
                 }
             }
-            return default(CronDTO);
+            return default(CronDto);
         }
 
         public async Task RestartSchedulerAsync(IConfiguration configuration)
@@ -76,7 +76,7 @@ namespace Hik.Quartz.Services
             await scheduler.Start();
         }
 
-        public async Task UpdateCronAsync(IConfiguration configuration, CronDTO cron)
+        public async Task UpdateCronAsync(IConfiguration configuration, CronDto cron)
         {
             JobSchedulingData data;
             var options = new QuartzOption(configuration);

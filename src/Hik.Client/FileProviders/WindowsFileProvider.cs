@@ -57,9 +57,9 @@ namespace Hik.Client.FileProviders
             isInitialized = true;
         }
 
-        public IReadOnlyCollection<MediaFileDTO> GetNextBatch(string fileExtention, int batchSize = 100)
+        public IReadOnlyCollection<MediaFileDto> GetNextBatch(string fileExtention, int batchSize = 100)
         {
-            var result = new List<MediaFileDTO>();
+            var result = new List<MediaFileDto>();
             if (!isInitialized)
             {
                 logger.Info("GetNextBatch !isInitialized");
@@ -83,9 +83,9 @@ namespace Hik.Client.FileProviders
             return result;
         }
 
-        public async Task<IReadOnlyCollection<MediaFileDTO>> GetOldestFilesBatch(bool readDuration = false)
+        public async Task<IReadOnlyCollection<MediaFileDto>> GetOldestFilesBatch(bool readDuration = false)
         {
-            var files = new List<MediaFileDTO>();
+            var files = new List<MediaFileDto>();
             if (isInitialized && dates.TryPop(out var last) && folders.ContainsKey(last))
             {
                 foreach (var dir in folders[last])
@@ -95,7 +95,7 @@ namespace Hik.Client.FileProviders
                     {
                         var size = filesHelper.FileSize(file);
                         var duration = readDuration ? await videoHelper.GetDuration(file) : 0;
-                        files.Add(new MediaFileDTO { Date = last, Name = filesHelper.GetFileName(file), Path = file, Size = size, Duration = duration });
+                        files.Add(new MediaFileDto { Date = last, Name = filesHelper.GetFileName(file), Path = file, Size = size, Duration = duration });
                     }
                 }
             }
@@ -103,9 +103,9 @@ namespace Hik.Client.FileProviders
             return files.AsReadOnly();
         }
 
-        public IReadOnlyCollection<MediaFileDTO> GetFilesOlderThan(string fileExtention, DateTime date)
+        public IReadOnlyCollection<MediaFileDto> GetFilesOlderThan(string fileExtention, DateTime date)
         {
-            var result = new List<MediaFileDTO>();
+            var result = new List<MediaFileDto>();
             if (isInitialized && folders.Any())
             {
                 foreach (var fileDateTime in folders.Keys.Where(x => x <= date && folders.ContainsKey(x)))
@@ -117,7 +117,7 @@ namespace Hik.Client.FileProviders
             return result;
         }
 
-        private List<MediaFileDTO> GetFiles(string fileExtention, DateTime lastDate)
+        private List<MediaFileDto> GetFiles(string fileExtention, DateTime lastDate)
         {
             List<string> files = new List<string>();
             if (folders.ContainsKey(lastDate))
@@ -135,7 +135,7 @@ namespace Hik.Client.FileProviders
                 }
             }
 
-            return files.ConvertAll(x => new MediaFileDTO { Path = x, Date = lastDate });
+            return files.ConvertAll(x => new MediaFileDto { Path = x, Date = lastDate });
         }
     }
 }

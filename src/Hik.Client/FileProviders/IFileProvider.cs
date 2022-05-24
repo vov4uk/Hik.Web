@@ -9,10 +9,10 @@ namespace Hik.Client.FileProviders
     {
         void Initialize(string[] directories);
 
-        IReadOnlyCollection<MediaFileDTO> GetNextBatch(string fileExtention, int batchSize = 100);
+        IReadOnlyCollection<MediaFileDto> GetNextBatch(string fileExtention, int batchSize = 100);
 
-        IReadOnlyCollection<MediaFileDTO> GetFilesOlderThan(string fileExtention, DateTime date);
+        IReadOnlyCollection<MediaFileDto> GetFilesOlderThan(string fileExtention, DateTime date);
 
-        Task<IReadOnlyCollection<MediaFileDTO>> GetOldestFilesBatch(bool readDuration = false);
+        Task<IReadOnlyCollection<MediaFileDto>> GetOldestFilesBatch(bool readDuration = false);
     }
 }

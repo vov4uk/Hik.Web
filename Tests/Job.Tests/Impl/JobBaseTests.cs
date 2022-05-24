@@ -45,7 +45,7 @@ namespace Job.Tests.Impl
                 .ReturnsAsync(new JobTrigger());
         }
 
-        protected void SetupUpdateDailyStatisticsAsync(List<MediaFileDTO> files)
+        protected void SetupUpdateDailyStatisticsAsync(List<MediaFileDto> files)
         {
             dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), files))
                 .Returns(Task.CompletedTask);
@@ -53,7 +53,7 @@ namespace Job.Tests.Impl
 
         protected void SetupUpdateDailyStatisticsAsync()
         {
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
                 .Returns(Task.CompletedTask);
         }
 

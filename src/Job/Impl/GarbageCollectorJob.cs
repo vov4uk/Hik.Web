@@ -34,9 +34,9 @@ namespace Job.Impl
             this.filesProvider = provider;
         }
 
-        protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
         {
-            IReadOnlyCollection<MediaFileDTO> deleteFilesResult;
+            IReadOnlyCollection<MediaFileDto> deleteFilesResult;
 
             if (Config.RetentionPeriodDays > 0)
             {
@@ -56,7 +56,7 @@ namespace Job.Impl
             return Task.FromResult(deleteFilesResult);
         }
 
-        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
@@ -70,7 +70,7 @@ namespace Job.Impl
             }
         }
 
-        private void DeleteFiles(IReadOnlyCollection<MediaFileDTO> filesToDelete)
+        private void DeleteFiles(IReadOnlyCollection<MediaFileDto> filesToDelete)
         {
             foreach (var file in filesToDelete)
             {
@@ -81,9 +81,9 @@ namespace Job.Impl
 #endif
             }
         }
-        private List<MediaFileDTO> PersentageDelete(GarbageCollectorConfig gcConfig)
+        private List<MediaFileDto> PersentageDelete(GarbageCollectorConfig gcConfig)
         {
-            List<MediaFileDTO> deletedFiles = new();
+            List<MediaFileDto> deletedFiles = new();
             var destination = gcConfig.DestinationFolder;
             var totalSpace = this.directoryHelper.GetTotalSpaceBytes(destination) * 1.0;
             do

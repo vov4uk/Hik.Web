@@ -4,6 +4,6 @@ namespace Hik.Web.Queries.JobTriggers
 {
     public class JobTriggersDto : IHandlerResult
     {
-        public IReadOnlyCollection<TriggerDTO> Items { get; set; }
+        public IReadOnlyCollection<TriggerDto> Items { get; set; }
     }
 }

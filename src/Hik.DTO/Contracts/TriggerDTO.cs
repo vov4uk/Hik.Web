@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Hik.DTO.Contracts
 {
-    public class TriggerDTO
+    public class TriggerDto
     {
         public string Group { get; set; }
 
@@ -19,7 +19,7 @@ namespace Hik.DTO.Contracts
 
         public HikJobDto LastJob { get; set; }
 
-        public CronDTO Cron { get; set; }
+        public CronDto Cron { get; set; }
 
         public override string ToString()
         {

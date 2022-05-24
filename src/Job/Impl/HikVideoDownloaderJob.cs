@@ -20,7 +20,7 @@ namespace Job.Impl
             this.downloader = service;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
         {
             downloader.ExceptionFired += base.ExceptionFired;
             downloader.FileDownloaded += this.Downloader_VideoDownloaded;
@@ -37,7 +37,7 @@ namespace Job.Impl
             return files;
         }
 
-        protected override Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        protected override Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             return Task.CompletedTask;
         }

@@ -39,7 +39,7 @@
         [Fact]
         public async Task ExecuteAsync_2FilesFound_StatisticsUpdated()
         {
-            var files = new List<MediaFileDTO>()
+            var files = new List<MediaFileDto>()
             {
                 new (){Date = new (2022,01,01), Name = "File1", Duration = 0},
                 new (){Date = new (2022,01,31), Name = "File2", Duration = 0},
@@ -65,7 +65,7 @@
         [Fact]
         public async Task ExecuteAsync_AbnormalActivity_EmailSend()
         {
-            List<MediaFileDTO> files = new()
+            List<MediaFileDto> files = new()
             {
                 new(),
                 new(),
@@ -161,7 +161,7 @@
         [Fact]
         public async Task ExecuteAsync_VideoFiles_SaveFilesAsync()
         {
-            List<MediaFileDTO> files = new ()
+            List<MediaFileDto> files = new ()
             {
                 new (){ Duration = 1 },
                 new (){ Duration = 1 },
@@ -171,7 +171,7 @@
             SetupGetOrCreateJobTriggerAsync();
             SetupCreateJobInstanceAsync();
             SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
                 .ReturnsAsync(new List<MediaFile>());
             dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
                 .Returns(Task.CompletedTask);

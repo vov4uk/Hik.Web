@@ -123,27 +123,27 @@ namespace Hik.Client.Helpers
             return $"{date.Year:0000}-{date.Month:00}\\{date.Day:00}\\{date.Hour:00}";
         }
 
-        public static string ToVideoUserFriendlyString(this MediaFileDTO file)
+        public static string ToVideoUserFriendlyString(this MediaFileDto file)
         {
             return $"{file.Name} | {file.Date.ToString(StartDateTimePrintFormat)} - {file.Duration} | {FormatBytes(file.Size)} ";
         }
 
-        public static string ToPhotoFileNameString(this MediaFileDTO file)
+        public static string ToPhotoFileNameString(this MediaFileDto file)
         {
             return $"{file.Date.ToString(DateFormat)}.jpg";
         }
 
-        public static string ToVideoDirectoryNameString(this MediaFileDTO file)
+        public static string ToVideoDirectoryNameString(this MediaFileDto file)
         {
             return $"{file.Date.Year:0000}-{file.Date.Month:00}\\{file.Date.Day:00}\\{file.Date.Hour:00}";
         }
 
-        public static string ToVideoFileNameString(this MediaFileDTO file)
+        public static string ToVideoFileNameString(this MediaFileDto file)
         {
             return $"{file.Date.ToString(DateFormat)}_{file.Date.AddSeconds((double)file.Duration).ToString(TimeFormat)}.mp4";
         }
 
-        public static string ToYiFileNameString(this MediaFileDTO file)
+        public static string ToYiFileNameString(this MediaFileDto file)
         {
             return $"{file.Date.ToString(DateFormat)}.mp4";
         }

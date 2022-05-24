@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
 namespace Hik.DataAccess.Data
 {
@@ -34,22 +33,19 @@ namespace Hik.DataAccess.Data
         public virtual DownloadDuration DownloadDuration { get; set; }
 
         public virtual DownloadHistory DownloadHistory { get; set; }
-    }
 
-    public static class MediaFileExtensions
-    {
-        public static string GetPath(this MediaFile file)
+        public string GetPath()
         {
             if (Debugger.IsAttached)
             {
-                return file.Path.Replace("E:\\Cloud\\", "W:\\");
+                return this.Path.Replace("E:\\Cloud\\", "W:\\");
             }
 
-            if (!Path.HasExtension(file.Path))
+            if (!System.IO.Path.HasExtension(this.Path))
             {
-                return Path.Combine(file.Path, file.Name);
+                return System.IO.Path.Combine(this.Path, this.Name);
             }
-            return file.Path;
+            return this.Path;
         }
     }
 }

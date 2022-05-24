@@ -86,7 +86,7 @@
             var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test" };
 
             SetupLoginAndHddStatusCheck();
-            MediaFileDTO remoteFile = new () { Date = new DateTime(y, m, d)};
+            MediaFileDto remoteFile = new () { Date = new DateTime(y, m, d)};
 
             var targetName = localFolder + localFileName;
 
@@ -123,7 +123,7 @@
                 .Returns(true);
 
             var client = GetHikClient();
-            var isDownloaded = await client.DownloadFileAsync(fixture.Create<MediaFileDTO>(), CancellationToken.None);
+            var isDownloaded = await client.DownloadFileAsync(fixture.Create<MediaFileDto>(), CancellationToken.None);
 
             Assert.False(isDownloaded);
         }

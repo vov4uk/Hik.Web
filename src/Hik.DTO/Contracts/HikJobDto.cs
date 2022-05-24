@@ -9,7 +9,6 @@ namespace Hik.DTO.Contracts
 
         public string JobTrigger { get; set; }
 
-        [Display(Name = "Success")]
         public bool Success { get; set; } = true;
 
         [Display(Name = "From"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]

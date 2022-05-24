@@ -22,13 +22,13 @@ namespace Job.Impl
             this.worker = worker;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
         {
             worker.ExceptionFired += base.ExceptionFired;
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MaxValue);
         }
 
-        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);

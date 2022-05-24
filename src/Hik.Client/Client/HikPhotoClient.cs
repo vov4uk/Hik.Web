@@ -22,7 +22,7 @@ namespace Hik.Client
             this.imageHelper = imageHelper;
         }
 
-        public Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
+        public Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
         {
             string targetFilePath = GetPathSafety(remoteFile);
 
@@ -41,7 +41,7 @@ namespace Hik.Client
             return Task.FromResult(false);
         }
 
-        public async Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             ValidateDateParameters(periodStart, periodEnd);
 
@@ -49,19 +49,19 @@ namespace Hik.Client
 
             var remoteFiles = await hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd, session);
 
-            return Mapper.Map<IReadOnlyCollection<MediaFileDTO>>(remoteFiles);
+            return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
         }
 
         protected override void StopDownload()
         {
         }
 
-        protected override string ToFileNameString(MediaFileDTO file)
+        protected override string ToFileNameString(MediaFileDto file)
         {
             return file.ToPhotoFileNameString();
         }
 
-        protected override string ToDirectoryNameString(MediaFileDTO file)
+        protected override string ToDirectoryNameString(MediaFileDto file)
         {
             return file.Date.ToPhotoDirectoryNameString();
         }

@@ -21,10 +21,10 @@ namespace Job.Tests.Impl
         protected void SetupExecuteAsync()
         {
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
-                .ReturnsAsync(new List<MediaFileDTO>());
+                .ReturnsAsync(new List<MediaFileDto>());
         }
 
-        protected void SetupExecuteAsync(List<MediaFileDTO> files)
+        protected void SetupExecuteAsync(List<MediaFileDto> files)
         {
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ReturnsAsync(files);

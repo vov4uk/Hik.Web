@@ -24,14 +24,14 @@ namespace Hik.Web.Pages
             this._mediator = mediator;
         }
 
-        public Dictionary<string, IList<TriggerDTO>> TriggersDtos { get; private set; }
+        public Dictionary<string, IList<TriggerDto>> TriggersDtos { get; private set; }
 
         public string ResponseMsg { get; private set; }
 
         public async Task OnGet(string msg = null)
         {
             ResponseMsg = msg;
-            TriggersDtos = new Dictionary<string, IList<TriggerDTO>>();
+            TriggersDtos = new Dictionary<string, IList<TriggerDto>>();
 
             var triggers = await _mediator.Send(new JobTriggersQuery()) as JobTriggersDto;
 

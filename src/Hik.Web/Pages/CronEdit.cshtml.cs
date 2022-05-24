@@ -22,7 +22,7 @@ namespace Hik.Web.Pages
 
         public void OnGetAddNew()
         {
-            Dto = new QuartzJobDto() { Cron = new CronDTO()};
+            Dto = new QuartzJobDto() { Cron = new CronDto()};
         }
 
         public async Task OnGetAsync(string name, string group)

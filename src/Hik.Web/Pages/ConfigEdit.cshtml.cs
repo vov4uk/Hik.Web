@@ -1,3 +1,4 @@
+using Hik.Web.Commands.QuartzJob;
 using Hik.Web.Queries.QuartzJobConfig;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ namespace Hik.Web.Pages
 {
     public class ConfigEditModel : PageModel
     {
+        private const string JsonKey = "Dto.ConfigDTO.Json";
         private readonly IMediator _mediator;
 
         public ConfigEditModel(IMediator mediator)
@@ -24,16 +26,24 @@ namespace Hik.Web.Pages
             Dto = await this._mediator.Send(new QuartzJobConfigQuery { Name = name, Group = group }) as QuartzJobConfigDto;
         }
 
-        public IActionResult OnPost()
+        public async Task<IActionResult> OnPost()
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                return Page();
+                var jsonArray = ModelState[JsonKey].RawValue as string[];
+                string json;
+                if (jsonArray != null)
+                {
+                    json = jsonArray.Last();
+                }
+                else
+                {
+                    json = ModelState[JsonKey].RawValue as string;
+                }
+
+                await this._mediator.Send(new UpdateQuartzJobConfigCommand { Path = Dto.Config.GetConfigPath(), Json = json });
             }
 
-            var json = (ModelState["Dto.ConfigDTO.Json"].RawValue as string[])?.Last();
-
-            System.IO.File.WriteAllText(Dto.ConfigDTO.GetConfigPath(), json);
             return RedirectToPage("./Scheduler");
         }
     }

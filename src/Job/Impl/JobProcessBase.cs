@@ -61,9 +61,9 @@ namespace Job.Impl
             logger.Info($"{TriggerKey} - {msg}");
         }
 
-        protected abstract Task<IReadOnlyCollection<MediaFileDTO>> RunAsync();
+        protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync();
 
-        protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             JobInstance.FilesCount = files.Count;
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
@@ -108,7 +108,7 @@ namespace Job.Impl
             await db.LogExceptionToAsync(JobInstance.Id, (e as HikException)?.ErrorMessage ?? e.ToString(), e.StackTrace, (e as HikException)?.ErrorCode);
         }
 
-        private async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDTO> files)
+        private async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             if (files?.Any() == true)
             {

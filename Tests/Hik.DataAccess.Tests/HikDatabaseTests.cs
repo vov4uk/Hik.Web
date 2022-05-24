@@ -173,7 +173,7 @@ namespace Hik.DataAccess.Tests
         {
             HikJob job = new HikJob() { Started = new (2022, 01, 01), Success = true, JobTriggerId = 31 };
 
-            List<MediaFileDTO> files = new List<MediaFileDTO>()
+            List<MediaFileDto> files = new List<MediaFileDto>()
             {
                 new () { Date = new (2022, 01,01), DownloadDuration = 1 },
                 new () { Date = new (2022, 01,11), DownloadDuration = 1 },
@@ -208,7 +208,7 @@ namespace Hik.DataAccess.Tests
         {
             HikJob job = new HikJob() { Started = new DateTime(2022, 01, 01), Success = true };
 
-            List<MediaFileDTO> files = new ()
+            List<MediaFileDto> files = new ()
             {
                 new () { Date = new (2022, 01,01) },
                 new () { Date = new (2022, 01,11) },
@@ -274,7 +274,7 @@ namespace Hik.DataAccess.Tests
                 new () { Period = new (2022, 01,02), FilesCount = 1, FilesSize = 1024 },
             };
 
-            List<MediaFileDTO> files = new()
+            List<MediaFileDto> files = new()
             {
                 new() { Date = new(2022, 01, 01), Size = 1024, Duration = 60 },
                 new() { Date = new(2022, 01, 02), Size = 1024, Duration = 60 },

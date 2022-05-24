@@ -161,7 +161,7 @@
         {
             var cameraConfig = new CameraConfig { ClientType = clientType, DestinationFolder = "C:\\", Alias = "test" };
 
-            MediaFileDTO remoteFile = new MediaFileDTO { Date = new DateTimeOffset(y, m, d, 0, 0, 0, new TimeSpan(0, 0, 0)).UtcDateTime, Duration = 60, Name = "00M00S" };
+            MediaFileDto remoteFile = new MediaFileDto { Date = new DateTimeOffset(y, m, d, 0, 0, 0, new TimeSpan(0, 0, 0)).UtcDateTime, Duration = 60, Name = "00M00S" };
 
             var tempName = localFilePath + ".tmp";
             var targetName = localFilePath;
@@ -201,7 +201,7 @@
                 .Returns(true);
 
             var client = this.GetClient();
-            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
+            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
 
             Assert.False(isDownloaded);
         }
@@ -218,7 +218,7 @@
                 .ReturnsAsync(false);
 
             var client = this.GetClient();
-            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
+            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
 
             Assert.False(isDownloaded);
         }

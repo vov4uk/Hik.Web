@@ -2,6 +2,6 @@
 {
     public class DashboardDetailsQuery : RequestBase
     {
-        public int TriggerId { get; set; }
+        public int JobTriggerId { get; set; }
     }
 }

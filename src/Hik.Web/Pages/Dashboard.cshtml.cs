@@ -22,7 +22,7 @@ namespace Hik.Web.Pages
         }
 
         public DashboardDto Dto { get; private set; }
-        public Dictionary<string, IList<TriggerDTO>> JobTriggers { get; }
+        public Dictionary<string, IList<TriggerDto>> JobTriggers { get; }
         public async Task<IActionResult> OnGet()
         {
             this.Dto = await mediator.Send(new DashboardQuery()) as DashboardDto;

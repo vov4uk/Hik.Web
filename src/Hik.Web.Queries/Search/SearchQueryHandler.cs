@@ -29,6 +29,7 @@ namespace Hik.Web.Queries.Search
                 if (latestFile.Any())
                 {
                     var file = latestFile.First();
+                    var msg = (file.Date <= request.DateTime && request.DateTime <= file.Date.AddSeconds(file.Duration ?? 0)) ? "Match" : "Out of range";
 
                     var beforeFiles = await GetMediaFilesAsync(filesRepo,
                         x => x.JobTriggerId == request.JobTriggerId && x.Id < file.Id);
@@ -36,13 +37,11 @@ namespace Hik.Web.Queries.Search
                     var afterFiles = await GetMediaFilesAsync(filesRepo,
                         x => x.JobTriggerId == request.JobTriggerId && x.Id > file.Id);
 
-                    var msg = (file.Date <= request.DateTime && request.DateTime <= file.Date.AddSeconds(file.Duration ?? 0)) ? "Match" : "Out of range";
-
                     return new SearchDto
                     {
-                        BeforeRange = new List<MediaFileDTO>(beforeFiles.OrderBy(x => x.Date)),
+                        BeforeRange = new List<MediaFileDto>(beforeFiles.OrderBy(x => x.Date)),
                         InRange = latestFile,
-                        AfterRange = new List<MediaFileDTO>(afterFiles),
+                        AfterRange = new List<MediaFileDto>(afterFiles),
                         Message = msg
                     };
                 }
@@ -53,14 +52,14 @@ namespace Hik.Web.Queries.Search
 
                     return new SearchDto
                     {
-                        InRange = new List<MediaFileDTO>(latest.OrderBy(x => x.Date)),
+                        InRange = new List<MediaFileDto>(latest.OrderBy(x => x.Date)),
                         Message = "Latest 5 files"
                     };
                 }
             }
         }
 
-        private static async Task<List<MediaFileDTO>> GetMediaFilesAsync(IBaseRepository<MediaFile> filesRepo, Expression<Func<MediaFile, bool>> predicate, int top = 5)
+        private static async Task<List<MediaFileDto>> GetMediaFilesAsync(IBaseRepository<MediaFile> filesRepo, Expression<Func<MediaFile, bool>> predicate, int top = 5)
         {
             var files = await filesRepo.FindManyAsync(
                         predicate,
@@ -68,7 +67,7 @@ namespace Hik.Web.Queries.Search
                         skip: 0,
                         top: top,
                         includes : x => x.DownloadDuration);
-            return files.ConvertAll(y => HikDatabase.Mapper.Map<MediaFile, MediaFileDTO>(y));
+            return files.ConvertAll(y => HikDatabase.Mapper.Map<MediaFile, MediaFileDto>(y));
         }
     }
 }

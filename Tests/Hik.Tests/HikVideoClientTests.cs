@@ -227,7 +227,7 @@
 
             int downloadHandler = 1;
             this.SetupLoginAndHddStatusCheck();
-            MediaFileDTO remoteFile = new MediaFileDTO { Date = new DateTime(y,m,d), Duration = duration, Name = name};
+            MediaFileDto remoteFile = new MediaFileDto { Date = new DateTime(y,m,d), Duration = duration, Name = name};
 
             var tempName = fileName + ".tmp";
             var targetName = fileName;
@@ -274,7 +274,7 @@
                 .Returns(string.Empty);
 
             var client = this.GetHikClient();
-            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
+            var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
 
             Assert.False(isDownloaded);
         }
@@ -304,7 +304,7 @@
             using (client = this.GetHikClient())
             {
                 client.Login();
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None));
+                await Assert.ThrowsAsync<InvalidOperationException>(() => client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None));
             }
 
             this.videoServiceMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
@@ -352,7 +352,7 @@
 
 
             client.Login();
-            var isDownloadingStarted = await client.DownloadFileAsync(this.fixture.Create<MediaFileDTO>(), CancellationToken.None);
+            var isDownloadingStarted = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
             
             this.sdkMock.Verify(x => x.Logout(DefaultUserId), Times.Once);
             this.sdkMock.Verify(x => x.Cleanup(), Times.Once);

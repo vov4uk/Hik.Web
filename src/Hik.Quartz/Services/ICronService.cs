@@ -7,11 +7,11 @@ namespace Hik.Quartz.Services
 {
     public interface ICronService
     {
-        Task<CronDTO> GetCronAsync(IConfiguration configuration, string name, string group);
+        Task<CronDto> GetCronAsync(IConfiguration configuration, string name, string group);
 
-        Task UpdateCronAsync(IConfiguration configuration, CronDTO cron);
+        Task UpdateCronAsync(IConfiguration configuration, CronDto cron);
 
-        Task<IReadOnlyCollection<CronDTO>> GetAllCronsAsync();
+        Task<IReadOnlyCollection<CronDto>> GetAllCronsAsync();
 
         Task RestartSchedulerAsync(IConfiguration configuration);
     }
