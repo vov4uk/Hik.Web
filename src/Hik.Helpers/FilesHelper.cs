@@ -54,6 +54,22 @@ namespace Hik.Helpers
             return File.ReadAllTextAsync(path);
         }
 
+        public Task<byte[]> ReadAllBytesAsync(string path)
+        {
+            return File.ReadAllBytesAsync(path);
+        }
+
+        public async Task<MemoryStream> ReadAsMemoryStreamAsync(string path)
+        {
+            var memory = new MemoryStream();
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return memory;
+        }
+
         public void WriteAllText(string path, string contents)
         {
             File.WriteAllText(path, contents);

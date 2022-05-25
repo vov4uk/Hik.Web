@@ -1,4 +1,5 @@
-﻿using Hik.Web.Queries.FilePath;
+﻿using Hik.Helpers.Abstraction;
+using Hik.Web.Queries.FilePath;
 using Hik.Web.Queries.Search;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
@@ -15,17 +15,19 @@ namespace Hik.Web.Pages
     public class SearchModel : PageModel
     {
         private readonly IMediator mediator;
+        private readonly IFilesHelper filesHelper;
 
-        public SearchModel(IMediator mediator)
+        public SearchModel(IMediator mediator, IFilesHelper filesHelper)
         {
             this.mediator = mediator;
+            this.filesHelper = filesHelper;
 
-            var jobTriggers = mediator.Send(new SearchTriggersQuery()).GetAwaiter().GetResult() as SearchTriggersDto;
             DateTime = DateTime.Now;
+            var jobTriggers = mediator.Send(new SearchTriggersQuery()).GetAwaiter().GetResult() as SearchTriggersDto;
             JobTriggersList = new SelectList(jobTriggers.Triggers, "Key", "Value", 1);
         }
 
-        public SelectList JobTriggersList { get; set; }
+        public SelectList JobTriggersList { get; private set; }
 
         public SearchDto Dto { get; private set; }
 
@@ -43,7 +45,7 @@ namespace Hik.Web.Pages
             }
 
             dateTime = new DateTime(dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, dateTime.Value.Minute, 0, 0);
-            if (jobTriggerId.HasValue && dateTime.HasValue)
+            if (jobTriggerId.HasValue)
             {
                 Dto = await mediator.Send(new SearchQuery() { DateTime = dateTime, JobTriggerId = jobTriggerId.Value}) as SearchDto;
             }
@@ -53,33 +55,39 @@ namespace Hik.Web.Pages
 
         public async Task<IActionResult> OnGetDownloadFile(int fileId)
         {
-            var file = await mediator.Send(new FilePathQuery() { FileId = fileId }) as FilePathDto;
+            var filePath = await GetFilePath(fileId);
 
-            if (file == null || !System.IO.File.Exists(file.Path))
+            if (string.IsNullOrEmpty(filePath))
             {
                 return NotFound();
             }
 
-            byte[] bytes = await System.IO.File.ReadAllBytesAsync(file.Path);
-            return File(bytes, "application/octet-stream", Path.GetFileName(file.Path));
+            byte[] bytes = await filesHelper.ReadAllBytesAsync(filePath);
+            return File(bytes, "application/octet-stream", filesHelper.GetFileName(filePath));
         }
 
         public async Task<IActionResult> OnGetStreamFile(int fileId)
         {
-            var file = await mediator.Send(new FilePathQuery() { FileId = fileId }) as FilePathDto;
+            var filePath = await GetFilePath(fileId);
 
-            if (file == null || !System.IO.File.Exists(file.Path))
+            if (string.IsNullOrEmpty(filePath))
             {
                 return NotFound();
             }
 
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(file.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan))
-            {
-                await stream.CopyToAsync(memory);
-            }
-            memory.Position = 0;
+            var memory = await filesHelper.ReadAsMemoryStreamAsync(filePath);
             return new FileStreamResult(memory, new MediaTypeHeaderValue("video/mp4")) { EnableRangeProcessing = true };
+        }
+
+        private async Task<string> GetFilePath(int fileId)
+        {
+            var file = await mediator.Send(new FilePathQuery() { FileId = fileId }) as FilePathDto;
+
+            if (file == null || !filesHelper.FileExists(file.Path))
+            {
+                return null;
+            }
+            return file.Path;
         }
     }
 }

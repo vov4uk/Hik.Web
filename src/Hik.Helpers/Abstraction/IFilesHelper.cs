@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Hik.Helpers.Abstraction
@@ -18,6 +19,10 @@ namespace Hik.Helpers.Abstraction
         void RenameFile(string oldFileName, string newFileName);
 
         Task<string> ReadAllText(string path);
+
+        Task<byte[]> ReadAllBytesAsync(string path);
+
+        Task<MemoryStream> ReadAsMemoryStreamAsync(string path);
 
         void WriteAllText(string path, string contents);
 

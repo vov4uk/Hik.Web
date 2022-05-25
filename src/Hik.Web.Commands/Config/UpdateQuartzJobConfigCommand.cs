@@ -1,7 +1,6 @@
-﻿using Hik.Quartz.Contracts;
-using MediatR;
+﻿using MediatR;
 
-namespace Hik.Web.Commands.QuartzJob
+namespace Hik.Web.Commands.Config
 {
     public class UpdateQuartzJobConfigCommand : IRequest
     {

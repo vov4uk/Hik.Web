@@ -1,6 +1,5 @@
 ﻿using Hik.Helpers;
 using Hik.DTO.Contracts;
-using Hik.Web.Commands.Activity;
 using Hik.Web.Queries.JobTriggers;
 using Hik.Web.Queries.QuartzTriggers;
 using Job;
@@ -8,9 +7,9 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Hik.Web.Commands.Cron;
 
 namespace Hik.Web.Pages
 {
@@ -56,16 +55,9 @@ namespace Hik.Web.Pages
             }
         }
 
-        public async Task<IActionResult> OnPostRun(string group, string name)
+        public IActionResult OnPostRun(string group, string name)
         {
-            var cronTriggers = await this._mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
-            var trigger = cronTriggers.Items.Single(t => t.Group == group && t.Name == name);
-
-            bool runAsTask = Debugger.IsAttached || trigger.RunAsTask;
-
-            var parameters = new Parameters(trigger.ClassName, group, name, trigger.ConfigPath, Program.ConnectionString, runAsTask);
-
-            _mediator.Send(new StartActivityCommand(parameters)).ConfigureAwait(false).GetAwaiter();
+            _mediator.Send(new StartActivityCommand() { Name = name, Group = group}).ConfigureAwait(false).GetAwaiter();
 
             return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
         }
@@ -73,9 +65,12 @@ namespace Hik.Web.Pages
         public IActionResult OnPostKill(string activityId)
         {
             var activity = activities.SingleOrDefault(a => a.Id == activityId);
-
-            activity?.Kill();
-            return RedirectToPage("./Index", new { msg = $"Activity {activityId} stoped" });
+            if (activity != null)
+            {
+                activity?.Kill();
+                return RedirectToPage("./Index", new { msg = $"Activity {activityId} stoped" });
+            }
+            return RedirectToPage("./Index", new { msg = $"Activity {activityId} not found" });
         }
     }
 }

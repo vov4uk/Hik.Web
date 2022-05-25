@@ -23,7 +23,7 @@ namespace Hik.Web.Pages
             if (triggerId <= 0) { return NotFound(); }
             Dto = await mediator.Send(new DashboardDetailsQuery { JobTriggerId = triggerId, CurrentPage = p}) as DashboardDetailsDto;
 
-            Pager = new (triggerId, "?triggerId=", Dto.TotalItems, p);
+            Pager = new(triggerId, "?triggerId=", Dto.TotalItems, p);
             return Page();
         }
     }

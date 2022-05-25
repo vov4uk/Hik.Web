@@ -1,4 +1,4 @@
-using Hik.Web.Commands.QuartzJob;
+using Hik.Web.Commands.Config;
 using Hik.Web.Queries.QuartzJobConfig;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -19,14 +19,14 @@ namespace Hik.Web.Pages
         }
 
         [BindProperty]
-        public QuartzJobConfigDto Dto { get; set; }
+        public QuartzJobConfigDto Dto { get; private set; }
 
         public async Task OnGetAsync(string name, string group)
         {
             Dto = await this._mediator.Send(new QuartzJobConfigQuery { Name = name, Group = group }) as QuartzJobConfigDto;
         }
 
-        public async Task<IActionResult> OnPost()
+        public async Task<IActionResult> OnPostAsync()
         {
             if (ModelState.IsValid)
             {

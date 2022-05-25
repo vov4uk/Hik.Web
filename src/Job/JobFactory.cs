@@ -11,9 +11,11 @@ using Job.Extensions;
 using Job.Impl;
 using NLog;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Job
 {
+    [ExcludeFromCodeCoverage]
     public static class JobFactory
     {
         public static IJobProcess GetJob(Parameters parameters, ILogger logger, IEmailHelper email)

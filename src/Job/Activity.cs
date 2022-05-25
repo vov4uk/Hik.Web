@@ -86,6 +86,7 @@ namespace Job
             {
                 Log("No process found");
             }
+            RunningActivities.Remove(this);
         }
 
         private Task StartProcess()

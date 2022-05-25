@@ -24,9 +24,9 @@ namespace Job
         public override string ToString()
             => $"\"{ClassName}\" \"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigFilePath}\" \"{ConnectionString}\" \"{RunAsTask}\"";
 
-        public Parameters(string className, string group, string description, string configFilePath, string connectionString, bool runAsTask = false)
+        public Parameters(string className, string group, string triggerKey, string configFilePath, string connectionString, bool runAsTask = false)
         {
-            TriggerKey = description;
+            TriggerKey = triggerKey;
             ClassName = className;
             Group = group;
             ConfigFilePath = HikConfigExtensions.GetConfigPath(configFilePath);

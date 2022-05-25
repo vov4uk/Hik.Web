@@ -14,22 +14,14 @@ namespace Hik.Web
 {
     public static class Program
     {
+        private const string ConsoleParameter = "--console";
         public static string Version { get; set; }
         public static string ConnectionString { get; set; }
-        public static IConfiguration Configuration { get; set; }
 
         public static void Main(string[] args)
         {
-            // https://dotnetcoretutorials.com/2018/09/12/hosting-an-asp-net-core-web-application-as-a-windows-service/
-            var isService = !(Debugger.IsAttached || args.Contains("--console"));
-            var builder = CreateHostBuilder(isService, args.Where(arg => arg != "--console").ToArray());
-
-            if (isService)
-            {
-                var pathToExe = Process.GetCurrentProcess().MainModule?.FileName;
-                var pathToContentRoot = Path.GetDirectoryName(pathToExe);
-                builder.UseContentRoot(pathToContentRoot);
-            }
+            var isService = !(Debugger.IsAttached || args.Contains(ConsoleParameter));
+            var builder = CreateHostBuilder(isService, args.Where(arg => arg != ConsoleParameter).ToArray());
 
             var host = builder.Build();
 
@@ -51,7 +43,6 @@ namespace Hik.Web
 
             var port = config.GetSection("Hosting:Port").Value;
 
-            Configuration = config;
             ConnectionString = config.GetSection("DBConfiguration").GetSection("ConnectionString").Value;
 
             var host = Host.CreateDefaultBuilder(args)

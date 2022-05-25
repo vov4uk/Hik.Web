@@ -1,15 +1,15 @@
 ﻿using Hik.Helpers.Abstraction;
 using MediatR;
 
-namespace Hik.Web.Commands.QuartzJob
+namespace Hik.Web.Commands.Config
 {
     public class UpdateQuartzJobConfigCommandHandler : IRequestHandler<UpdateQuartzJobConfigCommand>
     {
         private readonly IFilesHelper fileHelper;
 
-        public UpdateQuartzJobConfigCommandHandler(IFilesHelper cronHelper)
+        public UpdateQuartzJobConfigCommandHandler(IFilesHelper filesHelper)
         {
-            this.fileHelper = cronHelper;
+            fileHelper = filesHelper;
         }
 
         public Task<Unit> Handle(UpdateQuartzJobConfigCommand request, CancellationToken cancellationToken)

@@ -1,4 +1,4 @@
-using Hik.Web.Commands.QuartzJob;
+using Hik.Web.Commands.Cron;
 using Hik.Web.Queries.QuartzTriggers;
 using Job;
 using MediatR;
@@ -19,7 +19,7 @@ namespace Hik.Web.Pages
             this._mediator = mediator;
         }
 
-        public async Task<IActionResult> OnGet()
+        public async Task<IActionResult> OnGetAsync()
         {
             Dto = await _mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
             return Page();

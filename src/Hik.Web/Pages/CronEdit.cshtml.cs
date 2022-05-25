@@ -1,5 +1,5 @@
 using Hik.Quartz.Contracts;
-using Hik.Web.Commands.QuartzJob;
+using Hik.Web.Commands.Cron;
 using Hik.Web.Queries.QuartzJob;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +18,7 @@ namespace Hik.Web.Pages
         }
 
         [BindProperty]
-        public QuartzJobDto Dto { get; set; }
+        public QuartzJobDto Dto { get; private set; }
 
         public void OnGetAddNew()
         {
