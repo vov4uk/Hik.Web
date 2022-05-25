@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Client", "src\Hik.Client\Hik.Client.csproj", "{1E49A7B7-1549-4566-84AA-A073179FE013}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Client.Tests", "Tests\Hik.Tests\Hik.Client.Tests.csproj", "{941C4E4E-2898-4A78-AF93-7A7E6EB87DA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Client.Tests", "Tests\Hik.Client.Tests\Hik.Client.Tests.csproj", "{941C4E4E-2898-4A78-AF93-7A7E6EB87DA3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.DataAccess", "src\Hik.DataAccess\Hik.DataAccess.csproj", "{398BC768-99BB-4601-AD47-A987EFFA0252}"
 EndProject
@@ -36,11 +36,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Quartz", "src\Hik.Quart
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Helpers", "src\Hik.Helpers\Hik.Helpers.csproj", "{77CC4185-F504-4713-A564-A87592D4643A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hik.Web.Queries.Test", "Tests\Hik.Web.Queries.Test\Hik.Web.Queries.Test.csproj", "{548B0D13-0BA0-4181-9FDA-F97987B2975E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Web.Queries.Tests", "Tests\Hik.Web.Queries.Tests\Hik.Web.Queries.Tests.csproj", "{548B0D13-0BA0-4181-9FDA-F97987B2975E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hik.Web.Commands.Tests", "Tests\Hik.Web.Commands.Tests\Hik.Web.Commands.Tests.csproj", "{F48E0C80-9E9E-434A-BA06-5352BD50FC52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Web.Commands.Tests", "Tests\Hik.Web.Commands.Tests\Hik.Web.Commands.Tests.csproj", "{F48E0C80-9E9E-434A-BA06-5352BD50FC52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hik.Web.Tests", "Tests\Hik.Web.Tests\Hik.Web.Tests.csproj", "{8EABE7CA-E55A-4E17-8689-62C6D0ECC275}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hik.Web.Tests", "Tests\Hik.Web.Tests\Hik.Web.Tests.csproj", "{8EABE7CA-E55A-4E17-8689-62C6D0ECC275}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
