@@ -16,7 +16,14 @@ namespace Job.Email
         {
 #if RELEASE
             string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
-            Settings = Newtonsoft.Json.JsonConvert.DeserializeObject<EmailConfig>(System.IO.File.ReadAllText(configPath));
+            if (System.IO.File.Exists(configPath))
+            {
+                Settings = Newtonsoft.Json.JsonConvert.DeserializeObject<EmailConfig>(System.IO.File.ReadAllText(configPath));
+            }
+            else
+            {
+                Logger.Error($"File not exist {configPath}");
+            }
 #endif
         }
 
