@@ -20,7 +20,7 @@
         [Fact]
         public void Constructor_ConfigNotExist_Exception()
         {
-            Assert.Throws<FileNotFoundException>(() => CreateJob(".json"));
+            Assert.Throws<ArgumentNullException>(() => CreateJob(".json"));
         }
 
         [Fact]

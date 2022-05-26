@@ -28,7 +28,7 @@ namespace Job.Impl
             this.logger = logger;
             this.db = db;
             this.email = email;
-            Config = config;
+            Config = config ?? throw new ArgumentNullException(nameof(config));
             LogInfo(Config.ToString());
         }
 
