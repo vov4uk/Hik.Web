@@ -90,32 +90,37 @@ namespace Hik.Client.Helpers
 
             if (delta < 1 * MINUTE)
             {
-                return ts.Seconds == 1 ? "one second" : ts.Seconds + " seconds";
+                return ts.Seconds == 1 ? "one second" : $"{ts.Seconds} seconds";
             }
 
             if (delta < 60 * MINUTE)
             {
-                return ts.Minutes + " minutes";
+                return $"{ts.Minutes} minutes";
             }
 
             if (delta < 24 * HOUR)
             {
-                return $"{ts.Hours} h {ts.Minutes} m";
+                return $"{ts.Hours}h {ts.Minutes}m";
+            }
+
+            if (delta < 7 * DAY)
+            {
+                return $"{ts.Days}d {ts.Hours}h";
             }
 
             if (delta < 30 * DAY)
             {
-                return ts.Days + " days";
+                return $"{ts.Days} days";
             }
 
             if (delta < 12 * MONTH)
             {
                 int months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
-                return months <= 1 ? "one month" : months + " months";
+                return months <= 1 ? "one month" : $"{months} months";
             }
 
             int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
-            return years <= 1 ? "one year" : years + " years";
+            return years <= 1 ? "one year" : $"{years} years";
         }
 
         public static string ToPhotoDirectoryNameString(this DateTime date)

@@ -9,8 +9,14 @@ namespace Job.Extensions
     [ExcludeFromCodeCoverage]
     public static class HikConfigExtensions
     {
-        public static T GetConfig<T>(string configFileName) =>
-            JsonConvert.DeserializeObject<T>(File.ReadAllText(configFileName));
+        public static T GetConfig<T>(string configFilePath)
+        {
+            if (File.Exists(configFilePath))
+            {
+                return JsonConvert.DeserializeObject<T>(File.ReadAllText(configFilePath));
+            }
+            return default(T);
+        }
 
         public static string GetConfigPath(string configFileName)
         {

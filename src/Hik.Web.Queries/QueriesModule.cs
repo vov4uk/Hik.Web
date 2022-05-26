@@ -5,9 +5,11 @@ using Hik.DataAccess.Abstractions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Hik.Web.Queries
 {
+    [ExcludeFromCodeCoverage]
     public class QueriesModule : Module
     {
         protected override void Load(ContainerBuilder builder)

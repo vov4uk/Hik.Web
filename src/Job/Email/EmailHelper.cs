@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Hik.Api;
+using Job.Extensions;
 using NLog;
 
 namespace Job.Email
@@ -16,10 +17,7 @@ namespace Job.Email
         {
 #if RELEASE
             string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
-            if (System.IO.File.Exists(configPath))
-            {
-                Settings = Newtonsoft.Json.JsonConvert.DeserializeObject<EmailConfig>(System.IO.File.ReadAllText(configPath));
-            }
+            Settings = HikConfigExtensions.GetConfig<EmailConfig>(configPath);
 #endif
         }
 

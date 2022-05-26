@@ -1,9 +1,9 @@
-//2022.5.24.1
+//2022.5.26.2
 using System.Reflection;
 
 [assembly: AssemblyCompany("Hik.Web")]
 [assembly: AssemblyProduct("Hik.Web")]
 [assembly:   AssemblyTitle("Hik.Web")]
 [assembly: AssemblyConfiguration("Release")]
-[assembly: AssemblyFileVersion("2022.5.24.1")]
-[assembly:     AssemblyVersion("2022.5.24.1")]
+[assembly: AssemblyFileVersion("2022.5.26.2")]
+[assembly:     AssemblyVersion("2022.5.26.2")]
