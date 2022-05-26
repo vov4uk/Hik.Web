@@ -23,10 +23,11 @@ namespace Hik.Web.Tests.Pages
                 .ReturnsAsync(new QuartzTriggersDto());
 
             var sut = new SchedulerModel(this._mediator.Object);
-            var result = await sut.OnGetAsync();
+            var result = await sut.OnGetAsync("msg");
 
             Assert.IsType<PageResult>(result);
             Assert.NotNull(sut.Dto);
+            Assert.NotNull(sut.ResponseMsg);
         }
 
         [Fact]
@@ -40,7 +41,7 @@ namespace Hik.Web.Tests.Pages
 
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
-            Assert.Equal("./Index", page.PageName);
+            Assert.Equal("./Scheduler", page.PageName);
             Assert.Equal("Scheduler restarted", page.RouteValues.Values.First());
         }
 
@@ -57,7 +58,7 @@ namespace Hik.Web.Tests.Pages
 
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
-            Assert.Equal("./Index", page.PageName);
+            Assert.Equal("./Scheduler", page.PageName);
             Assert.Equal("Jobs stoped", page.RouteValues.Values.First());
             Assert.Empty(activities);
         }

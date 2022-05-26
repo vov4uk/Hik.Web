@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moq;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -54,6 +55,7 @@ namespace Hik.Web.Tests.Pages
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
             Assert.Equal("./Scheduler", page.PageName);
+            Assert.Equal("Changes saved. Take effect after Scheduler restart", page.RouteValues.Values.First());
         }
 
         [Fact]

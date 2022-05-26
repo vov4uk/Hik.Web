@@ -11,6 +11,7 @@ namespace Hik.Web.Pages
     public class SchedulerModel : PageModel
     {
         public QuartzTriggersDto Dto { get; set; }
+        public string ResponseMsg { get; private set; }
 
         private readonly IMediator _mediator;
 
@@ -19,8 +20,9 @@ namespace Hik.Web.Pages
             this._mediator = mediator;
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public async Task<IActionResult> OnGetAsync(string msg)
         {
+            ResponseMsg = msg;
             Dto = await _mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
             return Page();
         }
@@ -29,7 +31,7 @@ namespace Hik.Web.Pages
         {
             await _mediator.Send(new RestartSchedulerCommand());
 
-            return RedirectToPage("./Index", new { msg = "Scheduler restarted" });
+            return RedirectToPage("./Scheduler", new { msg = "Scheduler restarted" });
         }
 
         public IActionResult OnPostKillAll()
@@ -39,7 +41,7 @@ namespace Hik.Web.Pages
             {
                 item?.Kill();
             }
-            return RedirectToPage("./Index", new { msg = "Jobs stoped" });
+            return RedirectToPage("./Scheduler", new { msg = "Jobs stoped" });
         }
     }
 }

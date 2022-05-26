@@ -19,7 +19,7 @@ namespace Hik.Web.Pages
         }
 
         [BindProperty]
-        public QuartzJobConfigDto Dto { get; private set; }
+        public QuartzJobConfigDto Dto { get; set; }
 
         public async Task OnGetAsync(string name, string group)
         {
@@ -42,9 +42,10 @@ namespace Hik.Web.Pages
                 }
 
                 await this._mediator.Send(new UpdateQuartzJobConfigCommand { Path = Dto.Config.GetConfigPath(), Json = json });
+                return RedirectToPage("./Scheduler", new { msg = "Changes saved" });
             }
 
-            return RedirectToPage("./Scheduler");
+            return RedirectToPage("./Scheduler", new { msg = "Model invalid" });
         }
     }
 }

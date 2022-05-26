@@ -18,7 +18,7 @@ namespace Hik.Web.Pages
         }
 
         [BindProperty]
-        public QuartzJobDto Dto { get; private set; }
+        public QuartzJobDto Dto { get; set; }
 
         public void OnGetAddNew()
         {
@@ -39,7 +39,7 @@ namespace Hik.Web.Pages
 
             await this._mediator.Send(new UpdateQuartzJobCommand { Cron = Dto.Cron });
 
-            return RedirectToPage("./Scheduler");
+            return RedirectToPage("./Scheduler", new { msg = "Changes saved. Take effect after Scheduler restart" });
         }
     }
 }

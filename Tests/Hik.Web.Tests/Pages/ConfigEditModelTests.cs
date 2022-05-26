@@ -5,6 +5,7 @@ using Hik.Web.Pages;
 using Hik.Web.Queries.QuartzJobConfig;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -41,6 +42,7 @@ namespace Hik.Web.Tests.Pages
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
             Assert.Equal("./Scheduler", page.PageName);
+            Assert.Equal("Model invalid", page.RouteValues.Values.First());
         }
 
         [Fact]
@@ -60,6 +62,7 @@ namespace Hik.Web.Tests.Pages
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
             Assert.Equal("./Scheduler", page.PageName);
+            Assert.Equal("Changes saved", page.RouteValues.Values.First());
         }
 
         [Fact]
@@ -79,6 +82,7 @@ namespace Hik.Web.Tests.Pages
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
             Assert.Equal("./Scheduler", page.PageName);
+            Assert.Equal("Changes saved", page.RouteValues.Values.First());
         }
     }
 }
