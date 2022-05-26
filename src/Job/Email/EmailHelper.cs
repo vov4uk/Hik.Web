@@ -20,10 +20,6 @@ namespace Job.Email
             {
                 Settings = Newtonsoft.Json.JsonConvert.DeserializeObject<EmailConfig>(System.IO.File.ReadAllText(configPath));
             }
-            else
-            {
-                Logger.Error($"File not exist {configPath}");
-            }
 #endif
         }
 
@@ -67,6 +63,10 @@ namespace Job.Email
                         EnableSsl = true,
                     };
                     smtp.Send(mail);
+                }
+                else
+                {
+                    Logger.Error($"Settings file not exist");
                 }
 #endif
             }
