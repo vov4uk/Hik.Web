@@ -36,21 +36,24 @@
                      <tbody>
                          @foreach (var jobTrigger in jobTriggers)
                          {
-                             long statSize = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId)?.FilesSize ?? 0;
-                             int statDuration = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId)?.TotalDuration ?? 0;
-                             string size = statSize.FormatBytes();
-                             string duration = ((double)statDuration).FormatSeconds();
-                             string triggerString = jobTrigger.ToString();
-                             var latestFile = new DateTime();
-                             @if(Model.Dto.Files.ContainsKey(jobTrigger.JobTriggerId))
-                             {
-                                 latestFile = Model.Dto.Files[jobTrigger.JobTriggerId];
-                             }
+                            var stat = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId);
+                            long statSize = stat?.FilesSize ?? 0;
+                            int statDuration = stat?.TotalDuration ?? 0;
+                            string size = statSize.FormatBytes();
+                            string duration = ((double)statDuration).FormatSeconds();
+                            string triggerString = jobTrigger.ToString();
 
-                            var lastFileDelta = (jobTrigger.LastSync ?? DateTime.Now) - latestFile;
-                            var lastSyncDelta = DateTime.Now - (jobTrigger.LastSync ?? new DateTime());
+                            var latestFile = new DateTime();
+                            @if(Model.Dto.Files.ContainsKey(jobTrigger.JobTriggerId))
+                            {
+                                latestFile = Model.Dto.Files[jobTrigger.JobTriggerId];
+                            }
+
+                            var now = DateTime.Now;
+                            var lastFileDelta = (jobTrigger.LastSync ?? now) - latestFile;
+                            var lastSyncDelta = now - (jobTrigger.LastSync ?? new DateTime());
                             var success = (lastFileDelta.TotalHours < 2 && lastSyncDelta.TotalHours < 2)
-                                       || (className == "Job.Impl.GarbageCollectorJob, Job" && lastSyncDelta.TotalHours < 24);
+                                       || (className.Contains("GarbageCollectorJob") && lastSyncDelta.TotalHours < 24);
                             var status = success ? "" : "failed";
                             <tr data-status="@status" class="failed">
                                 <td><a asp-page="./DashboardDetails" asp-route-triggerId="@jobTrigger.JobTriggerId">@triggerString</a></td>

@@ -27,12 +27,14 @@ namespace Job
             switch (parameters.ClassName)
             {
                 case "Job.Impl.ArchiveJob, Job":
+                case "ArchiveJob":
                     {
                         var config = HikConfigExtensions.GetConfig<ArchiveConfig>(parameters.ConfigFilePath);
                         IArchiveService worker = AppBootstrapper.Container.Resolve<IArchiveService>();
                         return new ArchiveJob(trigger, config, worker, db, email, logger);
                     }
                 case "Job.Impl.GarbageCollectorJob, Job":
+                case "GarbageCollectorJob":
                     {
                         var config = HikConfigExtensions.GetConfig<GarbageCollectorConfig>(parameters.ConfigFilePath);
                         var directory = AppBootstrapper.Container.Resolve<IDirectoryHelper>();
@@ -50,18 +52,21 @@ namespace Job
                             logger);
                     }
                 case "Job.Impl.HikVideoDownloaderJob, Job":
+                case "HikVideoDownloaderJob":
                     {
                         var config = HikConfigExtensions.GetConfig<CameraConfig>(parameters.ConfigFilePath);
                         IHikVideoDownloaderService service = AppBootstrapper.Container.Resolve<IHikVideoDownloaderService>();
                         return new HikVideoDownloaderJob(trigger, config, service, db, email, logger);
                     }
                 case "Job.Impl.HikPhotoDownloaderJob, Job":
+                case "HikPhotoDownloaderJob":
                     {
                         var config = HikConfigExtensions.GetConfig<CameraConfig>(parameters.ConfigFilePath);
                         IHikPhotoDownloaderService service = AppBootstrapper.Container.Resolve<IHikPhotoDownloaderService>();
                         return new HikPhotoDownloaderJob(trigger, config, service, db, email, logger);
                     }
                 case "Job.Impl.DbMigrationJob, Job":
+                case "DbMigrationJob":
                     {
                         var config = HikConfigExtensions.GetConfig<MigrationConfig>(parameters.ConfigFilePath);
                         var provider = AppBootstrapper.Container.Resolve<IFileProvider>();

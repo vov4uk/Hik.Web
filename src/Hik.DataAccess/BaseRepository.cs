@@ -57,6 +57,32 @@ namespace Hik.DataAccess
             return result;
         }
 
+        public async Task<List<TEntity>> GetLatestGroupedBy(
+            Expression<Func<TEntity, object>> groupBy)
+        {
+            var ids = await DbSet
+                .GroupBy(groupBy)
+                .Select(p => p.Max(x => x.Id))
+                .ToListAsync();
+
+            var result = DbSet.Where(p => ids.Contains(p.Id));
+            return await result?.ToListAsync();
+        }
+
+        public async Task<List<TEntity>> GetLatestGroupedBy(
+            Expression<Func<TEntity, bool>> predicate,
+            Expression<Func<TEntity, int>> groupBy)
+        {
+            var ids = await DbSet
+                .Where(predicate)
+                .GroupBy(groupBy)
+                .Select(p => p.Max(x => x.Id))
+                .ToListAsync();
+
+            var result = DbSet.Where(p => ids.Contains(p.Id));
+            return await result?.ToListAsync();
+        }
+
         public virtual Task<List<TEntity>> LastAsync(int last)
         {
             return DbSet.OrderByDescending(x => x).Take(last).ToListAsync();

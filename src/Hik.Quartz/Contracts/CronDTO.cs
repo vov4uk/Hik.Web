@@ -10,7 +10,12 @@ namespace Hik.Quartz.Contracts
 {
     public class CronDto
     {
-        internal static readonly CronExpressionDescriptor.Options CronFormatOptions = new CronExpressionDescriptor.Options() { DayOfWeekStartIndexZero = false, Use24HourTimeFormat = true };
+        internal static readonly CronExpressionDescriptor.Options CronFormatOptions = new CronExpressionDescriptor.Options()
+        {
+            DayOfWeekStartIndexZero = false,
+            Use24HourTimeFormat = true,
+            Locale = ("uk")
+        };
 
         public CronDto() { }
         public CronDto(Cron cron)

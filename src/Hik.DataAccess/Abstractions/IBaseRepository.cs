@@ -20,6 +20,13 @@ namespace Hik.DataAccess.Abstractions
 
         IQueryable<T> GetAll(params Expression<Func<T, object>>[] includes);
 
+
+        Task<List<T>> GetLatestGroupedBy(Expression<Func<T, object>> groupBy);
+
+        Task<List<T>> GetLatestGroupedBy(
+            Expression<Func<T, bool>> predicate,
+            Expression<Func<T, int>> groupBy);
+
         Task<List<T>> LastAsync(int last);
 
         Task<T> FindByAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);

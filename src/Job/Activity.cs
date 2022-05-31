@@ -19,9 +19,16 @@ namespace Job
         {
             get
             {
-                if (hostProcess != null && !hostProcess.HasExited)
+                try
                 {
-                    return hostProcess.Id;
+                    if (hostProcess != null && !hostProcess.HasExited)
+                    {
+                        return hostProcess.Id;
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    return 0;
                 }
                 return -1;
             }
@@ -96,7 +103,7 @@ namespace Job
             {
                 StartInfo =
                 {
-                    FileName = $"{Parameters.Group}\\JobHost.exe",
+                    FileName = "JobHost.exe",
                     Arguments = Parameters.ToString(),
                     CreateNoWindow = true,
                     UseShellExecute = false,

@@ -21,42 +21,34 @@ namespace Hik.Web.Queries.Dashboard
             {
                 var triggerRepo = uow.GetRepository<JobTrigger>();
                 var filesRepo = uow.GetRepository<MediaFile>();
+                var statRepo = uow.GetRepository<DailyStatistic>();
                 var jobRepo = uow.GetRepository<HikJob>();
 
                 List<JobTrigger> jobTriggers = await triggerRepo.GetAllAsync();
 
-                List<DailyStatistic> statistics = triggerRepo
-                    .GetAll(x => x.DailyStatistics)
-                    .Where(x => x.DailyStatistics.Any())
-                    .Select(x => x.DailyStatistics.OrderByDescending(y => y.Period).First())
-                    .ToList();
+                var statistics = await statRepo.GetLatestGroupedBy(p => p.JobTriggerId);
 
-                Dictionary<int, DateTime> latestFiles = filesRepo
-                    .GetAll()
-                    .GroupBy(x => x.JobTriggerId)
-                    .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.Date)))
-                    .ToDictionary(x => x.Key, y => y.Value);
+                var latestFiles = await filesRepo.GetLatestGroupedBy(p => p.JobTriggerId);
 
-                List<KeyValuePair<int, DateTime>> latestFinishedJobs = jobRepo
-                    .GetAll()
-                    .Where(x => x.Finished != null)
-                    .GroupBy(x => x.JobTriggerId)
-                    .Select(x => new KeyValuePair<int, DateTime>(x.Key, x.Max(y => y.PeriodEnd ?? new DateTime())))
-                    .ToList();
+                var dict = latestFiles.ToDictionary(p => p.JobTriggerId, p => p.Date);
 
-                foreach (var period in latestFinishedJobs)
+                var latestFinishedJobs = await jobRepo.GetLatestGroupedBy(
+                    y => y.PeriodEnd != null,
+                    x => x.JobTriggerId);
+
+                foreach (var job in latestFinishedJobs)
                 {
-                    if (!latestFiles.ContainsKey(period.Key))
+                    if (!dict.ContainsKey(job.JobTriggerId))
                     {
-                        latestFiles.Add(period.Key, period.Value);
+                        dict.Add(job.JobTriggerId, job.PeriodEnd.Value);
                     }
                 }
 
                 return new DashboardDto
                 {
-                    Files = latestFiles,
+                    Files = dict,
                     Triggers = jobTriggers.ConvertAll(x => HikDatabase.Mapper.Map<JobTrigger, TriggerDto>(x)),
-                    DailyStatistics = statistics.ConvertAll(x => HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>(x))
+                    DailyStatistics = statistics.Where(x => x != null).ToList().ConvertAll(x => HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>(x))
                 };
             }
         }

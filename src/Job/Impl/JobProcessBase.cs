@@ -73,12 +73,16 @@ namespace Job.Impl
 
         private void HandleException(Exception e)
         {
-            this.JobInstance.Success = false;
             try
             {
+                this.JobInstance.Success = false;
                 Task.WaitAll(LogExceptionToDB(e), db.SaveJobResultAsync(JobInstance));
             }
-            catch (Exception ex) { logger.Error(ex.ToString()); }
+            catch (Exception ex)
+            {
+                logger.Error(e.ToString());
+                logger.Error(ex.ToString());
+            }
 
             if (Config.SentEmailOnError)
             {
