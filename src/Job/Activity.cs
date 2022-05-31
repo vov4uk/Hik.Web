@@ -10,6 +10,7 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class Activity
     {
+        private const string JobHost = "JobHost.exe";
         protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private static readonly EmailHelper email = new EmailHelper();
         private DateTime started = default;
@@ -103,7 +104,7 @@ namespace Job
             {
                 StartInfo =
                 {
-                    FileName = "JobHost.exe",
+                    FileName = JobHost,
                     Arguments = Parameters.ToString(),
                     CreateNoWindow = true,
                     UseShellExecute = false,
