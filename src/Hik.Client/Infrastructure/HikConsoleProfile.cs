@@ -8,8 +8,8 @@ namespace Hik.Client.Infrastructure
     {
         public HikConsoleProfile()
         {
-            this.CreateMap<HikRemoteFile, MediaFileDTO>(MemberList.None);
-            this.CreateMap<MediaFileDTO, HikRemoteFile>(MemberList.None);
+            this.CreateMap<HikRemoteFile, MediaFileDto>(MemberList.None);
+            this.CreateMap<MediaFileDto, HikRemoteFile>(MemberList.None);
         }
     }
 }

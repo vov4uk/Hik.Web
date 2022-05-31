@@ -7,7 +7,8 @@ namespace Hik.DataAccess.Abstractions
 {
     public interface IUnitOfWork : IDisposable
     {
-        IBaseRepository<TEntity> GetRepository<TEntity>() where TEntity : class;
+        IBaseRepository<TEntity> GetRepository<TEntity>()
+            where TEntity : class, IEntity;
 
         Task<int> SaveChangesAsync();
 

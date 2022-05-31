@@ -11,7 +11,8 @@ using System.Threading.Tasks;
 namespace Hik.DataAccess
 {
     [ExcludeFromCodeCoverage]
-    public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
+    public class BaseRepository<TEntity> : IBaseRepository<TEntity>
+        where TEntity : class, IEntity
     {
         protected DbContext Database { get; }
 
@@ -44,7 +45,7 @@ namespace Hik.DataAccess
             return DbSet.ToListAsync();
         }
 
-        public virtual async Task<List<TEntity>> GetAllAsync(params Expression<Func<TEntity, object>>[] includes)
+        public virtual IQueryable<TEntity> GetAll(params Expression<Func<TEntity, object>>[] includes)
         {
             var result = DbSet.Where(i => true);
 
@@ -53,7 +54,33 @@ namespace Hik.DataAccess
                 result = result.Include(includeExpression);
             }
 
-            return await result.ToListAsync();
+            return result;
+        }
+
+        public async Task<List<TEntity>> GetLatestGroupedBy(
+            Expression<Func<TEntity, object>> groupBy)
+        {
+            var ids = await DbSet
+                .GroupBy(groupBy)
+                .Select(p => p.Max(x => x.Id))
+                .ToListAsync();
+
+            var result = DbSet.Where(p => ids.Contains(p.Id));
+            return await result?.ToListAsync();
+        }
+
+        public async Task<List<TEntity>> GetLatestGroupedBy(
+            Expression<Func<TEntity, bool>> predicate,
+            Expression<Func<TEntity, int>> groupBy)
+        {
+            var ids = await DbSet
+                .Where(predicate)
+                .GroupBy(groupBy)
+                .Select(p => p.Max(x => x.Id))
+                .ToListAsync();
+
+            var result = DbSet.Where(p => ids.Contains(p.Id));
+            return await result?.ToListAsync();
         }
 
         public virtual Task<List<TEntity>> LastAsync(int last)
@@ -85,6 +112,35 @@ namespace Hik.DataAccess
             }
 
             return await result?.ToListAsync();
+        }
+
+        public virtual async Task<List<TEntity>> FindManyAsync(Expression<Func<TEntity, bool>> predicate,
+            Expression<Func<TEntity, object>> orderByDesc, int skip, int top,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+
+            result = result.OrderByDescending(orderByDesc).Skip(skip).Take(top);
+
+            return await result?.ToListAsync();
+        }
+
+        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+
+            return await result?.CountAsync();
         }
 
         public void Update(TEntity entity)

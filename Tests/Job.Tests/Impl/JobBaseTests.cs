@@ -2,8 +2,11 @@
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Job.Email;
+using Job.Extensions;
 using Moq;
+using NLog;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Job.Tests.Impl
@@ -15,11 +18,13 @@ namespace Job.Tests.Impl
 
         protected readonly Mock<IHikDatabase> dbMock;
         protected readonly Mock<IEmailHelper> emailMock;
+        protected readonly Mock<ILogger> loggerMock;
 
         public JobBaseTest()
         {
             dbMock = new (MockBehavior.Strict);
             emailMock = new (MockBehavior.Strict);
+            loggerMock = new ();
         }
 
         protected void SetupSaveJobResultAsync()
@@ -31,7 +36,7 @@ namespace Job.Tests.Impl
         protected void SetupCreateJobInstanceAsync()
         {
             dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(new HikJob());
         }
 
         protected void SetupGetOrCreateJobTriggerAsync()
@@ -40,15 +45,15 @@ namespace Job.Tests.Impl
                 .ReturnsAsync(new JobTrigger());
         }
 
-        protected void SetupUpdateDailyStatisticsAsync(List<MediaFileDTO> files)
+        protected void SetupUpdateDailyStatisticsAsync(List<MediaFileDto> files)
         {
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), files))
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), files))
                 .Returns(Task.CompletedTask);
         }
 
         protected void SetupUpdateDailyStatisticsAsync()
         {
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
                 .Returns(Task.CompletedTask);
         }
 
@@ -56,6 +61,11 @@ namespace Job.Tests.Impl
         {
             dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
                 .Returns(Task.CompletedTask);
+        }
+
+        protected static T GetConfig<T>(string configFileName)
+        {
+            return HikConfigExtensions.GetConfig<T>(Path.Combine(TestsHelper.CurrentDirectory, configFileName));
         }
     }
 }

@@ -2,6 +2,7 @@ using AutoFixture.Xunit2;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace Hik.DataAccess.Tests
         {
             this.uow = new(MockBehavior.Strict);
             this.uowFactory = new(MockBehavior.Strict);
-            this.uowFactory.Setup(x => x.CreateUnitOfWork())
+            this.uowFactory.Setup(x => x.CreateUnitOfWork(QueryTrackingBehavior.TrackAll))
                 .Returns(uow.Object);
             this.uow.Setup(x => x.Dispose());
         }
@@ -128,12 +129,13 @@ namespace Hik.DataAccess.Tests
             hikJobRepo.Setup(x => x.Update(job));
             jobRepo.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<JobTrigger, bool>>>(), It.IsAny<Expression<Func<JobTrigger, object>>[]>()))
                 .ReturnsAsync(trigger);
+            jobRepo.Setup(x => x.Update(It.IsAny<JobTrigger>()));
 
             uow.Setup(x => x.GetRepository<JobTrigger>())
                 .Returns(jobRepo.Object);
             uow.Setup(x => x.GetRepository<HikJob>())
                 .Returns(hikJobRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync(job))
+            uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
             var db = new HikDatabase(uowFactory.Object);
@@ -155,7 +157,7 @@ namespace Hik.DataAccess.Tests
 
             uow.Setup(x => x.GetRepository<HikJob>())
                 .Returns(hikJobRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync(job))
+            uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
             var db = new HikDatabase(uowFactory.Object);
@@ -171,7 +173,7 @@ namespace Hik.DataAccess.Tests
         {
             HikJob job = new HikJob() { Started = new (2022, 01, 01), Success = true, JobTriggerId = 31 };
 
-            List<MediaFileDTO> files = new List<MediaFileDTO>()
+            List<MediaFileDto> files = new List<MediaFileDto>()
             {
                 new () { Date = new (2022, 01,01), DownloadDuration = 1 },
                 new () { Date = new (2022, 01,11), DownloadDuration = 1 },
@@ -206,7 +208,7 @@ namespace Hik.DataAccess.Tests
         {
             HikJob job = new HikJob() { Started = new DateTime(2022, 01, 01), Success = true };
 
-            List<MediaFileDTO> files = new ()
+            List<MediaFileDto> files = new ()
             {
                 new () { Date = new (2022, 01,01) },
                 new () { Date = new (2022, 01,11) },
@@ -263,8 +265,6 @@ namespace Hik.DataAccess.Tests
         [Fact]
         public async Task UpdateDailyStatisticsAsync_StatisticsUpdated()
         {
-            HikJob job = new () { Started = new DateTime(2022, 01, 01), Success = true };
-
             var newStatistics = new List<DailyStatistic>();
 
             var statistics = new List<DailyStatistic>
@@ -274,33 +274,34 @@ namespace Hik.DataAccess.Tests
                 new () { Period = new (2022, 01,02), FilesCount = 1, FilesSize = 1024 },
             };
 
-            List<MediaFileDTO> files = new ()
+            List<MediaFileDto> files = new()
             {
-                new () { Date = new (2022, 01,01), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,02), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,03), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,03), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,03), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,04), Size = 1024, Duration = 60 },
-                new () { Date = new (2022, 01,04), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 01), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 02), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 03), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 03), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 03), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 04), Size = 1024, Duration = 60 },
+                new() { Date = new(2022, 01, 04), Size = 1024, Duration = 60 },
             };
 
             var statRepo = new Mock<IBaseRepository<DailyStatistic>>(MockBehavior.Strict);
 
             statRepo.Setup(x => x.FindManyAsync(It.IsAny<Expression<Func<DailyStatistic, bool>>>(), It.IsAny<Expression<Func<DailyStatistic, object>>[]>()))
                 .ReturnsAsync(statistics);
+            statRepo.Setup(x => x.Update(It.IsAny<DailyStatistic>()));
             statRepo.Setup(x => x.AddRangeAsync(It.IsAny<List<DailyStatistic>>()))
                 .Callback<IEnumerable<DailyStatistic>>(x => newStatistics.AddRange(x))
                 .Returns(Task.CompletedTask);
 
             uow.Setup(x => x.GetRepository<DailyStatistic>())
                 .Returns(statRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync(job))
+            uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
             var db = new HikDatabase(uowFactory.Object);
 
-            await db.UpdateDailyStatisticsAsync(job, files);
+            await db.UpdateDailyStatisticsAsync(0, files);
 
             Assert.Equal(2, newStatistics.Count);
             Assert.Equal(5, statistics.Count);

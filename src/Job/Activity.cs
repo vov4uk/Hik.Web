@@ -1,6 +1,4 @@
-﻿using Hik.DataAccess;
-using Hik.DataAccess.Abstractions;
-using Job.Email;
+﻿using Job.Email;
 using NLog;
 using System;
 using System.Diagnostics;
@@ -12,12 +10,30 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class Activity
     {
+        private const string JobHost = "JobHost.exe";
         protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        private static readonly EmailHelper email = new EmailHelper();
         private DateTime started = default;
-        private readonly EmailHelper email = new EmailHelper();
         private readonly Guid ActivityId;
         public Parameters Parameters { get; private set; }
-        public int ProcessId => hostProcess?.Id ?? -1;
+        public int ProcessId
+        {
+            get
+            {
+                try
+                {
+                    if (hostProcess != null && !hostProcess.HasExited)
+                    {
+                        return hostProcess.Id;
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    return 0;
+                }
+                return -1;
+            }
+        }
 
         public string Id => $"{Parameters.Group}.{Parameters.TriggerKey}";
 
@@ -38,7 +54,7 @@ namespace Job
         {
             try
             {
-                if (ActivityBag.Add(this))
+                if (RunningActivities.Add(this))
                 {
                     Log($"Activity. Starting : {Parameters}");
                     if (Parameters.RunAsTask)
@@ -69,11 +85,16 @@ namespace Job
 
         public void Kill()
         {
-            if (!hostProcess.HasExited)
+            if (hostProcess != null && !hostProcess.HasExited)
             {
                 Log("Killing process manual");
                 hostProcess.Kill();
             }
+            else
+            {
+                Log("No process found");
+            }
+            RunningActivities.Remove(this);
         }
 
         private Task StartProcess()
@@ -83,7 +104,7 @@ namespace Job
             {
                 StartInfo =
                 {
-                    FileName = $"{Parameters.Group}\\JobHost.exe",
+                    FileName = JobHost,
                     Arguments = Parameters.ToString(),
                     CreateNoWindow = true,
                     UseShellExecute = false,
@@ -99,7 +120,7 @@ namespace Job
             {
                 tcs.SetResult(null);
                 Log($"Activity. Process exit with code: {hostProcess.ExitCode}");
-                if (!ActivityBag.Remove(this))
+                if (!RunningActivities.Remove(this))
                 {
                     Log("Cannot remove activity from ActivityBag");
                 }
@@ -115,16 +136,7 @@ namespace Job
 
         private async Task RunAsTask()
         {
-            Type jobType = Type.GetType(Parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{Parameters.ClassName}'");
-            IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(Parameters.ConnectionString);
-            IHikDatabase db = new HikDatabase(unitOfWorkFactory);
-
-            Impl.JobProcessBase job = (Impl.JobProcessBase)Activator.CreateInstance(
-                    jobType, $"{Parameters.Group}.{Parameters.TriggerKey}",
-                    Parameters.ConfigFilePath,
-                    db,
-                    email,
-                    Parameters.ActivityId);
+            IJobProcess job = JobFactory.GetJob(Parameters, Logger, email);
             started = DateTime.Now;
 
             try
@@ -137,7 +149,7 @@ namespace Job
             }
             finally
             {
-                ActivityBag.Remove(this);
+                RunningActivities.Remove(this);
             }
         }
 

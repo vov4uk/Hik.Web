@@ -1,6 +1,7 @@
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
 using System;
@@ -13,41 +14,22 @@ namespace Hik.Web
 {
     public static class Program
     {
+        private const string ConsoleParameter = "--console";
         public static string Version { get; set; }
+        public static string ConnectionString { get; set; }
 
         public static void Main(string[] args)
         {
-            // https://dotnetcoretutorials.com/2018/09/12/hosting-an-asp-net-core-web-application-as-a-windows-service/
-            var isService = !(Debugger.IsAttached || args.Contains("--console"));
-            var builder = CreateHostBuilder(isService, args.Where(arg => arg != "--console").ToArray());
-
-            if (isService)
-            {
-                var pathToExe = Process.GetCurrentProcess().MainModule?.FileName;
-                var pathToContentRoot = Path.GetDirectoryName(pathToExe);
-                builder.UseContentRoot(pathToContentRoot);
-            }
+            var isService = !(Debugger.IsAttached || args.Contains(ConsoleParameter));
+            var builder = CreateHostBuilder(isService, args.Where(arg => arg != ConsoleParameter).ToArray());
 
             var host = builder.Build();
 
-            Assembly web = Assembly.GetExecutingAssembly();
-            AssemblyName webName = web.GetName();
-
-            Version = webName.Version.ToString();
-
-            if (isService)
-            {
-#pragma warning disable CA1416 // Validate platform compatibility
-                host.RunAsService();
-#pragma warning restore CA1416 // Validate platform compatibility
-            }
-            else
-            {
-                host.Run();
-            }
+            Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            host.Run();
         }
 
-        public static IWebHostBuilder CreateHostBuilder(bool isService, string[] args)
+        public static IHostBuilder CreateHostBuilder(bool isService, string[] args)
         {
             Directory.SetCurrentDirectory(AssemblyDirectory);
 
@@ -59,23 +41,38 @@ namespace Hik.Web
                 .AddCommandLine(args)
                 .Build();
 
-            AutofacConfig.RegisterConfiguration(config);
-
             var port = config.GetSection("Hosting:Port").Value;
 
-            return new WebHostBuilder()
-                .UseKestrel()
-                .UseEnvironment(env)
-                .UseConfiguration(config)
-                .UseIISIntegration()
-                .UseStartup<Startup>()
+            ConnectionString = config.GetSection("DBConfiguration").GetSection("ConnectionString").Value;
+
+            var host = Host.CreateDefaultBuilder(args)
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder
+                    .UseKestrel(
+                        options =>
+                        {
+                            const int MaxUrlSizeBytes = 32768;
+                            options.Limits.MaxRequestBufferSize = MaxUrlSizeBytes;
+                            options.Limits.MaxRequestLineSize = MaxUrlSizeBytes;
+                        })
+                    .UseUrls($"https://+:{port}")
+                    .UseStartup<Startup>();
+                })
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
                     logging.SetMinimumLevel(LogLevel.Trace);
                 })
-                .UseNLog()
-                .UseUrls($"http://+:{port}");
+                .UseNLog();
+
+            if (isService)
+            {
+                host.UseWindowsService();
+            }
+
+            return host;
         }
 
         private static string AssemblyDirectory

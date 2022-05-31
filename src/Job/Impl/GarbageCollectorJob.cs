@@ -1,12 +1,10 @@
-﻿using Autofac;
-using Hik.Client.Abstraction;
-using Hik.Client.FileProviders;
-using Hik.Client.Infrastructure;
+﻿using Hik.Client.FileProviders;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using Job.Email;
-using Job.Extensions;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,63 +12,65 @@ using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public class GarbageCollectorJob : JobProcessBase
+    public class GarbageCollectorJob : JobProcessBase<GarbageCollectorConfig>
     {
         protected readonly IDirectoryHelper directoryHelper;
         protected readonly IFilesHelper filesHelper;
         protected readonly IFileProvider filesProvider;
 
-        public GarbageCollectorJob(string trigger, string configFilePath, IHikDatabase db, IEmailHelper email, Guid activityId)
-            : base(trigger, db, email, activityId)
+        public GarbageCollectorJob(string trigger,
+            GarbageCollectorConfig config,
+            IDirectoryHelper directory,
+            IFilesHelper files,
+            IFileProvider provider,
+            IHikDatabase db,
+            IEmailHelper email,
+            ILogger logger)
+            : base(trigger,config, db, email, logger)
         {
-            Config = HikConfigExtensions.GetConfig<GarbageCollectorConfig>(configFilePath);
-            LogInfo(Config.ToString());
 
-            this.directoryHelper = AppBootstrapper.Container.Resolve<IDirectoryHelper>();
-            this.filesHelper = AppBootstrapper.Container.Resolve<IFilesHelper>();
-            this.filesProvider = AppBootstrapper.Container.Resolve<IFileProvider>();
+            this.directoryHelper = directory;
+            this.filesHelper = files;
+            this.filesProvider = provider;
         }
 
-        protected override Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
         {
-            var gcConfig = Config as GarbageCollectorConfig;
+            IReadOnlyCollection<MediaFileDto> deleteFilesResult;
 
-            IReadOnlyCollection<MediaFileDTO> deleteFilesResult;
-
-            if (gcConfig.RetentionPeriodDays > 0)
+            if (Config.RetentionPeriodDays > 0)
             {
-                var period = TimeSpan.FromDays(gcConfig.RetentionPeriodDays);
+                var period = TimeSpan.FromDays(Config.RetentionPeriodDays);
                 var cutOff = DateTime.Today.Subtract(period);
-                filesProvider.Initialize(new[] { gcConfig.DestinationFolder });
-                deleteFilesResult = filesProvider.GetFilesOlderThan(gcConfig.FileExtention, cutOff);
+                filesProvider.Initialize(new[] { Config.DestinationFolder });
+                deleteFilesResult = filesProvider.GetFilesOlderThan(Config.FileExtention, cutOff);
 
                 this.DeleteFiles(deleteFilesResult);
             }
             else
             {
-                deleteFilesResult = PersentageDelete(gcConfig);
+                deleteFilesResult = PersentageDelete(Config);
             }
 
-            directoryHelper.DeleteEmptyDirs(gcConfig.DestinationFolder);
+            directoryHelper.DeleteEmptyDirs(Config.DestinationFolder);
             return Task.FromResult(deleteFilesResult);
         }
 
-        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
             JobInstance.FilesCount = files.Count;
 
-            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+            await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
 
-            var config = (GarbageCollectorConfig)Config;
-            if (JobInstance.PeriodEnd.HasValue && JobInstance.FilesCount > 0 && config.Triggers?.Any() == true)
+            if (JobInstance.PeriodEnd.HasValue && JobInstance.FilesCount > 0 && Config.Triggers?.Any() == true)
             {
-                await db.DeleteObsoleteJobsAsync(config.Triggers, JobInstance.PeriodEnd.Value);
+                await db.DeleteObsoleteJobsAsync(Config.Triggers, JobInstance.PeriodEnd.Value);
             }
         }
 
-        private void DeleteFiles(IReadOnlyCollection<MediaFileDTO> filesToDelete)
+        private void DeleteFiles(IReadOnlyCollection<MediaFileDto> filesToDelete)
         {
             foreach (var file in filesToDelete)
             {
@@ -81,9 +81,9 @@ namespace Job.Impl
 #endif
             }
         }
-        private List<MediaFileDTO> PersentageDelete(GarbageCollectorConfig gcConfig)
+        private List<MediaFileDto> PersentageDelete(GarbageCollectorConfig gcConfig)
         {
-            List<MediaFileDTO> deletedFiles = new();
+            List<MediaFileDto> deletedFiles = new();
             var destination = gcConfig.DestinationFolder;
             var totalSpace = this.directoryHelper.GetTotalSpaceBytes(destination) * 1.0;
             do

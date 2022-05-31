@@ -14,25 +14,25 @@
          </p>
       </form>
 
-      @if (Model.BeforeFiles != null && Model.BeforeFiles.Any())
+      @if(Model.Dto != null && Model.Dto.BeforeRange != null && Model.Dto.BeforeRange.Any())
       {
           <h4>Before</h4>
-          @await Html.PartialAsync("_FilesSearch.cshtml", Model.BeforeFiles)
+          @await Html.PartialAsync("_Files.cshtml", Model.Dto.BeforeRange)
       }
 
-      @if (Model.Files != null && Model.Files.Any())
+      @if(Model.Dto != null && Model.Dto.InRange != null && Model.Dto.InRange.Any())
       {
-          <h4>Files (@Model.Msg)</h4>
-          @await Html.PartialAsync("_FilesSearch.cshtml", Model.Files)
+          <h4>Files (@Model.Dto.Message)</h4>
+          @await Html.PartialAsync("_Files.cshtml", Model.Dto.InRange)
       }
       else
       {
           <h4>No files found</h4>
       }
 
-      @if (Model.AfterFiles != null && Model.AfterFiles.Any())
+      @if(Model.Dto != null && Model.Dto.AfterRange != null && Model.Dto.AfterRange.Any())
       {
           <h4>After</h4>
-          @await Html.PartialAsync("_FilesSearch.cshtml", Model.AfterFiles)
+          @await Html.PartialAsync("_Files.cshtml", Model.Dto.AfterRange)
       }
 }

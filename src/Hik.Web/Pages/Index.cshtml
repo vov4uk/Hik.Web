@@ -3,8 +3,14 @@
 @model Hik.Web.Pages.IndexModel
 @{ViewData["Title"] = "Home";}
 
-<h3>@Model.ResponseMsg</h3>
-
+@if (!string.IsNullOrEmpty(@Model.ResponseMsg))
+{
+    <div class="row">
+        <div class="card-body text-center">
+            <h3>@Model.ResponseMsg</h3>
+        </div>
+    </div>
+}
 <div class="row">
     <div class="col-lg-12 my-3">
         <div class="pull-right">
@@ -33,49 +39,49 @@
                       <tr>
                           <th>Cron</th>
                           <th>Title</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().Next)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().ConfigPath)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastSync)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobPeriodStart)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobPeriodEnd)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.FirstOrDefault().LastJobFilesCount)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().Cron.NextRun)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().Cron.ConfigPath)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().LastSync)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().LastJob.PeriodStart)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().LastJob.PeriodEnd)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().LastJob.FilesCount)</th>
                           <th>Started</th>
                           <th>Finished</th>
                           <th></th>
                       </tr>
                   </thead>
                   <tbody>
-                      @foreach (var item in jobTrigger)
+                      @foreach (var job in jobTrigger)
                       {
-                          string started = item.LastJobStarted.GetRelativeTime();
-                          string finished = item.LastJobFinished.GetRelativeTime();
-                          string lastSync = item.LastSync.GetRelativeTime();
-                          string from = item.LastJobPeriodStart.GetRelativeTime();
-                          string to = item.LastJobPeriodEnd.GetRelativeTime();
-                          string status = item.Success && item.ActivityId == null ? "" : item.ActivityId == null ? "failed" : "running";
+                          string started = job.LastJob.Started.GetRelativeTime();
+                          string finished = job.LastJob.Finished?.GetRelativeTime() ?? "N/A";
+                          string lastSyncTooltip = job.LastSync.GetRelativeTime();
+                          string fromTooltip = job.LastJob.PeriodStart?.GetRelativeTime() ?? "N/A";
+                          string toTooltip = job.LastJob.PeriodEnd?.GetRelativeTime() ?? "N/A";
+                          string status = job.LastJob.Success && job.ProcessId == null ? "" : job.ProcessId == null ? "failed" : "running";
 
                           <tr data-status="@status" class="failed">
-                              <td><span title="@item.CronSummary">@item.CronString</span></td>
-                              <td><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></td>
-                              <td>@Html.DisplayFor(x => item.Next)</td>
-                              <td><a asp-page="./ConfigEdit" asp-route-name="@item.Name" asp-route-group="@item.Group">@Html.DisplayFor(x => item.ConfigPath)</a></td>
-                              <td><span title="@lastSync">@item.LastSync.GetString()</span></td>
-                              <td><span title="@from">@Html.DisplayFor(x => item.LastJobPeriodStart)</span></td>
-                              <td><span title="@to">@Html.DisplayFor(x => item.LastJobPeriodEnd)</span></td>
-                              <td>@Html.DisplayFor(x => item.LastJobFilesCount)</td>
-                              <td><a asp-page="./Details" asp-route-id="@item.JobId">@started</a></td>
+                              <td><span title="@job.Cron.ExpressionString">@job.Cron.Expression</span></td>
+                              <td><a asp-page="./Job" asp-route-jobTriggerId="@job.JobTriggerId">@job.Name</a></td>
+                              <td>@Html.DisplayFor(x => job.Cron.NextRun)</td>
+                              <td><a asp-page="./ConfigEdit" asp-route-name="@job.Name" asp-route-group="@job.Group">@Html.DisplayFor(x => job.Cron.ConfigPath)</a></td>
+                              <td><span title="@lastSyncTooltip">@job.LastSync.GetString()</span></td>
+                              <td><span title="@fromTooltip">@Html.DisplayFor(x => job.LastJob.PeriodStart)</span></td>
+                              <td><span title="@toTooltip">@Html.DisplayFor(x => job.LastJob.PeriodEnd)</span></td>
+                              <td>@Html.DisplayFor(x => job.LastJob.FilesCount)</td>
+                              <td><a asp-page="./JobDetails" asp-route-id="@job.LastJob.Id">@started</a></td>
                               <td>@finished</td>
                               <td>
-                                  @if (item.ActivityId == null)
+                                  @if (job.ProcessId == null)
                                   {
                                       <form method="POST">
-                                          <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@item.Group" asp-route-name="@item.Name" value="Start" />
+                                          <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@job.Group" asp-route-name="@job.Name" value="Start" />
                                       </form>
                                   }
                                   else
                                   {
                                       <form method="POST">
-                                          <input type="submit" class="btn btn-primary" asp-page-handler="Kill" asp-route-activityId="@item.ActivityId" value="@item.ProcessId" />
+                                          <input type="submit" class="btn btn-primary-red" asp-page-handler="Kill" asp-route-activityId="@job.ToString()" value="@job.ProcessId" />
                                       </form>
                                   }
                               </td>
@@ -84,43 +90,43 @@
                   </tbody>
               </table>
 
-              @foreach (var item in jobTrigger)
+              @foreach (var job in jobTrigger)
               {
-                  string started = item.LastJobStarted.GetRelativeTime();
-                  string finished = item.LastJobFinished.GetRelativeTime();
-                  string lastSync = item.LastSync.GetRelativeTime();
-                  string from = item.LastJobPeriodStart.GetRelativeTime();
-                  string to = item.LastJobPeriodEnd.GetRelativeTime();
-                  string color = item.Success && item.ActivityId == null ? "text-white tri-success" : item.ActivityId == null ? "text-white tri-error" : "text-black tri-info";
+                  string started = job.LastJob.Started.GetRelativeTime();
+                  string finished = job.LastJob.Finished.GetRelativeTime();
+                  string lastSyncTooltip = job.LastSync.GetRelativeTime();
+                  string fromTooltip = job.LastJob.PeriodStart.GetRelativeTime();
+                  string toTooltip = job.LastJob.PeriodEnd.GetRelativeTime();
+                  string statusColor = job.LastJob.Success && job.ProcessId == null ? "text-white tri-success" : job.ProcessId == null ? "text-white tri-error" : "text-black tri-info";
 
                   <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3">
-                      <div class="card @color" style="margin-bottom: 10px;">
+                      <div class="card @statusColor" style="margin-bottom: 10px;">
                           <div class="card-body text-center">
-                              <h4 class="card-title"><a asp-page="./Job" asp-route-jobTriggerId="@item.JobTriggerId">@item.Name</a></h4>
+                              <h4 class="card-title"><a asp-page="./Job" asp-route-jobTriggerId="@job.JobTriggerId">@job.Name</a></h4>
                           </div>
                           <ul class=" ">
-                              <li><span title="@item.CronSummary">@item.CronString</span></li>
-                              <li>Next - @Html.DisplayFor(x => item.Next)</li>
-                              <li><a asp-page="./ConfigEdit" asp-route-name="@item.Name" asp-route-group="@item.Group">@Html.DisplayFor(x => item.ConfigPath)</a></li>
-                              <li><span title="@lastSync">Sync -  @Html.DisplayFor(x => item.LastSync)</span></li>
-                              <li><span title="@from">From -  @Html.DisplayFor(x => item.LastJobPeriodStart)</span></li>
-                              <li><span title="@to">To -    @Html.DisplayFor(x => item.LastJobPeriodEnd)</span></li>
-                              <li>Files - @Html.DisplayFor(x => item.LastJobFilesCount)</li>
-                              <li><a asp-page="./Details" asp-route-id="@item.JobId">Started - @started</a></li>
+                              <li><span title="@job.Cron.ExpressionString">@job.Cron.Expression</span></li>
+                              <li>Next - @Html.DisplayFor(x => job.Cron.NextRun)</li>
+                              <li><a asp-page="./ConfigEdit" asp-route-name="@job.Name" asp-route-group="@job.Group">@Html.DisplayFor(x => job.Cron.ConfigPath)</a></li>
+                              <li><span title="@lastSyncTooltip">Sync -  @Html.DisplayFor(x => job.LastSync)</span></li>
+                              <li><span title="@fromTooltip">From -  @Html.DisplayFor(x => job.LastJob.PeriodStart)</span></li>
+                              <li><span title="@toTooltip">To -    @Html.DisplayFor(x => job.LastJob.PeriodEnd)</span></li>
+                              <li>Files - @Html.DisplayFor(x => job.LastJob.FilesCount)</li>
+                              <li><a asp-page="./JobDetails" asp-route-id="@job.LastJob.Id">Started - @started</a></li>
                               <li>Finished - @finished</li>
                           </ul>
                           <div class="card-body text-center">
                               <div>
-                                  @if (item.ActivityId == null)
+                                  @if (job.ProcessId == null)
                                   {
                                       <form method="POST">
-                                          <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@item.Group" asp-route-name="@item.Name" value="Start" />
+                                          <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@job.Group" asp-route-name="@job.Name" value="Start" />
                                       </form>
                                   }
                                   else
                                   {
                                       <form method="POST">
-                                          <input type="submit" class="btn btn-primary" asp-page-handler="Kill" asp-route-activityId="@item.ActivityId" value="@item.ProcessId" />
+                                          <input type="submit" class="btn btn-primary-red" asp-page-handler="Kill" asp-route-activityId="@job.ToString()" value="@job.ProcessId" />
                                       </form>
                                   }
                               </div>

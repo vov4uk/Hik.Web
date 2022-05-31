@@ -1,44 +1,45 @@
-using Hik.Web.Scheduler;
+using Hik.Quartz.Contracts;
+using Hik.Web.Commands.Cron;
+using Hik.Web.Queries.QuartzJob;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
     public class CronEditModel : PageModel
     {
-        [BindProperty]
-        public CronDTO CronDTO { get; set; }
+        private readonly IMediator _mediator;
 
-        public void OnGet(string name, string group)
+        public CronEditModel(IMediator mediator)
         {
-            var data = XmlHelper.GetJobSchedulingData();
-
-            if (data.Schedule.Trigger.Any())
-            {
-                var cron = data.Schedule.Trigger.Select(x => x.Cron).FirstOrDefault(x => x.Group == group && x.Name == name);
-                CronDTO = new CronDTO(cron);
-            }
+            this._mediator = mediator;
         }
 
-        public IActionResult OnPost(string name, string group)
+        [BindProperty]
+        public QuartzJobDto Dto { get; set; }
+
+        public void OnGetAddNew()
+        {
+            Dto = new QuartzJobDto() { Cron = new CronDto()};
+        }
+
+        public async Task OnGetAsync(string name, string group)
+        {
+            Dto = await this._mediator.Send(new QuartzJobQuery { Name = name, Group = group }) as QuartzJobDto;
+        }
+
+        public async Task <IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            var data = XmlHelper.GetJobSchedulingData();
+            await this._mediator.Send(new UpdateQuartzJobCommand { Cron = Dto.Cron });
 
-            var modified = CronDTO.ToCron();
-
-            var original = data.Schedule.Trigger.FirstOrDefault(x => x.Cron.Group == group && x.Cron.Name == name);
-            data.Schedule.Trigger.Remove(original);
-            data.Schedule.Trigger.Add(new Trigger { Cron = modified });
-
-            XmlHelper.UpdateJobSchedulingData(data);
-
-            return RedirectToPage("./Scheduler");
+            return RedirectToPage("./Scheduler", new { msg = "Changes saved. Take effect after Scheduler restart" });
         }
     }
 }

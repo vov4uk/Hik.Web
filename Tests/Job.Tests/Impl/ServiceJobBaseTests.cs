@@ -1,6 +1,4 @@
-﻿using Autofac;
-using Hik.Client.Abstraction;
-using Hik.Client.Infrastructure;
+﻿using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Moq;
@@ -18,19 +16,15 @@ namespace Job.Tests.Impl
             : base()
         {
             serviceMock = new (MockBehavior.Strict);
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(serviceMock.Object);
-
-            AppBootstrapper.SetupTest(builder);
         }
 
         protected void SetupExecuteAsync()
         {
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
-                .ReturnsAsync(new List<MediaFileDTO>());
+                .ReturnsAsync(new List<MediaFileDto>());
         }
 
-        protected void SetupExecuteAsync(List<MediaFileDTO> files)
+        protected void SetupExecuteAsync(List<MediaFileDto> files)
         {
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ReturnsAsync(files);

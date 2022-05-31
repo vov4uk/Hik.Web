@@ -2,11 +2,12 @@
 @model Hik.Web.Pages.ConfigEditModel
 @{ ViewData["Title"] = "Edit"; }
 
-@{
-    var title =$"{@Model.ConfigDTO.JobName}";
-    <h4>@title</h4>
-}
 
+<div class="row">
+    <div class="card-body text-center">
+        <h2 class="card-title">@Model.Dto.Config.JobName</h2>
+    </div>
+</div>
 <div>
     <button onclick="javascript:history.back()">Go Back</button>
 </div>
@@ -14,11 +15,11 @@
 <div class="row">
     <div class="col-md-4">
         <form method="post">
-            <input type="hidden" asp-for="ConfigDTO.Path" />
-            <input type="hidden" asp-for="ConfigDTO.Json" />
+            <input type="hidden" asp-for="Dto.Config.JobName" />
+            <input type="hidden" asp-for="Dto.Config.Path" />
             <div class="form-group">
-                @Html.LabelFor(model => model.ConfigDTO.Json)
-                @Html.TextAreaFor(model => model.ConfigDTO.Json, new { @class = "form-control", @rows = 20 })
+                @Html.LabelFor(model => model.Dto.Config.Json)
+                @Html.TextAreaFor(model => model.Dto.Config.Json, new { @class = "form-control", @rows = 20 })
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

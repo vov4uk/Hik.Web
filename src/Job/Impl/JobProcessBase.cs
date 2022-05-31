@@ -14,22 +14,25 @@ using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public abstract class JobProcessBase
+    public abstract class JobProcessBase<T> : IJobProcess
+        where T : BaseConfig
     {
-        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
+        protected readonly ILogger logger;
         protected readonly IHikDatabase db;
         protected readonly IEmailHelper email;
         protected JobTrigger jobTrigger;
 
-        protected JobProcessBase(string trigger, IHikDatabase db, IEmailHelper email, Guid activityId)
+        protected JobProcessBase(string trigger, T config, IHikDatabase db, IEmailHelper email, ILogger logger)
         {
             TriggerKey = trigger;
-            System.Diagnostics.Trace.CorrelationManager.ActivityId = activityId;
+            this.logger = logger;
             this.db = db;
             this.email = email;
+            Config = config ?? throw new ArgumentNullException(nameof(config));
+            LogInfo(Config.ToString());
         }
 
-        public BaseConfig Config { get; protected set; }
+        public T Config { get; protected set; }
         public string TriggerKey { get; private set; }
         internal HikJob JobInstance { get; private set; }
 
@@ -58,24 +61,28 @@ namespace Job.Impl
             logger.Info($"{TriggerKey} - {msg}");
         }
 
-        protected abstract Task<IReadOnlyCollection<MediaFileDTO>> RunAsync();
+        protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync();
 
-        protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             JobInstance.FilesCount = files.Count;
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
-            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+            await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
 
         private void HandleException(Exception e)
         {
-            this.JobInstance.Success = false;
             try
             {
+                this.JobInstance.Success = false;
                 Task.WaitAll(LogExceptionToDB(e), db.SaveJobResultAsync(JobInstance));
             }
-            catch (Exception ex) { logger.Error(ex.ToString()); }
+            catch (Exception ex)
+            {
+                logger.Error(e.ToString());
+                logger.Error(ex.ToString());
+            }
 
             if (Config.SentEmailOnError)
             {
@@ -92,13 +99,12 @@ namespace Job.Impl
         {
             this.jobTrigger = await db.GetOrCreateJobTriggerAsync(TriggerKey);
 
-            this.JobInstance = new HikJob
+            JobInstance = await db.CreateJobInstanceAsync(new HikJob
             {
                 Started = DateTime.Now,
-                JobTriggerId = jobTrigger.Id
-            };
-
-            await db.CreateJobInstanceAsync(JobInstance);
+                JobTriggerId = jobTrigger.Id,
+                Success = true
+            });
         }
 
         private async Task LogExceptionToDB(Exception e)
@@ -106,7 +112,7 @@ namespace Job.Impl
             await db.LogExceptionToAsync(JobInstance.Id, (e as HikException)?.ErrorMessage ?? e.ToString(), e.StackTrace, (e as HikException)?.ErrorCode);
         }
 
-        private async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDTO> files)
+        private async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             if (files?.Any() == true)
             {
@@ -117,7 +123,7 @@ namespace Job.Impl
                 logger.Warn($"{TriggerKey} - Results Empty");
             }
 
-            if (this.JobInstance.Success)
+            if (JobInstance.Success)
             {
                 await db.SaveJobResultAsync(JobInstance);
             }

@@ -1,37 +1,32 @@
-﻿using Autofac;
-using Hik.Client.FileProviders;
-using Hik.Client.Infrastructure;
+﻿using Hik.Client.FileProviders;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using Job.Extensions;
-using System;
+using NLog;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public class DbMigrationJob : JobProcessBase
+    public class DbMigrationJob : JobProcessBase<MigrationConfig>
     {
         protected readonly IFileProvider filesProvider;
 
-        public DbMigrationJob(string trigger, string configFilePath, IHikDatabase db, IEmailHelper email, Guid activityId)
-            : base(HikConfigExtensions.GetConfig<MigrationConfig>(configFilePath).TriggerKey, db, email, activityId)
+        public DbMigrationJob(MigrationConfig config, IFileProvider fileProvider, IHikDatabase db, IEmailHelper email, ILogger logger)
+            : base(config.TriggerKey, config, db, email, logger)
         {
-            Config = HikConfigExtensions.GetConfig<MigrationConfig>(configFilePath);
-            LogInfo($"Trigger : {trigger}, Config :{Config}");
-            this.filesProvider = AppBootstrapper.Container.Resolve<IFileProvider>();
+            this.filesProvider = fileProvider;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
         {
             filesProvider.Initialize(new[] { Config.DestinationFolder });
 
-            bool readVideoDuration = ((MigrationConfig)Config).ReadVideoDuration;
+            bool readVideoDuration = Config.ReadVideoDuration;
 
-            List<MediaFileDTO> files = new();
+            List<MediaFileDto> files = new();
             do
             {
                 var batch = await filesProvider.GetOldestFilesBatch(readVideoDuration);

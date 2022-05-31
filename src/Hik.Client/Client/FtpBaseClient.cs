@@ -8,7 +8,9 @@ using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using NLog;
+using Polly;
 
 namespace Hik.Client.Client
 {
@@ -29,10 +31,10 @@ namespace Hik.Client.Client
             this.ftp = ftp;
         }
 
-        public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
+        public async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
         {
-            string localFilePath = GetPathSafety(remoteFile);
-            var remoteFilePath = GetRemoteFileFath(remoteFile);
+            string localFilePath = GetLocalFilePath(remoteFile);
+            string remoteFilePath = GetRemoteFilePath(remoteFile);
 
             if (!filesHelper.FileExists(localFilePath))
             {
@@ -45,7 +47,7 @@ namespace Hik.Client.Client
             }
         }
 
-        public abstract Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
+        public abstract Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
 
         public void ForceExit()
         {
@@ -88,7 +90,7 @@ namespace Hik.Client.Client
             }
         }
 
-        protected async Task<bool> DownloadInternalAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
+        protected async Task<bool> DownloadInternalAsync(MediaFileDto remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
         {
             var remoteFileExist = await ftp.FileExistsAsync(remoteFilePath, token);
 
@@ -96,7 +98,12 @@ namespace Hik.Client.Client
             {
                 LogDebugInfo($"{remoteFile.Name} - downloading");
                 var tempFile = filesHelper.GetTempFileName();
-                await ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token);
+
+                await Policy
+                    .Handle<FtpException>()
+                    .Or<TimeoutException>()
+                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(3))
+                    .ExecuteAsync(() => ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token));
 
                 filesHelper.RenameFile(tempFile, localFilePath);
 
@@ -109,11 +116,13 @@ namespace Hik.Client.Client
             }
         }
 
-        protected abstract Task<bool> PostDownloadFileProcessAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token);
+        protected abstract Task<bool> PostDownloadFileProcessAsync(MediaFileDto remoteFile, string localFilePath, string remoteFilePath, CancellationToken token);
 
-        protected abstract string GetRemoteFileFath(MediaFileDTO remoteFile);
+        protected abstract string GetRemoteFilePath(MediaFileDto remoteFile);
 
-        protected string GetWorkingDirectory(MediaFileDTO file)
+        protected abstract string GetLocalFilePath(MediaFileDto remoteFile);
+
+        protected string GetWorkingDirectory(MediaFileDto file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, file.ToVideoDirectoryNameString());
         }
@@ -121,14 +130,6 @@ namespace Hik.Client.Client
         protected void LogDebugInfo(string msg)
         {
             logger.Debug($"{config.Alias} - {msg}");
-        }
-
-        private string GetPathSafety(MediaFileDTO remoteFile)
-        {
-            string workingDirectory = GetWorkingDirectory(remoteFile);
-            directoryHelper.CreateDirIfNotExist(workingDirectory);
-
-            return filesHelper.CombinePath(workingDirectory, remoteFile.ToYiFileNameString());
         }
     }
 }

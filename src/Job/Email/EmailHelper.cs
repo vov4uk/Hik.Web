@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Hik.Api;
+using Job.Extensions;
 using NLog;
 
 namespace Job.Email
@@ -16,7 +17,7 @@ namespace Job.Email
         {
 #if RELEASE
             string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
-            Settings = Newtonsoft.Json.JsonConvert.DeserializeObject<EmailConfig>(System.IO.File.ReadAllText(configPath));
+            Settings = HikConfigExtensions.GetConfig<EmailConfig>(configPath);
 #endif
         }
 
@@ -60,6 +61,10 @@ namespace Job.Email
                         EnableSsl = true,
                     };
                     smtp.Send(mail);
+                }
+                else
+                {
+                    Logger.Error($"Settings file not exist");
                 }
 #endif
             }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
-using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client.Service
 {
@@ -43,14 +43,14 @@ namespace Hik.Client.Service
             }
         }
 
-        public abstract Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
+        public abstract Task<IReadOnlyCollection<MediaFileDto>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd);
 
-        public abstract Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token);
+        public abstract Task<IReadOnlyCollection<MediaFileDto>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDto> remoteFiles, CancellationToken token);
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
+        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             CameraConfig cameraConfig = config as CameraConfig ?? throw new ArgumentNullException(nameof(config));
-            IReadOnlyCollection<MediaFileDTO> jobResult = null;
+            IReadOnlyCollection<MediaFileDto> jobResult = null;
 
             using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(cameraConfig.Timeout)))
             {
@@ -61,7 +61,7 @@ namespace Hik.Client.Service
                     taskCompletionSource.TrySetCanceled();
                 });
 
-                Task<IReadOnlyCollection<MediaFileDTO>> downloadTask = InternalDownload(cameraConfig, from, to);
+                Task<IReadOnlyCollection<MediaFileDto>> downloadTask = InternalDownload(cameraConfig, from, to);
                 Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
 
                 if (completedTask == downloadTask)
@@ -94,14 +94,10 @@ namespace Hik.Client.Service
             }
         }
 
-        private async Task<IReadOnlyCollection<MediaFileDTO>> InternalDownload(CameraConfig config, DateTime from, DateTime to)
+        private async Task<IReadOnlyCollection<MediaFileDto>> InternalDownload(CameraConfig config, DateTime from, DateTime to)
         {
             var result = await ProcessCameraAsync(config, from, to);
-            if (result.Count > 0)
-            {
-                PrintStatistic(config?.DestinationFolder);
-            }
-            else
+            if (!result.Any())
             {
                 logger.Warn($"{config.Alias}, {from} - {to} : No files downloaded");
             }
@@ -109,9 +105,9 @@ namespace Hik.Client.Service
             return result;
         }
 
-        private async Task<IReadOnlyCollection<MediaFileDTO>> ProcessCameraAsync(CameraConfig config, DateTime periodStart, DateTime periodEnd)
+        private async Task<IReadOnlyCollection<MediaFileDto>> ProcessCameraAsync(CameraConfig config, DateTime periodStart, DateTime periodEnd)
         {
-            var result = new List<MediaFileDTO>();
+            var result = new List<MediaFileDto>();
             using (Client = clientFactory.Create(config))
             {
                 Client.InitializeClient();
@@ -137,16 +133,6 @@ namespace Hik.Client.Service
             }
 
             return result;
-        }
-
-        private void PrintStatistic(string destinationFolder)
-        {
-            StringBuilder statisticsSb = new StringBuilder();
-            statisticsSb.AppendLine();
-            statisticsSb.AppendLine($"{"Directory Size",-24}: {directoryHelper.DirSize(destinationFolder).FormatBytes()}");
-            statisticsSb.AppendLine($"{"Free space",-24}: {directoryHelper.GetTotalFreeSpaceBytes(destinationFolder).FormatBytes()}");
-
-            logger.Info(statisticsSb.ToString());
         }
     }
 }

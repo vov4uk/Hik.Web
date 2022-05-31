@@ -1,109 +1,63 @@
-﻿using Autofac;
-using CronExpressionDescriptor;
-using Hik.Client.Helpers;
-using Hik.DataAccess;
-using Hik.DataAccess.Data;
+﻿using Hik.Helpers;
 using Hik.DTO.Contracts;
-using Hik.Web.Scheduler;
+using Hik.Web.Queries.JobTriggers;
+using Hik.Web.Queries.QuartzTriggers;
 using Job;
-using Job.Commands;
-using Job.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Hik.Web.Commands.Cron;
 
 namespace Hik.Web.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly DataContext dataContext;
-        private readonly ActivityBag activities = new();
+        private readonly RunningActivities activities = new();
         private readonly IMediator _mediator;
 
-        public IndexModel(DataContext dataContext)
+        public IndexModel(IMediator mediator)
         {
-            this.dataContext = dataContext;
-            this.dataContext.Database.EnsureCreated();
-            _mediator = AutofacConfig.Container.Resolve<IMediator>();
-            JobTriggers = dataContext.JobTriggers.AsQueryable().ToList();
+            this._mediator = mediator;
         }
 
-        private IList<JobTrigger> JobTriggers { get; }
-
-        public Dictionary<string, IList<TriggerDTO>> TriggersDtos { get; private set; }
+        public Dictionary<string, IList<TriggerDto>> TriggersDtos { get; private set; }
 
         public string ResponseMsg { get; private set; }
 
         public async Task OnGet(string msg = null)
         {
             ResponseMsg = msg;
-            TriggersDtos = new Dictionary<string, IList<TriggerDTO>>();
-            var jobs = await dataContext.JobTriggers
-                .AsQueryable()
-                .Include(x => x.Jobs)
-                .Select(x => x.Jobs.OrderByDescending(y => y.Started).FirstOrDefault())
-                .ToListAsync();
+            TriggersDtos = new Dictionary<string, IList<TriggerDto>>();
 
-            IEnumerable<Quartz.Impl.Triggers.CronTriggerImpl> cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
+            var triggers = await _mediator.Send(new JobTriggersQuery()) as JobTriggersDto;
 
-            foreach (var item in cronTriggers)
+            var cronTriggers = await _mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
+
+            foreach (var cronTrigger in cronTriggers.Items)
             {
-                var className = item.GetJobClass();
-                var group = item.Key.Group;
-                var name = item.Key.Name;
+                var group = cronTrigger.Group;
+                var name = cronTrigger.Name;
                 var act = activities.FirstOrDefault(x => x.Parameters.TriggerKey == name && x.Parameters.Group == group);
-                var tri = JobTriggers.FirstOrDefault(x => x.TriggerKey == name && x.Group == group);
-                var job = jobs.FirstOrDefault(x => x.JobTriggerId == tri?.Id);
-                var dto = new TriggerDTO
-                {
-                    Group = group,
-                    Name = name,
-                    TriggerStarted = item.StartTimeUtc.DateTime.ToLocalTime(),
-                    ConfigPath = item.GetConfig(),
-                    Next = item.GetNextFireTimeUtc().Value.DateTime.ToLocalTime(),
-                    ActivityId = act?.Id,
-                    CronSummary = ExpressionDescriptor.GetDescription(item.CronExpressionString, CronDTO.Options),
-                    CronString = item.CronExpressionString,
-                    ProcessId = act?.ProcessId,
-                    JobTriggerId = tri?.Id ?? -1,
-                    JobId = job?.Id,
-                    LastSync = tri?.LastSync,
-                    Success = job?.Success == true,
-                    LastJobPeriodEnd = job?.PeriodEnd,
-                    LastJobPeriodStart = job?.PeriodStart,
-                    LastJobFilesCount = job?.FilesCount,
-                    LastJobStarted = job?.Started,
-                    LastJobFinished = job?.Finished
-                };
+                var tri = triggers.Items.FirstOrDefault(x => x.Name == name && x.Group == group);
 
-                TriggersDtos.SafeAdd(className, dto);
+                if (tri == null || tri.LastJob == null)
+                {
+                    continue;
+                }
+
+                tri.ProcessId = act?.ProcessId;
+                tri.Cron = cronTrigger;
+
+                TriggersDtos.SafeAdd(cronTrigger.ClassName, tri);
             }
         }
 
-        public async Task<IActionResult> OnPostRun(string group, string name)
+        public IActionResult OnPostRun(string group, string name)
         {
-            var cronTriggers = await QuartzTriggers.GetCronTriggersAsync();
-            var trigger = cronTriggers.Single(t => t.Key.Group == group && t.Key.Name == name);
-
-            string className = trigger.GetJobClass();
-            string configPath = trigger.GetConfig();
-            bool runAsTask = Debugger.IsAttached || trigger.GetRunAsTask();
-
-            var configuration = AutofacConfig.Container.Resolve<IConfiguration>();
-
-            IConfigurationSection connStrings = configuration.GetSection("ConnectionStrings");
-            string defaultConnection = connStrings.GetSection("HikConnectionString").Value;
-
-            var parameters = new Parameters(className, group, name, configPath, defaultConnection, runAsTask);
-
-            var command = new ActivityCommand(parameters);
-            _mediator.Send(command).ConfigureAwait(false).GetAwaiter();
+            _mediator.Send(new StartActivityCommand() { Name = name, Group = group}).ConfigureAwait(false).GetAwaiter();
 
             return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
         }
@@ -111,9 +65,12 @@ namespace Hik.Web.Pages
         public IActionResult OnPostKill(string activityId)
         {
             var activity = activities.SingleOrDefault(a => a.Id == activityId);
-
-            activity?.Kill();
-            return RedirectToPage("./Index", new { msg = $"Activity {activityId} dead" });
+            if (activity != null)
+            {
+                activity?.Kill();
+                return RedirectToPage("./Index", new { msg = $"Activity {activityId} stoped" });
+            }
+            return RedirectToPage("./Index", new { msg = $"Activity {activityId} not found" });
         }
     }
 }

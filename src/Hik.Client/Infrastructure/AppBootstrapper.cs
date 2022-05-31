@@ -31,11 +31,6 @@ namespace Hik.Client.Infrastructure
             return builder.Build();
         }
 
-        internal static void SetupTest(ContainerBuilder containerBuilder)
-        {
-            container = containerBuilder.Build();
-        }
-
         private static void RegisterAutoMapper(ContainerBuilder builder)
         {
             void AutoMapper(IMapperConfigurationExpression x)

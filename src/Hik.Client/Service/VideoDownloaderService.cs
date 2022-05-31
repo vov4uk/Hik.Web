@@ -7,6 +7,7 @@ using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client.Service
 {
@@ -17,7 +18,7 @@ namespace Hik.Client.Service
         {
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDTO> remoteFiles, CancellationToken token)
+        public override async Task<IReadOnlyCollection<MediaFileDto>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDto> remoteFiles, CancellationToken token)
         {
             int j = 1;
             foreach (var video in remoteFiles)
@@ -33,13 +34,13 @@ namespace Hik.Client.Service
             return remoteFiles;
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<MediaFileDto>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            List<MediaFileDTO> videos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
+            List<MediaFileDto> videos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
             return videos;
         }
 
-        private async Task<bool> DownloadRemoteVideoFileAsync(MediaFileDTO file, CancellationToken token)
+        private async Task<bool> DownloadRemoteVideoFileAsync(MediaFileDto file, CancellationToken token)
         {
             DateTime start = DateTime.Now;
 

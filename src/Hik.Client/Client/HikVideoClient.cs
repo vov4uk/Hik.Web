@@ -8,6 +8,7 @@ using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client
 {
@@ -22,7 +23,7 @@ namespace Hik.Client
 
         private bool IsDownloading => downloadId >= 0;
 
-        public async Task<bool> DownloadFileAsync(MediaFileDTO remoteFile, CancellationToken token)
+        public async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
         {
             string targetFilePath = GetPathSafety(remoteFile);
             string tempFile = filesHelper.GetTempFileName();
@@ -46,22 +47,22 @@ namespace Hik.Client
             return false;
         }
 
-        public async Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             ValidateDateParameters(periodStart, periodEnd);
 
             LogDebugInfo($"Get videos from {periodStart} to {periodEnd}");
 
             var remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
-            return Mapper.Map<IReadOnlyCollection<MediaFileDTO>>(remoteFiles);
+            return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
         }
 
-        protected override string ToFileNameString(MediaFileDTO file)
+        protected override string ToFileNameString(MediaFileDto file)
         {
             return file.ToVideoFileNameString();
         }
 
-        protected override string ToDirectoryNameString(MediaFileDTO file)
+        protected override string ToDirectoryNameString(MediaFileDto file)
         {
             return file.ToVideoDirectoryNameString();
         }
@@ -79,7 +80,7 @@ namespace Hik.Client
             }
         }
 
-        private bool StartVideoDownload(MediaFileDTO file, string targetFilePath, string tempFile)
+        private bool StartVideoDownload(MediaFileDto file, string targetFilePath, string tempFile)
         {
             if (!IsDownloading)
             {

@@ -1,4 +1,5 @@
 ﻿using Hik.DataAccess.Abstractions;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Hik.DataAccess
@@ -6,17 +7,18 @@ namespace Hik.DataAccess
     [ExcludeFromCodeCoverage]
     public class UnitOfWorkFactory : IUnitOfWorkFactory
     {
-        private readonly string connectionString;
+        private readonly IDbConfiguration connection;
 
-        public UnitOfWorkFactory(string connectionString)
+        public UnitOfWorkFactory(IDbConfiguration connection)
         {
-            this.connectionString = connectionString;
+            this.connection = connection;
         }
 
-        public IUnitOfWork CreateUnitOfWork()
+        public IUnitOfWork CreateUnitOfWork(QueryTrackingBehavior trackingBehavior = QueryTrackingBehavior.TrackAll)
         {
-            var db = new DataContext(this.connectionString);
+            var db = new DataContext(this.connection);
             db.Database.EnsureCreated();
+            db.ChangeTracker.QueryTrackingBehavior = trackingBehavior;
             return new UnitOfWork<DataContext>(db);
         }
     }

@@ -2,6 +2,15 @@
 @model Hik.Web.Pages.SchedulerModel
 @{ViewData["Title"] = "Scheduler";}
 
+@if (!string.IsNullOrEmpty(@Model.ResponseMsg))
+{
+    <div class="row">
+        <div class="card-body text-center">
+            <h3>@Model.ResponseMsg</h3>
+        </div>
+    </div>
+}
+
 <div class="row">
     <div class="col-lg-12 my-3">
         <div class="pull-right">
@@ -12,15 +21,13 @@
                 <form method="POST">
                     <input type="submit" class="btn btn-primary" asp-page-handler="Restart" value="Restart" />
                 </form>
-                <form method="GET">
-                    <input type="submit" class="btn btn-primary" asp-page="./CronAdd" value="New" />
-                </form>
+                <a class="btn btn-primary" role="button" href="@Url.Page("CronEdit", "AddNew")">New</a>
             </div>
         </div>
     </div>
 </div>
 
-@if (Model.Crons != null && Model.Crons.Any())
+@if (Model.Dto != null && Model.Dto.Items.Any())
 {
     <table class="table table-bordered table-sm" aria-label="Jobs">
         <thead>
@@ -29,26 +36,24 @@
                 <th>Group</th>
                 <th>Name</th>
                 <th>Description</th>
-                <th>Job</th>
+                <th>Class</th>
                 <th>Config</th>
-                <th>AsTask</th>
-                <th></th>
+                <th>As Task</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var cron in Model.Crons)
+            @foreach (var cron in Model.Dto.Items)
             {
             <tr>
-                <td><span title="@cron.CronDescription">@cron.Cronexpression</span></td>
+                <td><span title="@cron.ExpressionString">@cron.Expression</span></td>
                 <td>@cron.Group</td>
                 <td>@cron.Name</td>
                 <td>@cron.Description</td>
-                <td>@cron.Job</td>
-                <td>@cron.ConfigPath</td>
+                <td>@cron.ClassName</td>
+                <td><a asp-page="./ConfigEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">@cron.ConfigPath</a></td>
                 <td>@cron.RunAsTask</td>
                 <td><a asp-page="./CronEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">Edit</a></td>
-                <td><a asp-page="./ConfigEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">Config</a></td>
             </tr>
             }
         </tbody>

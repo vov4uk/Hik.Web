@@ -1,53 +1,35 @@
-using System;
-using Hik.DataAccess;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Collections.Generic;
-using Hik.DataAccess.Data;
-using System.Linq;
 using System.Threading.Tasks;
-using JW;
-using Microsoft.EntityFrameworkCore;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Hik.Web.Queries.Job;
+using Hik.Web.Pages.Shared;
 
 namespace Hik.Web.Pages
 {
     public class JobModel : PageModel
     {
-        private const int PageSize = 40;
-        private const int MaxPages = 10;
-        private readonly DataContext dataContext;
-        public JobModel(DataContext dataContext)
+        private readonly IMediator mediator;
+
+        public JobModel(IMediator mediator)
         {
-            this.dataContext = dataContext;
-            dataContext.Database.EnsureCreated();
+            this.mediator = mediator;
         }
 
-        public IList<HikJob> Jobs { get; set; }
+        public PagerControl Pager { get; private set; }
 
-        public int JobTriggerId { get; private set; }
+        public JobDto Dto { get; set; }
 
-        public Pager Pager { get; private set; }
-
-        private int TotalItems { get; set; }
-
-        public async Task OnGetAsync(int jobTriggerId = default, int p = 1)
+        public async Task<IActionResult> OnGetAsync(int? jobTriggerId = default, int p = 1)
         {
-            JobTriggerId = jobTriggerId;
-            if (jobTriggerId != default)
-            {
-                TotalItems = await dataContext.Jobs
-                    .AsQueryable()
-                    .CountAsync(x => x.JobTriggerId == jobTriggerId);
-                Pager = new Pager(TotalItems, p, PageSize, MaxPages);
+            if (jobTriggerId == null) { return NotFound(); }
 
-                var repo = dataContext.Jobs
-                    .AsQueryable()
-                    .Where(x => x.JobTriggerId == jobTriggerId)
-                    .Include(x => x.JobTrigger)
-                    .OrderByDescending(x => x.Id)
-                    .Skip(Math.Max(0, Pager.CurrentPage - 1) * Pager.PageSize)
-                    .Take(Pager.PageSize);
-                Jobs = await repo.ToListAsync();
-            }
+            Dto = await mediator.Send(new JobQuery { JobTriggerId = jobTriggerId.Value, CurrentPage = p }) as JobDto;
+
+            if (Dto == null) { return NotFound(); }
+            Pager = new (jobTriggerId.Value, "./Job?jobTriggerId=", Dto.TotalItems, p);
+
+            return Page();
         }
     }
 }

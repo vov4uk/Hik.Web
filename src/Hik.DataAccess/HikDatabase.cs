@@ -13,7 +13,7 @@ namespace Hik.DataAccess
     public class HikDatabase : IHikDatabase
     {
         private readonly IUnitOfWorkFactory factory;
-        private static readonly IMapper mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
+        public static readonly IMapper Mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
         protected readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public HikDatabase(IUnitOfWorkFactory factory)
@@ -21,12 +21,13 @@ namespace Hik.DataAccess
             this.factory = factory;
         }
 
-        public async Task CreateJobInstanceAsync(HikJob job)
+        public async Task<HikJob> CreateJobInstanceAsync(HikJob job)
         {
             using var unitOfWork = this.factory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<HikJob>();
-            await jobRepo.AddAsync(job);
+            var newJob = await jobRepo.AddAsync(job);
             await unitOfWork.SaveChangesAsync();
+            return newJob;
         }
 
         public async Task LogExceptionToAsync(int jobId, string message, string callStack, uint? errorCode = null)
@@ -63,22 +64,35 @@ namespace Hik.DataAccess
 
         public async Task SaveJobResultAsync(HikJob job)
         {
-            using var unitOfWork = factory.CreateUnitOfWork();
-            var jobRepo = unitOfWork.GetRepository<HikJob>();
-            job.Finished = DateTime.Now;
-            jobRepo.Update(job);
-
-            if (job.Success)
+            using (var unitOfWork = factory.CreateUnitOfWork())
             {
-                var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
-                var trigger = await triggerRepo.FindByAsync(x => x.Id == job.JobTriggerId);
-                trigger.LastSync = job.Started;
-            }
+                var jobRepo = unitOfWork.GetRepository<HikJob>();
+                job.Finished = DateTime.Now;
+                jobRepo.Update(job);
 
-            await unitOfWork.SaveChangesAsync(job);
+                if (job.Success)
+                {
+                    var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
+                    var trigger = await triggerRepo.FindByAsync(x => x.Id == job.JobTriggerId);
+                    trigger.LastSync = job.Started;
+                    triggerRepo.Update(trigger);
+                }
+
+                await unitOfWork.SaveChangesAsync();
+            }
         }
 
-        public async Task<List<MediaFile>> SaveFilesAsync(HikJob job, IReadOnlyCollection<MediaFileDTO> files)
+        public async Task UpdateJobAsync(HikJob job)
+        {
+            using (var unitOfWork = factory.CreateUnitOfWork())
+            {
+                var jobRepo = unitOfWork.GetRepository<HikJob>();
+                jobRepo.Update(job);
+                await unitOfWork.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<MediaFile>> SaveFilesAsync(HikJob job, IReadOnlyCollection<MediaFileDto> files)
         {
             using var unitOfWork = factory.CreateUnitOfWork();
 
@@ -86,12 +100,16 @@ namespace Hik.DataAccess
             var mediaFileDuration = new List<DownloadDuration>();
             foreach (var item in files)
             {
-                MediaFile file = mapper.Map<MediaFile>(item);
+                MediaFile file = Mapper.Map<MediaFile>(item);
                 file.JobTriggerId = job.JobTriggerId;
                 if (item.DownloadDuration != null)
                 {
-                    DownloadDuration duration = mapper.Map<DownloadDuration>(item);
-                    duration.MediaFile = file;
+                    DownloadDuration duration = new()
+                    {
+                        MediaFile = file,
+                        Duration = item.DownloadDuration,
+                        Started = item.DownloadStarted,
+                    };
                     mediaFileDuration.Add(duration);
                 }
                 mediaFiles.Add(file);
@@ -103,27 +121,30 @@ namespace Hik.DataAccess
             return mediaFiles;
         }
 
-        public async Task UpdateDailyStatisticsAsync(HikJob job, IReadOnlyCollection<MediaFileDTO> files)
+        public async Task UpdateDailyStatisticsAsync(int jobTriggerId, IReadOnlyCollection<MediaFileDto> files)
         {
-            using var unitOfWork = factory.CreateUnitOfWork();
-
-            var from = files.Min(x => x.Date).Date;
-            var to = files.Max(x => x.Date).Date;
-
-            var dailyStat = (await GetDailyStatisticSafe(job.JobTriggerId, from, to, unitOfWork)).ToDictionary(k => k.Period, v => v);
-
-            var group = files.GroupBy(x => x.Date.Date)
-                .Select(x => new { Date = x.Key, Count = x.Count(), Size = x.Sum(p => p.Size), Duration = x.Sum(p => p.Duration) });
-
-            foreach (var item in group)
+            using (var unitOfWork = factory.CreateUnitOfWork())
             {
-                var day = dailyStat[item.Date];
-                day.FilesCount += item.Count;
-                day.FilesSize += item.Size;
-                day.TotalDuration += item.Duration;
-            }
+                IBaseRepository<DailyStatistic> repo = unitOfWork.GetRepository<DailyStatistic>();
 
-            await unitOfWork.SaveChangesAsync(job);
+                var from = files.Min(x => x.Date).Date;
+                var to = files.Max(x => x.Date).Date;
+
+                Dictionary<DateTime, DailyStatistic> dailyStat = await GetDailyStatisticSafe(jobTriggerId, from, to, repo);
+
+                var group = files.GroupBy(x => x.Date.Date)
+                    .Select(x => new { Date = x.Key, Count = x.Count(), Size = x.Sum(p => p.Size), Duration = x.Sum(p => p.Duration) });
+
+                foreach (var item in group)
+                {
+                    var day = dailyStat[item.Date];
+                    day.FilesCount += item.Count;
+                    day.FilesSize += item.Size;
+                    day.TotalDuration += item.Duration;
+                }
+
+                await unitOfWork.SaveChangesAsync();
+            }
         }
 
         public async Task SaveDownloadHistoryFilesAsync(HikJob job, IReadOnlyCollection<MediaFile> files)
@@ -157,22 +178,22 @@ namespace Hik.DataAccess
                             x => x.DownloadDuration,
                             x => x.DownloadHistory);
                         filesRepo.RemoveRange(files);
+                        await unitOfWork.SaveChangesAsync();
                         logger.Info($"{trigger} files cleared");
 
-                        var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.PeriodEnd <= to, x => x.DownloadedFiles);
+                        var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Finished <= to, x => x.DownloadedFiles);
                         jobRepo.RemoveRange(jobs);
+                        await unitOfWork.SaveChangesAsync();
                         logger.Info($"{trigger} jobs cleared");
                     }
                 }
 
-                await unitOfWork.SaveChangesAsync();
                 logger.Info($"Cleanup done");
             }
         }
 
-        private static async Task<List<DailyStatistic>> GetDailyStatisticSafe(int triggerId, DateTime from, DateTime to, IUnitOfWork unitOfWork)
+        private static async Task<Dictionary<DateTime, DailyStatistic>> GetDailyStatisticSafe(int triggerId, DateTime from, DateTime to, IBaseRepository<DailyStatistic> repo)
         {
-            var repo = unitOfWork.GetRepository<DailyStatistic>();
             var daily = await repo.FindManyAsync(x => x.JobTriggerId == triggerId && x.Period >= from && x.Period <= to);
 
             var newItems = new List<DailyStatistic>();
@@ -194,11 +215,11 @@ namespace Hik.DataAccess
 
             await repo.AddRangeAsync(newItems);
             daily.AddRange(newItems);
-            return daily;
+            return daily.ToDictionary(k => k.Period, v => v);
         }
 
         private static async Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)
-            where TEntity : class
+            where TEntity : class, IEntity
         {
             if (entities != null && entities.Any())
             {
@@ -209,7 +230,7 @@ namespace Hik.DataAccess
 
         static void configureAutoMapper(IMapperConfigurationExpression x)
         {
-            x.AddProfile<AutoMapperProfile>();
+            x.AddProfile<HikMappingProfile>();
         }
     }
 }

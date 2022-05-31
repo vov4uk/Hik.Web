@@ -2,9 +2,9 @@
 using AutoMapper;
 using Hik.Api.Abstraction;
 using Hik.Api.Data;
-using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using NLog;
 
 namespace Hik.Client
@@ -120,9 +120,9 @@ namespace Hik.Client
             }
         }
 
-        protected abstract string ToFileNameString(MediaFileDTO file);
+        protected abstract string ToFileNameString(MediaFileDto file);
 
-        protected abstract string ToDirectoryNameString(MediaFileDTO file);
+        protected abstract string ToDirectoryNameString(MediaFileDto file);
 
         protected abstract void StopDownload();
 
@@ -134,7 +134,7 @@ namespace Hik.Client
             }
         }
 
-        protected string GetPathSafety(MediaFileDTO remoteFile)
+        protected string GetPathSafety(MediaFileDto remoteFile)
         {
             string workingDirectory = GetWorkingDirectory(remoteFile);
             dirHelper.CreateDirIfNotExist(workingDirectory);
@@ -147,7 +147,7 @@ namespace Hik.Client
             downloadId = -1;
         }
 
-        private string GetWorkingDirectory(MediaFileDTO file)
+        private string GetWorkingDirectory(MediaFileDto file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, ToDirectoryNameString(file));
         }

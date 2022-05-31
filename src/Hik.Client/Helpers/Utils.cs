@@ -15,6 +15,7 @@ namespace Hik.Client.Helpers
         private const string YiFilePathFormat = "yyyy'Y'MM'M'dd'D'HH'H'";
         private const string YiFileNameFormat = "mm'M00S'";
         private const string Yi720PFileNameFormat = "mm'M00S60'";
+        private const string NA = "N/A";
         private const int SECOND = 1;
         private const int MINUTE = 60 * SECOND;
         private const int HOUR = 60 * MINUTE;
@@ -64,7 +65,7 @@ namespace Hik.Client.Helpers
 
         public static string GetString(this DateTime? yourDate)
         {
-            return !yourDate.HasValue ? "N/A" : GetString(yourDate.Value);
+            return !yourDate.HasValue ? NA : GetString(yourDate.Value);
         }
 
         public static string GetString(this DateTime yourDate)
@@ -75,7 +76,7 @@ namespace Hik.Client.Helpers
 
         public static string GetRelativeTime(this DateTime? yourDate)
         {
-            return !yourDate.HasValue ? "N/A" : GetRelativeTime(yourDate.Value);
+            return !yourDate.HasValue ? NA : GetRelativeTime(yourDate.Value);
         }
 
         public static string GetRelativeTime(this DateTime yourDate)
@@ -89,32 +90,37 @@ namespace Hik.Client.Helpers
 
             if (delta < 1 * MINUTE)
             {
-                return ts.Seconds == 1 ? "one second" : ts.Seconds + " seconds";
+                return ts.Seconds == 1 ? "one second" : $"{ts.Seconds} seconds";
             }
 
             if (delta < 60 * MINUTE)
             {
-                return ts.Minutes + " minutes";
+                return $"{ts.Minutes} minutes";
             }
 
             if (delta < 24 * HOUR)
             {
-                return ts.Hours + " hours";
+                return $"{ts.Hours}h {ts.Minutes}m";
+            }
+
+            if (delta < 7 * DAY)
+            {
+                return $"{ts.Days}d {ts.Hours}h";
             }
 
             if (delta < 30 * DAY)
             {
-                return ts.Days + " days";
+                return $"{ts.Days} days";
             }
 
             if (delta < 12 * MONTH)
             {
                 int months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
-                return months <= 1 ? "one month" : months + " months";
+                return months <= 1 ? "one month" : $"{months} months";
             }
 
             int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
-            return years <= 1 ? "one year" : years + " years";
+            return years <= 1 ? "one year" : $"{years} years";
         }
 
         public static string ToPhotoDirectoryNameString(this DateTime date)
@@ -122,27 +128,27 @@ namespace Hik.Client.Helpers
             return $"{date.Year:0000}-{date.Month:00}\\{date.Day:00}\\{date.Hour:00}";
         }
 
-        public static string ToVideoUserFriendlyString(this MediaFileDTO file)
+        public static string ToVideoUserFriendlyString(this MediaFileDto file)
         {
             return $"{file.Name} | {file.Date.ToString(StartDateTimePrintFormat)} - {file.Duration} | {FormatBytes(file.Size)} ";
         }
 
-        public static string ToPhotoFileNameString(this MediaFileDTO file)
+        public static string ToPhotoFileNameString(this MediaFileDto file)
         {
             return $"{file.Date.ToString(DateFormat)}.jpg";
         }
 
-        public static string ToVideoDirectoryNameString(this MediaFileDTO file)
+        public static string ToVideoDirectoryNameString(this MediaFileDto file)
         {
             return $"{file.Date.Year:0000}-{file.Date.Month:00}\\{file.Date.Day:00}\\{file.Date.Hour:00}";
         }
 
-        public static string ToVideoFileNameString(this MediaFileDTO file)
+        public static string ToVideoFileNameString(this MediaFileDto file)
         {
             return $"{file.Date.ToString(DateFormat)}_{file.Date.AddSeconds((double)file.Duration).ToString(TimeFormat)}.mp4";
         }
 
-        public static string ToYiFileNameString(this MediaFileDTO file)
+        public static string ToYiFileNameString(this MediaFileDto file)
         {
             return $"{file.Date.ToString(DateFormat)}.mp4";
         }

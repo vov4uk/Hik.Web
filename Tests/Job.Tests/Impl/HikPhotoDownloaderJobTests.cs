@@ -7,7 +7,6 @@ using Job.Impl;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -26,15 +25,15 @@ namespace Job.Tests.Impl
                 .ReturnsAsync(new JobTrigger() { LastSync = lastSync });
             SetupCreateJobInstanceAsync();
             SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
                 .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
+            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
                 .ReturnsAsync(new List<MediaFile>());
             dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
                 .Returns(Task.CompletedTask);
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), lastSync.AddMinutes(-1), It.IsAny<DateTime>()))
-                .ReturnsAsync(new List<MediaFileDTO>() { new MediaFileDTO() { Duration = 0, Name = "photo0.jpg" } });
+                .ReturnsAsync(new List<MediaFileDto>() { new MediaFileDto() { Duration = 0, Name = "photo0.jpg" } });
 
             var job = CreateJob();
 
@@ -61,7 +60,7 @@ namespace Job.Tests.Impl
                     this.serviceMock.Raise(mock => mock.ExceptionFired += null,
                         new ExceptionEventArgs(new Exception("Something went wrong")));
                 })
-                .ReturnsAsync(new List<MediaFileDTO>());
+                .ReturnsAsync(new List<MediaFileDto>());
 
             var job = CreateJob();
 
@@ -80,6 +79,9 @@ namespace Job.Tests.Impl
         }
 
         private HikPhotoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
-            => new HikPhotoDownloaderJob($"{group}.{triggerKey}", Path.Combine(TestsHelper.CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
+        {
+            var config = GetConfig<CameraConfig>(configFileName);
+            return new HikPhotoDownloaderJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+        }
     }
 }

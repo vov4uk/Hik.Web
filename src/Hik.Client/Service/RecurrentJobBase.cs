@@ -5,6 +5,7 @@ using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using NLog;
 
 namespace Hik.Client.Service
@@ -21,7 +22,7 @@ namespace Hik.Client.Service
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
 
-        public async Task<IReadOnlyCollection<MediaFileDTO>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public async Task<IReadOnlyCollection<MediaFileDto>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
             try
             {
@@ -40,7 +41,7 @@ namespace Hik.Client.Service
             }
         }
 
-        protected abstract Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to);
+        protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to);
 
         protected virtual void OnExceptionFired(ExceptionEventArgs e, BaseConfig config)
         {

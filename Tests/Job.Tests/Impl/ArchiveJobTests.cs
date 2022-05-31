@@ -17,24 +17,29 @@
     {
         public ArchiveJobTests() : base() { }
 
-    [Fact]
-        public async Task ExecuteAsync_NoFilesFound_NothingSavedToDb()
+        [Fact]
+        public void Constructor_ConfigNotExist_Exception()
         {
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
-            SetupSaveJobResultAsync();
-            SetupExecuteAsync();
+            Assert.Throws<ArgumentNullException>(() => CreateJob(".json"));
+        }
 
+        [Fact]
+        public void Constructor_InvalidConfig_Exception()
+        {
+            Assert.Throws<JsonReaderException>(() => CreateJob("ArchiveJobTestsInvalid.json"));
+        }
+
+        [Fact]
+        public void Constructor_ValidConfig_ValidConfigType()
+        {
             var job = CreateJob();
-            await job.ExecuteAsync();
-
-            dbMock.VerifyAll();
+            Assert.IsType<ArchiveConfig>(job.Config);
         }
 
         [Fact]
         public async Task ExecuteAsync_2FilesFound_StatisticsUpdated()
         {
-            var files = new List<MediaFileDTO>()
+            var files = new List<MediaFileDto>()
             {
                 new (){Date = new (2022,01,01), Name = "File1", Duration = 0},
                 new (){Date = new (2022,01,31), Name = "File2", Duration = 0},
@@ -43,7 +48,7 @@
             SetupGetOrCreateJobTriggerAsync();
             SetupCreateJobInstanceAsync();
             SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<HikJob>(), files))
+            dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), files))
                 .Returns(Task.CompletedTask);
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ReturnsAsync(files);
@@ -60,10 +65,10 @@
         [Fact]
         public async Task ExecuteAsync_AbnormalActivity_EmailSend()
         {
-            List<MediaFileDTO> files = new ()
+            List<MediaFileDto> files = new()
             {
-                new (),
-                new (),
+                new(),
+                new(),
             };
 
             SetupGetOrCreateJobTriggerAsync();
@@ -82,30 +87,23 @@
         }
 
         [Fact]
-        public async Task ExecuteAsync_VideoFiles_SaveFilesAsync()
+        public async Task ExecuteAsync_ExceptionFired_EmailWasSent()
         {
-            List<MediaFileDTO> files = new ()
-            {
-                new (){ Duration = 1 },
-                new (){ Duration = 1 },
-                new (){ Duration = 1 },
-            };
-
             SetupGetOrCreateJobTriggerAsync();
             SetupCreateJobInstanceAsync();
             SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDTO>>()))
-                .ReturnsAsync(new List<MediaFile>());
-            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
-                .Returns(Task.CompletedTask);
-            SetupUpdateDailyStatisticsAsync(files);
+            SetupLogExceptionToAsync();
 
-            SetupExecuteAsync(files);
+            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
+                .ThrowsAsync(new Exception("Shit happens"));
+            emailMock.Setup(x => x.Send(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Verifiable();
 
-            var job = CreateJob();
+            var job = CreateJob("ArchiveJobTestsSendEmail.json");
             await job.ExecuteAsync();
 
             dbMock.VerifyAll();
+            emailMock.VerifyAll();
         }
 
         [Fact]
@@ -127,26 +125,6 @@
         }
 
         [Fact]
-        public async Task ExecuteAsync_ExceptionFired_EmailWasSent()
-        {
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
-            SetupSaveJobResultAsync();
-            SetupLogExceptionToAsync();
-
-            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
-                .ThrowsAsync(new Exception("Shit happens"));
-            emailMock.Setup(x => x.Send(It.IsAny<Exception>(),It.IsAny<string>(), It.IsAny<string>()))
-                .Verifiable();
-
-            var job = CreateJob("ArchiveJobTestsSendEmail.json");
-            await job.ExecuteAsync();
-
-            dbMock.VerifyAll();
-            emailMock.VerifyAll();
-        }
-
-        [Fact]
         public async Task ExecuteAsync_FailedToLogException_Handled()
         {
             SetupGetOrCreateJobTriggerAsync();
@@ -157,7 +135,7 @@
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ThrowsAsync(new Exception("Shit happens"));
-            emailMock.Setup(x => x.Send(It.IsAny<Exception>(),It.IsAny<string>(), It.IsAny<string>()))
+            emailMock.Setup(x => x.Send(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Verifiable();
 
             var job = CreateJob("ArchiveJobTestsSendEmail.json");
@@ -168,25 +146,48 @@
         }
 
         [Fact]
-        public void Constructor_ConfigNotExist_Exception()
+        public async Task ExecuteAsync_NoFilesFound_NothingSavedToDb()
         {
-            Assert.Throws<FileNotFoundException>(() => CreateJob(".json"));
-        }
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            SetupExecuteAsync();
 
-        [Fact]
-        public void Constructor_InvalidConfig_Exception()
-        {
-            Assert.Throws<JsonReaderException>(() => CreateJob("ArchiveJobTestsInvalid.json"));
-        }
-
-        [Fact]
-        public void Constructor_ValidConfig_ValidConfigType()
-        {
             var job = CreateJob();
-            Assert.IsType<ArchiveConfig>(job.Config);
-        }
+            await job.ExecuteAsync();
 
+            dbMock.VerifyAll();
+        }
+        [Fact]
+        public async Task ExecuteAsync_VideoFiles_SaveFilesAsync()
+        {
+            List<MediaFileDto> files = new ()
+            {
+                new (){ Duration = 1 },
+                new (){ Duration = 1 },
+                new (){ Duration = 1 },
+            };
+
+            SetupGetOrCreateJobTriggerAsync();
+            SetupCreateJobInstanceAsync();
+            SetupSaveJobResultAsync();
+            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
+                .ReturnsAsync(new List<MediaFile>());
+            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
+                .Returns(Task.CompletedTask);
+            SetupUpdateDailyStatisticsAsync(files);
+
+            SetupExecuteAsync(files);
+
+            var job = CreateJob();
+            await job.ExecuteAsync();
+
+            dbMock.VerifyAll();
+        }
         private ArchiveJob CreateJob(string configFileName = "ArchiveJobTests.json")
-            => new ArchiveJob($"{group}.{triggerKey}", Path.Combine(TestsHelper.CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
+        {
+            var config = GetConfig<ArchiveConfig>(configFileName);
+            return new ArchiveJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+        }
     }
 }

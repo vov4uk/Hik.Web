@@ -1,11 +1,9 @@
-﻿using Autofac;
-using Hik.Client.Abstraction;
-using Hik.Client.Infrastructure;
+﻿using Hik.Client.Abstraction;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using Job.Extensions;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,32 +11,30 @@ using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public class ArchiveJob : JobProcessBase
+    public class ArchiveJob : JobProcessBase<ArchiveConfig>
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
+        private readonly IArchiveService worker;
 
-        public ArchiveJob(string trigger, string configFilePath, IHikDatabase db, IEmailHelper email, Guid activityId)
-            : base(trigger, db, email, activityId)
+        public ArchiveJob(string trigger, ArchiveConfig config, IArchiveService worker, IHikDatabase db, IEmailHelper email, ILogger logger)
+            : base(trigger, config, db, email, logger)
         {
-            Config = HikConfigExtensions.GetConfig<ArchiveConfig>(configFilePath);
-            LogInfo(Config?.ToString());
+            this.worker = worker;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
         {
-            IArchiveService worker = AppBootstrapper.Container.Resolve<IArchiveService>();
             worker.ExceptionFired += base.ExceptionFired;
-
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MaxValue);
         }
 
-        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             JobInstance.PeriodStart = files.Min(x => x.Date);
             JobInstance.PeriodEnd = files.Max(x => x.Date);
             JobInstance.FilesCount = files.Count;
 
-            var abnormalFilesCount = ((ArchiveConfig)Config).AbnormalFilesCount;
+            var abnormalFilesCount = Config.AbnormalFilesCount;
             if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
             {
                 email.Send(
@@ -46,7 +42,7 @@ namespace Job.Impl
                     $"{files.Count} taken in period from {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(DateTimeFormat)}");
             }
 
-            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+            await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
 
             if (files.Sum(x => x.Duration ?? 0) > 0)
             {

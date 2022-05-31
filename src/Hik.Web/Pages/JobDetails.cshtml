@@ -1,0 +1,62 @@
+﻿@page
+@model Hik.Web.Pages.JobDetailsModel
+@{ViewData["Title"] = "Details";}
+
+<button onclick="javascript:history.back()">Go Back</button>
+@if (Model.Dto.Job != null)
+{
+  <div class="row">
+      <div class="card-body text-center">
+          <h2 class="card-title">@Model.Dto.Job.JobTrigger</h2>
+      </div>
+  </div>
+
+<table class="table table-bordered table-sm" aria-label="Job">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.Id)</th>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.PeriodStart)</th>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.PeriodEnd)</th>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.Started)</th>
+            <th>@Html.DisplayNameFor(m => m.Dto.Job.Finished)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.Id)</td>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.PeriodStart)</td>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.PeriodEnd)</td>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.Started)</td>
+            <td>@Html.DisplayFor(m => Model.Dto.Job.Finished)</td>
+        </tr>
+    </tbody>
+</table>
+}
+
+@if (Model.Dto.Job?.Error != null)
+{
+    <table class="table table-bordered table-sm" aria-label="Exceptions">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(m => m.Dto.Job.Error.Created)</th>
+                <th>@Html.DisplayNameFor(m => m.Dto.Job.Error.HikErrorCode)</th>
+                <th>@Html.DisplayNameFor(m => m.Dto.Job.Error.Message)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@Html.DisplayFor(m => Model.Dto.Job.Error.Created)</td>
+                <td>@Html.DisplayFor(m => Model.Dto.Job.Error.HikErrorCode)</td>
+                <td>@Html.DisplayFor(m => Model.Dto.Job.Error.Message)</td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@if (Model.Dto.Items != null && Model.Dto.Items.Any())
+{
+    @await Html.PartialAsync("_Files.cshtml", Model.Dto.Items)
+}
+
+<!-- pager -->
+@await Html.PartialAsync("_Pager.cshtml", Model.Pager)

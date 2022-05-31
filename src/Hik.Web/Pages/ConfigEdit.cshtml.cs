@@ -1,62 +1,51 @@
-using Hik.Web.Scheduler;
+using Hik.Web.Commands.Config;
+using Hik.Web.Queries.QuartzJobConfig;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Linq;
-using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
     public class ConfigEditModel : PageModel
     {
+        private const string JsonKey = "Dto.ConfigDTO.Json";
+        private readonly IMediator _mediator;
+
+        public ConfigEditModel(IMediator mediator)
+        {
+            this._mediator = mediator;
+        }
+
         [BindProperty]
-        public ConfigDTO ConfigDTO { get; set; }
+        public QuartzJobConfigDto Dto { get; set; }
 
-        public void OnGet(string name, string group)
+        public async Task OnGetAsync(string name, string group)
         {
-            var data = XmlHelper.GetJobSchedulingData();
+            Dto = await this._mediator.Send(new QuartzJobConfigQuery { Name = name, Group = group }) as QuartzJobConfigDto;
+        }
 
-            if (data.Schedule.Trigger.Any())
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (ModelState.IsValid)
             {
-                var cron = data.Schedule.Trigger.Select(x => x.Cron).FirstOrDefault(x => x.Group == group && x.Name == name);
-                if (cron != null)
+                var jsonArray = ModelState[JsonKey].RawValue as string[];
+                string json;
+                if (jsonArray != null)
                 {
-                    ConfigDTO = new ConfigDTO(cron);
-                    if (System.IO.File.Exists(ConfigDTO.Path))
-                    {
-                        ConfigDTO.Json = PrettyJson(System.IO.File.ReadAllText(ConfigDTO.Path));
-                    }
-                    else
-                    {
-                        var stream = System.IO.File.Create(ConfigDTO.Path);
-                        stream.Dispose();
-                    }
+                    json = jsonArray.Last();
                 }
+                else
+                {
+                    json = ModelState[JsonKey].RawValue as string;
+                }
+
+                await this._mediator.Send(new UpdateQuartzJobConfigCommand { Path = Dto.Config.GetConfigPath(), Json = json });
+                return RedirectToPage("./Scheduler", new { msg = "Changes saved" });
             }
-        }
 
-        public IActionResult OnPost()
-        {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
-            var json = (ModelState["ConfigDTO.Json"].RawValue as string[])?.Last();
-
-            System.IO.File.WriteAllText(ConfigDTO.Path, json);
-            return RedirectToPage("./Scheduler");
-        }
-
-        private static string PrettyJson(string unPrettyJson)
-        {
-            var options = new JsonSerializerOptions()
-            {
-                WriteIndented = true
-            };
-
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>(unPrettyJson);
-
-            return JsonSerializer.Serialize(jsonElement, options);
+            return RedirectToPage("./Scheduler", new { msg = "Model invalid" });
         }
     }
 }

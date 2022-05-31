@@ -1,6 +1,4 @@
-﻿using Hik.DataAccess;
-using Hik.DataAccess.Abstractions;
-using Job;
+﻿using Job;
 using Job.Email;
 using NLog;
 using System;
@@ -24,17 +22,7 @@ namespace JobHost
                 System.Diagnostics.Trace.CorrelationManager.ActivityId = parameters.ActivityId;
                 Logger.Info($"JobHost. Parameters resolved. {parameters}. Activity started execution.");
 
-                Type jobType = Type.GetType(parameters.ClassName) ?? throw new ArgumentException($"No such type exist '{parameters.ClassName}'");
-
-                IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(parameters.ConnectionString);
-                IHikDatabase db = new HikDatabase(unitOfWorkFactory);
-                Job.Impl.JobProcessBase job = (Job.Impl.JobProcessBase)Activator.CreateInstance(
-                    jobType,
-                    $"{parameters.Group}.{parameters.TriggerKey}",
-                    parameters.ConfigFilePath,
-                    db,
-                    email,
-                    parameters.ActivityId);
+                IJobProcess job = JobFactory.GetJob(parameters, Logger, email);
 
                 await job.ExecuteAsync();
 

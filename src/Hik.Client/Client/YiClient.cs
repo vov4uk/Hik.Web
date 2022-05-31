@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
-using Hik.Client.Abstraction;
 using Hik.Client.Client;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client
 {
@@ -20,15 +20,15 @@ namespace Hik.Client
         {
         }
 
-        public override Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public override Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
-            var result = new List<MediaFileDTO>();
+            var result = new List<MediaFileDto>();
             periodStart = new DateTime(periodStart.Year, periodStart.Month, periodStart.Day, periodStart.Hour, periodStart.Minute, 0, 0);
             var end = periodEnd.AddMinutes(-1);
 
             while (periodStart < end)
             {
-                var file = new MediaFileDTO()
+                var file = new MediaFileDto()
                 {
                     Name = periodStart.ToUniversalTime().ToString(YiFileNameFormat),
                     Date = periodStart,
@@ -38,13 +38,21 @@ namespace Hik.Client
                 periodStart = periodStart.AddMinutes(1);
             }
 
-            return Task.FromResult(result.AsReadOnly() as IReadOnlyCollection<MediaFileDTO>);
+            return Task.FromResult(result.AsReadOnly() as IReadOnlyCollection<MediaFileDto>);
         }
 
-        protected override string GetRemoteFileFath(MediaFileDTO remoteFile)
+        protected override string GetRemoteFilePath(MediaFileDto remoteFile)
             => remoteFile.Date.ToYiFilePathString(config.ClientType);
 
-        protected override Task<bool> PostDownloadFileProcessAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
+        protected override string GetLocalFilePath(MediaFileDto remoteFile)
+        {
+            string workingDirectory = GetWorkingDirectory(remoteFile);
+            directoryHelper.CreateDirIfNotExist(workingDirectory);
+
+            return filesHelper.CombinePath(workingDirectory, remoteFile.ToYiFileNameString());
+        }
+
+        protected override Task<bool> PostDownloadFileProcessAsync(MediaFileDto remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
         {
             remoteFile.Size = filesHelper.FileSize(localFilePath);
             remoteFile.Path = localFilePath;

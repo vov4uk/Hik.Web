@@ -1,4 +1,5 @@
-﻿using Hik.DataAccess.Data;
+﻿using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Data;
 using Hik.DataAccess.Mappings;
 using Microsoft.EntityFrameworkCore;
 using NLog;
@@ -14,10 +15,10 @@ namespace Hik.DataAccess
         public DataContext(DbContextOptions<DataContext> options)
             : base(options) { }
 
-        public DataContext(string connection)
+        public DataContext(IDbConfiguration configuration)
             : base()
         {
-            ConnectionString = connection;
+            ConnectionString = configuration.ConnectionString;
         }
 
         public DbSet<HikJob> Jobs { get; set; }
@@ -36,6 +37,7 @@ namespace Hik.DataAccess
                 optionsBuilder.UseSqlite(ConnectionString, options =>
                 {
                     options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
+                    options.CommandTimeout(30);
                 });
 #if DEBUG
                 optionsBuilder.EnableSensitiveDataLogging();

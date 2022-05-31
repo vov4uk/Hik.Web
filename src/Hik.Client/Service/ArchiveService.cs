@@ -9,6 +9,8 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.DTO.Message;
+using Hik.Helpers;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client.Service
 {
@@ -31,12 +33,12 @@ namespace Hik.Client.Service
             this.imageHelper = imageHelper;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync(BaseConfig config, DateTime from, DateTime to)
+        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var aConfig = config as ArchiveConfig;
             PrepareRegex(aConfig.FileNamePattern);
 
-            var result = new List<MediaFileDTO>();
+            var result = new List<MediaFileDto>();
             var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions).SkipLast(aConfig.SkipLast);
 
             try
@@ -69,7 +71,7 @@ namespace Hik.Client.Service
 
                             rabbitMq.Sent(msg.ToString());
 
-                            result.Add(new MediaFileDTO
+                            result.Add(new MediaFileDto
                             {
                                 Date = date,
                                 Name = guid,
@@ -92,7 +94,7 @@ namespace Hik.Client.Service
                         string newFileName = date.ToArchiveFileString(duration, fileExt);
                         string newFilePath = MoveFile(aConfig.DestinationFolder, oldFile, date, newFileName);
 
-                        result.Add(new MediaFileDTO
+                        result.Add(new MediaFileDto
                         {
                             Date = date,
                             Name = filesHelper.GetFileName(oldFile),

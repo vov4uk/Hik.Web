@@ -23,6 +23,12 @@ h4 {
   border-color: #1861ac;
 }
 
+.btn-primary-red {
+    color: #fff;
+    background-color: #c2421b;
+    border-color: #ac182c;
+}
+
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
   color: #fff;
   background-color: #1b6ec2;

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
-using Hik.Client.Abstraction;
 using Hik.Client.Client;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client
 {
@@ -18,11 +18,11 @@ namespace Hik.Client
         {
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDTO>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             FtpListItem[] filesFromFtp = await ftp.GetListingAsync($"/{config.Alias.Split(".")[1]}");
 
-            var files = filesFromFtp.Select(item => new MediaFileDTO
+            var files = filesFromFtp.Select(item => new MediaFileDto
             {
                 Name = item.Name,
                 Path = item.FullName,
@@ -34,10 +34,13 @@ namespace Hik.Client
             return files.AsReadOnly();
         }
 
-        protected override string GetRemoteFileFath(MediaFileDTO remoteFile)
+        protected override string GetRemoteFilePath(MediaFileDto remoteFile)
             => remoteFile.Path;
 
-        protected override async Task<bool> PostDownloadFileProcessAsync(MediaFileDTO remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
+        protected override string GetLocalFilePath(MediaFileDto remoteFile)
+            => filesHelper.CombinePath(config.DestinationFolder, remoteFile.Name);
+
+        protected override async Task<bool> PostDownloadFileProcessAsync(MediaFileDto remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
         {
             var size = filesHelper.FileSize(localFilePath);
             if (size == remoteFile.Size)

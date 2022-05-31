@@ -1,15 +1,11 @@
-﻿using Autofac;
-using Hik.Client.Abstraction;
-using Hik.Client.FileProviders;
-using Hik.Client.Infrastructure;
-using Hik.DataAccess.Data;
+﻿using Hik.Client.FileProviders;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers.Abstraction;
 using Job.Impl;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -25,15 +21,8 @@ namespace Job.Tests.Impl
             : base()
         {
             directoryHelper = new(MockBehavior.Strict);
-            filesHelper = new ();
-            filesProvider = new (MockBehavior.Strict);
-
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(directoryHelper.Object);
-            builder.RegisterInstance(filesHelper.Object);
-            builder.RegisterInstance(filesProvider.Object);
-
-            AppBootstrapper.SetupTest(builder);
+            filesHelper = new();
+            filesProvider = new(MockBehavior.Strict);
         }
 
         [Fact]
@@ -49,7 +38,7 @@ namespace Job.Tests.Impl
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
             filesProvider.Setup(x => x.GetFilesOlderThan(null, It.IsAny<DateTime>()))
-                .Returns(new List<MediaFileDTO>() { new () })
+                .Returns(new List<MediaFileDto>() { new () })
                 .Verifiable();
             filesHelper.Setup(x => x.FileSize(It.IsAny<string>()))
                 .Returns(0);
@@ -75,7 +64,7 @@ namespace Job.Tests.Impl
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
             filesProvider.Setup(x => x.GetFilesOlderThan(null, It.IsAny<DateTime>()))
-                .Returns(new List<MediaFileDTO>() {
+                .Returns(new List<MediaFileDto>() {
                     new () { Date = new (2022, 01,01)},
                     new () { Date = new (2022, 01,11)},
                     new () { Date = new (2022, 01,21)},
@@ -118,7 +107,7 @@ namespace Job.Tests.Impl
                 .Returns(3);
 
             filesProvider.Setup(x => x.GetNextBatch(It.IsAny<string>(), 100))
-                .Returns(new List<MediaFileDTO>() { new MediaFileDTO() { Date = new DateTime(2022, 01,01)} })
+                .Returns(new List<MediaFileDto>() { new MediaFileDto() { Date = new DateTime(2022, 01,01)} })
                 .Verifiable();
 
             var job = CreateJob();
@@ -149,7 +138,7 @@ namespace Job.Tests.Impl
                 .Returns(3);
 
             filesProvider.Setup(x => x.GetNextBatch(It.IsAny<string>(), 100))
-                .Returns(new List<MediaFileDTO>())
+                .Returns(new List<MediaFileDto>())
                 .Verifiable();
 
             var job = CreateJob();
@@ -168,7 +157,9 @@ namespace Job.Tests.Impl
         }
 
         private GarbageCollectorJob CreateJob(string configFileName = "GCTests.json")
-            => new GarbageCollectorJob($"{group}.{triggerKey}", Path.Combine(TestsHelper.CurrentDirectory, configFileName), dbMock.Object, this.emailMock.Object, Guid.Empty);
-
+        {
+            var config = GetConfig<GarbageCollectorConfig>(configFileName);
+            return new GarbageCollectorJob($"{group}.{triggerKey}", config, directoryHelper.Object, filesHelper.Object, filesProvider.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+        }
     }
 }

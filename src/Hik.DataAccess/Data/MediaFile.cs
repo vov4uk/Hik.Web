@@ -1,15 +1,15 @@
-﻿using Hik.DataAccess.Metadata;
+﻿using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Metadata;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
 namespace Hik.DataAccess.Data
 {
     [ExcludeFromCodeCoverage, Table(Tables.MediaFile)]
-    public class MediaFile
+    public class MediaFile : IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -22,7 +22,6 @@ namespace Hik.DataAccess.Data
 
         public string Path { get; set; }
 
-        [Display(Name = "Date"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime Date { get; set; }
 
         public int? Duration { get; set; }
@@ -34,22 +33,19 @@ namespace Hik.DataAccess.Data
         public virtual DownloadDuration DownloadDuration { get; set; }
 
         public virtual DownloadHistory DownloadHistory { get; set; }
-    }
 
-    public static class MediaFileExtensions
-    {
-        public static string GetPath(this MediaFile file)
+        public string GetPath()
         {
             if (Debugger.IsAttached)
             {
-                return file.Path.Replace("E:\\Cloud\\", "W:\\");
+                return this.Path.Replace("E:\\Cloud\\", "W:\\");
             }
 
-            if (!Path.HasExtension(file.Path))
+            if (!System.IO.Path.HasExtension(this.Path))
             {
-                return Path.Combine(file.Path, file.Name);
+                return System.IO.Path.Combine(this.Path, this.Name);
             }
-            return file.Path;
+            return this.Path;
         }
     }
 }

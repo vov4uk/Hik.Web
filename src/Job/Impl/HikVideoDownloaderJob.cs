@@ -1,29 +1,27 @@
-﻿using Autofac;
-using Hik.Client.Abstraction;
-using Hik.Client.Infrastructure;
+﻿using Hik.Client.Abstraction;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
-using System;
+using NLog;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public class HikVideoDownloaderJob : JobProcessBase
+    public class HikVideoDownloaderJob : JobProcessBase<CameraConfig>
     {
-        public HikVideoDownloaderJob(string trigger, string configFilePath, IHikDatabase db, IEmailHelper email, Guid activityId)
-            : base(trigger, db, email, activityId)
+        private readonly IHikVideoDownloaderService downloader;
+
+        public HikVideoDownloaderJob(string trigger, CameraConfig config, IHikVideoDownloaderService service, IHikDatabase db, IEmailHelper email, ILogger logger)
+            : base(trigger, config, db, email, logger)
         {
-            Config = HikConfigExtensions.GetConfig<CameraConfig>(configFilePath);
-            LogInfo(Config?.ToString());
+            this.downloader = service;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDTO>> RunAsync()
+        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
         {
-            var downloader = AppBootstrapper.Container.Resolve<IHikVideoDownloaderService>();
             downloader.ExceptionFired += base.ExceptionFired;
             downloader.FileDownloaded += this.Downloader_VideoDownloaded;
 
@@ -31,6 +29,7 @@ namespace Job.Impl
             LogInfo($"Last sync from DB - {jobTrigger.LastSync}, Period - {period.PeriodStart} - {period.PeriodEnd}");
             JobInstance.PeriodStart = period.PeriodStart;
             JobInstance.PeriodEnd = period.PeriodEnd;
+            await db.UpdateJobAsync(JobInstance);
 
             var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
             downloader.ExceptionFired -= base.ExceptionFired;
@@ -38,7 +37,7 @@ namespace Job.Impl
             return files;
         }
 
-        protected override Task SaveResultsAsync(IReadOnlyCollection<MediaFileDTO> files)
+        protected override Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             return Task.CompletedTask;
         }
@@ -48,8 +47,10 @@ namespace Job.Impl
             JobInstance.FilesCount++;
             var files = new[] { e.File };
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
-            await db.UpdateDailyStatisticsAsync(JobInstance, files);
+
+            await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
+            await db.UpdateJobAsync(JobInstance);
         }
     }
 }

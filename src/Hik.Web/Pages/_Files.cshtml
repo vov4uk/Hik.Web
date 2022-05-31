@@ -1,0 +1,42 @@
+﻿@using Hik.Client.Helpers
+@using Hik.DTO
+@using Hik.DTO.Contracts
+@model List<MediaFileDto>
+
+<table class="table table-bordered table-sm" aria-label="Files">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Name)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Date)</th>
+            <th>End</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Duration)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().DownloadDuration)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Size)</th>
+            <th/>
+            <th/>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            string size = item.Size.FormatBytes();
+            string duration = item.Duration.FormatSeconds();
+            string downloaded = (item.DownloadDuration).FormatSeconds();
+            string end = item.Date.AddSeconds(item.Duration ?? 0).ToString(Consts.DisplayDateTimeStringFormat);
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Path)</td>
+                <td>@Html.DisplayFor(modelItem => item.Date)</td>
+                <td>@end</td>
+                <td>@duration</td>
+                <td>@downloaded</td>
+                <td>@size</td>
+                <td>
+                    <a href="@Url.Page("Search", "DownloadFile", new { fileId = item.Id })">Download</a>
+                </td>
+                <td>
+                    <a href="@Url.Page("Play", new { fileId = item.Id })" target="_blank">Play</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

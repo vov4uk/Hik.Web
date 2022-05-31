@@ -4,6 +4,7 @@ using AutoMapper;
 using Hik.Api.Abstraction;
 using Hik.Client.Abstraction;
 using Hik.DTO.Config;
+using Hik.Helpers.Abstraction;
 
 namespace Hik.Client.Helpers
 {

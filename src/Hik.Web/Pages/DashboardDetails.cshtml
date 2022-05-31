@@ -1,0 +1,66 @@
+﻿@page
+@model Hik.Web.Pages.DashboardDetailsModel
+@{ViewData["Title"] = Model.Dto.JobTriggerName;}
+
+<div class="row">
+    <div class="card-body text-center">
+        <h2 class="card-title">@Model.Dto.JobTriggerName</h2>
+    </div>
+</div>
+
+<button onclick="javascript:history.back()">Go Back</button>
+@if(Model.Dto != null && Model.Dto.Items.Any())
+{
+    bool showDuration = Model.Dto.Items.Any(x => x.TotalDuration > 0);
+    <table class="table table-bordered table-sm" aria-label="Statistic">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Dto.Items.First().Period)</th>
+            <th>@Html.DisplayNameFor(model => model.Dto.Items.First().FilesCount)</th>
+            <th>@Html.DisplayNameFor(model => model.Dto.Items.First().FilesSize)</th>
+            @if(showDuration)
+            {
+                <th>@Html.DisplayNameFor(model => model.Dto.Items.First().TotalDuration)</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Dto.Items)
+        {
+            string status = "";
+            string durationString = "";
+
+            string size = Hik.Client.Helpers.Utils.FormatBytes(item.FilesSize);
+            if (showDuration)
+            {
+                int totalDuration = item.TotalDuration ?? 0;
+                durationString = Hik.Client.Helpers.Utils.FormatSeconds((double)totalDuration);
+
+                double seccondsInDay = 86400;
+                double delta = Math.Abs(seccondsInDay - totalDuration);
+
+                if (delta > 60 && delta < 1000)
+                {
+                    status = "running";
+                }
+                else if (delta > 1000)
+                {
+                    status = "failed";
+                }
+           }
+        <tr data-status="@status" class="failed">
+            <td>@Html.DisplayFor(modelItem => item.Period)</td>
+            <td>@Html.DisplayFor(modelItem => item.FilesCount)</td>
+            <td>@size</td>
+            @if(showDuration)
+            {
+                <td>@durationString</td>
+            }
+        </tr>
+        }
+    </tbody>
+</table>
+}
+
+<!-- pager -->
+@await Html.PartialAsync("_Pager.cshtml", Model.Pager)

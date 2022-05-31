@@ -1,39 +1,35 @@
-﻿using Hik.DataAccess;
-using Hik.DataAccess.Data;
+﻿using Hik.Helpers.Abstraction;
+using Hik.Web.Queries.FilePath;
+using Hik.Web.Queries.Search;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
     public class SearchModel : PageModel
     {
-        private readonly DataContext dataContext;
+        private readonly IMediator mediator;
+        private readonly IFilesHelper filesHelper;
 
-        public SearchModel(DataContext dataContext)
+        public SearchModel(IMediator mediator, IFilesHelper filesHelper)
         {
-            this.dataContext = dataContext;
-            this.dataContext.Database.EnsureCreated();
-            JobTriggers = dataContext.JobTriggers.AsQueryable().Where(x => x.ShowInSearch).OrderBy(x =>x.TriggerKey).ToList();
+            this.mediator = mediator;
+            this.filesHelper = filesHelper;
+
             DateTime = DateTime.Now;
-            JobTriggersList = new SelectList(JobTriggers, "Id", "TriggerKey", 1);
+            var jobTriggers = mediator.Send(new SearchTriggersQuery()).GetAwaiter().GetResult() as SearchTriggersDto;
+            JobTriggersList = new SelectList(jobTriggers.Triggers, "Key", "Value", 1);
         }
 
-        private IList<JobTrigger> JobTriggers { get; }
+        public SelectList JobTriggersList { get; private set; }
 
-        public SelectList JobTriggersList { get; set; }
-        public string Msg { get; set; }
-        public List<MediaFile> BeforeFiles { get; private set; }
-        public List<MediaFile> Files { get; private set; }
-        public List<MediaFile> AfterFiles { get; private set; }
+        public SearchDto Dto { get; private set; }
 
         [BindProperty]
         public int JobTriggerId { get; set; }
@@ -41,78 +37,57 @@ namespace Hik.Web.Pages
         [BindProperty, DataType(DataType.DateTime)]
         public DateTime DateTime { get; set; }
 
-        public async Task OnGetAsync(int? jobTriggerId, DateTime? dateTime)
+        public async Task<IActionResult> OnGetAsync(int? jobTriggerId, DateTime? dateTime)
         {
-            Files = new List<MediaFile>();
             if (dateTime == null)
             {
                 dateTime = DateTime.Now;
             }
 
             dateTime = new DateTime(dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, dateTime.Value.Minute, 0, 0);
-            if (jobTriggerId.HasValue && dateTime.HasValue)
+            if (jobTriggerId.HasValue)
             {
-                var file = await dataContext.MediaFiles
-                    .AsQueryable()
-                    .Where(x => x.JobTriggerId == jobTriggerId && x.Date <= dateTime)
-                    .OrderByDescending(x => x.Date).FirstOrDefaultAsync();
-
-                if (file != null)
-                {
-                    Files.Add(file);
-                    BeforeFiles = await dataContext.MediaFiles
-                        .AsQueryable()
-                        .Where(x => x.JobTriggerId == jobTriggerId && x.Id < file.Id)
-                        .OrderByDescending(x => x.Date).Take(5).OrderBy(x => x.Date)
-                        .ToListAsync();
-
-                    AfterFiles = await dataContext.MediaFiles
-                        .AsQueryable()
-                        .Where(x => x.JobTriggerId == jobTriggerId && x.Id > file.Id)
-                        .OrderBy(x => x.Date).Take(5)
-                        .ToListAsync();
-
-                    Msg = (file.Date <= dateTime && dateTime <= file.Date.AddSeconds(file.Duration ?? 0)) ? "Match" : "Out of range";
-                }
-                else
-                {
-                    var latest = await dataContext.MediaFiles
-                        .AsQueryable()
-                        .Where(x => x.JobTriggerId == jobTriggerId)
-                        .OrderByDescending(x => x.Date).Take(5).OrderBy(x => x.Date).ToListAsync();
-                    Files.AddRange(latest);
-                    Msg = "Latest 5 files";
-                }
+                Dto = await mediator.Send(new SearchQuery() { DateTime = dateTime, JobTriggerId = jobTriggerId.Value}) as SearchDto;
             }
+
+            return Page();
         }
 
         public async Task<IActionResult> OnGetDownloadFile(int fileId)
         {
-            var file = await dataContext.MediaFiles
-                    .AsQueryable()
-                    .FirstOrDefaultAsync(x => x.Id == fileId);
+            var filePath = await GetFilePath(fileId);
 
-            var path = file.GetPath();
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return NotFound();
+            }
 
-            byte[] bytes = System.IO.File.ReadAllBytes(path);
-            return File(bytes, "application/octet-stream", Path.GetFileName(path));
+            byte[] bytes = await filesHelper.ReadAllBytesAsync(filePath);
+            return File(bytes, "application/octet-stream", filesHelper.GetFileName(filePath));
         }
 
         public async Task<IActionResult> OnGetStreamFile(int fileId)
         {
-            var file = await dataContext.MediaFiles
-                .AsQueryable()
-                .FirstOrDefaultAsync(x => x.Id == fileId);
-            var path = file.GetPath();
+            var filePath = await GetFilePath(fileId);
 
-            //Build the File Path.
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan))
+            if (string.IsNullOrEmpty(filePath))
             {
-                await stream.CopyToAsync(memory);
+                return NotFound();
             }
-            memory.Position = 0;
+
+            var memory = await filesHelper.ReadAsMemoryStreamAsync(filePath);
             return new FileStreamResult(memory, new MediaTypeHeaderValue("video/mp4")) { EnableRangeProcessing = true };
+        }
+
+        private async Task<string> GetFilePath(int fileId)
+        {
+            var file = await mediator.Send(new FilePathQuery() { FileId = fileId }) as FilePathDto;
+
+            if (file == null || !filesHelper.FileExists(file.Path))
+            {
+                return null;
+            }
+            return file.Path;
         }
     }
 }
