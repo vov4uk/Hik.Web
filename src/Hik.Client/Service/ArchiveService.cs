@@ -107,7 +107,7 @@ namespace Hik.Client.Service
             }
             catch (Exception ex)
             {
-                this.OnExceptionFired(new ExceptionEventArgs(ex), aConfig);
+                this.OnExceptionFired(ex);
             }
 
             return result.AsReadOnly();

@@ -7,13 +7,16 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Hik.Web
 {
@@ -81,17 +84,17 @@ namespace Hik.Web
             lifetime.ApplicationStopping.Register(quartz.Stop);
 
             app.UseDeveloperExceptionPage()
+                .UseRouting()
                 .UseAuthentication()
                 .UseAuthorization()
-                .UseStaticFiles()
-                .UseRouting()
-                .UseAuthorization()
-                .UseHttpsRedirection()
-                .UseHsts()
                 .UseEndpoints(endpoints =>
                 {
-                    endpoints.MapRazorPages();
-                });
+                    endpoints.MapRazorPages()
+                    .RequireAuthorization();
+                })
+                .UseStaticFiles()
+                .UseHttpsRedirection()
+                .UseHsts();
         }
     }
 }

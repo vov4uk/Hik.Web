@@ -36,17 +36,23 @@ namespace Hik.Client.Service
             }
             catch (Exception ex)
             {
-                OnExceptionFired(new ExceptionEventArgs(ex), config);
+                OnExceptionFired(ex);
                 return default;
             }
         }
 
         protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to);
 
-        protected virtual void OnExceptionFired(ExceptionEventArgs e, BaseConfig config)
+        protected virtual void OnExceptionFired(Exception ex)
         {
-            ExceptionFired?.Invoke(this, e);
-            logger.Error(e.ToString());
+            if (ExceptionFired != null)
+            {
+                ExceptionFired.Invoke(this, new ExceptionEventArgs(ex));
+            }
+            else
+            {
+                logger.Error(ex.ToString());
+            }
         }
     }
 }
