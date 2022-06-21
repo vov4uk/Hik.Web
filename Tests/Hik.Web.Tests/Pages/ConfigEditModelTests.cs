@@ -15,7 +15,7 @@ namespace Hik.Web.Tests.Pages
     public class ConfigEditModelTests : ModelTestsBase
     {
         private readonly CronConfigDto CronConfig = new() { JobName = name, Json = "", Path = "C:\\" };
-        private const string JsonKey = "Dto.ConfigDTO.Json";
+        private const string JsonKey = "Dto.Config.Json";
 
         [Theory]
         [AutoData]
