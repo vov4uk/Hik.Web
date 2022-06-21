@@ -76,7 +76,7 @@ namespace Hik.Helpers
         public List<string> EnumerateFiles(string path, string[] extentions)
         {
             return Directory.EnumerateFiles(path, AllFilter, SearchOption.AllDirectories)
-                    .Where(s => extentions.Any(ext => ext == Path.GetExtension(s)))
+                    .Where(s => extentions.Contains(Path.GetExtension(s)))
                     .ToList();
         }
 

@@ -10,7 +10,7 @@ namespace Hik.Web.Pages
 {
     public class ConfigEditModel : PageModel
     {
-        private const string JsonKey = "Dto.ConfigDTO.Json";
+        private const string JsonKey = "Dto.Config.Json";
         private readonly IMediator _mediator;
 
         public ConfigEditModel(IMediator mediator)
