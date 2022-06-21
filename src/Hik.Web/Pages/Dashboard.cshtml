@@ -7,6 +7,8 @@
 
 <h2>Dashboard</h2>
 
+@await Html.PartialAsync("_Timer.cshtml")
+
 @if (Model.JobTriggers != null && Model.JobTriggers.Any())
 {
     @foreach (var className in Model.JobTriggers.Keys.OrderBy(x => x))

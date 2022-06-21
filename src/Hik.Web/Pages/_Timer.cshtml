@@ -1,0 +1,23 @@
+﻿
+<script type="text/javascript">
+    let countDown = 15;
+    const timer = setInterval(function () {
+    document.getElementById("timer").innerHTML = countDown + " seconds.";
+    countDown = countDown - 1;
+
+    if (countDown < 0)
+    {
+        countDown = 15;
+        document.location.reload();
+    }
+    }, 1000);
+</script>
+
+<div class="row">
+    <div class="col-lg-12 my-3">
+        <div class="pull-right">
+            Next refresh in <label id="timer"/>.
+        </div>
+    </div>
+</div>
+
