@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
+using Hik.Api;
 using HikConsole.Data;
 using HikConsole.Helpers;
-using HikConsole.SDK;
 using Newtonsoft.Json;
 using C = HikConsole.Helpers.ConsoleHelper;
 
@@ -62,7 +62,7 @@ namespace HikConsole
                 C.PrintLine(40);
             }
 
-            C.WriteLine($"Next execution at {start.AddMinutes(appConfig.Interval).ToString()}", timeStamp: DateTime.Now);
+            C.WriteLine($"Next execution at {start.AddMinutes(appConfig.Interval)}", timeStamp: DateTime.Now);
             string duration = (start - DateTime.Now).ToString("h'h 'm'm 's's'");
             C.WriteLine($"End. Duration  : {duration}", timeStamp: DateTime.Now);
         }
@@ -70,7 +70,7 @@ namespace HikConsole
         private static async Task ProcessCamera(CameraConfig camera, DateTime periodStart, DateTime periodEnd, bool showProgress)
         {
             downloader?.Logout();
-            downloader = new HikClient(camera, new SDKWrapper(), new FilesHelper(), showProgress ? new ProgressBarFactory() : default(ProgressBarFactory));
+            downloader = new HikClient(camera, new HikApi(), new FilesHelper(), showProgress ? new ProgressBarFactory() : default(ProgressBarFactory));
 
             try
             {
@@ -79,12 +79,12 @@ namespace HikConsole
                 {
                     C.ColorWriteLine($"Login success!", ConsoleColor.DarkGreen, DateTime.Now);
                     C.WriteLine(camera.ToString(), ConsoleColor.DarkMagenta);
-                    C.WriteLine($"Get videos from {periodStart.ToString()} to {periodEnd.ToString()}", timeStamp: DateTime.Now);
+                    C.WriteLine($"Get videos from {periodStart} to {periodEnd}", timeStamp: DateTime.Now);
 
                     List<FindResult> results = (await downloader.Find(periodStart, periodEnd)).ToList();
 
                     C.WriteLine($"Searching finished", timeStamp: DateTime.Now);
-                    C.WriteLine($"Found {results.Count.ToString()} files\r\n", timeStamp: DateTime.Now);
+                    C.WriteLine($"Found {results.Count} files\r\n", timeStamp: DateTime.Now);
 
                     int i = 1;
                     foreach (var file in results)
@@ -124,13 +124,13 @@ namespace HikConsole
                 C.ColorWriteLine($"Free space     : {Utils.FormatBytes(Utils.GetTotalFreeSpace(camera.DestinationFolder))}", ConsoleColor.Red, DateTime.Now);
                 C.ColorWriteLine($"Oldest File    : {firstFile.FullName.TrimStart(camera.DestinationFolder.ToCharArray())}", ConsoleColor.Red, DateTime.Now);
                 C.ColorWriteLine($"Newest File    : {lastFile.FullName.TrimStart(camera.DestinationFolder.ToCharArray())}", ConsoleColor.Red, DateTime.Now);
-                C.ColorWriteLine($"Period         : {Math.Floor(period.TotalDays).ToString()} days", ConsoleColor.Red, DateTime.Now);
+                C.ColorWriteLine($"Period         : {Math.Floor(period.TotalDays)} days", ConsoleColor.Red, DateTime.Now);
             }
         }
 
         private static async Task DownloadFile(HikClient downloader, FindResult file, int order, int count)
         {
-            C.Write($"{order.ToString(),2}/{count.ToString()} : ");
+            C.Write($"{order,2}/{count} : ");
             if (downloader.StartDownload(file))
             {
                 do

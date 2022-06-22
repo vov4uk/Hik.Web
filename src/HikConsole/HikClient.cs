@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Hik.Api.Abstraction;
 using HikConsole.Abstraction;
 using HikConsole.Data;
 using HikConsole.Helpers;
@@ -15,16 +16,16 @@ namespace HikConsole
         private const string DateTimePrintFormat = "yyyy.MM.dd HH:mm:ss";
         private const string TimeFormat = "HHmmss";
         private readonly CameraConfig config;
-        private readonly ISDKWrapper sdk;
+        private readonly IHikApi sdk;
         private readonly IFilesHelper filesHelper;
         private readonly IProgressBarFactory progressFactory;
         private int downloadHandle = -1;
         private FindResult downloadFile;
         private int userId = -1;
-        private int channel = -1;
         private IProgressBar progress;
+        private Hik.Api.Data.Session session;
 
-        public HikClient(CameraConfig config, ISDKWrapper sdk, IFilesHelper filesHelper, IProgressBarFactory progressFactory)
+        public HikClient(CameraConfig config, IHikApi sdk, IFilesHelper filesHelper, IProgressBarFactory progressFactory)
         {
             this.config = config;
             this.sdk = sdk;
@@ -37,7 +38,7 @@ namespace HikConsole
         public void Init()
         {
             this.sdk.Initialize();
-            this.sdk.SetupSDKLogs(3, this.filesHelper.CombinePath(this.config.DestinationFolder, "SdkLog"), false);
+            this.sdk.SetupLogs(3, this.filesHelper.CombinePath(this.config.DestinationFolder, "SdkLog"), false);
 
             this.filesHelper.FolderCreateIfNotExist(this.config.DestinationFolder);
         }
@@ -46,9 +47,8 @@ namespace HikConsole
         {
             if (this.userId < 0)
             {
-                DeviceInfo deviceInfo = null;
-                this.userId = this.sdk.Login(this.config.IpAddress, this.config.PortNumber, this.config.UserName, this.config.Password, ref deviceInfo);
-                this.channel = deviceInfo.StartChannel;
+                this.session = this.sdk.Login(this.config.IpAddress, this.config.PortNumber, this.config.UserName, this.config.Password);
+                this.userId = this.session.UserId;
 
                 return true;
             }
@@ -77,7 +77,7 @@ namespace HikConsole
                 return false;
             }
 
-            this.downloadHandle = this.sdk.StartDownloadFile(this.userId, file.FileName, fileName);
+            this.downloadHandle = this.sdk.VideoService.StartDownloadFile(this.userId, file.FileName, fileName);
             this.downloadFile = file;
             this.progress = this.progressFactory?.Create();
             return true;
@@ -87,7 +87,7 @@ namespace HikConsole
         {
             if (this.IsDownloading)
             {
-                this.sdk.StopDownoloadFile(this.downloadHandle);
+                this.sdk.VideoService.StopDownloadFile(this.downloadHandle);
                 this.ResetDownloadStatus();
             }
         }
@@ -96,7 +96,7 @@ namespace HikConsole
         {
             if (this.IsDownloading)
             {
-                int barValue = this.sdk.GetDownloadPos(this.downloadHandle);
+                int barValue = this.sdk.VideoService.GetDownloadPosition(this.downloadHandle);
 
                 if (barValue > ProgressBarMinimum && barValue < ProgressBarMaximum)
                 {
@@ -141,7 +141,21 @@ namespace HikConsole
         {
             this.ValidateDateParameters(periodStart, periodEnd);
 
-            return await this.Find(periodStart, periodEnd, this.userId, this.channel);
+            var files = await this.sdk.VideoService.FindFilesAsync(periodStart, periodEnd, this.session);
+            var results = new List<FindResult>();
+
+            foreach (var file in files)
+            {
+                results.Add(new FindResult
+                {
+                    FileName = file.Name,
+                    FileSize = file.Size,
+                    StartTime = file.Date,
+                    StopTime = file.Date.AddSeconds(file.Duration),
+                });
+            }
+
+            return results;
         }
 
         private void PrintFileInfo(FindResult file)
@@ -157,7 +171,7 @@ namespace HikConsole
         private string GetFullPath(FindResult file, string directory = null)
         {
             string folder = directory ?? this.GetWorkingDirectory(file);
-            return this.filesHelper.CombinePath(folder, $"{file.StartTime.ToString(TimeFormat)}_{file.StopTime.ToString(TimeFormat)}_{file.FileName}.mp4");
+            return this.filesHelper.CombinePath(folder, $"{file.StartTime.ToString(TimeFormat)}_{file.StopTime.ToString(TimeFormat)}.mp4");
         }
 
         private void ResetDownloadStatus()
@@ -185,11 +199,6 @@ namespace HikConsole
             {
                 throw new ArgumentException("Start period grather than end");
             }
-        }
-
-        private async Task<IList<FindResult>> Find(DateTime periodStart, DateTime periodEnd, int userId, int channel)
-        {
-            return await this.sdk.Find(periodStart, periodEnd, userId, channel);
         }
     }
 }
