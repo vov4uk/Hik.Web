@@ -28,7 +28,7 @@ namespace Hik.Web.Queries.DashboardDetails
                 {
                     var totalItems = await statRepo.CountAsync(x => x.JobTriggerId == query.JobTriggerId);
 
-                    var files = await statRepo.FindManyAsync(
+                    var files = await statRepo.FindManyByDescAsync(
                         x => x.JobTriggerId == query.JobTriggerId,
                         x => x.Period,
                         Math.Max(0, query.CurrentPage - 1) * query.PageSize,

@@ -31,7 +31,7 @@ namespace Hik.Web.Queries
 
                     var totalItems = await downloadRepo.CountAsync(x => x.JobId == query.JobId);
 
-                    var files = await filesRepo.FindManyAsync(
+                    var files = await filesRepo.FindManyByDescAsync(
                         x => (x.DownloadHistory == null ? 0 : x.DownloadHistory.JobId) == query.JobId,
                         x => x.Id,
                         Math.Max(0, query.CurrentPage - 1) * query.PageSize,

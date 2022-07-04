@@ -34,8 +34,13 @@ namespace Hik.Web.Queries.Search
                     var beforeFiles = await GetMediaFilesAsync(filesRepo,
                         x => x.JobTriggerId == request.JobTriggerId && x.Id < file.Id);
 
-                    var afterFiles = await GetMediaFilesAsync(filesRepo,
-                        x => x.JobTriggerId == request.JobTriggerId && x.Id > file.Id);
+                    var files = await filesRepo.FindManyByAscAsync(
+                        x => x.JobTriggerId == request.JobTriggerId && x.Id > file.Id,
+                        x => x.Date,
+                        skip: 0,
+                        top: 5,
+                        includes: x => x.DownloadDuration);
+                    var afterFiles = files.ConvertAll(y => HikDatabase.Mapper.Map<MediaFile, MediaFileDto>(y));
 
                     return new SearchDto
                     {
@@ -61,7 +66,7 @@ namespace Hik.Web.Queries.Search
 
         private static async Task<List<MediaFileDto>> GetMediaFilesAsync(IBaseRepository<MediaFile> filesRepo, Expression<Func<MediaFile, bool>> predicate, int top = 5)
         {
-            var files = await filesRepo.FindManyAsync(
+            var files = await filesRepo.FindManyByDescAsync(
                         predicate,
                         x => x.Date,
                         skip: 0,

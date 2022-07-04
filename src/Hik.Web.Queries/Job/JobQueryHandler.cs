@@ -28,7 +28,7 @@ namespace Hik.Web.Queries.Job
 
                     var totalItems = await jobsRepo.CountAsync(x => x.JobTriggerId == request.JobTriggerId);
 
-                    var jobs = await jobsRepo.FindManyAsync(x => x.JobTriggerId == request.JobTriggerId,
+                    var jobs = await jobsRepo.FindManyByDescAsync(x => x.JobTriggerId == request.JobTriggerId,
                         x => x.Id,
                         Math.Max(0, request.CurrentPage - 1) * request.PageSize,
                         request.PageSize);

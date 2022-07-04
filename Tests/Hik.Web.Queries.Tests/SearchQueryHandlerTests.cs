@@ -37,8 +37,9 @@ namespace Hik.Web.Queries.Test
             var request = new SearchQuery { DateTime = new(2022, 01, 01, 01, 00, 00), JobTriggerId = 1 };
             var file = new MediaFile() { Id = 1, Date = new(2022, 01, 01, 00, 59, 00), Duration = duration, Path = "C:\\", Name = "File1.mp4" };
 
-            SetupGetMediaFilesAsync(new List<MediaFile>() { file }, 1);
-            SetupGetMediaFilesAsync(new List<MediaFile>(), 5);
+            SetupGetMediaFilesDescAsync(new List<MediaFile>() { file }, 1);
+            SetupGetMediaFilesDescAsync(new List<MediaFile>(), 5);
+            SetupGetMediaFilesAscAsync(new List<MediaFile>(), 5);
 
             var handler = new SearchQueryHandler(uowFactoryMock.Object);
             var result = await handler.Handle(request, CancellationToken.None);
@@ -57,15 +58,18 @@ namespace Hik.Web.Queries.Test
         {
             var file = new MediaFile() { Id = 6, Date = new(2022, 01, 01, 00, 59, 00), Duration = 60, Path = "C:\\", Name = "File6.mp4" };
 
-            SetupGetMediaFilesAsync(new List<MediaFile>() { file }, 1);
+            SetupGetMediaFilesDescAsync(new List<MediaFile>() { file }, 1);
 
-            repoMock.SetupSequence(x => x.FindManyAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(),
+            repoMock.Setup(x => x.FindManyByDescAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(),
                 It.IsAny<Expression<Func<MediaFile, object>>>(), 0, 5, x => x.DownloadDuration))
                 .ReturnsAsync(new List<MediaFile>()
             {
                 new(){Id = 5, Date = new(2022,02,02), Path = "C:\\", Name = "File5.jpg"},
                 new(){Id = 4, Date = new(2022,02,01), Path = "C:\\", Name = "File4.jpg"},
-            }).ReturnsAsync(new List<MediaFile>()
+            });
+            repoMock.Setup(x => x.FindManyByAscAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(),
+                It.IsAny<Expression<Func<MediaFile, object>>>(), 0, 5, x => x.DownloadDuration))
+                .ReturnsAsync(new List<MediaFile>()
             {
                 new(){Id = 7, Date = new(2022,02,02), Path = "C:\\", Name = "File7.jpg"},
                 new(){Id = 8, Date = new(2022,02,01), Path = "C:\\", Name = "File8.jpg"},
@@ -91,8 +95,8 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_FoundNotFile_Return5LatestFiles(SearchQuery request)
         {
-            SetupGetMediaFilesAsync(new List<MediaFile>(), 1);
-            SetupGetMediaFilesAsync(new List<MediaFile>()
+            SetupGetMediaFilesDescAsync(new List<MediaFile>(), 1);
+            SetupGetMediaFilesDescAsync(new List<MediaFile>()
             {
                 new(){Id = 2, Date = new(2022,02,02), Path = "C:\\", Name = "File2.jpg"},
                 new(){Id = 1, Date = new(2022,02,01), Path = "C:\\", Name = "File1.jpg"},
@@ -109,9 +113,15 @@ namespace Hik.Web.Queries.Test
             Assert.Equal(1, firstFile.Id);
         }
 
-        private void SetupGetMediaFilesAsync(List<MediaFile> list, int top = 5)
+        private void SetupGetMediaFilesDescAsync(List<MediaFile> list, int top = 5)
         {
-            repoMock.Setup(x => x.FindManyAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>>(), 0, top, x => x.DownloadDuration))
+            repoMock.Setup(x => x.FindManyByDescAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>>(), 0, top, x => x.DownloadDuration))
+                .ReturnsAsync(list);
+        }
+
+        private void SetupGetMediaFilesAscAsync(List<MediaFile> list, int top = 5)
+        {
+            repoMock.Setup(x => x.FindManyByAscAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>>(), 0, top, x => x.DownloadDuration))
                 .ReturnsAsync(list);
         }
     }

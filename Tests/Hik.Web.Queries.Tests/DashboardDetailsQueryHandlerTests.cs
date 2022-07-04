@@ -41,7 +41,7 @@ namespace Hik.Web.Queries.Test
                 .ReturnsAsync(trigger);
             statsRepoMock.Setup(x => x.CountAsync(It.IsAny<Expression<Func<DailyStatistic, bool>>>()))
                 .ReturnsAsync(100);
-            statsRepoMock.Setup(x => x.FindManyAsync(
+            statsRepoMock.Setup(x => x.FindManyByDescAsync(
                 It.IsAny<Expression<Func<DailyStatistic, bool>>>(),
                 It.IsAny<Expression<Func<DailyStatistic, object>>>(),
                 It.IsAny<int>(),
