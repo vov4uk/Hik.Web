@@ -41,7 +41,7 @@ namespace Hik.Web.Queries.Test
                 .ReturnsAsync(trigger);
             jobsRepoMock.Setup(x => x.CountAsync(It.IsAny<Expression<Func<HikJob, bool>>>()))
                 .ReturnsAsync(100);
-            jobsRepoMock.Setup(x => x.FindManyAsync(
+            jobsRepoMock.Setup(x => x.FindManyByDescAsync(
                 It.IsAny<Expression<Func<HikJob, bool>>>(),
                 It.IsAny<Expression<Func<HikJob, object>>>(),
                 It.IsAny<int>(),

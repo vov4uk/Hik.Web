@@ -44,7 +44,7 @@ namespace Hik.Web.Queries.Test
                 .ReturnsAsync(job);
             downloadRepoMock.Setup(x => x.CountAsync(It.IsAny<Expression<Func<DownloadHistory, bool>>>()))
                 .ReturnsAsync(100);
-            filesRepoMock.Setup(x => x.FindManyAsync(
+            filesRepoMock.Setup(x => x.FindManyByDescAsync(
                 It.IsAny<Expression<Func<MediaFile, bool>>>(),
                 It.IsAny<Expression<Func<MediaFile, object>>>(),
                 It.IsAny<int>(),

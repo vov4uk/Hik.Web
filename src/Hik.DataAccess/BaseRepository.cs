@@ -114,7 +114,7 @@ namespace Hik.DataAccess
             return await result?.ToListAsync();
         }
 
-        public virtual async Task<List<TEntity>> FindManyAsync(Expression<Func<TEntity, bool>> predicate,
+        public virtual async Task<List<TEntity>> FindManyByDescAsync(Expression<Func<TEntity, bool>> predicate,
             Expression<Func<TEntity, object>> orderByDesc, int skip, int top,
             params Expression<Func<TEntity, object>>[] includes)
         {
@@ -126,6 +126,22 @@ namespace Hik.DataAccess
             }
 
             result = result.OrderByDescending(orderByDesc).Skip(skip).Take(top);
+
+            return await result?.ToListAsync();
+        }
+
+        public virtual async Task<List<TEntity>> FindManyByAscAsync(Expression<Func<TEntity, bool>> predicate,
+            Expression<Func<TEntity, object>> orderByAsc, int skip, int top,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+
+            result = result.OrderBy(orderByAsc).Skip(skip).Take(top);
 
             return await result?.ToListAsync();
         }
