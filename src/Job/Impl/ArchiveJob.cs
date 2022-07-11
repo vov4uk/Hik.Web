@@ -14,6 +14,7 @@ namespace Job.Impl
     public class ArchiveJob : JobProcessBase<ArchiveConfig>
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
+        private const string TimeFormat = "HH':'mm':'ss";
         private readonly IArchiveService worker;
 
         public ArchiveJob(string trigger, ArchiveConfig config, IArchiveService worker, IHikDatabase db, IEmailHelper email, ILogger logger)
@@ -38,8 +39,8 @@ namespace Job.Impl
             if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
             {
                 email.Send(
-                    $"{files.Count} - {TriggerKey}: Abnormal activity detected",
-                    $"{files.Count} taken in period from {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(DateTimeFormat)}");
+                    $"{TriggerKey}: {files.Count} taken. From {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(TimeFormat)}",
+                    "EOM");
             }
 
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);

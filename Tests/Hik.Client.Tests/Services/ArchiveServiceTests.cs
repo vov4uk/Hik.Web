@@ -61,7 +61,6 @@ namespace Hik.Client.Tests.Services
 
             var config = fixture.Build<ArchiveConfig>()
                 .With(x => x.SkipLast, 0)
-                .With(x => x.DetectPeopleConfig, default(DetectPeopleConfig))
                 .Create();
             var service = CreateArchiveService();
             service.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>

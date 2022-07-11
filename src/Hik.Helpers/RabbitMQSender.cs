@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Text;
+using Hik.Client.Abstraction;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 
 namespace Hik.Helpers
 {
-    public class RabbitMQSender : IDisposable
+    public class RabbitMQSender : IRabbitMQSender
     {
         private readonly IConnection connection;
         private readonly IModel channel;
         private readonly string routingKey;
         private bool disposedValue = false;
 
-        public RabbitMQSender(string hostName, string queueName, string routingKey)
+        internal RabbitMQSender(string hostName, string queueName, string routingKey)
         {
             this.routingKey = routingKey;
             ConnectionFactory factory = new ConnectionFactory() { HostName = hostName };
@@ -20,9 +22,9 @@ namespace Hik.Helpers
             channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
         }
 
-        public void Sent(string message)
+        public void Sent(object message)
         {
-            var body = Encoding.UTF8.GetBytes(message);
+            var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
             channel.BasicPublish(exchange: string.Empty, routingKey: this.routingKey, basicProperties: null, body: body);
         }
 

@@ -30,8 +30,15 @@ namespace Job
                 case "ArchiveJob":
                     {
                         var config = HikConfigExtensions.GetConfig<ArchiveConfig>(parameters.ConfigFilePath);
-                        IArchiveService worker = AppBootstrapper.Container.Resolve<IArchiveService>();
+                        var worker = AppBootstrapper.Container.Resolve<IArchiveService>();
                         return new ArchiveJob(trigger, config, worker, db, email, logger);
+                    }
+                case "Job.Impl.DetectPeople, Job":
+                case "DetectPeople":
+                    {
+                        var config = HikConfigExtensions.GetConfig<DetectPeopleConfig>(parameters.ConfigFilePath);
+                        var worker = AppBootstrapper.Container.Resolve<IDetectPeopleService>();
+                        return new DetectPeopleJob(trigger, config, worker, db, email, logger);
                     }
                 case "Job.Impl.GarbageCollectorJob, Job":
                 case "GarbageCollectorJob":
