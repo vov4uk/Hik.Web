@@ -28,7 +28,7 @@ namespace Hik.Client
 
             while (periodStart < end)
             {
-                var file = new MediaFileDto()
+                var file = new MediaFileDto
                 {
                     Name = periodStart.ToUniversalTime().ToString(YiFileNameFormat),
                     Date = periodStart,

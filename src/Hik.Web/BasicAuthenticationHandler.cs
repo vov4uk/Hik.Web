@@ -13,6 +13,7 @@ namespace Hik.Web
 {
     public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
+        private const string Basic = "Basic";
         private readonly IConfiguration configuration;
 
         public BasicAuthenticationHandler(
@@ -29,9 +30,9 @@ namespace Hik.Web
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var authHeader = Request.Headers["Authorization"].ToString();
-            if (authHeader != null && authHeader.StartsWith("basic", StringComparison.OrdinalIgnoreCase))
+            if (authHeader != null && authHeader.StartsWith(Basic, StringComparison.OrdinalIgnoreCase))
             {
-                var token = authHeader.Substring("Basic ".Length).Trim();
+                var token = authHeader.Substring(Basic.Length +1).Trim();
                 this.Logger.LogInformation(token);
                 var credentialString = Encoding.UTF8.GetString(Convert.FromBase64String(token));
 
@@ -41,22 +42,24 @@ namespace Hik.Web
                 {
                     var userName = credentialString.Split(':')[0];
                     var claims = new[] { new Claim("name", userName), new Claim(ClaimTypes.Role, "Admin") };
-                    var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Basic"));
+                    var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, Basic));
                     return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, Scheme.Name)));
                 }
 
-                this.Logger.LogError($"Hik.Web - Invalid login from {Request.Host.Value} ({credentialString})");
-                Response.StatusCode = 401;
-                Response.Headers.Add("WWW-Authenticate", "Basic realm=\"hikweb.net\"");
-                return Task.FromResult(AuthenticateResult.Fail("Invalid Authorization Header"));
+                return NotAuthentificated(credentialString);
             }
             else
             {
-                this.Logger.LogError($"Hik.Web - Invalid login from {Request.Host.Value}");
-                Response.StatusCode = 401;
-                Response.Headers.Add("WWW-Authenticate", "Basic realm=\"hikweb.net\"");
-                return Task.FromResult(AuthenticateResult.Fail("Invalid Authorization Header"));
+                return NotAuthentificated();
             }
+        }
+
+        private Task<AuthenticateResult> NotAuthentificated(string credentialsString = null)
+        {
+            this.Logger.LogError("Invalid login from {request} ({credentials})", Request.Host.Value, credentialsString);
+            Response.StatusCode = 401;
+            Response.Headers.Add("WWW-Authenticate", "Basic realm=\"hikweb.net\"");
+            return Task.FromResult(AuthenticateResult.Fail("Invalid Authorization Header"));
         }
     }
 }

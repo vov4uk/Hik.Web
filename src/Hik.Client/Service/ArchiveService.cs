@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
-using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -59,7 +58,7 @@ namespace Hik.Client.Service
                             string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(aConfig.DestinationFolder, date));
                             string junkFilePath = GetPathSafety(newFileName, GetWorkingDirectory(detectConfig.JunkFolder, date));
                             string guid = Guid.NewGuid().ToString();
-                            var msg = new DetectPeopleMessage()
+                            var msg = new DetectPeopleMessage
                             {
                                 UniqueId = guid,
                                 OldFilePath = oldFile,

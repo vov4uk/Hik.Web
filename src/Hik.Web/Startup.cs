@@ -7,21 +7,18 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Hik.Web
 {
     public class Startup
     {
+        private const string BasicAuthentication = "BasicAuthentication";
         private readonly IConfiguration configuration;
 
         public Startup(IConfiguration configuration)
@@ -44,17 +41,11 @@ namespace Hik.Web
                 .Configure<ApiBehaviorOptions>(options =>
                 {
                     options.SuppressInferBindingSourcesForParameters = true;
-                })
-                .AddMvc()
-                .AddNewtonsoftJson(options =>
-                {
-                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 });
 
-            services.AddAuthentication("BasicAuthentication")
+            services.AddAuthentication(BasicAuthentication)
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
-                ("BasicAuthentication", null);
+                (BasicAuthentication, null);
 
             services
                 .AddAuthorization()
@@ -84,6 +75,7 @@ namespace Hik.Web
             lifetime.ApplicationStopping.Register(quartz.Stop);
 
             app.UseDeveloperExceptionPage()
+                .UseStaticFiles()
                 .UseRouting()
                 .UseAuthentication()
                 .UseAuthorization()
@@ -92,7 +84,6 @@ namespace Hik.Web
                     endpoints.MapRazorPages()
                     .RequireAuthorization();
                 })
-                .UseStaticFiles()
                 .UseHttpsRedirection()
                 .UseHsts();
         }
