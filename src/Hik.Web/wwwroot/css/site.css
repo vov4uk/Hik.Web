@@ -261,3 +261,96 @@ div[role="main"] aside p {
     position: absolute;
     right: 0;
 }
+
+* Thumbnail Layout
+-------------------------------------------------------*/
+ul.thumbnails {
+    margin: 0;
+    padding: 0;
+}
+
+ul.thumbnails li {
+    position: relative;
+    list-style: none;
+    float: left;
+    margin: 8px;
+    padding: 5px;
+    font-size: small;
+    text-align: center;
+    border: 1px solid transparent;
+    line-height: 200px;
+    display: block;
+}
+
+ul.gallery li {
+    height: 220px;
+}
+
+ul.thumbnails li span {
+    display: block;
+}
+
+    ul.thumbnails li span.image-overlay {
+        display: none;
+        width: 200px;
+        padding: 5px;
+        background-color: #fff;
+        color: #343434;
+        /*CSS3 properties*/
+        border-radius: 7px 7px 0 0;
+        -moz-border-radius: 7px 7px 0 0;
+        -webkit-border-radius: 7px 7px 0 0;
+        background-color: rgba(255, 255, 255, 0.75);
+        word-wrap: break-word;
+    }
+
+    ul.thumbnails li span.below-image {
+        line-height: normal;
+    }
+
+ul.thumbnails li img {
+    margin: auto;
+    display: inline;
+    vertical-align: middle;
+}
+
+ul.thumbnails li:hover {
+    background: #f3f6f7;
+    border-color: #dbe2e5;
+    /*CSS3 properties*/
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    -webkit-border-radius: 7px;
+    box-shadow: 0px 0px 10px #d0d0d0;
+    -moz-box-shadow: 0px 0px 10px #d0d0d0;
+    -webkit-box-shadow: 0px 0px 10px #d0d0d0;
+}
+
+    ul.thumbnails li:hover span.image-overlay {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        line-height: normal;
+    }
+
+/*  Single Photo Layout
+--------------------------------------------------*/
+
+.thumbnail-border, .large-photo {
+    border: 1px solid #dbe2e5;
+    display: block;
+}
+
+.thumbnail-no-border {
+    border: none;
+    display: block;
+}
+
+li.item span.image-overlay {
+    position: relative;
+    left: 100px;
+    top: -40px;
+    height: 0px;
+    display: block;
+}

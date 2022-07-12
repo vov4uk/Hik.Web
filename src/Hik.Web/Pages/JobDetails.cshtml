@@ -53,10 +53,21 @@
     </table>
 }
 
-@if (Model.Dto.Items != null && Model.Dto.Items.Any())
-{
-    @await Html.PartialAsync("_Files.cshtml", Model.Dto.Items)
-}
+  <div class="row">
+      @if (Model.Dto.Items != null && Model.Dto.Items.Any( x=> x.Path.EndsWith(".jpg")))
+      {
+          @await Html.PartialAsync("_Photos.cshtml", Model.Dto.Items)
+      }
+  </div>
 
-<!-- pager -->
-@await Html.PartialAsync("_Pager.cshtml", Model.Pager)
+  <div class="row">
+      @if (Model.Dto.Items != null && Model.Dto.Items.Any( x=> x.Path.EndsWith(".mp4")))
+      {
+          @await Html.PartialAsync("_Files.cshtml", Model.Dto.Items)
+      }
+  </div>
+
+  <div class="row">
+      @await Html.PartialAsync("_Pager.cshtml", Model.Pager)
+  </div>
+

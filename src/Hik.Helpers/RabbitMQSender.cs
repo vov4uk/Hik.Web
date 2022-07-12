@@ -13,6 +13,8 @@ namespace Hik.Helpers
         private readonly string routingKey;
         private bool disposedValue = false;
 
+        public RabbitMQSender() { }
+
         internal RabbitMQSender(string hostName, string queueName, string routingKey)
         {
             this.routingKey = routingKey;

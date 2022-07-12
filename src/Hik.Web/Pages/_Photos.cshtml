@@ -1,0 +1,16 @@
+﻿@using Hik.Client.Helpers
+@using Hik.DTO
+@using Hik.DTO.Contracts
+@model List<MediaFileDto>
+
+<ul class="thumbnails">
+  @foreach (var photo in Model)
+  {
+    <li class="item">
+      <a href="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")">
+        <img alt="@photo.Name" src="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")" class="thumbnail-border" width="180"/>
+      </a>
+      <span class="image-overlay">@photo.Name</span>
+    </li>
+  }
+</ul>

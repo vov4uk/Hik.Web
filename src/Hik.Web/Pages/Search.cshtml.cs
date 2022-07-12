@@ -79,6 +79,19 @@ namespace Hik.Web.Pages
             return new FileStreamResult(memory, new MediaTypeHeaderValue("video/mp4")) { EnableRangeProcessing = true };
         }
 
+        public async Task<IActionResult> OnGetImage(int fileId)
+        {
+            var filePath = await GetFilePath(fileId);
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return NotFound();
+            }
+
+            return base.PhysicalFile(filePath, "image/jpeg");
+            //return base.PhysicalFile(@"C:\Users\vkhmelovskyi\Desktop\Pic\074c3539.jpg", "image/jpeg");
+        }
+
         private async Task<string> GetFilePath(int fileId)
         {
             var file = await mediator.Send(new FilePathQuery() { FileId = fileId }) as FilePathDto;
