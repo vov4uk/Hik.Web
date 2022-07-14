@@ -1,7 +1,9 @@
 ﻿using Hik.Quartz.Contracts.Options;
+using Hik.Quartz.Extensions;
 using Microsoft.Extensions.Configuration;
 using Quartz;
 using Quartz.Impl;
+using Quartz.Logging;
 using System;
 
 namespace Hik.Quartz
@@ -23,6 +25,7 @@ namespace Hik.Quartz
             }
 
             var properties = new QuartzOption(configuration).ToProperties();
+            LogProvider.SetCurrentLogProvider(new ConsoleLogProvider());
 
             var schedulerFactory = new StdSchedulerFactory(properties);
             scheduler = schedulerFactory.GetScheduler().GetAwaiter().GetResult();

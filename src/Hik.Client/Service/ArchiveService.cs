@@ -8,6 +8,7 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client.Service
 {
@@ -22,8 +23,9 @@ namespace Hik.Client.Service
             IDirectoryHelper directoryHelper,
             IFilesHelper filesHelper,
             IVideoHelper videoHelper,
-            IImageHelper imageHelper)
-            : base(directoryHelper)
+            IImageHelper imageHelper,
+            ILogger logger)
+            : base(directoryHelper, logger)
         {
             this.filesHelper = filesHelper;
             this.videoHelper = videoHelper;
@@ -52,7 +54,7 @@ namespace Hik.Client.Service
                     result.Add(new MediaFileDto
                     {
                         Date = date,
-                        Name = filesHelper.GetFileName(filePath),
+                        Name = filesHelper.GetFileName(newFilePath),
                         Path = newFilePath,
                         Duration = duration,
                         Size = filesHelper.FileSize(newFilePath),

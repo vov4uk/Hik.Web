@@ -17,6 +17,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Seq.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Job\Job.csproj" />
   </ItemGroup>
 

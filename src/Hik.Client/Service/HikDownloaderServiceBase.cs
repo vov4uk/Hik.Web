@@ -8,6 +8,7 @@ using Hik.Client.Events;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client.Service
 {
@@ -19,8 +20,9 @@ namespace Hik.Client.Service
 
         protected HikDownloaderServiceBase(
             IDirectoryHelper directoryHelper,
-            IClientFactory clientFactory)
-            : base(directoryHelper)
+            IClientFactory clientFactory,
+            ILogger logger)
+            : base(directoryHelper, logger)
         {
             this.clientFactory = clientFactory;
         }
@@ -35,11 +37,11 @@ namespace Hik.Client.Service
                 && cancelTokenSource.Token.CanBeCanceled)
             {
                 cancelTokenSource.Cancel();
-                logger.Warn("Cancel signal was sent");
+                logger.LogWarning("Cancel signal was sent");
             }
             else
             {
-                logger.Warn("Nothing to Cancel");
+                logger.LogWarning("Nothing to Cancel");
             }
         }
 
@@ -99,7 +101,7 @@ namespace Hik.Client.Service
             var result = await ProcessCameraAsync(config, from, to);
             if (!result.Any())
             {
-                logger.Warn($"{config.Alias}, {from} - {to} : No files downloaded");
+                logger.LogWarning($"{config.Alias}, {from} - {to} : No files downloaded");
             }
 
             return result;
@@ -128,7 +130,7 @@ namespace Hik.Client.Service
                 }
                 else
                 {
-                    logger.Warn($"{config.Alias} - Unable to login");
+                    logger.LogWarning($"{config.Alias} - Unable to login");
                 }
             }
 

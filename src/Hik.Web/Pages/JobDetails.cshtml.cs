@@ -28,7 +28,7 @@ namespace Hik.Web.Pages
 
             if (Dto == null) { return NotFound(); }
 
-            Pager = new (id.Value, "?id=", Dto.TotalItems, p);
+            Pager = new (id.Value, "?id=", Dto.TotalItems, currentPage: p);
 
             return Page();
         }

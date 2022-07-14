@@ -7,6 +7,7 @@ using AutoFixture;
 using Hik.Client.Service;
 using Hik.DTO.Config;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -18,6 +19,7 @@ namespace Hik.Client.Tests.Services
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IVideoHelper> videoMock;
         private readonly Mock<IImageHelper> imageMock;
+        private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
 
         public ArchiveServiceTests()
@@ -26,7 +28,8 @@ namespace Hik.Client.Tests.Services
             this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
             this.videoMock = new Mock<IVideoHelper>(MockBehavior.Strict);
             this.imageMock = new Mock<IImageHelper>(MockBehavior.Strict);
-            this.fixture = new Fixture();
+            this.fixture = new ();
+            this.loggerMock = new ();
         }
 
         [Fact]
@@ -235,7 +238,7 @@ namespace Hik.Client.Tests.Services
 
         private ArchiveService CreateArchiveService()
         {
-            return new ArchiveService(this.directoryMock.Object, this.filesMock.Object, this.videoMock.Object, this.imageMock.Object);
+            return new ArchiveService(this.directoryMock.Object, this.filesMock.Object, this.videoMock.Object, this.imageMock.Object, loggerMock.Object);
         }
     }
 }

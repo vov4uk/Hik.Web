@@ -3,7 +3,7 @@ using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,12 +44,9 @@ namespace Job.Impl
             }
 
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
-
-            if (files.Sum(x => x.Duration ?? 0) > 0)
-            {
-                var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
-                await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
-            }
+            
+            var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
+            await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
     }
 }

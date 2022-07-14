@@ -9,6 +9,7 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
@@ -16,8 +17,15 @@ namespace Hik.Client
     {
         private readonly IImageHelper imageHelper;
 
-        public HikPhotoClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IMapper mapper, IImageHelper imageHelper)
-            : base(config, hikApi, filesHelper, directoryHelper, mapper)
+        public HikPhotoClient(
+            CameraConfig config,
+            IHikApi hikApi,
+            IFilesHelper filesHelper,
+            IDirectoryHelper directoryHelper,
+            IMapper mapper,
+            IImageHelper imageHelper,
+            ILogger logger)
+            : base(config, hikApi, filesHelper, directoryHelper, mapper, logger)
         {
             this.imageHelper = imageHelper;
         }
@@ -45,7 +53,7 @@ namespace Hik.Client
         {
             ValidateDateParameters(periodStart, periodEnd);
 
-            logger.Info($"{config.Alias} - Get photos from {periodStart} to {periodEnd}");
+            logger.LogInformation($"{config.Alias} - Get photos from {periodStart} to {periodEnd}");
 
             var remoteFiles = await hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd, session);
 

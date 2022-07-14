@@ -12,7 +12,6 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.6" />
-    <PackageReference Include="NLog" Version="5.0.1" />
   </ItemGroup>
 
   <ItemGroup>

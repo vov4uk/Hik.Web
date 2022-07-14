@@ -4,7 +4,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
 using Job.Email;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,7 +74,7 @@ namespace Job.Impl
         {
             foreach (var file in filesToDelete)
             {
-                this.logger.Debug($"Deleting: {file.Path}");
+                this.logger.LogDebug($"Deleting: {file.Path}");
 #if RELEASE
                 file.Size = filesHelper.FileSize(file.Path);
                 this.filesHelper.DeleteFile(file.Path);
@@ -91,7 +91,7 @@ namespace Job.Impl
                 var freeSpace = this.directoryHelper.GetTotalFreeSpaceBytes(destination) * 1.0;
 
                 var freePercentage = 100 * freeSpace / totalSpace;
-                this.logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2} %");
+                this.logger.LogInformation($"Destination: {destination} Free Percentage: {freePercentage,2} %");
 
                 if (freePercentage < gcConfig.FreeSpacePercentage)
                 {

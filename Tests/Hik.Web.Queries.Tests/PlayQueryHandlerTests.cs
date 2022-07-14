@@ -42,7 +42,7 @@ namespace Hik.Web.Queries.Test
                 .Returns(new List<MediaFile>().AsQueryable());
             filesHelper.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(true);
-            videoHelper.Setup(x => x.GetThumbnailStringAsync("c:\\file.jpg"))
+            videoHelper.Setup(x => x.GetThumbnailStringAsync("c:\\file.jpg", It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync("Poster");
 
             var handler = new PlayQueryHandler(uowFactoryMock.Object, filesHelper.Object, videoHelper.Object);
@@ -80,7 +80,7 @@ namespace Hik.Web.Queries.Test
                 }.AsQueryable());
             filesHelper.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(true);
-            videoHelper.Setup(x => x.GetThumbnailStringAsync("c:\\file.jpg"))
+            videoHelper.Setup(x => x.GetThumbnailStringAsync("c:\\file.jpg", It.IsAny<int>(), It.IsAny<int>()))
                 .ReturnsAsync("Poster");
 
             var handler = new PlayQueryHandler(uowFactoryMock.Object, filesHelper.Object, videoHelper.Object);

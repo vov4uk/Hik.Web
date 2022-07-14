@@ -1,5 +1,5 @@
 ﻿using Job.Email;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -11,7 +11,7 @@ namespace Job
     public class Activity
     {
         private const string JobHost = "JobHost.exe";
-        protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        protected readonly ILogger Logger;
         private static readonly EmailHelper email = new EmailHelper();
         private DateTime started = default;
         private readonly Guid ActivityId;
@@ -47,7 +47,12 @@ namespace Job
             parameters.ActivityId = ActivityId;
             Parameters = parameters;
 
-            Log($"Activity. Activity created with parameters {parameters}.");
+            Logger = new LoggerFactory()
+                .AddFile($"logs\\{parameters.TriggerKey}.txt")
+                .AddSeq()
+                .CreateLogger(parameters.TriggerKey);
+
+            Logger.LogInformation($"Activity. Created with parameters {parameters}.");
         }
 
         public async Task Start()
@@ -56,7 +61,6 @@ namespace Job
             {
                 if (RunningActivities.Add(this))
                 {
-                    Log($"Activity. Starting : {Parameters}");
                     if (Parameters.RunAsTask)
                     {
                         await RunAsTask();
@@ -68,18 +72,18 @@ namespace Job
                 }
                 else
                 {
-                    Log($"Activity. Cannot start, {Parameters.TriggerKey} is already running.");
+                    Logger.LogInformation($"Activity. Cannot start, {Parameters.TriggerKey} is already running.");
                 }
 
             }
             catch (Exception ex)
             {
-                Logger.Error($"Activity.Start - catch exception : {ex}");
+                Logger.LogError(ex, "Failed to start activity");
                 email.Send(ex);
             }
             finally
             {
-                Log("Activity. StartProcess. Done.");
+                Logger.LogInformation("Activity. StartProcess. Done.");
             }
         }
 
@@ -87,19 +91,19 @@ namespace Job
         {
             if (hostProcess != null && !hostProcess.HasExited)
             {
-                Log("Killing process manual");
+                Logger.LogInformation("Killing process manual");
                 hostProcess.Kill();
             }
             else
             {
-                Log("No process found");
+                Logger.LogInformation("No process found");
             }
             RunningActivities.Remove(this);
         }
 
         private Task StartProcess()
         {
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+            TaskCompletionSource<object> tcs = new ();
             hostProcess = new Process
             {
                 StartInfo =
@@ -119,10 +123,10 @@ namespace Job
             hostProcess.Exited += (object sender, EventArgs e) =>
             {
                 tcs.SetResult(null);
-                Log($"Activity. Process exit with code: {hostProcess.ExitCode}");
+                Logger.LogInformation($"Activity. Process exit with code: {hostProcess.ExitCode}");
                 if (!RunningActivities.Remove(this))
                 {
-                    Log("Cannot remove activity from ActivityBag");
+                    Logger.LogInformation("Cannot remove activity from ActivityBag");
                 }
             };
 
@@ -145,7 +149,7 @@ namespace Job
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                Logger.LogError(ex, "Failed to start task");
             }
             finally
             {
@@ -159,7 +163,7 @@ namespace Job
             {
                 Guid prevId = Trace.CorrelationManager.ActivityId;
                 Trace.CorrelationManager.ActivityId = this.ActivityId;
-                Logger.Info($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
+                Logger.LogInformation($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
                 Trace.CorrelationManager.ActivityId = prevId;
             }
         }
@@ -168,18 +172,8 @@ namespace Job
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                Log(e.Data);
+                Logger.LogInformation(e.Data);
             }
-        }
-
-        private void Log(string str)
-        {
-            Guid prevId = Trace.CorrelationManager.ActivityId;
-            Trace.CorrelationManager.ActivityId = this.ActivityId;
-
-            Logger.Info($"{Parameters.TriggerKey} - {str}");
-
-            Trace.CorrelationManager.ActivityId = prevId;
         }
     }
 }

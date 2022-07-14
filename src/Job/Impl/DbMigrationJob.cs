@@ -3,7 +3,7 @@ using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

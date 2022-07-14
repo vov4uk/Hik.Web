@@ -8,13 +8,19 @@ using Hik.Client.Client;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
     public class RSyncClient : FtpBaseClient
     {
-        public RSyncClient(CameraConfig config, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IFtpClient ftp)
-            : base(config, filesHelper, directoryHelper, ftp)
+        public RSyncClient(
+            CameraConfig config,
+            IFilesHelper filesHelper,
+            IDirectoryHelper directoryHelper,
+            IFtpClient ftp,
+            ILogger logger)
+            : base(config, filesHelper, directoryHelper, ftp, logger)
         {
         }
 
@@ -52,7 +58,7 @@ namespace Hik.Client
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex);
+                    logger.LogError(ex.ToString());
                     return false;
                 }
 

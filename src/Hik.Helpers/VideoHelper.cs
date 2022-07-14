@@ -14,7 +14,7 @@ namespace Hik.Helpers
     {
         private static readonly string[] VideoExtentions = new[] { ".mp4", ".avi" };
 
-        public async Task<string> GetThumbnailStringAsync(string path)
+        public async Task<string> GetThumbnailStringAsync(string path, int width, int height)
         {
             if (VideoExtentions.Contains(Path.GetExtension(path)))
             {
@@ -25,7 +25,7 @@ namespace Hik.Helpers
                 await GetEngine().GetThumbnailAsync(inputFile, outputFile, CancellationToken.None);
 
                 Image image = Image.FromFile(fullPath);
-                using (Image newImage = new Bitmap(image, 1080, 608))
+                using (Image newImage = new Bitmap(image, width, height))
                 {
                     image.Dispose();
                     var parameters = GetCompressParameters();

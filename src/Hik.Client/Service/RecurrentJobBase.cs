@@ -6,18 +6,19 @@ using Hik.Client.Events;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client.Service
 {
     public abstract class RecurrentJobBase : IRecurrentJob
     {
-        protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
+        protected readonly ILogger logger;
         protected readonly IDirectoryHelper directoryHelper;
 
-        protected RecurrentJobBase(IDirectoryHelper directoryHelper)
+        protected RecurrentJobBase(IDirectoryHelper directoryHelper, ILogger logger)
         {
             this.directoryHelper = directoryHelper;
+            this.logger = logger;
         }
 
         public event EventHandler<ExceptionEventArgs> ExceptionFired;
@@ -26,7 +27,7 @@ namespace Hik.Client.Service
         {
             try
             {
-                this.logger.Info("Start ExecuteAsync");
+                this.logger.LogInformation("Start ExecuteAsync");
                 if (!this.directoryHelper.DirExist(config?.DestinationFolder))
                 {
                     throw new InvalidOperationException($"Output doesn't exist: {config?.DestinationFolder}");
@@ -51,7 +52,7 @@ namespace Hik.Client.Service
             }
             else
             {
-                logger.Error(ex.ToString());
+                logger.LogError(ex.ToString());
             }
         }
     }

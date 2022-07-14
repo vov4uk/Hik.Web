@@ -8,6 +8,7 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
@@ -15,8 +16,13 @@ namespace Hik.Client
     {
         private const string YiFileNameFormat = "mm'M00S'";
 
-        public YiClient(CameraConfig config, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IFtpClient ftp)
-            : base(config, filesHelper, directoryHelper, ftp)
+        public YiClient(
+            CameraConfig config,
+            IFilesHelper filesHelper,
+            IDirectoryHelper directoryHelper,
+            IFtpClient ftp,
+            ILogger logger)
+            : base(config, filesHelper, directoryHelper, ftp, logger)
         {
         }
 

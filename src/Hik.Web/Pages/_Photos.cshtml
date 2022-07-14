@@ -7,8 +7,8 @@
   @foreach (var photo in Model)
   {
     <li class="item">
-      <a href="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")">
-        <img alt="@photo.Name" src="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")" class="thumbnail-border" width="180"/>
+      <a href="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")" target="_blank">
+        <img alt="@photo.Name" src="@Url.Content($"/Search?fileId={@photo?.Id}&handler=ImageThumbnail")" class="thumbnail-border" width="180"/>
       </a>
       <span class="image-overlay">@photo.Name</span>
     </li>

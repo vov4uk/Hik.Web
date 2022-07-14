@@ -5,7 +5,7 @@ using Hik.Api.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
@@ -17,7 +17,7 @@ namespace Hik.Client
         protected readonly IHikApi hikApi;
         protected readonly IFilesHelper filesHelper;
         protected readonly IDirectoryHelper dirHelper;
-        protected ILogger logger = LogManager.GetCurrentClassLogger();
+        protected readonly ILogger logger;
         protected int downloadId = -1;
         protected Session session;
         private bool disposedValue = false;
@@ -27,13 +27,15 @@ namespace Hik.Client
             IHikApi hikApi,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
-            IMapper mapper)
+            IMapper mapper,
+            ILogger logger)
         {
             this.config = config ?? throw new ArgumentNullException(nameof(config));
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
             this.dirHelper = directoryHelper;
             this.Mapper = mapper;
+            this.logger = logger;
         }
 
         protected IMapper Mapper { get; private set; }
@@ -44,7 +46,7 @@ namespace Hik.Client
             dirHelper.CreateDirIfNotExist(sdkLogsPath);
             dirHelper.CreateDirIfNotExist(config.DestinationFolder);
 
-            logger.Info($"SDK Logs : {sdkLogsPath}");
+            logger.LogInformation($"SDK Logs : {sdkLogsPath}");
             hikApi.Initialize();
             hikApi.SetupLogs(3, sdkLogsPath, false);
             hikApi.SetConnectTime(2000, 1);
@@ -56,10 +58,10 @@ namespace Hik.Client
             if (session == null)
             {
                 session = hikApi.Login(config.IpAddress, config.PortNumber, config.UserName, config.Password);
-                logger.Info($"Sucessfull login to {config}");
+                logger.LogInformation($"Sucessfull login to {config}");
                 var status = hikApi.GetHddStatus(session.UserId);
 
-                logger.Info(status?.ToString());
+                logger.LogInformation(status?.ToString());
 
                 if (status is { IsErrorStatus: true })
                 {
@@ -70,7 +72,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.Warn("HikBaseClient.Login : Already logged in");
+                logger.LogWarning("HikBaseClient.Login : Already logged in");
                 return false;
             }
         }
@@ -80,19 +82,19 @@ namespace Hik.Client
             if (config.SyncTime)
             {
                 var cameraTime = hikApi.GetTime(session.UserId);
-                logger.Info($"Camera time :{cameraTime}");
+                logger.LogInformation($"Camera time :{cameraTime}");
                 var currentTime = DateTime.Now;
                 if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
                 {
                     hikApi.SetTime(currentTime, session.UserId);
-                    logger.Warn($"Camera time updated :{currentTime}");
+                    logger.LogWarning($"Camera time updated :{currentTime}");
                 }
             }
         }
 
         public void ForceExit()
         {
-            logger.Warn("HikBaseClient.ForceExit");
+            logger.LogWarning("HikBaseClient.ForceExit");
             StopDownload();
             Dispose(true);
         }
@@ -107,7 +109,7 @@ namespace Hik.Client
         {
             if (!disposedValue)
             {
-                logger.Info("Logout the device");
+                logger.LogInformation("Logout the device");
                 if (session != null)
                 {
                     hikApi.Logout(session.UserId);

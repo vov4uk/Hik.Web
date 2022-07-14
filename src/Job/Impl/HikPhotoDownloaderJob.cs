@@ -4,7 +4,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,7 +13,13 @@ namespace Job.Impl
     public class HikPhotoDownloaderJob : JobProcessBase<CameraConfig>
     {
         private readonly IHikPhotoDownloaderService service;
-        public HikPhotoDownloaderJob(string trigger, CameraConfig config, IHikPhotoDownloaderService service, IHikDatabase db, IEmailHelper email, ILogger logger)
+        public HikPhotoDownloaderJob(
+            string trigger,
+            CameraConfig config,
+            IHikPhotoDownloaderService service,
+            IHikDatabase db,
+            IEmailHelper email,
+            ILogger logger)
             : base(trigger, config, db, email, logger)
         {
             this.service = service;

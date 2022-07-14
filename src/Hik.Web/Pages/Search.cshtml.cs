@@ -1,5 +1,6 @@
 ﻿using Hik.Helpers.Abstraction;
 using Hik.Web.Queries.FilePath;
+using Hik.Web.Queries.Photo;
 using Hik.Web.Queries.Search;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -88,8 +89,14 @@ namespace Hik.Web.Pages
                 return NotFound();
             }
 
-            return base.PhysicalFile(filePath, "image/jpeg");
+            return base.PhysicalFile(filePath, "image/jpg");
             //return base.PhysicalFile(@"C:\Users\vkhmelovskyi\Desktop\Pic\074c3539.jpg", "image/jpeg");
+        }
+
+        public async Task<IActionResult> OnGetImageThumbnail(int fileId)
+        {
+            var thumbnail = await mediator.Send(new PhotoThumbnailQuery() { FileId = fileId }) as PhotoThumbnailDto;
+            return File(thumbnail.Poster, "image/jpg");
         }
 
         private async Task<string> GetFilePath(int fileId)

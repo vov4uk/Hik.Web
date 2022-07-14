@@ -9,6 +9,7 @@ using Hik.Client.Service;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -20,13 +21,14 @@ namespace Hik.Client.Tests.Services
         private readonly Fixture fixture;
         private readonly Mock<IClient> clientMock;
         private readonly Mock<IClientFactory> clientFactoryMock;
+        private readonly Mock<ILogger> loggerMock;
 
         public HikVideoDownloaderTests()
         {
             this.directoryMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
             this.clientMock = new Mock<IClient>(MockBehavior.Strict);
             this.clientFactoryMock = new Mock<IClientFactory>(MockBehavior.Strict);
-
+            this.loggerMock = new ();
             this.fixture = new Fixture();
         }
 
@@ -379,7 +381,7 @@ namespace Hik.Client.Tests.Services
             this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>()))
                 .Returns(this.clientMock.Object);
 
-            return new VideoDownloaderService(this.directoryMock.Object, this.clientFactoryMock.Object);
+            return new VideoDownloaderService(this.directoryMock.Object, this.clientFactoryMock.Object, loggerMock.Object);
         }
     }
 }

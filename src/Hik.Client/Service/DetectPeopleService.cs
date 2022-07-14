@@ -6,6 +6,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.DTO.Message;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client.Service
 {
@@ -17,8 +18,9 @@ namespace Hik.Client.Service
         public DetectPeopleService(
             IDirectoryHelper directoryHelper,
             IFilesHelper filesHelper,
-            IRabbitMQFactory factory)
-            : base(directoryHelper)
+            IRabbitMQFactory factory,
+            ILogger logger)
+            : base(directoryHelper, logger)
         {
             this.filesHelper = filesHelper;
             this.factory = factory;

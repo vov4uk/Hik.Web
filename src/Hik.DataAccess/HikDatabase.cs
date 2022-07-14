@@ -6,7 +6,7 @@ using AutoMapper;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.DataAccess
 {
@@ -14,11 +14,12 @@ namespace Hik.DataAccess
     {
         private readonly IUnitOfWorkFactory factory;
         public static readonly IMapper Mapper = new MapperConfiguration(configureAutoMapper).CreateMapper();
-        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
+        protected readonly ILogger logger;
 
-        public HikDatabase(IUnitOfWorkFactory factory)
+        public HikDatabase(IUnitOfWorkFactory factory, ILogger logger)
         {
             this.factory = factory;
+            this.logger = logger;
         }
 
         public async Task<HikJob> CreateJobInstanceAsync(HikJob job)
@@ -158,7 +159,7 @@ namespace Hik.DataAccess
 
         public async Task DeleteObsoleteJobsAsync(string[] triggers, DateTime to)
         {
-            logger.Info("DeleteObsoleteJobsAsync");
+            logger.LogInformation("DeleteObsoleteJobsAsync");
             using (var unitOfWork = factory.CreateUnitOfWork())
             {
                 var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
@@ -168,27 +169,27 @@ namespace Hik.DataAccess
                 foreach (var trigger in triggers)
                 {
                     var parts = trigger.Split(".");
-                    logger.Info($"Try cleanup {trigger}");
+                    logger.LogInformation($"Try cleanup {trigger}");
                     var jobTrigger = await triggerRepo.FindByAsync(x => x.Group == parts[0] && x.TriggerKey == parts[1]);
                     if (jobTrigger != null)
                     {
-                       logger.Info($"{trigger} found, Id = {jobTrigger.Id}, To = {to}");
+                       logger.LogInformation($"{trigger} found, Id = {jobTrigger.Id}, To = {to}");
 
                        var files = await filesRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Date <= to,
                             x => x.DownloadDuration,
                             x => x.DownloadHistory);
                         filesRepo.RemoveRange(files);
                         await unitOfWork.SaveChangesAsync();
-                        logger.Info($"{trigger} files cleared");
+                        logger.LogInformation($"{trigger} files cleared");
 
                         var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Finished <= to, x => x.DownloadedFiles);
                         jobRepo.RemoveRange(jobs);
                         await unitOfWork.SaveChangesAsync();
-                        logger.Info($"{trigger} jobs cleared");
+                        logger.LogInformation($"{trigger} jobs cleared");
                     }
                 }
 
-                logger.Info($"Cleanup done");
+                logger.LogInformation($"Cleanup done");
             }
         }
 

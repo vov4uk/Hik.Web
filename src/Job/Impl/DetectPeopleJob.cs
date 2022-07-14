@@ -3,10 +3,9 @@ using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Job.Impl
@@ -35,10 +34,9 @@ namespace Job.Impl
 
         protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
-            JobInstance.PeriodStart = files.Min(x => x.Date);
-            JobInstance.PeriodEnd = files.Max(x => x.Date);
+            JobInstance.PeriodStart = JobInstance.JobTrigger?.LastSync ?? DateTime.Now;
+            JobInstance.PeriodEnd = DateTime.Now;
             JobInstance.FilesCount = files.Count;
-
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
         }
     }

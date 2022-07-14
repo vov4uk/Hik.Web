@@ -9,6 +9,7 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
@@ -16,8 +17,14 @@ namespace Hik.Client
     {
         private const int ProgressCheckPeriodMilliseconds = 5000;
 
-        public HikVideoClient(CameraConfig config, IHikApi hikApi, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IMapper mapper)
-            : base(config, hikApi, filesHelper, directoryHelper, mapper)
+        public HikVideoClient(
+            CameraConfig config,
+            IHikApi hikApi,
+            IFilesHelper filesHelper,
+            IDirectoryHelper directoryHelper,
+            IMapper mapper,
+            ILogger logger)
+            : base(config, hikApi, filesHelper, directoryHelper, mapper, logger)
         {
         }
 
@@ -76,7 +83,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.Warn("HikVideoClient.StopDownload : File not downloading now");
+                logger.LogWarning("HikVideoClient.StopDownload : File not downloading now");
             }
         }
 
@@ -98,7 +105,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.Warn("HikVideoClient.StartDownload : Downloading, please stop firstly!");
+                logger.LogWarning("HikVideoClient.StartDownload : Downloading, please stop firstly!");
                 return false;
             }
         }
@@ -113,7 +120,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.Warn("HikVideoClient.UpdateProgress : File not downloading now");
+                logger.LogWarning("HikVideoClient.UpdateProgress : File not downloading now");
             }
         }
 
@@ -133,7 +140,7 @@ namespace Hik.Client
 
         private void LogDebugInfo(string msg)
         {
-            logger.Debug($"{config.Alias} - {msg}");
+            logger.LogDebug($"{config.Alias} - {msg}");
         }
     }
 }

@@ -4,7 +4,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,7 +14,13 @@ namespace Job.Impl
     {
         private readonly IHikVideoDownloaderService downloader;
 
-        public HikVideoDownloaderJob(string trigger, CameraConfig config, IHikVideoDownloaderService service, IHikDatabase db, IEmailHelper email, ILogger logger)
+        public HikVideoDownloaderJob(
+            string trigger,
+            CameraConfig config,
+            IHikVideoDownloaderService service,
+            IHikDatabase db,
+            IEmailHelper email,
+            ILogger logger)
             : base(trigger, config, db, email, logger)
         {
             this.downloader = service;

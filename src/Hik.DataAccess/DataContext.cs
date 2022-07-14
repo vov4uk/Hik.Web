@@ -2,7 +2,6 @@
 using Hik.DataAccess.Data;
 using Hik.DataAccess.Mappings;
 using Microsoft.EntityFrameworkCore;
-using NLog;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -41,7 +40,6 @@ namespace Hik.DataAccess
                 });
 #if DEBUG
                 optionsBuilder.EnableSensitiveDataLogging();
-                optionsBuilder.LogTo(x => LogManager.GetCurrentClassLogger().Info(x), Microsoft.Extensions.Logging.LogLevel.Information);
 #endif
             }
         }

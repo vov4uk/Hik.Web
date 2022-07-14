@@ -1,5 +1,6 @@
 ﻿using Hik.Client.FileProviders;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace Hik.Client.Tests.FileProviders
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IDirectoryHelper> dirMock;
         private readonly Mock<IVideoHelper> videoMock;
+        private readonly Mock<ILogger> loggerMock;
 
         private const string ext = ".*";
         private const string folder1 = "C:\\Folder1";
@@ -29,6 +31,7 @@ namespace Hik.Client.Tests.FileProviders
             this.videoMock = new(MockBehavior.Strict);
             this.dirMock = new(MockBehavior.Strict);
             this.filesMock = new(MockBehavior.Strict);
+            this.loggerMock = new();
         }
 
         [Fact]
@@ -245,6 +248,6 @@ namespace Hik.Client.Tests.FileProviders
         }
 
         private WindowsFileProvider GetFileProvider()
-            => new WindowsFileProvider(filesMock.Object, dirMock.Object, videoMock.Object);
+            => new WindowsFileProvider(filesMock.Object, dirMock.Object, videoMock.Object, loggerMock.Object);
     }
 }

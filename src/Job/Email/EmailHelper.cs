@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using Hik.Api;
 using Job.Extensions;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Job.Email
 {
@@ -11,7 +10,7 @@ namespace Job.Email
     public class EmailHelper : IEmailHelper
     {
         static EmailConfig Settings { get;}
-        static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        static readonly ILogger Logger = new LoggerFactory().CreateLogger(nameof(EmailHelper));
 
         static EmailHelper()
         {
@@ -42,7 +41,7 @@ namespace Job.Email
             try
             {
 #if DEBUG
-                Logger.Error(body);
+                Logger.LogError(body);
 #elif RELEASE
                 if (Settings != null)
                 {
@@ -64,17 +63,13 @@ namespace Job.Email
                 }
                 else
                 {
-                    Logger.Error($"Settings file not exist");
+                    Logger.LogError("Email settings file not exist");
                 }
 #endif
             }
             catch (Exception e)
             {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Failed to Sent Email");
-                sb.AppendLine($"Local exception {e}");
-                sb.AppendLine($"With subject : {subject} and body : {body}");
-                Logger.Error(sb.ToString());
+                Logger.LogError(e, "Failed to sent email");
             }
         }
 

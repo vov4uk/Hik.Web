@@ -16,6 +16,7 @@
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Hik.Helpers.Abstraction;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
 
@@ -26,14 +27,15 @@
         private readonly Mock<HikVideoService> videoServiceMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IDirectoryHelper> dirMock;
+        private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
         private readonly IMapper mapper;
 
         public HikVideoClientTests()
         {
             this.videoServiceMock = new (MockBehavior.Strict);
-
-            this.sdkMock = new(MockBehavior.Strict);
+            this.loggerMock = new ();
+            this.sdkMock = new (MockBehavior.Strict);
             this.sdkMock.SetupGet(x => x.VideoService)
                 .Returns(this.videoServiceMock.Object);
 
@@ -52,7 +54,7 @@
         [Fact]
         public void Constructor_PutEmptyConfig_ThrowsException()
         {
-            Assert.Throws<ArgumentNullException>(() => new HikVideoClient(null, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper));
+            Assert.Throws<ArgumentNullException>(() => new HikVideoClient(null, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper, this.loggerMock.Object));
         }
 
         #region InitializeClient
@@ -249,7 +251,7 @@
                 .Returns(100);
             this.videoServiceMock.Setup(x => x.StopDownloadFile(It.IsAny<int>()));
 
-            var client = new HikVideoClient(cameraConfig, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper);
+            var client = new HikVideoClient(cameraConfig, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper, loggerMock.Object);
             client.Login();
             var isDownloaded = await client.DownloadFileAsync(remoteFile, CancellationToken.None);
 
@@ -388,7 +390,7 @@
         }
 
         private HikVideoClient GetHikClient() =>
-            new HikVideoClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper);
+            new HikVideoClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper, loggerMock.Object);
 
     }
 }

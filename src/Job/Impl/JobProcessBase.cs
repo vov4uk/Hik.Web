@@ -6,7 +6,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,7 +58,7 @@ namespace Job.Impl
 
         protected void LogInfo(string msg)
         {
-            logger.Info($"{TriggerKey} - {msg}");
+            logger.LogInformation($"{TriggerKey} - {msg}");
         }
 
         protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync();
@@ -80,8 +80,8 @@ namespace Job.Impl
             }
             catch (Exception ex)
             {
-                logger.Error(e.ToString());
-                logger.Error(ex.ToString());
+                logger.LogError(e.ToString());
+                logger.LogError(ex.ToString());
             }
 
             if (Config.SentEmailOnError)
@@ -91,7 +91,7 @@ namespace Job.Impl
             }
             else
             {
-                logger.Error(e.ToString());
+                logger.LogError(e.ToString());
             }
         }
 
@@ -120,7 +120,7 @@ namespace Job.Impl
             }
             else
             {
-                logger.Warn($"{TriggerKey} - Results Empty");
+                logger.LogWarning($"{TriggerKey} - Results Empty");
             }
 
             if (JobInstance.Success)
