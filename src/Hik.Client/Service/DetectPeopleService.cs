@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
+using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.DTO.Message;
@@ -41,7 +42,7 @@ namespace Hik.Client.Service
                     string fileName = filesHelper.GetFileName(filePath);
 
                     string newFilePath = filesHelper.CombinePath(dConfig.DestinationFolder, fileName);
-                    string junkFilePath = filesHelper.CombinePath(dConfig.JunkFolder, fileName);
+                    string junkFilePath = GetPathSafety(fileName, filesHelper.CombinePath(dConfig.JunkFolder, DateTime.Now.ToPhotoDirectoryNameString()));
 
                     rabbitMq.Sent(new DetectPeopleMessage
                     {
@@ -57,11 +58,18 @@ namespace Hik.Client.Service
                     {
                         Name = fileName,
                         Path = filePath,
+                        Date = DateTime.Now,
                     });
                 }
             }
 
             return Task.FromResult(result as IReadOnlyCollection<MediaFileDto>);
+        }
+
+        private string GetPathSafety(string file, string directory)
+        {
+            directoryHelper.CreateDirIfNotExist(directory);
+            return filesHelper.CombinePath(directory, file);
         }
     }
 }

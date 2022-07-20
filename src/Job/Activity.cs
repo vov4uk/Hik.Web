@@ -14,7 +14,6 @@ namespace Job
         protected readonly ILogger Logger;
         private static readonly EmailHelper email = new EmailHelper();
         private DateTime started = default;
-        private readonly Guid ActivityId;
         public Parameters Parameters { get; private set; }
         public int ProcessId
         {
@@ -43,8 +42,7 @@ namespace Job
 
         public Activity(Parameters parameters)
         {
-            ActivityId = Guid.NewGuid();
-            parameters.ActivityId = ActivityId;
+            parameters.ActivityId = Guid.NewGuid();
             Parameters = parameters;
 
             Logger = new LoggerFactory()
@@ -52,7 +50,7 @@ namespace Job
                 .AddSeq()
                 .CreateLogger(parameters.TriggerKey);
 
-            Logger.LogInformation($"Activity. Created with parameters {parameters}.");
+            Logger.LogInformation("Created with parameters {parameters}.", parameters);
         }
 
         public async Task Start()
@@ -72,7 +70,7 @@ namespace Job
                 }
                 else
                 {
-                    Logger.LogInformation($"Activity. Cannot start, {Parameters.TriggerKey} is already running.");
+                    Logger.LogInformation("Cannot start, {triggerKey} is already running.", Parameters.TriggerKey);
                 }
 
             }
@@ -83,7 +81,7 @@ namespace Job
             }
             finally
             {
-                Logger.LogInformation("Activity. StartProcess. Done.");
+                Logger.LogInformation("StartProcess. Done.");
             }
         }
 
@@ -123,7 +121,7 @@ namespace Job
             hostProcess.Exited += (object sender, EventArgs e) =>
             {
                 tcs.SetResult(null);
-                Logger.LogInformation($"Activity. Process exit with code: {hostProcess.ExitCode}");
+                Logger.LogInformation("Process exit with code: {exitCode}", hostProcess.ExitCode);
                 if (!RunningActivities.Remove(this))
                 {
                     Logger.LogInformation("Cannot remove activity from ActivityBag");
@@ -161,10 +159,7 @@ namespace Job
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                Guid prevId = Trace.CorrelationManager.ActivityId;
-                Trace.CorrelationManager.ActivityId = this.ActivityId;
-                Logger.LogInformation($"HasExited : {(sender as Process)?.HasExited} - {e.Data} - {sender}");
-                Trace.CorrelationManager.ActivityId = prevId;
+                Logger.LogInformation("HasExited : {hasExited} - {data} - {sender}", (sender as Process)?.HasExited, e.Data, sender );
             }
         }
 

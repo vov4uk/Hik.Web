@@ -44,7 +44,7 @@ namespace Job.Impl
             }
 
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
-            
+
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }

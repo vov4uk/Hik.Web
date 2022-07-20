@@ -33,7 +33,7 @@ namespace Job.Impl
                 if (batch.Any())
                 {
                     files.AddRange(batch);
-                    LogInfo($"Files found {files.Count}");
+                    logger.LogInformation($"Files found {files.Count}");
                 }
                 else
                 {

@@ -58,7 +58,7 @@ namespace Hik.Client
         {
             ValidateDateParameters(periodStart, periodEnd);
 
-            LogDebugInfo($"Get videos from {periodStart} to {periodEnd}");
+            logger.LogInformation($"Get videos from {periodStart} to {periodEnd}");
 
             var remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
             return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
@@ -83,7 +83,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.LogWarning("HikVideoClient.StopDownload : File not downloading now");
+                logger.LogWarning("File not downloading now");
             }
         }
 
@@ -93,19 +93,19 @@ namespace Hik.Client
             {
                 if (!filesHelper.FileExists(targetFilePath))
                 {
-                    LogDebugInfo($"{targetFilePath}");
+                    logger.LogDebug($"{targetFilePath}");
                     downloadId = hikApi.VideoService.StartDownloadFile(session.UserId, file.Name, tempFile);
 
-                    LogDebugInfo($"{file.ToVideoUserFriendlyString()} - downloading");
+                    logger.LogDebug($"{file.ToVideoUserFriendlyString()} - downloading");
                     return true;
                 }
 
-                LogDebugInfo($"{file.ToVideoUserFriendlyString()} - exist");
+                logger.LogDebug($"{file.ToVideoUserFriendlyString()} - exist");
                 return false;
             }
             else
             {
-                logger.LogWarning("HikVideoClient.StartDownload : Downloading, please stop firstly!");
+                logger.LogWarning("Downloading, please stop firstly!");
                 return false;
             }
         }
@@ -120,7 +120,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.LogWarning("HikVideoClient.UpdateProgress : File not downloading now");
+                logger.LogWarning("File not downloading now");
             }
         }
 
@@ -129,18 +129,13 @@ namespace Hik.Client
             if (progressValue == ProgressBarMaximum)
             {
                 StopDownload();
-                LogDebugInfo(" - downloaded");
+                logger.LogDebug("Downloaded");
             }
             else if (progressValue < ProgressBarMinimum || progressValue > ProgressBarMaximum)
             {
                 StopDownload();
                 throw new InvalidOperationException($"HikVideoClient.UpdateDownloadProgress failed, progress value = {progressValue}");
             }
-        }
-
-        private void LogDebugInfo(string msg)
-        {
-            logger.LogDebug($"{config.Alias} - {msg}");
         }
     }
 }

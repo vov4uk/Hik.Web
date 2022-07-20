@@ -20,13 +20,13 @@ namespace JobHost
                 .CreateLogger(parameters.TriggerKey);
             try
             {
-                Logger.LogInformation($"JobHost. Parameters resolved. {parameters}. Activity started execution.");
+                Logger.LogInformation("Parameters resolved. {parameters}. Activity started execution.", parameters);
 
                 IJobProcess job = JobFactory.GetJob(parameters, Logger, email);
 
                 await job.ExecuteAsync();
 
-                Logger.LogInformation("JobHost. Activity completed execution.");
+                Logger.LogInformation("Activity completed execution.");
             }
             catch (Exception exception)
             {

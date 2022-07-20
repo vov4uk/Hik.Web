@@ -37,6 +37,7 @@ namespace Job.Impl
             JobInstance.PeriodStart = JobInstance.JobTrigger?.LastSync ?? DateTime.Now;
             JobInstance.PeriodEnd = DateTime.Now;
             JobInstance.FilesCount = files.Count;
+
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
         }
     }

@@ -18,7 +18,6 @@ namespace Hik.Quartz.Extensions
                 if (level >= LogLevel.Trace && func != null)
                 {
                     logger.Log(GetMicrosoftLogLevel(level), func(),parameters);
-                    //Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] [" + level + "] " + func(), parameters);
                 }
                 return true;
             };

@@ -29,7 +29,7 @@ namespace Job.Impl
             this.db = db;
             this.email = email;
             Config = config ?? throw new ArgumentNullException(nameof(config));
-            LogInfo(Config.ToString());
+            logger.LogInformation("Config {config}", Config.ToString());
         }
 
         public T Config { get; protected set; }
@@ -56,11 +56,6 @@ namespace Job.Impl
             HandleException(e.Exception);
         }
 
-        protected void LogInfo(string msg)
-        {
-            logger.LogInformation($"{TriggerKey} - {msg}");
-        }
-
         protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync();
 
         protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
@@ -80,8 +75,8 @@ namespace Job.Impl
             }
             catch (Exception ex)
             {
-                logger.LogError(e.ToString());
-                logger.LogError(ex.ToString());
+                logger.LogError(e, "Main error");
+                logger.LogError(ex, "Failed to save error");
             }
 
             if (Config.SentEmailOnError)
@@ -91,7 +86,7 @@ namespace Job.Impl
             }
             else
             {
-                logger.LogError(e.ToString());
+                logger.LogError(e, "Something went wrong");
             }
         }
 
@@ -120,7 +115,7 @@ namespace Job.Impl
             }
             else
             {
-                logger.LogWarning($"{TriggerKey} - Results Empty");
+                logger.LogWarning("Results empty");
             }
 
             if (JobInstance.Success)

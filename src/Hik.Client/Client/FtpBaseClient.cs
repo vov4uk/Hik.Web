@@ -48,7 +48,7 @@ namespace Hik.Client.Client
             }
             else
             {
-                LogDebugInfo($"{remoteFile.Name} - exist");
+                logger.LogDebug($"{remoteFile.Name} - exist");
                 return false;
             }
         }
@@ -87,7 +87,7 @@ namespace Hik.Client.Client
         {
             if (!disposedValue)
             {
-                LogDebugInfo("Logout the device");
+                logger.LogDebug("Logout the device");
 
                 ftp?.Disconnect();
                 ftp?.Dispose();
@@ -102,7 +102,7 @@ namespace Hik.Client.Client
 
             if (remoteFileExist)
             {
-                LogDebugInfo($"{remoteFile.Name} - downloading");
+                logger.LogDebug($"{remoteFile.Name} - downloading");
                 var tempFile = filesHelper.GetTempFileName();
 
                 await Policy
@@ -117,7 +117,7 @@ namespace Hik.Client.Client
             }
             else
             {
-                logger.LogError($"{config.Alias} - File not found {remoteFilePath}");
+                logger.LogError($"File not found {remoteFilePath}");
                 return false;
             }
         }
@@ -131,11 +131,6 @@ namespace Hik.Client.Client
         protected string GetWorkingDirectory(MediaFileDto file)
         {
             return filesHelper.CombinePath(config.DestinationFolder, file.ToVideoDirectoryNameString());
-        }
-
-        protected void LogDebugInfo(string msg)
-        {
-            logger.LogDebug($"{config.Alias} - {msg}");
         }
     }
 }

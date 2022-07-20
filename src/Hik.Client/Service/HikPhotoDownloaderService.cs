@@ -22,7 +22,7 @@ namespace Hik.Client.Service
         {
             List<MediaFileDto> photos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).ToList();
 
-            this.logger.LogInformation($"Found {photos.Count} photos");
+            this.logger.LogInformation("Found {count} photos", photos.Count);
             return photos;
         }
 

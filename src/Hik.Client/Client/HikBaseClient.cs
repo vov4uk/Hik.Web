@@ -46,7 +46,7 @@ namespace Hik.Client
             dirHelper.CreateDirIfNotExist(sdkLogsPath);
             dirHelper.CreateDirIfNotExist(config.DestinationFolder);
 
-            logger.LogInformation($"SDK Logs : {sdkLogsPath}");
+            logger.LogInformation("SDK Logs : {sdkLogsPath}", sdkLogsPath);
             hikApi.Initialize();
             hikApi.SetupLogs(3, sdkLogsPath, false);
             hikApi.SetConnectTime(2000, 1);
@@ -58,7 +58,7 @@ namespace Hik.Client
             if (session == null)
             {
                 session = hikApi.Login(config.IpAddress, config.PortNumber, config.UserName, config.Password);
-                logger.LogInformation($"Sucessfull login to {config}");
+                logger.LogInformation("Sucessfull login to {config}", config);
                 var status = hikApi.GetHddStatus(session.UserId);
 
                 logger.LogInformation(status?.ToString());
@@ -72,7 +72,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.LogWarning("HikBaseClient.Login : Already logged in");
+                logger.LogWarning("Already logged in");
                 return false;
             }
         }
@@ -82,19 +82,19 @@ namespace Hik.Client
             if (config.SyncTime)
             {
                 var cameraTime = hikApi.GetTime(session.UserId);
-                logger.LogInformation($"Camera time :{cameraTime}");
+                logger.LogInformation("Camera time :{cameraTime}", cameraTime);
                 var currentTime = DateTime.Now;
                 if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
                 {
                     hikApi.SetTime(currentTime, session.UserId);
-                    logger.LogWarning($"Camera time updated :{currentTime}");
+                    logger.LogWarning("Camera time updated :{currentTime}", currentTime);
                 }
             }
         }
 
         public void ForceExit()
         {
-            logger.LogWarning("HikBaseClient.ForceExit");
+            logger.LogWarning("Force Exit");
             StopDownload();
             Dispose(true);
         }

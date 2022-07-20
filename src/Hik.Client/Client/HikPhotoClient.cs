@@ -53,7 +53,7 @@ namespace Hik.Client
         {
             ValidateDateParameters(periodStart, periodEnd);
 
-            logger.LogInformation($"{config.Alias} - Get photos from {periodStart} to {periodEnd}");
+            logger.LogInformation($"Get photos from {periodStart} to {periodEnd}");
 
             var remoteFiles = await hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd, session);
 

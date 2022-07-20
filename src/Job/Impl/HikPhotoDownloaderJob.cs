@@ -30,7 +30,7 @@ namespace Job.Impl
             service.ExceptionFired += base.ExceptionFired;
 
             var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
-            LogInfo($"Last sync from DB - {jobTrigger.LastSync}, Period - {period.PeriodStart} - {period.PeriodEnd}");
+            logger.LogInformation($"Last sync from DB - {jobTrigger.LastSync}, Period - {period.PeriodStart} - {period.PeriodEnd}");
             JobInstance.PeriodStart = period.PeriodStart;
             JobInstance.PeriodEnd = period.PeriodEnd;
 

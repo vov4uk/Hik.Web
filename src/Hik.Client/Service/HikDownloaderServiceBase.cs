@@ -101,7 +101,7 @@ namespace Hik.Client.Service
             var result = await ProcessCameraAsync(config, from, to);
             if (!result.Any())
             {
-                logger.LogWarning($"{config.Alias}, {from} - {to} : No files downloaded");
+                logger.LogWarning($"{from} - {to} : No files downloaded");
             }
 
             return result;
@@ -130,7 +130,7 @@ namespace Hik.Client.Service
                 }
                 else
                 {
-                    logger.LogWarning($"{config.Alias} - Unable to login");
+                    logger.LogWarning("Unable to login");
                 }
             }
 

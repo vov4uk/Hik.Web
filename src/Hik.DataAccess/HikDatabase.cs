@@ -159,7 +159,6 @@ namespace Hik.DataAccess
 
         public async Task DeleteObsoleteJobsAsync(string[] triggers, DateTime to)
         {
-            logger.LogInformation("DeleteObsoleteJobsAsync");
             using (var unitOfWork = factory.CreateUnitOfWork())
             {
                 var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
@@ -169,7 +168,7 @@ namespace Hik.DataAccess
                 foreach (var trigger in triggers)
                 {
                     var parts = trigger.Split(".");
-                    logger.LogInformation($"Try cleanup {trigger}");
+                    logger.LogInformation("Try cleanup {trigger}", trigger);
                     var jobTrigger = await triggerRepo.FindByAsync(x => x.Group == parts[0] && x.TriggerKey == parts[1]);
                     if (jobTrigger != null)
                     {
@@ -189,7 +188,7 @@ namespace Hik.DataAccess
                     }
                 }
 
-                logger.LogInformation($"Cleanup done");
+                logger.LogInformation("Cleanup done");
             }
         }
 

@@ -71,7 +71,6 @@ namespace Hik.Client.FileProviders
                 return result;
             }
 
-            logger.LogInformation("GetNextBatch");
             while (result.Count <= batchSize)
             {
                 if (dates.Any() && dates.TryPop(out var lastDate))
