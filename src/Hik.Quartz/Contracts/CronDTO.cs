@@ -1,6 +1,7 @@
 ﻿using CronExpressionDescriptor;
 using Hik.Quartz.Contracts.Xml;
 using Hik.Quartz.Extensions;
+using Newtonsoft.Json;
 using Quartz.Impl.Triggers;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -14,7 +15,7 @@ namespace Hik.Quartz.Contracts
         {
             DayOfWeekStartIndexZero = false,
             Use24HourTimeFormat = true,
-            Locale = ("uk")
+            Locale = "uk"
         };
 
         public CronDto() { }
@@ -50,6 +51,10 @@ namespace Hik.Quartz.Contracts
             RunAsTask = cron.GetRunAsTask();
         }
 
+        [JsonIgnore]
+        [Display(Name = "Class name")]
+        public string ClassName { get; set; }
+
         [Display(Name = "Config")]
         public string ConfigPath { get; set; }
 
@@ -58,22 +63,23 @@ namespace Hik.Quartz.Contracts
         [Display(Name = "Cron")]
         public string Expression { get; set; }
 
+        [JsonIgnore]
         public string ExpressionString => string.IsNullOrEmpty(Expression) ?
             string.Empty :
             ExpressionDescriptor.GetDescription(Expression, CronFormatOptions);
 
-        public string Group { get; set; }
-
-        [Display(Name = "Class name")]
-        public string ClassName { get; set; }
+        public string Group { get; set; } = "JobHost";
 
         public string Name { get; set; }
+
+        [JsonIgnore]
         [Display(Name = "Next"), DisplayFormat(DataFormatString = Consts.DisplayTimeFormat), DataType(DataType.DateTime)]
         public DateTime? NextRun { get; set; }
 
         [Display(Name = "Run as task")]
         public bool RunAsTask { get; set; }
 
+        [JsonIgnore]
         [Display(Name = "Trigger"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
         public DateTime TriggerStarted { get; set; }
 

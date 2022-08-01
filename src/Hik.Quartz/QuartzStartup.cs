@@ -1,10 +1,16 @@
-﻿using Hik.Quartz.Contracts.Options;
+﻿using Hik.Quartz.Contracts;
+using Hik.Quartz.Contracts.Options;
+using Hik.Quartz.Contracts.Xml;
 using Hik.Quartz.Extensions;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Logging;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Xml.Serialization;
 
 namespace Hik.Quartz
 {
@@ -24,12 +30,49 @@ namespace Hik.Quartz
                 throw new InvalidOperationException("Already started.");
             }
 
-            var properties = new QuartzOption(configuration).ToProperties();
+
             LogProvider.SetCurrentLogProvider(new ConsoleLogProvider());
 
-            var schedulerFactory = new StdSchedulerFactory(properties);
+            var options = new QuartzOption(configuration);
+
+            InitializeJobs(options.Plugin.JobInitializer.FileNames);
+
+            var schedulerFactory = new StdSchedulerFactory(options.ToProperties);
             scheduler = schedulerFactory.GetScheduler().GetAwaiter().GetResult();
             scheduler.Start().Wait();
+        }
+
+        public static void InitializeJobs(string xmlFilePath)
+        {
+            string jsonPath = xmlFilePath + ".json";
+            //jsonPath = "C:\\quartz_jobs.json";
+            var dict = JsonConvert.DeserializeObject<Dictionary<string, List<CronDto>>>(File.ReadAllText(jsonPath));
+            GenerateQuartzXml(xmlFilePath, dict);
+        }
+
+        public static void InitializeJobs(string xmlFilePath, Dictionary<string, List<CronDto>> jobTypes)
+        {
+            GenerateQuartzXml(xmlFilePath, jobTypes);
+        }
+
+        private static void GenerateQuartzXml(string xmlFilePath, Dictionary<string, List<CronDto>> jobTypes)
+        {
+            var serializer = new XmlSerializer(typeof(JobSchedulingData));
+            var data = new JobSchedulingData();
+            foreach (var jobType in jobTypes)
+            {
+                foreach (var cronTrigger in jobType.Value)
+                {
+                    cronTrigger.ClassName = jobType.Key;
+                    data.Schedule.Trigger.Add(new Trigger { Cron = cronTrigger.ToCron() });
+                }
+            }
+
+            using (StringWriter writer = new StringWriter())
+            {
+                serializer.Serialize(writer, data);
+                File.WriteAllText(xmlFilePath, writer.ToString());
+            }
         }
 
         public void Stop()

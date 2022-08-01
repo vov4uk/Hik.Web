@@ -1,0 +1,186 @@
+{
+    "DetectPeople":
+    [{
+            "Name": "People_Da4a",
+            "Description": "",
+            "ConfigPath": "people_da4a.json",
+            "Expression": "0 0/15 * * * ?",
+            "RunAsTask": true
+        }, {
+            "Name": "People_Da4a1",
+            "Description": "",
+            "ConfigPath": "people_da4a1.json",
+            "Expression": "0 0/15 * * * ?",
+            "RunAsTask": true
+        }, {
+            "Name": "People_Da4a2",
+            "Description": "",
+            "ConfigPath": "people_da4a2.json",
+            "Expression": "0 0/15 * * * ?",
+            "RunAsTask": true
+        }, {
+            "Name": "People_Da4a3",
+            "Description": "",
+            "ConfigPath": "people_da4a3.json",
+            "Expression": "0 0/15 * * * ?",
+            "RunAsTask": true
+        }, {
+            "Name": "People_Entrance",
+            "Description": "",
+            "ConfigPath": "people_entrance.json",
+            "Expression": "0 0/15 * * * ?",
+            "RunAsTask": true
+        }, {
+            "Name": "People_Floor1",
+            "Description": "",
+            "ConfigPath": "people_floor1.json",
+            "Expression": "0 0/15 * * * ?",
+            "RunAsTask": true
+        }, {
+            "Name": "People_Floor4",
+            "Description": "",
+            "ConfigPath": "people_floor4.json",
+            "Expression": "0 0/15 * * * ?",
+            "RunAsTask": true
+        }
+    ],
+    "ArchiveJob":
+    [{
+            "Expression": "0 8 0/1 ? * *",
+            "Name": "Da4a_Photo",
+            "ConfigPath": "da4a_photo.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 8 0/1 ? * *",
+            "Name": "Da4a1_Photo",
+            "ConfigPath": "da4a_photo1.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 10 0/1 ? * *",
+            "Name": "Da4a1_Video",
+            "ConfigPath": "da4a_video1.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 8 0/1 ? * *",
+            "Name": "Da4a2_Photo",
+            "ConfigPath": "da4a_photo2.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 10 0/1 ? * *",
+            "Name": "Da4a2_Video",
+            "ConfigPath": "da4a_video2.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 8 0/1 ? * *",
+            "Name": "Da4a3_Photo",
+            "ConfigPath": "da4a_photo3.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 10 0/1 ? * *",
+            "Name": "Da4a3_Video",
+            "ConfigPath": "da4a_video3.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 0/30 * * * ?",
+            "Name": "Entrance_Photo",
+            "ConfigPath": "Entrance_photo.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 4 0/1 ? * *",
+            "Name": "Floor0_Photo",
+            "ConfigPath": "floor0_photo.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 8 0/1 * * ?",
+            "Name": "Floor0_Video",
+            "ConfigPath": "floor0_video.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 2 0/1 * * ?",
+            "Name": "Floor1_Photo",
+            "ConfigPath": "floor1_photo.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 4 0/1 * * ?",
+            "Name": "Floor1_Video",
+            "ConfigPath": "floor1_video.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 6 0/1 ? * *",
+            "Name": "Floor4_Photo",
+            "ConfigPath": "floor4_photo.json",
+            "RunAsTask": false
+        }
+    ],
+    "GarbageCollectorJob":
+    [{
+            "Expression": "0 55 0 * * ?",
+            "Name": "Floor0_Logs",
+            "ConfigPath": "floor0_log.json",
+            "RunAsTask": true
+        }, {
+            "Expression": "0 54 0/1 * * ?",
+            "Name": "Indoor_Video",
+            "ConfigPath": "indoor_video.json",
+            "RunAsTask": true
+        }, {
+            "Expression": "0 58 0 * * ?",
+            "Name": "Outdoor_Junk",
+            "ConfigPath": "outdoor_junk.json",
+            "RunAsTask": true
+        }, {
+            "Expression": "0 58 0/1 * * ?",
+            "Name": "Outdoor_Photo",
+            "ConfigPath": "outdoor_photo.json",
+            "RunAsTask": true
+        }, {
+            "Expression": "0 56 0/1 * * ?",
+            "Name": "Outdoor_Video",
+            "ConfigPath": "outdoor_video.json",
+            "RunAsTask": true
+        }
+    ],
+    "HikVideoDownloaderJob":
+    [{
+            "Expression": "0 2 * * * ?",
+            "Name": "Bedroom_Video",
+            "ConfigPath": "bedroom.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 0/10 * * * ?",
+            "Name": "Corridor_Video",
+            "ConfigPath": "corridor.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 0/13 * * * ?",
+            "Name": "Entrance_Video",
+            "ConfigPath": "entrance_video.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 17 */2 ? * *",
+            "Name": "Floor1_Time",
+            "ConfigPath": "floor1_time.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 13 */2 ? * *",
+            "Name": "Floor4_Video",
+            "ConfigPath": "floor4_video.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 0/5 * * * ?",
+            "Name": "Kitchen_Video",
+            "ConfigPath": "kitchen.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 0/10 * * * ?",
+            "Name": "Living_Video",
+            "ConfigPath": "living.json",
+            "RunAsTask": false
+        }, {
+            "Expression": "0 0/30 * * * ?",
+            "Name": "Street_Video",
+            "ConfigPath": "street.json",
+            "RunAsTask": false
+        }
+    ],
+}

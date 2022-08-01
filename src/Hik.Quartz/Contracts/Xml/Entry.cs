@@ -1,13 +1,14 @@
-﻿using System.Xml.Serialization;
+﻿using Hik.Quartz.Extensions;
+using System.Xml.Serialization;
 
 namespace Hik.Quartz.Contracts.Xml
 {
-    [XmlRoot(ElementName = "entry", Namespace = "http://quartznet.sourceforge.net/JobSchedulingData")]
+    [XmlRoot(ElementName = "entry", Namespace = Namespaces.JobSchedulingData)]
     public class Entry
     {
-        [XmlElement(ElementName = "key", Namespace = "http://quartznet.sourceforge.net/JobSchedulingData")]
+        [XmlElement(ElementName = "key", Namespace = Namespaces.JobSchedulingData)]
         public string Key { get; set; }
-        [XmlElement(ElementName = "value", Namespace = "http://quartznet.sourceforge.net/JobSchedulingData")]
+        [XmlElement(ElementName = "value", Namespace = Namespaces.JobSchedulingData)]
         public string Value { get; set; }
     }
 }

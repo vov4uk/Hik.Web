@@ -14,7 +14,7 @@ namespace Job.Email
         {
 #if RELEASE
             string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
-            Settings = HikConfigExtensions.GetConfig<EmailConfig>(configPath);
+            Settings = Extensions.HikConfigExtensions.GetConfig<EmailConfig>(configPath);
 #endif
         }
 

@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using Hik.Quartz.Extensions;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace Hik.Quartz.Contracts.Xml
 {
-    [XmlRoot(ElementName = "job-data-map", Namespace = "http://quartznet.sourceforge.net/JobSchedulingData")]
+    [XmlRoot(ElementName = "job-data-map", Namespace = Namespaces.JobSchedulingData)]
     public class JobDataMap
     {
-        [XmlElement(ElementName = "entry", Namespace = "http://quartznet.sourceforge.net/JobSchedulingData")]
+        [XmlElement(ElementName = "entry", Namespace = Namespaces.JobSchedulingData)]
         public List<Entry> Entry { get; set; }
     }
 }
