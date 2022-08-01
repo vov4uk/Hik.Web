@@ -42,7 +42,7 @@ namespace Hik.Client.Service
                     string fileName = filesHelper.GetFileName(filePath);
 
                     string newFilePath = filesHelper.CombinePath(dConfig.DestinationFolder, fileName);
-                    string junkFilePath = GetPathSafety(fileName, filesHelper.CombinePath(dConfig.JunkFolder, DateTime.Now.ToPhotoDirectoryNameString()));
+                    string junkFilePath = GetPathSafety(fileName, filesHelper.CombinePath(dConfig.JunkFolder, DateTime.Today.ToPhotoDirectoryShortNameString()));
 
                     rabbitMq.Sent(new DetectPeopleMessage
                     {

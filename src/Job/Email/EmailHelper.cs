@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using Hik.Api;
-using Job.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Job.Email
@@ -20,19 +18,12 @@ namespace Job.Email
 #endif
         }
 
-        public void Send(Exception ex, string alias = null, string hikJobDetails = null)
+        public void Send(string error, string alias = null, string hikJobDetails = null)
         {
             string errorDetails = string.Empty;
-            if (ex is HikException hikEx)
-            {
-                errorDetails = $@"<ul>
-  <li>Error Code : {hikEx.ErrorCode}</li>
-  <li>{hikEx.ErrorMessage}</li>
-</ul>";
-            }
 
-            var body = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.ToString());
-            var subject = $"{alias ?? "Hik.Web"} {(ex as HikException)?.ErrorMessage ?? ex.Message}".Replace('\r', ' ').Replace('\n', ' ');
+            var body = BuildBody(errorDetails, hikJobDetails, error);
+            var subject = $"{alias ?? "Hik.Web"} {error}".Replace('\r', ' ').Replace('\n', ' ');
             Send(subject, body);
         }
 
@@ -73,7 +64,7 @@ namespace Job.Email
             }
         }
 
-        private static string BuildBody(string details, string hikJobDetails, string message, string callStack)
+        private static string BuildBody(string details, string hikJobDetails, string message)
         {
             return $@"<!DOCTYPE html>
 <html>
@@ -105,9 +96,6 @@ tr:nth-child(even) {{
 <h2>Call stack</h2>
 <p>{message}</p>
 
-<pre>
-{callStack}
-</pre>
 </body>
 </html>";
         }

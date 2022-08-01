@@ -31,7 +31,7 @@ namespace JobHost
             catch (Exception exception)
             {
                 Logger.LogError(exception, "JobHost. Exception");
-                email.Send(exception);
+                email.Send(exception.Message);
                 Environment.ExitCode = -1;
             }
         }

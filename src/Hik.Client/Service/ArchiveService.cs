@@ -40,30 +40,23 @@ namespace Hik.Client.Service
             var result = new List<MediaFileDto>();
             var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions).SkipLast(aConfig.SkipLast);
 
-            try
+            foreach (var filePath in allFiles)
             {
-                foreach (var filePath in allFiles)
+                DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, filePath);
+                int duration = await this.videoHelper.GetDuration(filePath);
+
+                string fileExt = filesHelper.GetExtension(filePath);
+                string newFileName = date.ToArchiveFileString(duration, fileExt);
+                string newFilePath = MoveFile(aConfig.DestinationFolder, filePath, date, newFileName);
+
+                result.Add(new MediaFileDto
                 {
-                    DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, filePath);
-                    int duration = await this.videoHelper.GetDuration(filePath);
-
-                    string fileExt = filesHelper.GetExtension(filePath);
-                    string newFileName = date.ToArchiveFileString(duration, fileExt);
-                    string newFilePath = MoveFile(aConfig.DestinationFolder, filePath, date, newFileName);
-
-                    result.Add(new MediaFileDto
-                    {
-                        Date = date,
-                        Name = filesHelper.GetFileName(newFilePath),
-                        Path = newFilePath,
-                        Duration = duration,
-                        Size = filesHelper.FileSize(newFilePath),
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                this.OnExceptionFired(ex);
+                    Date = date,
+                    Name = filesHelper.GetFileName(newFilePath),
+                    Path = newFilePath,
+                    Duration = duration,
+                    Size = filesHelper.FileSize(newFilePath),
+                });
             }
 
             return result.AsReadOnly();

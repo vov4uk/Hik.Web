@@ -51,16 +51,8 @@ namespace Job.Tests.Impl
             SetupCreateJobInstanceAsync();
             SetupSaveJobResultAsync();
             SetupLogExceptionToAsync();
-            emailMock.Setup(x => x.Send(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<string>()))
+            emailMock.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Verifiable();
-
-            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-                .Callback(() =>
-                {
-                    this.serviceMock.Raise(mock => mock.ExceptionFired += null,
-                        new ExceptionEventArgs(new Exception("Something went wrong")));
-                })
-                .ReturnsAsync(new List<MediaFileDto>());
 
             var job = CreateJob();
 

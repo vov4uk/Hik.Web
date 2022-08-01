@@ -77,7 +77,7 @@ namespace Job
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Failed to start activity");
-                email.Send(ex);
+                email.Send(ex.Message);
             }
             finally
             {

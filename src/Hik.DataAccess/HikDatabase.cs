@@ -31,17 +31,15 @@ namespace Hik.DataAccess
             return newJob;
         }
 
-        public async Task LogExceptionToAsync(int jobId, string message, string callStack, uint? errorCode = null)
+        public async Task LogExceptionToAsync(int jobId, string message)
         {
             using var unitOfWork = this.factory.CreateUnitOfWork();
             var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
 
             await jobRepo.AddAsync(new ExceptionLog
             {
-                CallStack = callStack,
                 JobId = jobId,
                 Message = message,
-                HikErrorCode = errorCode
             });
             await unitOfWork.SaveChangesAsync();
         }

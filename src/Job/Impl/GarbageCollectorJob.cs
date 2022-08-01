@@ -1,4 +1,5 @@
-﻿using Hik.Client.FileProviders;
+﻿using CSharpFunctionalExtensions;
+using Hik.Client.FileProviders;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -34,7 +35,7 @@ namespace Job.Impl
             this.filesProvider = provider;
         }
 
-        protected override Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
+        protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
             IReadOnlyCollection<MediaFileDto> deleteFilesResult;
 
@@ -53,7 +54,7 @@ namespace Job.Impl
             }
 
             directoryHelper.DeleteEmptyDirs(Config.DestinationFolder);
-            return Task.FromResult(deleteFilesResult);
+            return Task.FromResult(Result.Success(deleteFilesResult));
         }
 
         protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)

@@ -1,5 +1,5 @@
-﻿using Hik.Api;
-using Hik.Client.Events;
+﻿using CSharpFunctionalExtensions;
+using Hik.Api;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
@@ -47,16 +47,12 @@ namespace Job.Impl
             }
             catch (Exception e)
             {
-                HandleException(e);
+                HandleError((e as HikException)?.ErrorMessage ?? e.Message);
+                logger.LogError(e, "Something went wrong");
             }
         }
 
-        protected void ExceptionFired(object sender, ExceptionEventArgs e)
-        {
-            HandleException(e.Exception);
-        }
-
-        protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync();
+        protected abstract Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync();
 
         protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
@@ -66,27 +62,24 @@ namespace Job.Impl
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
 
-        private void HandleException(Exception e)
+        private void HandleError(string error)
         {
             try
             {
                 this.JobInstance.Success = false;
-                Task.WaitAll(LogExceptionToDB(e), db.SaveJobResultAsync(JobInstance));
+                Task.WaitAll(
+                    db.LogExceptionToAsync(JobInstance.Id, error),
+                    db.SaveJobResultAsync(JobInstance));
             }
             catch (Exception ex)
             {
-                logger.LogError(e, "Main error");
                 logger.LogError(ex, "Failed to save error");
             }
 
             if (Config.SentEmailOnError)
             {
                 var details = JobInstance.ToHtmlTable(Config);
-                email.Send(e, Config.Alias, details);
-            }
-            else
-            {
-                logger.LogError(e, "Something went wrong");
+                email.Send(error, Config.Alias, details);
             }
         }
 
@@ -102,25 +95,24 @@ namespace Job.Impl
             });
         }
 
-        private async Task LogExceptionToDB(Exception e)
+        private async Task SaveResultsInternalAsync(Result<IReadOnlyCollection<MediaFileDto>> files)
         {
-            await db.LogExceptionToAsync(JobInstance.Id, (e as HikException)?.ErrorMessage ?? e.ToString(), e.StackTrace, (e as HikException)?.ErrorCode);
-        }
-
-        private async Task SaveResultsInternalAsync(IReadOnlyCollection<MediaFileDto> files)
-        {
-            if (files?.Any() == true)
+            if (files.IsSuccess)
             {
-                await SaveResultsAsync(files);
+                if (files.Value?.Any() == true)
+                {
+                    await SaveResultsAsync(files.Value);
+                }
+                else
+                {
+                    logger.LogWarning("Results empty");
+                }
+
+                await db.SaveJobResultAsync(JobInstance);
             }
             else
             {
-                logger.LogWarning("Results empty");
-            }
-
-            if (JobInstance.Success)
-            {
-                await db.SaveJobResultAsync(JobInstance);
+                HandleError(files.Error);
             }
         }
     }

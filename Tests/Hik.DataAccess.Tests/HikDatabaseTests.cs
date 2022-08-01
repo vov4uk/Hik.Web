@@ -49,7 +49,7 @@ namespace Hik.DataAccess.Tests
 
         [Theory]
         [AutoData]
-        public async Task LogExceptionToAsync_Add_SaveChanges(int jobId, string message, string callStack, uint? errorCode)
+        public async Task LogExceptionToAsync_Add_SaveChanges(int jobId, string message)
         {
             ExceptionLog? actual = null;
             var exRepo = new Mock<IBaseRepository<ExceptionLog>>(MockBehavior.Strict);
@@ -63,15 +63,12 @@ namespace Hik.DataAccess.Tests
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
-            await db.LogExceptionToAsync(jobId, message, callStack, errorCode);
+            await db.LogExceptionToAsync(jobId, message);
 
             uow.VerifyAll();
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
+
             Assert.Equal(message, actual.Message);
-            Assert.Equal(callStack, actual.CallStack);
             Assert.Equal(jobId, actual.JobId);
-            Assert.Equal(errorCode, actual.HikErrorCode);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         [Fact]

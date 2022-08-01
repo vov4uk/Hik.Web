@@ -1,4 +1,5 @@
-﻿using Hik.Client.Abstraction;
+﻿using CSharpFunctionalExtensions;
+using Hik.Client.Abstraction;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -25,17 +26,14 @@ namespace Job.Impl
             this.service = service;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
+        protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
-            service.ExceptionFired += base.ExceptionFired;
-
             var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
             logger.LogInformation($"Last sync from DB - {jobTrigger.LastSync}, Period - {period.PeriodStart} - {period.PeriodEnd}");
             JobInstance.PeriodStart = period.PeriodStart;
             JobInstance.PeriodEnd = period.PeriodEnd;
 
             var files = await service.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
-            service.ExceptionFired -= base.ExceptionFired;
             return files;
         }
     }

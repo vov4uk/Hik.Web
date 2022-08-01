@@ -33,28 +33,34 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public void ExecuteAsync_EmptyConfig_ExceptionThrown()
+        public async void ExecuteAsync_EmptyConfig_ExceptionThrown()
         {
-            bool success = true;
-
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
-                .Returns(true);
+                .Returns(false);
 
             var service = CreateArchiveService();
-            service.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
-            {
-                success = false;
-            };
 
-            Assert.ThrowsAsync<NullReferenceException>(() => service.ExecuteAsync(default, default(DateTime), default(DateTime)));
-            Assert.False(success);
+            var result = await service.ExecuteAsync(default, default(DateTime), default(DateTime));
+            Assert.False(result.IsSuccess);
+            Assert.Equal("Invalid config", result.Error);
+        }
+
+        [Fact]
+        public async void ExecuteAsync_DestinationNotExist_ExceptionThrown()
+        {
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(false);
+
+            var service = CreateArchiveService();
+
+            var result = await service.ExecuteAsync(new BaseConfig() { DestinationFolder = "C:\\"}, default(DateTime), default(DateTime));
+            Assert.False(result.IsSuccess);
+            Assert.Equal("DestinationFolder doesn't exist: C:\\", result.Error);
         }
 
         [Fact]
         public async Task ExecuteAsync_ExceptionHappened_ExceptionHandled()
         {
-            bool isOperationCanceledException = false;
-
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
                 .Returns(true);
             this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()))
@@ -66,13 +72,10 @@ namespace Hik.Client.Tests.Services
                 .With(x => x.SkipLast, 0)
                 .Create();
             var service = CreateArchiveService();
-            service.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
-            {
-                isOperationCanceledException = e.Exception is OperationCanceledException;
-            };
 
-            await service.ExecuteAsync(config, default(DateTime), default(DateTime));
-            Assert.True(isOperationCanceledException);
+            var result = await service.ExecuteAsync(config, default(DateTime), default(DateTime));
+            Assert.True(result.IsFailure);
+            Assert.Equal("The operation was canceled.", result.Error);
         }
 
         [Fact]
@@ -109,14 +112,13 @@ namespace Hik.Client.Tests.Services
         [InlineData("192.168.0.67_20210207230537_20210224_220227_0.mp4", 60, "20210224_220227",
             "192.168.0.67_{1}_{2}_0", "yyyyMMdd_HHmmss", "C:\\2021-02\\24\\22\\20210224_220227_220327.mp4")]
         public async Task ExecuteAsync_FilesFound_ProperFilesStored(
-            string sourceFileName, 
+            string sourceFileName,
             int duration,
             string date,
             string fileNamePattern,
             string fileNameDateTimeFormat,
             string targetFile)
         {
-            bool success = true;
             var config = new ArchiveConfig
             {
                 DestinationFolder = "C:\\",
@@ -124,7 +126,7 @@ namespace Hik.Client.Tests.Services
                 Alias = "test",
                 SkipLast = 0,
                 FileNameDateTimeFormat = fileNameDateTimeFormat,
-                FileNamePattern = fileNamePattern 
+                FileNamePattern = fileNamePattern
             };
 
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
@@ -151,15 +153,12 @@ namespace Hik.Client.Tests.Services
                 .ReturnsAsync(duration);
 
             var service = CreateArchiveService();
-            service.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
-            {
-                success = false;
-            };
+
             var result = await service.ExecuteAsync(config, default(DateTime), default(DateTime));
             this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
-            Assert.True(success);
-            Assert.Single(result);
-            var actual = result.First();
+            Assert.True(result.IsSuccess);
+            Assert.Single(result.Value);
+            var actual = result.Value.First();
             Assert.Equal(duration, actual.Duration);
             Assert.Equal(1024, actual.Size);
             Assert.Equal(string.Empty, actual.Name);
@@ -172,7 +171,7 @@ namespace Hik.Client.Tests.Services
             "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928_211028.jpg")]
         [InlineData("192.168.0.65_01_00010224210928654_MOTION_DETECTION.jpg", 60, "20210224210928654",
             "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928_211028.jpg")]
-        [InlineData("192.168.0.67_20210207230537_20210224_220227_0.mp4", 60, "20210224_220227", 
+        [InlineData("192.168.0.67_20210207230537_20210224_220227_0.mp4", 60, "20210224_220227",
             "192.168.0.65_{1}_{2}_0", "yyyyMMdd_HHmmss", "C:\\2021-02\\24\\22\\20210224_220227_220327.mp4")]
         public async Task ExecuteAsync_FoundFileNamesCantBeParsed_ProperFilesStored(
             string sourceFileName,
@@ -182,7 +181,6 @@ namespace Hik.Client.Tests.Services
             string fileNameDateTimeFormat,
             string targetFile)
         {
-            bool success = true;
             var dateTime = DateTime.ParseExact(date, fileNameDateTimeFormat, null);
             var config = new ArchiveConfig
             {
@@ -190,7 +188,7 @@ namespace Hik.Client.Tests.Services
                 SourceFolder = "E:\\",
                 SkipLast = 0,
                 FileNameDateTimeFormat = fileNameDateTimeFormat,
-                FileNamePattern = fileNamePattern 
+                FileNamePattern = fileNamePattern
             };
 
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
@@ -219,16 +217,12 @@ namespace Hik.Client.Tests.Services
                 .ReturnsAsync(duration);
 
             var service = CreateArchiveService();
-            service.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
-            {
-                success = false;
-            };
             var result = await service.ExecuteAsync(config, default(DateTime), default(DateTime));
             this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
             this.filesMock.Verify(x => x.GetCreationDate(sourceFileName), Times.Once);
-            Assert.True(success);
-            Assert.Single(result);
-            var actual = result.First();
+            Assert.True(result.IsSuccess);
+            Assert.Single(result.Value);
+            var actual = result.Value.First();
             Assert.Equal(duration, actual.Duration);
             Assert.Equal(1024, actual.Size);
             Assert.Equal(string.Empty, actual.Name);

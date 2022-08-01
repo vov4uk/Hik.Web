@@ -92,7 +92,7 @@ namespace Hik.Client.Service
             }
             else
             {
-                throw new OperationCanceledException();
+                throw new OperationCanceledException("Operation canceled");
             }
         }
 
@@ -130,7 +130,7 @@ namespace Hik.Client.Service
                 }
                 else
                 {
-                    logger.LogWarning("Unable to login");
+                    throw new InvalidOperationException("Invalid credentials");
                 }
             }
 

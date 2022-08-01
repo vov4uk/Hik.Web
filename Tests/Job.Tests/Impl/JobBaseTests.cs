@@ -59,7 +59,7 @@ namespace Job.Tests.Impl
 
         protected void SetupLogExceptionToAsync()
         {
-            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
+            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
         }
 

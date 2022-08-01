@@ -1,4 +1,5 @@
-﻿using Hik.Client.Abstraction;
+﻿using CSharpFunctionalExtensions;
+using Hik.Client.Abstraction;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -26,9 +27,8 @@ namespace Job.Impl
             this.worker = service;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
+        protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
-            worker.ExceptionFired += base.ExceptionFired;
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MaxValue);
         }
 

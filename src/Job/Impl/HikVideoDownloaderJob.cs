@@ -1,4 +1,5 @@
-﻿using Hik.Client.Abstraction;
+﻿using CSharpFunctionalExtensions;
+using Hik.Client.Abstraction;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -26,9 +27,8 @@ namespace Job.Impl
             this.downloader = service;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
+        protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
-            downloader.ExceptionFired += base.ExceptionFired;
             downloader.FileDownloaded += this.Downloader_VideoDownloaded;
 
             var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
@@ -38,7 +38,7 @@ namespace Job.Impl
             await db.UpdateJobAsync(JobInstance);
 
             var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
-            downloader.ExceptionFired -= base.ExceptionFired;
+
             downloader.FileDownloaded -= this.Downloader_VideoDownloaded;
             return files;
         }
