@@ -33,31 +33,6 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteAsync_LoginFailed_DownloadingNotStarted()
-        {
-            var cameraConfig = this.fixture.Build<CameraConfig>()
-                .Create();
-
-            this.SetupDirectoryHelper();
-            this.SetupClientInitialize();
-            this.SetupClientDispose();
-            this.clientMock.Setup(x => x.Login())
-                .Returns(false);
-            this.directoryMock.Setup(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>()))
-                .Returns(0);
-
-            // act
-            var downloader = this.CreateHikDownloader();
-            var result = await downloader.ExecuteAsync(cameraConfig, default(DateTime), default(DateTime));
-
-            // assert
-            this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
-            this.clientMock.Verify(x => x.Login(), Times.Once);
-            Assert.False(result.IsSuccess);
-            Assert.Equal("Invalid credentials", result.Error);
-        }
-
-        [Fact]
         public async Task ExecuteAsync_LoginThrowsException_HandleException()
         {
             var cameraConfig = this.fixture.Build<CameraConfig>()

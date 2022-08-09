@@ -90,7 +90,6 @@ namespace Hik.Web.Pages
             }
 
             return base.PhysicalFile(filePath, "image/jpg");
-            //return base.PhysicalFile(@"C:\Users\vkhmelovskyi\Desktop\Pic\074c3539.jpg", "image/jpeg");
         }
 
         public async Task<IActionResult> OnGetImageThumbnail(int fileId)

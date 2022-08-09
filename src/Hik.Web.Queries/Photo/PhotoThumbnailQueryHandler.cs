@@ -24,14 +24,12 @@ namespace Hik.Web.Queries.Photo
                 var file = await filesRepo.FindByAsync(x => x.Id == request.FileId);
                 if (file != null) { path = file.GetPath(); }
             }
-            //path = @"C:\Users\vkhmelovskyi\Desktop\Pic\074c3539.jpg";
-
 
             byte[] bytes = null;
 #pragma warning disable CA1416 // Validate platform compatibility
             using (Image image = Image.FromFile(path))
             {
-                using (MemoryStream m = new MemoryStream())
+                using (MemoryStream m = new ())
                 {
                     using (Image thumb = image.GetThumbnailImage(216, 122, () => false, IntPtr.Zero))
                     {
