@@ -93,9 +93,6 @@ tr:nth-child(even) {{
 
 {details}
 
-<h2>Call stack</h2>
-<p>{message}</p>
-
 </body>
 </html>";
         }

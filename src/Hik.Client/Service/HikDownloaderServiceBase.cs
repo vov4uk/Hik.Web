@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Hik.Api;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.DTO.Config;
@@ -51,32 +52,39 @@ namespace Hik.Client.Service
 
         protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            CameraConfig cameraConfig = config as CameraConfig ?? throw new ArgumentNullException(nameof(config));
-            IReadOnlyCollection<MediaFileDto> jobResult = null;
-
-            using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(cameraConfig.Timeout)))
+            try
             {
-                TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
+                CameraConfig cameraConfig = config as CameraConfig ?? throw new ArgumentNullException(nameof(config));
+                IReadOnlyCollection<MediaFileDto> jobResult = null;
 
-                cancelTokenSource.Token.Register(() =>
+                using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(cameraConfig.Timeout)))
                 {
-                    taskCompletionSource.TrySetCanceled();
-                });
+                    TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
 
-                Task<IReadOnlyCollection<MediaFileDto>> downloadTask = InternalDownload(cameraConfig, from, to);
-                Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
+                    cancelTokenSource.Token.Register(() =>
+                    {
+                        taskCompletionSource.TrySetCanceled();
+                    });
 
-                if (completedTask == downloadTask)
-                {
-                    jobResult = await downloadTask;
-                    taskCompletionSource.TrySetResult(true);
+                    Task<IReadOnlyCollection<MediaFileDto>> downloadTask = InternalDownload(cameraConfig, from, to);
+                    Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
+
+                    if (completedTask == downloadTask)
+                    {
+                        jobResult = await downloadTask;
+                        taskCompletionSource.TrySetResult(true);
+                    }
+
+                    await taskCompletionSource.Task;
                 }
 
-                await taskCompletionSource.Task;
+                cancelTokenSource = null;
+                return jobResult;
             }
-
-            cancelTokenSource = null;
-            return jobResult;
+            catch (HikException ex)
+            {
+                throw new Exception($"{ex.ErrorMessage}, Code : {ex.ErrorCode}");
+            }
         }
 
         protected virtual void OnFileDownloaded(FileDownloadedEventArgs e)
@@ -117,9 +125,9 @@ namespace Hik.Client.Service
 
                 if (Client.Login())
                 {
-                    if (config.SyncTime && Client is HikBaseClient)
+                    if (config.SyncTime && Client is HikBaseClient hikClient)
                     {
-                        ((HikBaseClient)Client).SyncTime();
+                        hikClient.SyncTime();
                     }
 
                     ThrowIfCancellationRequested();
@@ -127,10 +135,6 @@ namespace Hik.Client.Service
                     var remoteFiles = await GetRemoteFilesList(periodStart, periodEnd);
                     var downloadedFiles = await DownloadFilesFromClientAsync(remoteFiles, cancelTokenSource?.Token ?? CancellationToken.None);
                     result.AddRange(downloadedFiles);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Invalid credentials");
                 }
             }
 

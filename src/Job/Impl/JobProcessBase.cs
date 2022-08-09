@@ -47,7 +47,7 @@ namespace Job.Impl
             }
             catch (Exception e)
             {
-                HandleError((e as HikException)?.ErrorMessage ?? e.Message);
+                HandleError(e.Message);
                 logger.LogError(e, "Something went wrong");
             }
         }

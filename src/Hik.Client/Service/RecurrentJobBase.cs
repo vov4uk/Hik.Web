@@ -27,9 +27,17 @@ namespace Hik.Client.Service
             return await FirstFailureOrSuccess(
                 FailureIf(config == null, "Invalid config"),
                 FailureIf(!this.directoryHelper.DirExist(config?.DestinationFolder), $"DestinationFolder doesn't exist: {config?.DestinationFolder}"))
-                .OnSuccessTry<IReadOnlyCollection<MediaFileDto>>(async () =>
+                .OnSuccessTry(async () =>
                 {
-                    return await RunAsync(config, from, to);
+                    try
+                    {
+                        return await RunAsync(config, from, to);
+                    }
+                    catch (Exception e)
+                    {
+                        this.logger.LogError(e, e.Message);
+                        throw;
+                    }
                 });
         }
 
