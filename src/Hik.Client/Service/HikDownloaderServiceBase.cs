@@ -83,7 +83,7 @@ namespace Hik.Client.Service
             }
             catch (HikException ex)
             {
-                throw new Exception($"{ex.ErrorMessage}, Code : {ex.ErrorCode}");
+                throw new InvalidOperationException($"{ex.ErrorMessage}, Code : {ex.ErrorCode}");
             }
         }
 

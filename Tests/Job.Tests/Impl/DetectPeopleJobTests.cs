@@ -12,9 +12,9 @@
     using Newtonsoft.Json;
     using Xunit;
 
-    public class ArchiveJobTests : ServiceJobBaseTests<IArchiveService>
+    public class DetectPeopleJobTests : ServiceJobBaseTests<IDetectPeopleService>
     {
-        public ArchiveJobTests() : base() { }
+        public DetectPeopleJobTests() : base() { }
 
         [Fact]
         public void Constructor_ConfigNotExist_Exception()
@@ -32,7 +32,7 @@
         public void Constructor_ValidConfig_ValidConfigType()
         {
             var job = CreateJob();
-            Assert.IsType<ArchiveConfig>(job.Config);
+            Assert.IsType<DetectPeopleConfig>(job.Config);
         }
 
         [Fact]
@@ -49,10 +49,6 @@
             SetupSaveJobResultAsync();
             dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), files))
                 .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .ReturnsAsync(new List<MediaFile>());
-            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
-                .Returns(Task.CompletedTask);
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ReturnsAsync(files);
 
@@ -61,36 +57,8 @@
 
             dbMock.VerifyAll();
             Assert.Equal(2, job.JobInstance.FilesCount);
-            Assert.Equal(new DateTime(2022, 01, 01), job.JobInstance.PeriodStart);
-            Assert.Equal(new DateTime(2022, 01, 31), job.JobInstance.PeriodEnd);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_AbnormalActivity_EmailSend()
-        {
-            List<MediaFileDto> files = new()
-            {
-                new(),
-                new(),
-            };
-
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
-            SetupSaveJobResultAsync();
-            SetupUpdateDailyStatisticsAsync(files);
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .ReturnsAsync(new List<MediaFile>());
-            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
-                .Returns(Task.CompletedTask);
-            emailMock.Setup(x => x.Send("Test.Key: 2 taken. From 0001-01-01 00:00:00 to 00:00:00", "EOM"))
-                .Verifiable();
-            SetupExecuteAsync(files);
-
-            var job = CreateJob("ArchiveJobTestsAbnormalActivity.json");
-            await job.ExecuteAsync();
-
-            dbMock.VerifyAll();
-            emailMock.VerifyAll();
+            Assert.Equal(DateTime.Today, job.JobInstance.PeriodStart.Value.Date);
+            Assert.Equal(DateTime.Today, job.JobInstance.PeriodEnd.Value.Date);
         }
 
         [Fact]
@@ -166,37 +134,10 @@
             dbMock.VerifyAll();
         }
 
-        [Fact]
-        public async Task ExecuteAsync_VideoFiles_SaveFilesAsync()
+        private DetectPeopleJob CreateJob(string configFileName = "ArchiveJobTests.json")
         {
-            List<MediaFileDto> files = new ()
-            {
-                new (){ Duration = 1 },
-                new (){ Duration = 1 },
-                new (){ Duration = 1 },
-            };
-
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
-            SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .ReturnsAsync(new List<MediaFile>());
-            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
-                .Returns(Task.CompletedTask);
-            SetupUpdateDailyStatisticsAsync(files);
-
-            SetupExecuteAsync(files);
-
-            var job = CreateJob();
-            await job.ExecuteAsync();
-
-            dbMock.VerifyAll();
-        }
-
-        private ArchiveJob CreateJob(string configFileName = "ArchiveJobTests.json")
-        {
-            var config = GetConfig<ArchiveConfig>(configFileName);
-            return new ArchiveJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+            var config = GetConfig<DetectPeopleConfig>(configFileName);
+            return new DetectPeopleJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
         }
     }
 }

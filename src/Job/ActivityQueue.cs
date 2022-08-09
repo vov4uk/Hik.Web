@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Job
 {
-    public class ActivityQueue
+    [ExcludeFromCodeCoverage]
+    public static class ActivityQueue
     {
         private static readonly object _monitor = new object();
         public static int CurrentlyQueuedTasks { get { return _currentlyQueued; } }

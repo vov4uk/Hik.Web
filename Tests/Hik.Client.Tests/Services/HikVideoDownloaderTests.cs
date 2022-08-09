@@ -25,11 +25,11 @@ namespace Hik.Client.Tests.Services
 
         public HikVideoDownloaderTests()
         {
-            this.directoryMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
-            this.clientMock = new Mock<IClient>(MockBehavior.Strict);
-            this.clientFactoryMock = new Mock<IClientFactory>(MockBehavior.Strict);
+            this.directoryMock = new (MockBehavior.Strict);
+            this.clientMock = new (MockBehavior.Strict);
+            this.clientFactoryMock = new (MockBehavior.Strict);
             this.loggerMock = new ();
-            this.fixture = new Fixture();
+            this.fixture = new ();
         }
 
         [Fact]

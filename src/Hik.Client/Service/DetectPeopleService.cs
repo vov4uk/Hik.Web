@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
@@ -34,7 +35,7 @@ namespace Hik.Client.Service
             var allFiles = this.directoryHelper.EnumerateFiles(dConfig.SourceFolder, new[] { ".jpg" });
 
             var mqConfig = dConfig.RabbitMQConfig;
-            if (mqConfig != null)
+            if (mqConfig != null && allFiles.Any())
             {
                 using var rabbitMq = factory.Create(mqConfig.HostName, mqConfig.QueueName, mqConfig.RoutingKey);
                 foreach (var filePath in allFiles)

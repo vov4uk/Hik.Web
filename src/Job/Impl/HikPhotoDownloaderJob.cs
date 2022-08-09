@@ -29,7 +29,7 @@ namespace Job.Impl
         protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
             var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
-            logger.LogInformation($"Last sync from DB - {jobTrigger.LastSync}, Period - {period.PeriodStart} - {period.PeriodEnd}");
+            logger.LogInformation("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
             JobInstance.PeriodStart = period.PeriodStart;
             JobInstance.PeriodEnd = period.PeriodEnd;
 

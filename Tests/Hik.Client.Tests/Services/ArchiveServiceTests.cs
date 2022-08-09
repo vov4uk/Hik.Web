@@ -24,10 +24,10 @@ namespace Hik.Client.Tests.Services
 
         public ArchiveServiceTests()
         {
-            this.directoryMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
-            this.filesMock = new Mock<IFilesHelper>(MockBehavior.Strict);
-            this.videoMock = new Mock<IVideoHelper>(MockBehavior.Strict);
-            this.imageMock = new Mock<IImageHelper>(MockBehavior.Strict);
+            this.directoryMock = new (MockBehavior.Strict);
+            this.filesMock = new (MockBehavior.Strict);
+            this.videoMock = new (MockBehavior.Strict);
+            this.imageMock = new (MockBehavior.Strict);
             this.fixture = new ();
             this.loggerMock = new ();
         }

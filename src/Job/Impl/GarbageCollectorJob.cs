@@ -75,7 +75,7 @@ namespace Job.Impl
         {
             foreach (var file in filesToDelete)
             {
-                this.logger.LogDebug($"Deleting: {file.Path}");
+                this.logger.LogDebug("Deleting: {path}", file.Path);
 #if RELEASE
                 file.Size = filesHelper.FileSize(file.Path);
                 this.filesHelper.DeleteFile(file.Path);
@@ -92,7 +92,8 @@ namespace Job.Impl
                 var freeSpace = this.directoryHelper.GetTotalFreeSpaceBytes(destination) * 1.0;
 
                 var freePercentage = 100 * freeSpace / totalSpace;
-                this.logger.LogInformation($"Destination: {destination} Free Percentage: {freePercentage,2} %");
+                string freePercentageString = $"Destination: {destination} Free Percentage: {freePercentage,2} %";
+                this.logger.LogInformation("{freePercentage}", freePercentageString);
 
                 if (freePercentage < gcConfig.FreeSpacePercentage)
                 {

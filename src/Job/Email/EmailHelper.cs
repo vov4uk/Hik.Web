@@ -20,9 +20,7 @@ namespace Job.Email
 
         public void Send(string error, string alias = null, string hikJobDetails = null)
         {
-            string errorDetails = string.Empty;
-
-            var body = BuildBody(errorDetails, hikJobDetails, error);
+            var body = BuildBody(hikJobDetails);
             var subject = $"{alias ?? "Hik.Web"} {error}".Replace('\r', ' ').Replace('\n', ' ');
             Send(subject, body);
         }
@@ -64,7 +62,7 @@ namespace Job.Email
             }
         }
 
-        private static string BuildBody(string details, string hikJobDetails, string message)
+        private static string BuildBody(string hikJobDetails)
         {
             return $@"<!DOCTYPE html>
 <html>
@@ -88,11 +86,7 @@ tr:nth-child(even) {{
 </style>
 </head>
 <body>
-
 {hikJobDetails}
-
-{details}
-
 </body>
 </html>";
         }

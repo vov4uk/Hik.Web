@@ -167,7 +167,7 @@ namespace Job
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                Logger.LogInformation(e.Data);
+                Logger.LogInformation("{data}", e.Data);
             }
         }
     }

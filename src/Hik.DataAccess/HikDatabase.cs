@@ -170,19 +170,19 @@ namespace Hik.DataAccess
                     var jobTrigger = await triggerRepo.FindByAsync(x => x.Group == parts[0] && x.TriggerKey == parts[1]);
                     if (jobTrigger != null)
                     {
-                       logger.LogInformation($"{trigger} found, Id = {jobTrigger.Id}, To = {to}");
+                       logger.LogInformation("{trigger} found, Id = {Id}, To = {to}", trigger, jobTrigger.Id, to);
 
                        var files = await filesRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Date <= to,
                             x => x.DownloadDuration,
                             x => x.DownloadHistory);
                         filesRepo.RemoveRange(files);
                         await unitOfWork.SaveChangesAsync();
-                        logger.LogInformation($"{trigger} files cleared");
+                        logger.LogInformation("{trigger} files cleared", trigger);
 
                         var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Finished <= to, x => x.DownloadedFiles);
                         jobRepo.RemoveRange(jobs);
                         await unitOfWork.SaveChangesAsync();
-                        logger.LogInformation($"{trigger} jobs cleared");
+                        logger.LogInformation("{trigger} jobs cleared", trigger);
                     }
                 }
 
