@@ -23,7 +23,7 @@ namespace Hik.Web.Tests.Pages
 
             Assert.NotNull(sut.Dto);
             Assert.Null(sut.Dto.Cron.ClassName);
-            Assert.Null(sut.Dto.Cron.Group);
+            Assert.Equal("JobHost", sut.Dto.Cron.Group);
             Assert.Null(sut.Dto.Cron.Name);
         }
 

@@ -53,7 +53,7 @@ namespace Hik.Web.Queries.Play
                     }
 
                     var title = $"{file.Name} ({file.Duration.FormatSeconds()})";
-                    var poster = await videoHelper.GetThumbnailStringAsync(file.GetPath()).ConfigureAwait(false);
+                    var poster = await videoHelper.GetThumbnailStringAsync(file.GetPath(), 1080, 608).ConfigureAwait(false);
 
                     return new PlayDto
                     {

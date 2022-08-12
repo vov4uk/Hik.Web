@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Threading.Tasks;
     using Hik.Client.Abstraction;
     using Hik.DataAccess.Data;
@@ -50,6 +49,10 @@
             SetupSaveJobResultAsync();
             dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), files))
                 .Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
+                .ReturnsAsync(new List<MediaFile>());
+            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
+                .Returns(Task.CompletedTask);
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ReturnsAsync(files);
 
@@ -75,7 +78,11 @@
             SetupCreateJobInstanceAsync();
             SetupSaveJobResultAsync();
             SetupUpdateDailyStatisticsAsync(files);
-            emailMock.Setup(x => x.Send($"2 - {group}.{triggerKey}: Abnormal activity detected", It.IsAny<string>()))
+            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
+                .ReturnsAsync(new List<MediaFile>());
+            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
+                .Returns(Task.CompletedTask);
+            emailMock.Setup(x => x.Send("Test.Key: 2 taken. From 0001-01-01 00:00:00 to 00:00:00", "EOM"))
                 .Verifiable();
             SetupExecuteAsync(files);
 
@@ -96,7 +103,7 @@
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ThrowsAsync(new Exception("Shit happens"));
-            emailMock.Setup(x => x.Send(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<string>()))
+            emailMock.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Verifiable();
 
             var job = CreateJob("ArchiveJobTestsSendEmail.json");
@@ -129,13 +136,13 @@
         {
             SetupGetOrCreateJobTriggerAsync();
             SetupCreateJobInstanceAsync();
-            SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
+
+            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>()))
                 .Throws<Exception>();
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ThrowsAsync(new Exception("Shit happens"));
-            emailMock.Setup(x => x.Send(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<string>()))
+            emailMock.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Verifiable();
 
             var job = CreateJob("ArchiveJobTestsSendEmail.json");
@@ -158,6 +165,7 @@
 
             dbMock.VerifyAll();
         }
+
         [Fact]
         public async Task ExecuteAsync_VideoFiles_SaveFilesAsync()
         {
@@ -184,6 +192,7 @@
 
             dbMock.VerifyAll();
         }
+
         private ArchiveJob CreateJob(string configFileName = "ArchiveJobTests.json")
         {
             var config = GetConfig<ArchiveConfig>(configFileName);

@@ -8,13 +8,14 @@ using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client.Service
 {
     public class VideoDownloaderService : HikDownloaderServiceBase, IHikVideoDownloaderService
     {
-        public VideoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory)
-            : base(directoryHelper, clientFactory)
+        public VideoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory, ILogger logger)
+            : base(directoryHelper, clientFactory, logger)
         {
         }
 
@@ -24,7 +25,7 @@ namespace Hik.Client.Service
             foreach (var video in remoteFiles)
             {
                 ThrowIfCancellationRequested();
-                logger.Debug($"{j++,2}/{remoteFiles.Count} : ");
+                logger.LogDebug($"{j++,2}/{remoteFiles.Count} : ");
                 if (await DownloadRemoteVideoFileAsync(video, token))
                 {
                     OnFileDownloaded(new FileDownloadedEventArgs(video));
@@ -52,8 +53,8 @@ namespace Hik.Client.Service
                 file.DownloadDuration = duration;
 
                 int? videoDuration = file.Duration;
-                logger.Debug($"Duration {duration.FormatSeconds()}, avg speed {((long)Utils.SafeDivision(file.Size, duration.Value)).FormatBytes()}/s");
-                logger.Debug($"Video    {videoDuration.FormatSeconds()}, avg rate {((long)Utils.SafeDivision(file.Size, videoDuration.Value)).FormatBytes()}/s");
+                logger.LogDebug($"Duration {duration.FormatSeconds()}, avg speed {((long)Utils.SafeDivision(file.Size, duration.Value)).FormatBytes()}/s");
+                logger.LogDebug($"Video    {videoDuration.FormatSeconds()}, avg rate {((long)Utils.SafeDivision(file.Size, videoDuration.Value)).FormatBytes()}/s");
                 return true;
             }
 

@@ -1,10 +1,11 @@
-﻿using Hik.Client.FileProviders;
+﻿using CSharpFunctionalExtensions;
+using Hik.Client.FileProviders;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
 using Job.Email;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace Job.Impl
             this.filesProvider = provider;
         }
 
-        protected override Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
+        protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
             IReadOnlyCollection<MediaFileDto> deleteFilesResult;
 
@@ -53,7 +54,7 @@ namespace Job.Impl
             }
 
             directoryHelper.DeleteEmptyDirs(Config.DestinationFolder);
-            return Task.FromResult(deleteFilesResult);
+            return Task.FromResult(Result.Success(deleteFilesResult));
         }
 
         protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
@@ -74,7 +75,7 @@ namespace Job.Impl
         {
             foreach (var file in filesToDelete)
             {
-                this.logger.Debug($"Deleting: {file.Path}");
+                this.logger.LogDebug("Deleting: {path}", file.Path);
 #if RELEASE
                 file.Size = filesHelper.FileSize(file.Path);
                 this.filesHelper.DeleteFile(file.Path);
@@ -91,7 +92,8 @@ namespace Job.Impl
                 var freeSpace = this.directoryHelper.GetTotalFreeSpaceBytes(destination) * 1.0;
 
                 var freePercentage = 100 * freeSpace / totalSpace;
-                this.logger.Info($"Destination: {destination} Free Percentage: {freePercentage,2} %");
+                string freePercentageString = $"Destination: {destination} Free Percentage: {freePercentage,2} %";
+                this.logger.LogInformation("{freePercentage}", freePercentageString);
 
                 if (freePercentage < gcConfig.FreeSpacePercentage)
                 {

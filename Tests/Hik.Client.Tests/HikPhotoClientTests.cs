@@ -16,6 +16,7 @@
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Hik.Helpers.Abstraction;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
 
@@ -27,6 +28,7 @@
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IDirectoryHelper> dirMock;
         private readonly Mock<IImageHelper> imageMock;
+        private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
         private readonly IMapper mapper;
 
@@ -37,7 +39,7 @@
             sdkMock = new(MockBehavior.Strict);
             sdkMock.SetupGet(x => x.PhotoService)
                 .Returns(photoServiceMock.Object);
-
+            loggerMock = new();
             filesMock = new(MockBehavior.Strict);
             dirMock = new(MockBehavior.Strict);
             imageMock = new(MockBehavior.Strict);
@@ -102,7 +104,7 @@
 
             photoServiceMock.Setup(x => x.DownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()));
 
-            var client = new HikPhotoClient(cameraConfig, sdkMock.Object, filesMock.Object, dirMock.Object, mapper, this.imageMock.Object);
+            var client = new HikPhotoClient(cameraConfig, sdkMock.Object, filesMock.Object, dirMock.Object, mapper, this.imageMock.Object, loggerMock.Object);
             client.Login();
             var isDownloaded = await client.DownloadFileAsync(remoteFile, CancellationToken.None);
 
@@ -161,7 +163,7 @@
         }
 
         private HikPhotoClient GetHikClient() =>
-            new HikPhotoClient(fixture.Create<CameraConfig>(), sdkMock.Object, filesMock.Object, this.dirMock.Object, mapper, imageMock.Object);
+            new HikPhotoClient(fixture.Create<CameraConfig>(), sdkMock.Object, filesMock.Object, this.dirMock.Object, mapper, imageMock.Object, loggerMock.Object);
 
     }
 }

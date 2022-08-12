@@ -1,11 +1,12 @@
-﻿using System.Xml.Serialization;
+﻿using Hik.Quartz.Extensions;
+using System.Xml.Serialization;
 
 namespace Hik.Quartz.Contracts.Xml
 {
-    [XmlRoot(ElementName = "processing-directives", Namespace = "http://quartznet.sourceforge.net/JobSchedulingData")]
+    [XmlRoot(ElementName = "processing-directives", Namespace = Namespaces.JobSchedulingData)]
     public class ProcessingDirectives
     {
-        [XmlElement(ElementName = "overwrite-existing-data", Namespace = "http://quartznet.sourceforge.net/JobSchedulingData")]
-        public string OverwriteExistingData { get; set; }
+        [XmlElement(ElementName = "overwrite-existing-data", Namespace = Namespaces.JobSchedulingData)]
+        public string OverwriteExistingData { get; set; } = "true";
     }
 }

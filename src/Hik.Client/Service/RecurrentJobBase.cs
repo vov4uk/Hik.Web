@@ -1,58 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CSharpFunctionalExtensions;
 using Hik.Client.Abstraction;
-using Hik.Client.Events;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using NLog;
+using Microsoft.Extensions.Logging;
+using static CSharpFunctionalExtensions.Result;
 
 namespace Hik.Client.Service
 {
     public abstract class RecurrentJobBase : IRecurrentJob
     {
-        protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
+        protected readonly ILogger logger;
         protected readonly IDirectoryHelper directoryHelper;
 
-        protected RecurrentJobBase(IDirectoryHelper directoryHelper)
+        protected RecurrentJobBase(IDirectoryHelper directoryHelper, ILogger logger)
         {
             this.directoryHelper = directoryHelper;
+            this.logger = logger;
         }
 
-        public event EventHandler<ExceptionEventArgs> ExceptionFired;
-
-        public async Task<IReadOnlyCollection<MediaFileDto>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public async Task<Result<IReadOnlyCollection<MediaFileDto>>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            try
-            {
-                this.logger.Info("Start ExecuteAsync");
-                if (!this.directoryHelper.DirExist(config?.DestinationFolder))
+            return await FirstFailureOrSuccess(
+                FailureIf(config == null, "Invalid config"),
+                FailureIf(!this.directoryHelper.DirExist(config?.DestinationFolder), $"DestinationFolder doesn't exist: {config?.DestinationFolder}"))
+                .OnSuccessTry(async () =>
                 {
-                    throw new InvalidOperationException($"Output doesn't exist: {config?.DestinationFolder}");
-                }
-
-                return await RunAsync(config, from, to);
-            }
-            catch (Exception ex)
-            {
-                OnExceptionFired(ex);
-                return default;
-            }
+                    try
+                    {
+                        return await RunAsync(config, from, to);
+                    }
+                    catch (Exception e)
+                    {
+                        this.logger.LogError(e, e.Message);
+                        throw;
+                    }
+                });
         }
 
         protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to);
-
-        protected virtual void OnExceptionFired(Exception ex)
-        {
-            if (ExceptionFired != null)
-            {
-                ExceptionFired.Invoke(this, new ExceptionEventArgs(ex));
-            }
-            else
-            {
-                logger.Error(ex.ToString());
-            }
-        }
     }
 }

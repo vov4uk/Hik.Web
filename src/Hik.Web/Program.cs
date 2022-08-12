@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NLog.Web;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -63,9 +62,10 @@ namespace Hik.Web
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
-                    logging.SetMinimumLevel(LogLevel.Trace);
-                })
-                .UseNLog();
+                    logging.SetMinimumLevel(LogLevel.Information);
+                    logging.AddConsole();
+                    logging.AddFile("Logs\\hikweb-{Date}.txt");
+                });
 
             if (isService)
             {

@@ -30,19 +30,14 @@ namespace Hik.Quartz.Contracts.Options
 
         public JobStore JobStore { get; set; }
 
-        public NameValueCollection ToProperties()
+        public NameValueCollection ToProperties => new NameValueCollection
         {
-            var properties = new NameValueCollection
-            {
-                [StdSchedulerFactory.PropertySchedulerInstanceName] = Scheduler?.InstanceName,
-                [StdSchedulerFactory.PropertyThreadPoolType] = ThreadPool?.Type,
-                ["quartz.threadPool.threadCount"] = ThreadPool?.ThreadCount.ToString(),
-                ["quartz.plugin.jobInitializer.type"] = Plugin?.JobInitializer?.Type,
-                ["quartz.plugin.jobInitializer.fileNames"] = Plugin?.JobInitializer?.FileNames,
-                ["quartz.jobStore.type"] = JobStore?.Type
-            };
-
-            return properties;
-        }
+            [StdSchedulerFactory.PropertySchedulerInstanceName] = Scheduler?.InstanceName,
+            [StdSchedulerFactory.PropertyThreadPoolType] = ThreadPool?.Type,
+            ["quartz.threadPool.threadCount"] = ThreadPool?.ThreadCount.ToString(),
+            ["quartz.plugin.jobInitializer.type"] = Plugin?.JobInitializer?.Type,
+            ["quartz.plugin.jobInitializer.fileNames"] = Plugin?.JobInitializer?.FileNames,
+            ["quartz.jobStore.type"] = JobStore?.Type
+        };
     }
 }

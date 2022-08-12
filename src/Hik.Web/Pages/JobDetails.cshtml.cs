@@ -27,7 +27,8 @@ namespace Hik.Web.Pages
             Dto = await mediator.Send(new JobDetailsQuery { JobId = id.Value, CurrentPage = p }) as JobDetailsDto;
 
             if (Dto == null) { return NotFound(); }
-            Pager = new (id.Value, "?id=", Dto.TotalItems, p);
+
+            Pager = new (id.Value, "?id=", Dto.TotalItems, currentPage: p);
 
             return Page();
         }

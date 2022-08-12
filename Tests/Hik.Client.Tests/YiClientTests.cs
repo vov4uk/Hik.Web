@@ -10,6 +10,7 @@
     using DTO.Contracts;
     using FluentFTP;
     using Hik.Helpers.Abstraction;
+    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
 
@@ -19,6 +20,7 @@
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IDirectoryHelper> dirMock;
         private readonly Fixture fixture;
+        private readonly Mock<ILogger> loggerMock;
 
         public YiClientTests()
         {
@@ -26,12 +28,13 @@
             this.filesMock = new(MockBehavior.Strict);
             this.dirMock = new(MockBehavior.Strict);
             this.fixture = new();
+            this.loggerMock = new();
         }
 
         [Fact]
         public void Constructor_PutEmptyConfig_ThrowsException()
         {
-            Assert.Throws<ArgumentNullException>(() => new YiClient(null, this.filesMock.Object, dirMock.Object, ftpMock.Object));
+            Assert.Throws<ArgumentNullException>(() => new YiClient(null, this.filesMock.Object, dirMock.Object, ftpMock.Object, loggerMock.Object));
         }
 
         #region InitializeClient
@@ -40,7 +43,7 @@
         {
             var config = new CameraConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" };
             var ftp = new FtpClient();
-            var client = new YiClient(config, this.filesMock.Object, this.dirMock.Object, ftp);
+            var client = new YiClient(config, this.filesMock.Object, this.dirMock.Object, ftp, loggerMock.Object);
             client.InitializeClient();
 
             Assert.Equal(config.IpAddress, ftp.Host);
@@ -82,7 +85,7 @@
         [Fact]
         public void Dispose_NoFtpClient_NothingToDispose()
         {
-            using (var client = new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, null))
+            using (var client = new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, null, loggerMock.Object))
             {
                 // Do nothing
             }
@@ -181,7 +184,7 @@
             this.ftpMock.Setup(x => x.DownloadFileAsync(tempName, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
 
-            var client = new YiClient(cameraConfig, this.filesMock.Object, this.dirMock.Object, ftpMock.Object);
+            var client = new YiClient(cameraConfig, this.filesMock.Object, this.dirMock.Object, ftpMock.Object, loggerMock.Object);
             var isDownloaded = await client.DownloadFileAsync(remoteFile, CancellationToken.None);
 
             Assert.True(isDownloaded);
@@ -240,6 +243,6 @@
         #endregion ForceExit
 
         private YiClient GetClient() =>
-               new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object);
+               new YiClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object, loggerMock.Object);
     }
 }

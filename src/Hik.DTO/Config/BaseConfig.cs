@@ -19,9 +19,9 @@ namespace Hik.DTO.Config
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(this.GetRow("Alias", this.Alias));
-            sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetRow("Timeout", this.Timeout.ToString()));
+            sb.AppendLine(this.GetRow(nameof(Alias), this.Alias));
+            sb.AppendLine(this.GetRow(nameof(DestinationFolder), this.DestinationFolder));
+            sb.AppendLine(this.GetRow(nameof(Timeout), this.Timeout.ToString()));
 
             return sb.ToString();
         }
@@ -29,9 +29,9 @@ namespace Hik.DTO.Config
         public virtual string ToHtmlTable()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(this.GetHtmlRow("Alias", this.Alias));
-            sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetHtmlRow("Timeout", this.Timeout.ToString()));
+            sb.AppendLine(this.GetHtmlRow(nameof(Alias), this.Alias));
+            sb.AppendLine(this.GetHtmlRow(nameof(DestinationFolder), this.DestinationFolder));
+            sb.AppendLine(this.GetHtmlRow(nameof(Timeout), this.Timeout.ToString()));
             return sb.ToString();
         }
 

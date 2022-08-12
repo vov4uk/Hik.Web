@@ -1,9 +1,10 @@
-﻿using Hik.Client.Abstraction;
+﻿using CSharpFunctionalExtensions;
+using Hik.Client.Abstraction;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace Job.Impl
     public class ArchiveJob : JobProcessBase<ArchiveConfig>
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
+        private const string TimeFormat = "HH':'mm':'ss";
         private readonly IArchiveService worker;
 
         public ArchiveJob(string trigger, ArchiveConfig config, IArchiveService worker, IHikDatabase db, IEmailHelper email, ILogger logger)
@@ -22,9 +24,8 @@ namespace Job.Impl
             this.worker = worker;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
+        protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
-            worker.ExceptionFired += base.ExceptionFired;
             return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MaxValue);
         }
 
@@ -38,17 +39,14 @@ namespace Job.Impl
             if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
             {
                 email.Send(
-                    $"{files.Count} - {TriggerKey}: Abnormal activity detected",
-                    $"{files.Count} taken in period from {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(DateTimeFormat)}");
+                    $"{TriggerKey}: {files.Count} taken. From {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(TimeFormat)}",
+                    "EOM");
             }
 
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
 
-            if (files.Sum(x => x.Duration ?? 0) > 0)
-            {
-                var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
-                await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
-            }
+            var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
+            await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
     }
 }

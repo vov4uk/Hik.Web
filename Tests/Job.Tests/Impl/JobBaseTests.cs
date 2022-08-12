@@ -3,8 +3,8 @@ using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
+using Microsoft.Extensions.Logging;
 using Moq;
-using NLog;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -59,7 +59,7 @@ namespace Job.Tests.Impl
 
         protected void SetupLogExceptionToAsync()
         {
-            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), null))
+            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
         }
 

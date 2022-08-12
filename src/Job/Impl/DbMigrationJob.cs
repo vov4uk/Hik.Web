@@ -1,9 +1,10 @@
-﻿using Hik.Client.FileProviders;
+﻿using CSharpFunctionalExtensions;
+using Hik.Client.FileProviders;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace Job.Impl
             this.filesProvider = fileProvider;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
+        protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
             filesProvider.Initialize(new[] { Config.DestinationFolder });
 
@@ -33,7 +34,7 @@ namespace Job.Impl
                 if (batch.Any())
                 {
                     files.AddRange(batch);
-                    LogInfo($"Files found {files.Count}");
+                    logger.LogInformation("Files found {count}", files.Count);
                 }
                 else
                 {
@@ -41,7 +42,7 @@ namespace Job.Impl
                 }
             } while (true);
 
-            return files;
+            return Result.Success<IReadOnlyCollection<MediaFileDto>>(files);
         }
     }
 }

@@ -6,6 +6,6 @@ namespace Hik.Helpers.Abstraction
     {
         Task<int> GetDuration(string path);
 
-        Task<string> GetThumbnailStringAsync(string path);
+        Task<string> GetThumbnailStringAsync(string path, int width, int height);
     }
 }

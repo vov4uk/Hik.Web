@@ -1,10 +1,11 @@
-﻿using Hik.Client.Abstraction;
+﻿using CSharpFunctionalExtensions;
+using Hik.Client.Abstraction;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
-using NLog;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,25 +15,30 @@ namespace Job.Impl
     {
         private readonly IHikVideoDownloaderService downloader;
 
-        public HikVideoDownloaderJob(string trigger, CameraConfig config, IHikVideoDownloaderService service, IHikDatabase db, IEmailHelper email, ILogger logger)
+        public HikVideoDownloaderJob(
+            string trigger,
+            CameraConfig config,
+            IHikVideoDownloaderService service,
+            IHikDatabase db,
+            IEmailHelper email,
+            ILogger logger)
             : base(trigger, config, db, email, logger)
         {
             this.downloader = service;
         }
 
-        protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync()
+        protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
-            downloader.ExceptionFired += base.ExceptionFired;
             downloader.FileDownloaded += this.Downloader_VideoDownloaded;
 
             var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
-            LogInfo($"Last sync from DB - {jobTrigger.LastSync}, Period - {period.PeriodStart} - {period.PeriodEnd}");
+            logger.LogInformation("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
             JobInstance.PeriodStart = period.PeriodStart;
             JobInstance.PeriodEnd = period.PeriodEnd;
             await db.UpdateJobAsync(JobInstance);
 
             var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
-            downloader.ExceptionFired -= base.ExceptionFired;
+
             downloader.FileDownloaded -= this.Downloader_VideoDownloaded;
             return files;
         }

@@ -5,6 +5,7 @@ using Hik.Api.Abstraction;
 using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client.Helpers
 {
@@ -16,14 +17,22 @@ namespace Hik.Client.Helpers
         private readonly IDirectoryHelper directoryHelper;
         private readonly IImageHelper imageHelper;
         private readonly IMapper mapper;
+        private readonly ILogger logger;
 
-        public ClientFactory(IHikApi hikApi, IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IMapper mapper, IImageHelper imageHelper)
+        public ClientFactory(
+            IHikApi hikApi,
+            IFilesHelper filesHelper,
+            IDirectoryHelper directoryHelper,
+            IMapper mapper,
+            IImageHelper imageHelper,
+            ILogger logger)
         {
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
             this.directoryHelper = directoryHelper;
             this.mapper = mapper;
             this.imageHelper = imageHelper;
+            this.logger = logger;
         }
 
         public IClient Create(CameraConfig camera)
@@ -31,14 +40,14 @@ namespace Hik.Client.Helpers
             switch (camera.ClientType)
             {
                 case ClientType.HikVisionVideo:
-                    return new HikVideoClient(camera, this.hikApi, this.filesHelper, this.directoryHelper, this.mapper);
+                    return new HikVideoClient(camera, this.hikApi, this.filesHelper, this.directoryHelper, this.mapper, this.logger);
                 case ClientType.HikVisionPhoto:
-                    return new HikPhotoClient(camera, this.hikApi, this.filesHelper, this.directoryHelper, this.mapper, this.imageHelper);
+                    return new HikPhotoClient(camera, this.hikApi, this.filesHelper, this.directoryHelper, this.mapper, this.imageHelper, this.logger);
                 case ClientType.Yi:
                 case ClientType.Yi720p:
-                    return new YiClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.FtpClient());
+                    return new YiClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.FtpClient(), this.logger);
                 case ClientType.FTP:
-                    return new RSyncClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.FtpClient());
+                    return new RSyncClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.FtpClient(), this.logger);
                 default:
                     throw new NotSupportedException();
             }

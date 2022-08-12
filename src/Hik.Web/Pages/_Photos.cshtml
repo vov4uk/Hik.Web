@@ -1,0 +1,38 @@
+﻿@using Hik.Client.Helpers
+@using Hik.DTO
+@using Hik.DTO.Contracts
+@model List<MediaFileDto>
+
+
+<div class="popup">
+  <!-- top bar -->
+  <div class="top-bar">
+    <p class="image-name"></p>
+    <span class="close-btn"></span>
+  </div>
+  <!-- arrows -->
+  <button class="arrow-btn left-arrow">
+    <img src="/arrow.png" alt="" />
+  </button>
+  <button class="arrow-btn right-arrow">
+    <img src="/arrow.png" alt="" />
+  </button>
+  <!-- image -->
+  <img src="" class="large-image" alt="" />
+  <!-- image-index -->
+  <h1 class="index">01</h1>
+</div>
+
+<ul class="thumbnails">
+  @foreach (var photo in Model)
+  {
+      <li class="item">
+              <img
+                alt="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")"
+                name="@photo.Name"
+                src="@Url.Content($"/Search?fileId={@photo?.Id}&handler=ImageThumbnail")"
+                class="thumbnail-border" />
+              <span class="image-overlay">@photo.Name</span>
+       </li>
+  }
+</ul>

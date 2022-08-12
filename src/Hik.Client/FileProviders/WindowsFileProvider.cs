@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using Hik.DTO.Contracts;
 using Hik.Helpers;
 using Hik.Helpers.Abstraction;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client.FileProviders
 {
     public class WindowsFileProvider : IFileProvider
     {
-        protected readonly Logger logger = LogManager.GetCurrentClassLogger();
+        protected readonly ILogger logger;
         private readonly IFilesHelper filesHelper;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IVideoHelper videoHelper;
@@ -19,11 +19,16 @@ namespace Hik.Client.FileProviders
         private Dictionary<DateTime, IList<string>> folders;
         private bool isInitialized = false;
 
-        public WindowsFileProvider(IFilesHelper filesHelper, IDirectoryHelper directoryHelper, IVideoHelper videoHelper)
+        public WindowsFileProvider(
+            IFilesHelper filesHelper,
+            IDirectoryHelper directoryHelper,
+            IVideoHelper videoHelper,
+            ILogger logger)
         {
             this.filesHelper = filesHelper;
             this.directoryHelper = directoryHelper;
             this.videoHelper = videoHelper;
+            this.logger = logger;
         }
 
         public bool IsInitialized => isInitialized;
@@ -32,7 +37,7 @@ namespace Hik.Client.FileProviders
         {
             if (!isInitialized)
             {
-                logger.Info("Initialize!");
+                logger.LogInformation("Initialize!");
                 folders = new Dictionary<DateTime, IList<string>>();
                 foreach (var topDirectory in directories)
                 {
@@ -51,7 +56,7 @@ namespace Hik.Client.FileProviders
                 }
 
                 dates = new Stack<DateTime>(folders.Keys.OrderByDescending(x => x).ToList());
-                logger.Info($"{dates.Count} dates found");
+                logger.LogInformation($"{dates.Count} dates found");
             }
 
             isInitialized = true;
@@ -62,11 +67,10 @@ namespace Hik.Client.FileProviders
             var result = new List<MediaFileDto>();
             if (!isInitialized)
             {
-                logger.Info("GetNextBatch !isInitialized");
+                logger.LogInformation("GetNextBatch !isInitialized");
                 return result;
             }
 
-            logger.Info("GetNextBatch");
             while (result.Count <= batchSize)
             {
                 if (dates.Any() && dates.TryPop(out var lastDate))
@@ -79,7 +83,7 @@ namespace Hik.Client.FileProviders
                 }
             }
 
-            logger.Info($"GetNextBatch result {result.Count}");
+            logger.LogInformation($"GetNextBatch result {result.Count}");
             return result;
         }
 

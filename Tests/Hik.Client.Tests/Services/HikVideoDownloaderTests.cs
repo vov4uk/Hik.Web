@@ -9,6 +9,7 @@ using Hik.Client.Service;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -20,74 +21,15 @@ namespace Hik.Client.Tests.Services
         private readonly Fixture fixture;
         private readonly Mock<IClient> clientMock;
         private readonly Mock<IClientFactory> clientFactoryMock;
+        private readonly Mock<ILogger> loggerMock;
 
         public HikVideoDownloaderTests()
         {
-            this.directoryMock = new Mock<IDirectoryHelper>(MockBehavior.Strict);
-            this.clientMock = new Mock<IClient>(MockBehavior.Strict);
-            this.clientFactoryMock = new Mock<IClientFactory>(MockBehavior.Strict);
-
-            this.fixture = new Fixture();
-        }
-
-        [Fact]
-        public void ExecuteAsync_EmptyConfig_ExceptionThrown()
-        {
-            bool success = true;
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
-                .Returns(true);
-            var downloader = this.CreateHikDownloader();
-            downloader.ExceptionFired += (object sender, Events.ExceptionEventArgs e) =>
-            {
-                success = false;
-            };
-
-            Assert.ThrowsAsync<ArgumentNullException>(() => downloader.ExecuteAsync(default, default(DateTime), default(DateTime)));
-
-            this.clientMock.Verify(x => x.InitializeClient(), Times.Never);
-            Assert.False(success);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_LoginFailed_DownloadingNotStarted()
-        {
-            var cameraConfig = this.fixture.Build<CameraConfig>()
-                .Create();
-
-            this.SetupDirectoryHelper();
-            this.SetupClientInitialize();
-            this.SetupClientDispose();
-            this.clientMock.Setup(x => x.Login())
-                .Returns(false);
-            this.directoryMock.Setup(x => x.GetTotalFreeSpaceBytes(It.IsAny<string>()))
-                .Returns(0);
-
-            // act
-            var downloader = this.CreateHikDownloader();
-            var result = await downloader.ExecuteAsync(cameraConfig, default(DateTime), default(DateTime));
-
-            // assert
-            this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
-            this.clientMock.Verify(x => x.Login(), Times.Once);
-            Assert.Empty(result);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_DestinationFolderNotExist_Exit()
-        {
-            var cameraConfig = this.fixture.Build<CameraConfig>()
-                .Create();
-
-            this.directoryMock.Setup(x => x.DirExist(cameraConfig.DestinationFolder))
-                .Returns(false);
-
-            // act
-            var downloader = this.CreateHikDownloader();
-            var result = await downloader.ExecuteAsync(cameraConfig, default(DateTime), default(DateTime));
-
-            // assert
-            Assert.Null(result);
-            this.directoryMock.Verify(x => x.DirExist(cameraConfig.DestinationFolder), Times.Once);
+            this.directoryMock = new (MockBehavior.Strict);
+            this.clientMock = new (MockBehavior.Strict);
+            this.clientFactoryMock = new (MockBehavior.Strict);
+            this.loggerMock = new ();
+            this.fixture = new ();
         }
 
         [Fact]
@@ -258,7 +200,6 @@ namespace Hik.Client.Tests.Services
         [Fact]
         public async Task ExecuteAsync_CancelationOnDownload_ExceptionFiredAfterFirtstFileDownloaded()
         {
-            bool isOperationCanceledException = false;
             int filesCount = 5;
 
             var cameraConfig = this.fixture.Build<CameraConfig>()
@@ -278,46 +219,20 @@ namespace Hik.Client.Tests.Services
             this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()))
                 .Callback(downloader.Cancel)
                 .ReturnsAsync(true);
-            downloader.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
-            {
-                isOperationCanceledException = e.Exception is OperationCanceledException;
-            };
 
-            await downloader.ExecuteAsync(cameraConfig, default(DateTime), default(DateTime));
+            var result = await downloader.ExecuteAsync(cameraConfig, default(DateTime), default(DateTime));
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
             this.clientMock.Verify(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()), Times.Once);
-            Assert.True(isOperationCanceledException);
-        }
-
-        [Fact]
-        public void Cancel_DownloadNotStarted_NothiningToCancel()
-        {
-            bool isOperationCanceledException = false;
-
-            var cameraConfig = this.fixture.Build<CameraConfig>()
-                .Create();
-
-            // act
-            var downloader = this.CreateHikDownloader();
-            downloader.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
-            {
-                isOperationCanceledException = e.Exception is OperationCanceledException;
-            };
-
-            downloader.Cancel();
-
-            // assert
-            Assert.False(isOperationCanceledException);
+            Assert.True(result.IsFailure);
         }
 
         [Fact]
         public async Task ExecuteAsync_CancelationOnLogin_ExceptionFiredGetRemoteFilesListNotStarted()
         {
-            bool isOperationCanceledException = false;
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
 
@@ -334,17 +249,13 @@ namespace Hik.Client.Tests.Services
             this.clientMock.Setup(x => x.DownloadFileAsync(It.IsAny<MediaFileDto>(), It.IsAny<CancellationToken>()));
             this.clientMock.Setup(x => x.Login()).Callback(downloader.Cancel)
                 .Returns(true);
-            downloader.ExceptionFired += (object sender, Hik.Client.Events.ExceptionEventArgs e) =>
-            {
-                isOperationCanceledException = e.Exception is OperationCanceledException;
-            };
-            await downloader.ExecuteAsync(cameraConfig, default(DateTime), default(DateTime));
+            var result = await downloader.ExecuteAsync(cameraConfig, default(DateTime), default(DateTime));
 
             // assert
             this.clientMock.Verify(x => x.InitializeClient(), Times.Once);
             this.clientMock.Verify(x => x.Dispose(), Times.Once);
             this.clientMock.Verify(x => x.Login(), Times.Once);
-            Assert.True(isOperationCanceledException);
+            Assert.True(result.IsFailure);
         }
 
         private void SetupDirectoryHelper()
@@ -379,7 +290,7 @@ namespace Hik.Client.Tests.Services
             this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>()))
                 .Returns(this.clientMock.Object);
 
-            return new VideoDownloaderService(this.directoryMock.Object, this.clientFactoryMock.Object);
+            return new VideoDownloaderService(this.directoryMock.Object, this.clientFactoryMock.Object, loggerMock.Object);
         }
     }
 }

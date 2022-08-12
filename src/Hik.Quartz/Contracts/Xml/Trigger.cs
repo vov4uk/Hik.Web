@@ -1,11 +1,12 @@
-﻿using System.Xml.Serialization;
+﻿using Hik.Quartz.Extensions;
+using System.Xml.Serialization;
 
 namespace Hik.Quartz.Contracts.Xml
 {
-    [XmlRoot(ElementName = "trigger", Namespace = "http://quartznet.sourceforge.net/JobSchedulingData")]
+    [XmlRoot(ElementName = "trigger", Namespace = Namespaces.JobSchedulingData)]
     public class Trigger
     {
-        [XmlElement(ElementName = "cron", Namespace = "http://quartznet.sourceforge.net/JobSchedulingData")]
+        [XmlElement(ElementName = "cron", Namespace = Namespaces.JobSchedulingData)]
         public Cron Cron { get; set; }
     }
 }

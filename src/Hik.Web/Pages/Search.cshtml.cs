@@ -1,5 +1,6 @@
 ﻿using Hik.Helpers.Abstraction;
 using Hik.Web.Queries.FilePath;
+using Hik.Web.Queries.Photo;
 using Hik.Web.Queries.Search;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -77,6 +78,24 @@ namespace Hik.Web.Pages
 
             var memory = await filesHelper.ReadAsMemoryStreamAsync(filePath);
             return new FileStreamResult(memory, new MediaTypeHeaderValue("video/mp4")) { EnableRangeProcessing = true };
+        }
+
+        public async Task<IActionResult> OnGetImage(int fileId)
+        {
+            var filePath = await GetFilePath(fileId);
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return NotFound();
+            }
+
+            return base.PhysicalFile(filePath, "image/jpg");
+        }
+
+        public async Task<IActionResult> OnGetImageThumbnail(int fileId)
+        {
+            var thumbnail = await mediator.Send(new PhotoThumbnailQuery() { FileId = fileId }) as PhotoThumbnailDto;
+            return File(thumbnail.Poster, "image/jpg");
         }
 
         private async Task<string> GetFilePath(int fileId)

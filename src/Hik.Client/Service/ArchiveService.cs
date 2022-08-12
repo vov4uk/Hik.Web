@@ -4,13 +4,11 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
-using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using Hik.DTO.Message;
-using Hik.Helpers;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client.Service
 {
@@ -25,8 +23,9 @@ namespace Hik.Client.Service
             IDirectoryHelper directoryHelper,
             IFilesHelper filesHelper,
             IVideoHelper videoHelper,
-            IImageHelper imageHelper)
-            : base(directoryHelper)
+            IImageHelper imageHelper,
+            ILogger logger)
+            : base(directoryHelper, logger)
         {
             this.filesHelper = filesHelper;
             this.videoHelper = videoHelper;
@@ -36,78 +35,28 @@ namespace Hik.Client.Service
         protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var aConfig = config as ArchiveConfig;
-            PrepareRegex(aConfig.FileNamePattern);
+            this.regex = this.GetRegex(aConfig.FileNamePattern);
 
             var result = new List<MediaFileDto>();
             var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions).SkipLast(aConfig.SkipLast);
 
-            try
+            foreach (var filePath in allFiles)
             {
-                if (aConfig.DetectPeopleConfig != null && aConfig.DetectPeopleConfig.DetectPeoples)
+                DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, filePath);
+                int duration = await this.videoHelper.GetDuration(filePath);
+
+                string fileExt = filesHelper.GetExtension(filePath);
+                string newFileName = date.ToArchiveFileString(duration, fileExt);
+                string newFilePath = MoveFile(aConfig.DestinationFolder, filePath, date, newFileName);
+
+                result.Add(new MediaFileDto
                 {
-                    var detectConfig = aConfig.DetectPeopleConfig;
-                    var mqConfig = detectConfig.RabbitMQConfig;
-                    if (mqConfig != null)
-                    {
-                        using var rabbitMq = new RabbitMQSender(mqConfig.HostName, mqConfig.QueueName, mqConfig.RoutingKey);
-                        foreach (var oldFile in allFiles)
-                        {
-                            DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, oldFile);
-                            var duration = -1;
-                            string fileExt = filesHelper.GetExtension(oldFile);
-                            string newFileName = date.ToArchiveFileString(duration, fileExt);
-                            string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(aConfig.DestinationFolder, date));
-                            string junkFilePath = GetPathSafety(newFileName, GetWorkingDirectory(detectConfig.JunkFolder, date));
-                            string guid = Guid.NewGuid().ToString();
-                            var msg = new DetectPeopleMessage()
-                            {
-                                UniqueId = guid,
-                                OldFilePath = oldFile,
-                                NewFilePath = newFilePath,
-                                NewFileName = newFileName,
-                                JunkFilePath = junkFilePath,
-                                DeleteJunk = detectConfig.DeletePhotosWithoutPeoples,
-                            };
-
-                            rabbitMq.Sent(msg.ToString());
-
-                            result.Add(new MediaFileDto
-                            {
-                                Date = date,
-                                Name = guid,
-                                Path = string.Empty,
-                                Duration = duration,
-                                Size = filesHelper.FileSize(oldFile),
-                            });
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var oldFile in allFiles)
-                    {
-                        DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, oldFile);
-                        int duration = await this.videoHelper.GetDuration(oldFile);
-
-                        string fileExt = filesHelper.GetExtension(oldFile);
-
-                        string newFileName = date.ToArchiveFileString(duration, fileExt);
-                        string newFilePath = MoveFile(aConfig.DestinationFolder, oldFile, date, newFileName);
-
-                        result.Add(new MediaFileDto
-                        {
-                            Date = date,
-                            Name = filesHelper.GetFileName(oldFile),
-                            Path = newFilePath,
-                            Duration = duration,
-                            Size = filesHelper.FileSize(newFilePath),
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                this.OnExceptionFired(ex);
+                    Date = date,
+                    Name = filesHelper.GetFileName(newFilePath),
+                    Path = newFilePath,
+                    Duration = duration,
+                    Size = filesHelper.FileSize(newFilePath),
+                });
             }
 
             return result.AsReadOnly();
@@ -116,8 +65,7 @@ namespace Hik.Client.Service
         private string MoveFile(string destinationFolder, string oldFilePath, DateTime date, string newFileName)
         {
             string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(destinationFolder, date));
-            string fileExt = filesHelper.GetExtension(oldFilePath);
-            if (fileExt == ".jpg")
+            if (IsPicture(oldFilePath))
             {
                 this.imageHelper.SetDate(oldFilePath, newFilePath, date);
                 this.filesHelper.DeleteFile(oldFilePath);
@@ -177,12 +125,17 @@ namespace Hik.Client.Service
             return this.regex.Match(str).Groups.Select(x => x.Value).ToList();
         }
 
-        private void PrepareRegex(string template)
+        private Regex GetRegex(string template)
         {
             // Handels regex special characters.
             template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => @"\" + m.Value);
             string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)") + "$";
-            this.regex = new Regex(pattern);
+            return new Regex(pattern);
+        }
+
+        private bool IsPicture(string filePath)
+        {
+            return filesHelper.GetExtension(filePath) == ".jpg";
         }
     }
 }

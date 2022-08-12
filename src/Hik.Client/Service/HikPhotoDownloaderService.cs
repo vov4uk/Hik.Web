@@ -7,13 +7,14 @@ using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Hik.Client.Service
 {
     public class HikPhotoDownloaderService : VideoDownloaderService, IHikPhotoDownloaderService
     {
-        public HikPhotoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory)
-            : base(directoryHelper, clientFactory)
+        public HikPhotoDownloaderService(IDirectoryHelper directoryHelper, IClientFactory clientFactory, ILogger logger)
+            : base(directoryHelper, clientFactory, logger)
         {
         }
 
@@ -21,7 +22,7 @@ namespace Hik.Client.Service
         {
             List<MediaFileDto> photos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).ToList();
 
-            this.logger.Info($"Found {photos.Count} photos");
+            this.logger.LogInformation("Found {count} photos", photos.Count);
             return photos;
         }
 

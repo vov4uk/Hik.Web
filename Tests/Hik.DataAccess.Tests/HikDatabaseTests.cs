@@ -3,6 +3,7 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -16,10 +17,12 @@ namespace Hik.DataAccess.Tests
     {
         protected readonly Mock<IUnitOfWorkFactory> uowFactory;
         protected readonly Mock<IUnitOfWork> uow;
+        protected readonly Mock<ILogger> logger;
 
         public HikDatabaseTests()
         {
             this.uow = new(MockBehavior.Strict);
+            this.logger = new();
             this.uowFactory = new(MockBehavior.Strict);
             this.uowFactory.Setup(x => x.CreateUnitOfWork(QueryTrackingBehavior.TrackAll))
                 .Returns(uow.Object);
@@ -37,7 +40,7 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             await db.CreateJobInstanceAsync(new HikJob());
 
@@ -46,7 +49,7 @@ namespace Hik.DataAccess.Tests
 
         [Theory]
         [AutoData]
-        public async Task LogExceptionToAsync_Add_SaveChanges(int jobId, string message, string callStack, uint? errorCode)
+        public async Task LogExceptionToAsync_Add_SaveChanges(int jobId, string message)
         {
             ExceptionLog? actual = null;
             var exRepo = new Mock<IBaseRepository<ExceptionLog>>(MockBehavior.Strict);
@@ -58,17 +61,14 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
-            await db.LogExceptionToAsync(jobId, message, callStack, errorCode);
+            await db.LogExceptionToAsync(jobId, message);
 
             uow.VerifyAll();
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
+
             Assert.Equal(message, actual.Message);
-            Assert.Equal(callStack, actual.CallStack);
             Assert.Equal(jobId, actual.JobId);
-            Assert.Equal(errorCode, actual.HikErrorCode);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.GetRepository<JobTrigger>())
                 .Returns(jobRepo.Object);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             var trigger = await db.GetOrCreateJobTriggerAsync("Key.Group");
 
@@ -107,7 +107,7 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             var trigger = await db.GetOrCreateJobTriggerAsync("Group.Key");
 
@@ -138,7 +138,7 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             await db.SaveJobResultAsync(job);
 
@@ -160,7 +160,7 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             await db.SaveJobResultAsync(job);
 
@@ -196,7 +196,7 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.SaveChangesAsync(job))
                 .ReturnsAsync(0);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             var actual = await db.SaveFilesAsync(job, files);
             Assert.Equal(4, actual.Count);
@@ -226,7 +226,7 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.SaveChangesAsync(job))
                 .ReturnsAsync(0);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             var actual = await db.SaveFilesAsync(job, files);
             Assert.Equal(4, actual.Count);
@@ -255,7 +255,7 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.SaveChangesAsync(job))
                 .ReturnsAsync(0);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             await db.SaveDownloadHistoryFilesAsync(job, files);
 
@@ -299,7 +299,7 @@ namespace Hik.DataAccess.Tests
             uow.Setup(x => x.SaveChangesAsync())
                 .ReturnsAsync(0);
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             await db.UpdateDailyStatisticsAsync(0, files);
 
@@ -335,7 +335,7 @@ namespace Hik.DataAccess.Tests
                 .ReturnsAsync(default(JobTrigger));
 #pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             await db.DeleteObsoleteJobsAsync(new string[] {"Test.Job"}, DateTime.Now);
 
@@ -366,7 +366,7 @@ namespace Hik.DataAccess.Tests
                 .ReturnsAsync(new List<HikJob>());
             hikJobRepo.Setup(x => x.RemoveRange(It.IsAny<IEnumerable<HikJob>>()));
 
-            var db = new HikDatabase(uowFactory.Object);
+            var db = new HikDatabase(uowFactory.Object, logger.Object);
 
             await db.DeleteObsoleteJobsAsync(new string[] { "Test.Job" }, DateTime.Now);
 

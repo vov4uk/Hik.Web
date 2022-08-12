@@ -3,6 +3,7 @@ using FluentFTP;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace Hik.Client.Tests
         private readonly Mock<IFtpClient> ftpMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IDirectoryHelper> dirMock;
+        private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
 
         public RSyncClientTests()
@@ -24,13 +26,14 @@ namespace Hik.Client.Tests
             this.ftpMock = new(MockBehavior.Strict);
             this.filesMock = new(MockBehavior.Strict);
             this.dirMock = new(MockBehavior.Strict);
+            this.loggerMock = new();
             this.fixture = new();
         }
 
         [Fact]
         public void Constructor_PutEmptyConfig_ThrowsException()
         {
-            Assert.Throws<ArgumentNullException>(() => new RSyncClient(null, this.filesMock.Object, dirMock.Object, ftpMock.Object));
+            Assert.Throws<ArgumentNullException>(() => new RSyncClient(null, this.filesMock.Object, dirMock.Object, ftpMock.Object, loggerMock.Object));
         }
 
         [Fact]
@@ -38,7 +41,7 @@ namespace Hik.Client.Tests
         {
             var config = new CameraConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" };
             var ftp = new FtpClient();
-            var client = new RSyncClient(config, this.filesMock.Object, this.dirMock.Object, ftp);
+            var client = new RSyncClient(config, this.filesMock.Object, this.dirMock.Object, ftp, loggerMock.Object);
             client.InitializeClient();
 
             Assert.Equal(config.IpAddress, ftp.Host);
@@ -56,7 +59,7 @@ namespace Hik.Client.Tests
 
             var config = new CameraConfig { Alias = "Group.CameraName" };
 
-            var client = new RSyncClient(config, this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object);
+            var client = new RSyncClient(config, this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object, loggerMock.Object);
             var mediaFiles = await client.GetFilesListAsync(default(DateTime), default(DateTime));
 
             Assert.Single(mediaFiles);
@@ -183,6 +186,6 @@ namespace Hik.Client.Tests
         }
 
         private RSyncClient GetClient() =>
-            new RSyncClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object);
+            new RSyncClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object, loggerMock.Object);
     }
 }

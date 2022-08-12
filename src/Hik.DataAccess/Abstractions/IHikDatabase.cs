@@ -14,7 +14,7 @@ namespace Hik.DataAccess.Abstractions
 
         Task UpdateJobAsync(HikJob job);
 
-        Task LogExceptionToAsync(int jobId, string message, string callStack, uint? errorCode = null);
+        Task LogExceptionToAsync(int jobId, string message);
 
         Task<JobTrigger> GetOrCreateJobTriggerAsync(string triggerKey);
 

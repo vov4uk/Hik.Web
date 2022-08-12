@@ -8,18 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.3.0" />
+    <PackageReference Include="Autofac" Version="6.4.0" />
     <PackageReference Include="AutoMapper" Version="11.0.1" />
-    <PackageReference Include="FluentFTP" Version="37.0.2" />
-    <PackageReference Include="Hik.Api" Version="1.0.13" />
-    <PackageReference Include="NLog" Version="5.0.0" />
-    <PackageReference Include="NLog.Targets.Seq" Version="2.1.0" />
+    <PackageReference Include="CSharpFunctionalExtensions" Version="2.31.0" />
+    <PackageReference Include="FluentFTP" Version="37.0.5" />
+    <PackageReference Include="Hik.Api" Version="1.0.13.1" />
     <PackageReference Include="Polly" Version="7.2.3" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>

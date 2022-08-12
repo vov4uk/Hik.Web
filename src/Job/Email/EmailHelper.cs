@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using Hik.Api;
-using Job.Extensions;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Job.Email
 {
@@ -11,29 +8,20 @@ namespace Job.Email
     public class EmailHelper : IEmailHelper
     {
         static EmailConfig Settings { get;}
-        static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        static readonly ILogger Logger = new LoggerFactory().CreateLogger(nameof(EmailHelper));
 
         static EmailHelper()
         {
 #if RELEASE
             string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
-            Settings = HikConfigExtensions.GetConfig<EmailConfig>(configPath);
+            Settings = Extensions.HikConfigExtensions.GetConfig<EmailConfig>(configPath);
 #endif
         }
 
-        public void Send(Exception ex, string alias = null, string hikJobDetails = null)
+        public void Send(string error, string alias = null, string hikJobDetails = null)
         {
-            string errorDetails = string.Empty;
-            if (ex is HikException hikEx)
-            {
-                errorDetails = $@"<ul>
-  <li>Error Code : {hikEx.ErrorCode}</li>
-  <li>{hikEx.ErrorMessage}</li>
-</ul>";
-            }
-
-            var body = BuildBody(errorDetails, hikJobDetails, ex.Message, ex.ToString());
-            var subject = $"{alias ?? "Hik.Web"} {(ex as HikException)?.ErrorMessage ?? ex.Message}".Replace('\r', ' ').Replace('\n', ' ');
+            var body = BuildBody(hikJobDetails);
+            var subject = $"{alias ?? "Hik.Web"} {error}".Replace('\r', ' ').Replace('\n', ' ');
             Send(subject, body);
         }
 
@@ -42,7 +30,7 @@ namespace Job.Email
             try
             {
 #if DEBUG
-                Logger.Error(body);
+                Logger.LogError(body);
 #elif RELEASE
                 if (Settings != null)
                 {
@@ -64,21 +52,17 @@ namespace Job.Email
                 }
                 else
                 {
-                    Logger.Error($"Settings file not exist");
+                    Logger.LogError("Email settings file not exist");
                 }
 #endif
             }
             catch (Exception e)
             {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Failed to Sent Email");
-                sb.AppendLine($"Local exception {e}");
-                sb.AppendLine($"With subject : {subject} and body : {body}");
-                Logger.Error(sb.ToString());
+                Logger.LogError(e, "Failed to sent email");
             }
         }
 
-        private static string BuildBody(string details, string hikJobDetails, string message, string callStack)
+        private static string BuildBody(string hikJobDetails)
         {
             return $@"<!DOCTYPE html>
 <html>
@@ -102,17 +86,7 @@ tr:nth-child(even) {{
 </style>
 </head>
 <body>
-
 {hikJobDetails}
-
-{details}
-
-<h2>Call stack</h2>
-<p>{message}</p>
-
-<pre>
-{callStack}
-</pre>
 </body>
 </html>";
         }

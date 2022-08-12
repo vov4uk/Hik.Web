@@ -32,14 +32,14 @@ namespace Hik.Web.Queries.Test
         {
             var expected = new Dictionary<int, string>()
             {
-                { 2, "TriggerKey1"},
-                {1, "TriggerKey2" },
+                { 2, "TriggerKey1" },
+                { 1, "TriggerKey2" },
             };
             repoMock.Setup(x => x.FindManyAsync(x => x.ShowInSearch))
                 .ReturnsAsync(new List<JobTrigger>()
                 {
-                    new(){ Id = 1, TriggerKey = "TriggerKey2"},
-                    new(){ Id = 2, TriggerKey = "TriggerKey1"}
+                    new(){ Id = 1, TriggerKey = "TriggerKey2" },
+                    new(){ Id = 2, TriggerKey = "TriggerKey1" }
                 });
 
             var handler = new SearchTriggersQueryHandler(uowFactoryMock.Object);
