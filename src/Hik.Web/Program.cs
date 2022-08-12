@@ -56,7 +56,12 @@ namespace Hik.Web
                             options.Limits.MaxRequestBufferSize = MaxUrlSizeBytes;
                             options.Limits.MaxRequestLineSize = MaxUrlSizeBytes;
                         })
+#if USE_AUTHORIZATION
                     .UseUrls($"https://+:{port}")
+#else
+                    .UseUrls($"http://+:{port}")
+#endif
+
                     .UseStartup<Startup>();
                 })
                 .ConfigureLogging(logging =>

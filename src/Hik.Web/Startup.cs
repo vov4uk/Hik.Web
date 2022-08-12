@@ -42,14 +42,13 @@ namespace Hik.Web
                 {
                     options.SuppressInferBindingSourcesForParameters = true;
                 });
-
+#if USE_AUTHORIZATION
             services.AddAuthentication(BasicAuthentication)
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
                 (BasicAuthentication, null);
-
-            services
-                .AddAuthorization()
-                .AddRazorPages();
+            services.AddAuthorization();
+#endif            
+            services.AddRazorPages();
 
             services.AddHttpLogging(options =>
             {
@@ -77,15 +76,21 @@ namespace Hik.Web
             app.UseDeveloperExceptionPage()
                 .UseStaticFiles()
                 .UseRouting()
-                .UseAuthentication()
-                .UseAuthorization()
                 .UseEndpoints(endpoints =>
                 {
-                    endpoints.MapRazorPages()
+#if USE_AUTHORIZATION
+                 endpoints.MapRazorPages()
                     .RequireAuthorization();
-                })
+#else
+                    endpoints.MapRazorPages();
+#endif
+                });
+#if USE_AUTHORIZATION
+            app.UseAuthentication()
+                .UseAuthorization()
                 .UseHttpsRedirection()
                 .UseHsts();
+#endif
         }
     }
 }

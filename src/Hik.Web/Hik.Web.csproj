@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <RuntimeIdentifiers>win10-x64;</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-    <Platforms>x64</Platforms>
+    <Platforms>x64;ARM64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -83,6 +81,25 @@
   <PropertyGroup>
     <!-- Exclude the project from analysis -->
     <SonarQubeExclude>true</SonarQubeExclude>
+    <TargetFrameworks>net6.0-windows</TargetFrameworks>
+    <StartupObject>Hik.Web.Program</StartupObject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Prefer32Bit>True</Prefer32Bit>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Prefer32Bit>True</Prefer32Bit>
+    <DefineConstants>USE_AUTHORIZATION;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <Prefer32Bit>True</Prefer32Bit>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <Prefer32Bit>True</Prefer32Bit>
   </PropertyGroup>
 
 </Project>
