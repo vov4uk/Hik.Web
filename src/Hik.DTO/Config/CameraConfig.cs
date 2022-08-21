@@ -8,13 +8,7 @@ namespace Hik.DTO.Config
     {
         public int ProcessingPeriodHours { get; set; }
 
-        public string IpAddress { get; set; }
-
-        public int PortNumber { get; set; } = 8000;
-
-        public string UserName { get; set; }
-
-        public string Password { get; set; }
+        public DeviceConfig Camera { get; set; } = new DeviceConfig() { PortNumber = 8000 };
 
         public ClientType ClientType { get; set; } = ClientType.HikVisionVideo;
 
@@ -28,8 +22,8 @@ namespace Hik.DTO.Config
             sb.AppendLine();
             sb.AppendLine(this.GetRow("Alias", this.Alias));
             sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetRow("IP Address", $"{this.IpAddress}:{this.PortNumber}"));
-            sb.AppendLine(this.GetRow("User name", this.UserName));
+            sb.AppendLine(this.GetRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
+            sb.AppendLine(this.GetRow("User name", this.Camera.UserName));
 
             return sb.ToString();
         }
@@ -39,8 +33,8 @@ namespace Hik.DTO.Config
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(this.GetHtmlRow("Alias", this.Alias));
             sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.IpAddress}:{this.PortNumber}"));
-            sb.AppendLine(this.GetHtmlRow("User name", this.UserName));
+            sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
+            sb.AppendLine(this.GetHtmlRow("User name", this.Camera.UserName));
             return sb.ToString();
         }
     }

@@ -1,6 +1,8 @@
 ﻿using Autofac;
 using Autofac.Core;
+using FluentFTP;
 using Hik.Client.Abstraction;
+using Hik.Client.Abstraction.Services;
 using Hik.Client.FileProviders;
 using Hik.Client.Infrastructure;
 using Hik.DataAccess;
@@ -32,7 +34,7 @@ namespace Job
             switch (parameters.ClassName)
             {
                 case "Job.Impl.ArchiveJob, Job":
-                case "ArchiveJob":
+                case "Archive":
                     {
                         var config = HikConfigExtensions.GetConfig<ArchiveConfig>(parameters.ConfigFilePath);
                         var worker = AppBootstrapper.Container.Resolve<IArchiveService>(loggerParameter);
@@ -45,8 +47,31 @@ namespace Job
                         var worker = AppBootstrapper.Container.Resolve<IDetectPeopleService>(loggerParameter);
                         return new DetectPeopleJob(trigger, config, worker, db, email, logger);
                     }
+                case "Job.Impl.FtpUploader, Job":
+                case "FtpUploader":
+                    {
+                        var config = HikConfigExtensions.GetConfig<FtpUploaderConfig>(parameters.ConfigFilePath);
+
+                        var configParameter = new ResolvedParameter(
+                            (pi, ctx) => pi.ParameterType == typeof(DeviceConfig) && pi.Name == "config",
+                            (pi, ctx) => config?.FtpServer);
+
+                        var ftpParameter = new ResolvedParameter(
+                            (pi, ctx) => pi.ParameterType == typeof(IFtpClient) && pi.Name == "ftp",
+                            (pi, ctx) => new FtpClient());
+
+                        var client = AppBootstrapper.Container.Resolve<IUploaderClient>(configParameter, ftpParameter, loggerParameter);
+
+                        var clientParameter = new ResolvedParameter(
+                            (pi, ctx) => pi.ParameterType == typeof(IUploaderClient) && pi.Name == "ftp",
+                            (pi, ctx) => client);
+
+                        var worker = AppBootstrapper.Container.Resolve<IFtpUploaderService>(clientParameter, loggerParameter);
+
+                        return new FtpUploaderJob(trigger, config, worker, db, email, logger);
+                    }
                 case "Job.Impl.GarbageCollectorJob, Job":
-                case "GarbageCollectorJob":
+                case "GarbageCollector":
                     {
                         var config = HikConfigExtensions.GetConfig<GarbageCollectorConfig>(parameters.ConfigFilePath);
                         var directory = AppBootstrapper.Container.Resolve<IDirectoryHelper>();
@@ -64,7 +89,7 @@ namespace Job
                             logger);
                     }
                 case "Job.Impl.HikVideoDownloaderJob, Job":
-                case "HikVideoDownloaderJob":
+                case "HikVideoDownloader":
                     {
                         var config = HikConfigExtensions.GetConfig<CameraConfig>(parameters.ConfigFilePath);
                         var factory = AppBootstrapper.Container.Resolve<IClientFactory>(loggerParameter);
@@ -75,7 +100,7 @@ namespace Job
                         return new HikVideoDownloaderJob(trigger, config, service, db, email, logger);
                     }
                 case "Job.Impl.HikPhotoDownloaderJob, Job":
-                case "HikPhotoDownloaderJob":
+                case "HikPhotoDownloader":
                     {
                         var config = HikConfigExtensions.GetConfig<CameraConfig>(parameters.ConfigFilePath);
                         var factory = AppBootstrapper.Container.Resolve<IClientFactory>(loggerParameter);
@@ -86,7 +111,7 @@ namespace Job
                         return new HikPhotoDownloaderJob(trigger, config, service, db, email, logger);
                     }
                 case "Job.Impl.DbMigrationJob, Job":
-                case "DbMigrationJob":
+                case "DbMigration":
                     {
                         var config = HikConfigExtensions.GetConfig<MigrationConfig>(parameters.ConfigFilePath);
                         var provider = AppBootstrapper.Container.Resolve<IFileProvider>(loggerParameter);

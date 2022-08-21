@@ -19,7 +19,7 @@ namespace Hik.Client.Tests.Services
     {
         private readonly Mock<IDirectoryHelper> directoryMock;
         private readonly Fixture fixture;
-        private readonly Mock<IClient> clientMock;
+        private readonly Mock<IDownloaderClient> clientMock;
         private readonly Mock<IClientFactory> clientFactoryMock;
         private readonly Mock<ILogger> loggerMock;
 

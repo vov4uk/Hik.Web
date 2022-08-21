@@ -1,5 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
-using Hik.Client.Abstraction;
+using Hik.Client.Abstraction.Services;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;

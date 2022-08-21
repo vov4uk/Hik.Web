@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -38,6 +39,10 @@ namespace Hik.Web
             services
                 .AddDataBaseConfiguration(this.configuration)
                 .AddAutoMapper(projectsAssemblies)
+                .AddLogging(opt =>
+                {
+                    opt.AddConsole();
+                })
                 .Configure<ApiBehaviorOptions>(options =>
                 {
                     options.SuppressInferBindingSourcesForParameters = true;
@@ -75,8 +80,15 @@ namespace Hik.Web
 
             app.UseDeveloperExceptionPage()
                 .UseStaticFiles()
-                .UseRouting()
-                .UseEndpoints(endpoints =>
+                .UseRouting();
+
+#if USE_AUTHORIZATION
+            app.UseAuthentication()
+                .UseAuthorization()
+                .UseHttpsRedirection()
+                .UseHsts();
+#endif
+            app.UseEndpoints(endpoints =>
                 {
 #if USE_AUTHORIZATION
                  endpoints.MapRazorPages()
@@ -85,12 +97,6 @@ namespace Hik.Web
                     endpoints.MapRazorPages();
 #endif
                 });
-#if USE_AUTHORIZATION
-            app.UseAuthentication()
-                .UseAuthorization()
-                .UseHttpsRedirection()
-                .UseHsts();
-#endif
         }
     }
 }

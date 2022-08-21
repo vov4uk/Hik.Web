@@ -6,15 +6,9 @@ using Hik.DTO.Contracts;
 
 namespace Hik.Client.Abstraction
 {
-    public interface IClient : IDisposable
+    public interface IDownloaderClient : IClientBase
     {
-        void InitializeClient();
-
-        bool Login();
-
         Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token);
-
-        void ForceExit();
 
         Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
     }

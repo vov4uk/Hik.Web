@@ -1,4 +1,4 @@
-﻿using Hik.Client.Abstraction;
+﻿using Hik.Client.Abstraction.Services;
 using Hik.Client.Events;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;

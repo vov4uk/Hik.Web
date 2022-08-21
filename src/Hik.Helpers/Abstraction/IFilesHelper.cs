@@ -37,5 +37,7 @@ namespace Hik.Helpers.Abstraction
         string GetTempFileName();
 
         string GetDirectoryName(string path);
+
+        public string CompressFile(string path);
     }
 }

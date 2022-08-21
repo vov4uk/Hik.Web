@@ -12,9 +12,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
-    public class RSyncClient : FtpBaseClient
+    public class FtpDownloaderClient : FtpDownloaderClientBase
     {
-        public RSyncClient(
+        public FtpDownloaderClient(
             CameraConfig config,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,

@@ -2,6 +2,7 @@
 using AutoMapper;
 using Hik.Api.Abstraction;
 using Hik.Api.Data;
+using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
-    public abstract class HikBaseClient : IDisposable
+    public abstract class HikBaseClient : IClientBase
     {
         protected const int ProgressBarMaximum = 100;
         protected const int ProgressBarMinimum = 0;
@@ -57,7 +58,7 @@ namespace Hik.Client
         {
             if (session == null)
             {
-                session = hikApi.Login(config.IpAddress, config.PortNumber, config.UserName, config.Password);
+                session = hikApi.Login(config.Camera.IpAddress, config.Camera.PortNumber, config.Camera.UserName, config.Camera.Password);
                 logger.LogInformation("Sucessfull login to {config}", config);
                 var status = hikApi.GetHddStatus(session.UserId);
 

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
-    public sealed class HikPhotoClient : HikBaseClient, IClient
+    public sealed class HikPhotoClient : HikBaseClient, IDownloaderClient
     {
         private readonly IImageHelper imageHelper;
 

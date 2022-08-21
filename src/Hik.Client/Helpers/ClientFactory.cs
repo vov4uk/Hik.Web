@@ -35,7 +35,7 @@ namespace Hik.Client.Helpers
             this.logger = logger;
         }
 
-        public IClient Create(CameraConfig camera)
+        public IDownloaderClient Create(CameraConfig camera)
         {
             switch (camera.ClientType)
             {
@@ -46,8 +46,8 @@ namespace Hik.Client.Helpers
                 case ClientType.Yi:
                 case ClientType.Yi720p:
                     return new YiClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.FtpClient(), this.logger);
-                case ClientType.FTP:
-                    return new RSyncClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.FtpClient(), this.logger);
+                case ClientType.FTPDownload:
+                    return new FtpDownloaderClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.FtpClient(), this.logger);
                 default:
                     throw new NotSupportedException();
             }

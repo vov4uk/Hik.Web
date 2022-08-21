@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
-    public class YiClient : FtpBaseClient
+    public class YiClient : FtpDownloaderClientBase
     {
         private const string YiFileNameFormat = "mm'M00S'";
 

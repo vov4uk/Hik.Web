@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Hik.Client.Abstraction;
+    using Hik.Client.Abstraction.Services;
     using Hik.DataAccess.Data;
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;

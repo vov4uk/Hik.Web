@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
-    public sealed class HikVideoClient : HikBaseClient, IClient
+    public sealed class HikVideoClient : HikBaseClient, IDownloaderClient
     {
         private const int ProgressCheckPeriodMilliseconds = 5000;
 
@@ -134,7 +134,7 @@ namespace Hik.Client
             else if (progressValue < ProgressBarMinimum || progressValue > ProgressBarMaximum)
             {
                 StopDownload();
-                throw new InvalidOperationException($"HikVideoClient.UpdateDownloadProgress failed, progress value = {progressValue}");
+                throw new InvalidOperationException($"UpdateDownloadProgress failed, progress value = {progressValue}");
             }
         }
     }

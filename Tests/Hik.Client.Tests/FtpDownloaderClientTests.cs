@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Hik.Client.Tests
 {
-    public class RSyncClientTests
+    public class FtpDownloaderClientTests
     {
         private readonly Mock<IFtpClient> ftpMock;
         private readonly Mock<IFilesHelper> filesMock;
@@ -21,7 +21,7 @@ namespace Hik.Client.Tests
         private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
 
-        public RSyncClientTests()
+        public FtpDownloaderClientTests()
         {
             this.ftpMock = new(MockBehavior.Strict);
             this.filesMock = new(MockBehavior.Strict);
@@ -33,34 +33,35 @@ namespace Hik.Client.Tests
         [Fact]
         public void Constructor_PutEmptyConfig_ThrowsException()
         {
-            Assert.Throws<ArgumentNullException>(() => new RSyncClient(null, this.filesMock.Object, dirMock.Object, ftpMock.Object, loggerMock.Object));
+            Assert.Throws<ArgumentNullException>(() => new FtpDownloaderClient(null, this.filesMock.Object, dirMock.Object, ftpMock.Object, loggerMock.Object));
         }
 
         [Fact]
         public void InitializeClient_CallInitializeClient_ClientInitialized()
         {
-            var config = new CameraConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" };
+            var config = new CameraConfig { Camera = new DeviceConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" } };
+
             var ftp = new FtpClient();
-            var client = new RSyncClient(config, this.filesMock.Object, this.dirMock.Object, ftp, loggerMock.Object);
+            var client = new FtpDownloaderClient(config, this.filesMock.Object, this.dirMock.Object, ftp, loggerMock.Object);
             client.InitializeClient();
 
-            Assert.Equal(config.IpAddress, ftp.Host);
-            Assert.Equal(config.UserName, ftp.Credentials.UserName);
-            Assert.Equal(config.Password, ftp.Credentials.Password);
+            Assert.Equal(config.Camera.IpAddress, ftp.Host);
+            Assert.Equal(config.Camera.UserName, ftp.Credentials.UserName);
+            Assert.Equal(config.Camera.Password, ftp.Credentials.Password);
         }
 
         [Fact]
         public async Task GetFilesListAsync_CallWithValidParameters_ReturnMapppedFiles()
         {
-            ftpMock.Setup(x => x.GetListingAsync("/CameraName", default(CancellationToken))).ReturnsAsync(new FtpListItem[]
+            ftpMock.Setup(x => x.GetListingAsync("/CameraName", default)).ReturnsAsync(new FtpListItem[]
             {
                 new FtpListItem(){Name = "192.168.8.103_01_20220517095135158_MOTION_DETECTION", FullName = "/192.168.8.103_01_20220517095135158_MOTION_DETECTION.jpg"}
             });
 
             var config = new CameraConfig { Alias = "Group.CameraName" };
 
-            var client = new RSyncClient(config, this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object, loggerMock.Object);
-            var mediaFiles = await client.GetFilesListAsync(default(DateTime), default(DateTime));
+            var client = new FtpDownloaderClient(config, this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object, loggerMock.Object);
+            var mediaFiles = await client.GetFilesListAsync(default, default);
 
             Assert.Single(mediaFiles);
             var firstFile = mediaFiles.First();
@@ -185,7 +186,7 @@ namespace Hik.Client.Tests
             Assert.False(isDownloaded);
         }
 
-        private RSyncClient GetClient() =>
-            new RSyncClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object, loggerMock.Object);
+        private FtpDownloaderClient GetClient() =>
+            new FtpDownloaderClient(this.fixture.Create<CameraConfig>(), this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object, loggerMock.Object);
     }
 }

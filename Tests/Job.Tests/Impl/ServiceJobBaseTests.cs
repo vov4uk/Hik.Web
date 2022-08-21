@@ -1,4 +1,4 @@
-﻿using Hik.Client.Abstraction;
+﻿using Hik.Client.Abstraction.Services;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Moq;

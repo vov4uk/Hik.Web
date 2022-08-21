@@ -78,7 +78,7 @@
     <SonarQubeExclude>true</SonarQubeExclude>
     <TargetFrameworks>net6.0-windows</TargetFrameworks>
     <StartupObject>Hik.Web.Program</StartupObject>
-    <PlatformTarget>ARM64</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

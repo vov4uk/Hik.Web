@@ -41,14 +41,14 @@
         [Fact]
         public void InitializeClient_CallInitializeClient_ClientInitialized()
         {
-            var config = new CameraConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" };
+            var config = new CameraConfig { Camera = new DeviceConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" } };
             var ftp = new FtpClient();
             var client = new YiClient(config, this.filesMock.Object, this.dirMock.Object, ftp, loggerMock.Object);
             client.InitializeClient();
 
-            Assert.Equal(config.IpAddress, ftp.Host);
-            Assert.Equal(config.UserName, ftp.Credentials.UserName);
-            Assert.Equal(config.Password, ftp.Credentials.Password);
+            Assert.Equal(config.Camera.IpAddress, ftp.Host);
+            Assert.Equal(config.Camera.UserName, ftp.Credentials.UserName);
+            Assert.Equal(config.Camera.Password, ftp.Credentials.Password);
         }
 
         #endregion InitializeClient

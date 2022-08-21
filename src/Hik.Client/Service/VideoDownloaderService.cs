@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
+using Hik.Client.Abstraction.Services;
 using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Contracts;

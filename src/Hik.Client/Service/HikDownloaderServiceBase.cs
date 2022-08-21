@@ -30,7 +30,7 @@ namespace Hik.Client.Service
 
         public event EventHandler<FileDownloadedEventArgs> FileDownloaded;
 
-        protected IClient Client { get; private set; }
+        protected IDownloaderClient Client { get; private set; }
 
         public void Cancel()
         {
