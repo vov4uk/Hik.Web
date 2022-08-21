@@ -32,6 +32,7 @@ namespace Hik.Client.Client
         public void InitializeClient()
         {
             ftp.Host = deviceConfig.IpAddress;
+            ftp.Port = deviceConfig.PortNumber;
             ftp.ConnectTimeout = 5 * 1000;
             ftp.DataConnectionReadTimeout = 5 * 1000;
             ftp.ReadTimeout = 5 * 1000;

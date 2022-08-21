@@ -56,9 +56,9 @@ namespace Hik.Client
                 {
                     await ftp.DeleteFileAsync(remoteFilePath, token);
                 }
-                catch (Exception ex)
+                catch (FtpException ex)
                 {
-                    logger.LogError(ex.ToString());
+                    logger.LogError(ex, "Failed to delete remote file");
                     return false;
                 }
 

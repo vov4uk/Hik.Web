@@ -1,5 +1,7 @@
 ﻿@using Hik.Client.Helpers
-@model List<Hik.DataAccess.Data.MediaFile>
+@using Hik.DTO
+@using Hik.DTO.Contracts
+@model List<MediaFileDto>
 
 <h2>Files</h2>
 <table class="table table-bordered table-sm" aria-label="Files">
@@ -9,8 +11,8 @@
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Date)</th>
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Duration)</th>
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Size)</th>
-            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().DownloadDuration.Started)</th>
-            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().DownloadDuration.Duration)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().DownloadStarted)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().DownloadDuration)</th>
         </tr>
     </thead>
     <tbody>
@@ -18,13 +20,13 @@
         {
             string size = item.Size.FormatBytes();
             string duration = item.Duration.FormatSeconds();
-            string downloaded = (item.DownloadDuration?.Duration).FormatSeconds();
+            string downloaded = item.DownloadDuration.FormatSeconds();
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>
                 <td>@duration</td>
                 <td>@size</td>
-                <td>@Html.DisplayFor(modelItem => item.DownloadDuration.Started)</td>
+                <td>@Html.DisplayFor(modelItem => item.DownloadStarted)</td>
                 <td>@downloaded</td>
             </tr>
         }

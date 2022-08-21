@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
@@ -36,20 +37,28 @@ namespace Hik.Client.Service
             var result = new List<MediaFileDto>();
             if (allFiles.Any())
             {
-                var compressedFiles = new List<string>();
                 foreach (var filePath in allFiles)
                 {
-                    var compressed = filesHelper.CompressFile(filePath);
-                    compressedFiles.Add(compressed);
-                    filesHelper.DeleteFile(filePath);
-                    string fileName = filesHelper.GetFileName(filePath);
-                    result.Add(new MediaFileDto
+                    try
                     {
-                        Name = fileName,
-                        Path = filePath,
-                        Date = DateTime.Now,
-                    });
+                        filesHelper.CompressFile(filePath);
+                        filesHelper.DeleteFile(filePath);
+                    }
+                    catch (IOException e)
+                    {
+                        logger.LogError(e, "Failed to process file");
+                    }
                 }
+
+                var compressedFiles = this.directoryHelper.EnumerateFiles(fConfig.DestinationFolder, new[] { ".zip" });
+
+                result.AddRange(compressedFiles.Select(x => new MediaFileDto
+                {
+                    Path = x,
+                    Date = DateTime.Now,
+                    Size = filesHelper.FileSize(x),
+                    Name = filesHelper.GetFileName(x),
+                }));
 
                 await MoveToFtp(compressedFiles, fConfig.RemoteFolder);
             }

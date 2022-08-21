@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using Hik.Api;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
@@ -79,7 +78,7 @@ namespace Job.Impl
             if (Config.SentEmailOnError)
             {
                 var details = JobInstance.ToHtmlTable(Config);
-                email.Send(error, Config.Alias, details);
+                email.Send(error, TriggerKey, details);
             }
         }
 
@@ -95,13 +94,13 @@ namespace Job.Impl
             });
         }
 
-        private async Task SaveResultsInternalAsync(Result<IReadOnlyCollection<MediaFileDto>> files)
+        private async Task SaveResultsInternalAsync(Result<IReadOnlyCollection<MediaFileDto>> result)
         {
-            if (files.IsSuccess)
+            if (result.IsSuccess)
             {
-                if (files.Value?.Any() == true)
+                if (result.Value?.Any() == true)
                 {
-                    await SaveResultsAsync(files.Value);
+                    await SaveResultsAsync(result.Value);
                 }
                 else
                 {
@@ -112,7 +111,7 @@ namespace Job.Impl
             }
             else
             {
-                HandleError(files.Error);
+                HandleError(result.Error);
             }
         }
     }
