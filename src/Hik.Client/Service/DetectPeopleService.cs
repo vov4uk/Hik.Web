@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
@@ -33,18 +34,49 @@ namespace Hik.Client.Service
         {
             var dConfig = config as DetectPeopleConfig;
             var result = new List<MediaFileDto>();
-            var allFiles = this.directoryHelper.EnumerateFiles(dConfig.SourceFolder, new[] { ".jpg" });
+
+            if (dConfig.UnzipFiles)
+            {
+                var allZips = this.directoryHelper.EnumerateFiles(dConfig.SourceFolder, new[] { ".zip" }).SkipLast(dConfig.SkipLast);
+                foreach (var zip in allZips)
+                {
+                    try
+                    {
+                        this.filesHelper.UnZipFile(zip);
+                    }
+                    catch (IOException e)
+                    {
+                        logger.LogError(e, $"Failed to unzip file - {zip}");
+                    }
+                    catch (InvalidDataException e)
+                    {
+                        logger.LogError(e, $"Invalid zip file - {zip}");
+                    }
+
+                    try
+                    {
+                        this.filesHelper.DeleteFile(zip);
+                    }
+                    catch (IOException e)
+                    {
+                        logger.LogError(e, $"Failed to delete file - {zip}");
+                    }
+                }
+            }
+
+            var allFiles = this.directoryHelper.EnumerateFiles(dConfig.SourceFolder, new[] { ".jpg" }).SkipLast(dConfig.UnzipFiles ? 0 : dConfig.SkipLast);
 
             var mqConfig = dConfig.RabbitMQConfig;
             if (mqConfig != null && allFiles.Any())
             {
                 using var rabbitMq = factory.Create(mqConfig.HostName, mqConfig.QueueName, mqConfig.RoutingKey);
+                var now = DateTime.Now;
                 foreach (var filePath in allFiles)
                 {
                     string fileName = filesHelper.GetFileName(filePath);
 
                     string newFilePath = filesHelper.CombinePath(dConfig.DestinationFolder, fileName);
-                    string junkFilePath = GetPathSafety(fileName, filesHelper.CombinePath(dConfig.JunkFolder, DateTime.Now.ToPhotoDirectoryNameString()));
+                    string junkFilePath = GetPathSafety(fileName, filesHelper.CombinePath(dConfig.JunkFolder, now.ToPhotoDirectoryNameString()));
 
                     rabbitMq.Sent(new DetectPeopleMessage
                     {
@@ -54,13 +86,14 @@ namespace Hik.Client.Service
                         NewFileName = fileName,
                         JunkFilePath = junkFilePath,
                         DeleteJunk = false,
+                        CompressNewFile = dConfig.CompressNewFile,
                     });
 
                     result.Add(new MediaFileDto
                     {
                         Name = fileName,
                         Path = filePath,
-                        Date = DateTime.Now,
+                        Date = now,
                     });
                 }
             }

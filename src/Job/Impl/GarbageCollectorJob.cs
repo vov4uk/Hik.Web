@@ -33,6 +33,7 @@ namespace Job.Impl
             this.directoryHelper = directory;
             this.filesHelper = files;
             this.filesProvider = provider;
+            this.configValidator = new GarbageCollectorConfigValidator();
         }
 
         protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()

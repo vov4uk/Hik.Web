@@ -23,6 +23,7 @@ namespace Job.Impl
             : base(trigger, config, db, email, logger)
         {
             this.service = service;
+            this.configValidator = new FtpUploaderConfigValidator();
         }
 
         protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()

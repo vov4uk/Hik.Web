@@ -22,6 +22,7 @@ namespace Job.Impl
             : base(trigger, config, db, email, logger)
         {
             this.worker = worker;
+            this.configValidator = new ArchiveConfigValidator();
         }
 
         protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()

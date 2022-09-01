@@ -25,6 +25,7 @@ namespace Job.Impl
             : base(trigger, config, db, email, logger)
         {
             this.downloader = service;
+            this.configValidator = new CameraConfigValidator();
         }
 
         protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()

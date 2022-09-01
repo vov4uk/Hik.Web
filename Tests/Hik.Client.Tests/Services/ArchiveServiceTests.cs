@@ -46,19 +46,6 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async void ExecuteAsync_DestinationNotExist_ExceptionThrown()
-        {
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
-                .Returns(false);
-
-            var service = CreateArchiveService();
-
-            var result = await service.ExecuteAsync(new BaseConfig() { DestinationFolder = "C:\\"}, default(DateTime), default(DateTime));
-            Assert.False(result.IsSuccess);
-            Assert.Equal("DestinationFolder doesn't exist: C:\\", result.Error);
-        }
-
-        [Fact]
         public async Task ExecuteAsync_ExceptionHappened_ExceptionHandled()
         {
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))

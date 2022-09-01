@@ -32,7 +32,8 @@ namespace Hik.DataAccess
 
             this.CreateMap<HikJob, HikJobDto>(MemberList.None)
                 .ForMember(x => x.Error, opt => opt.MapFrom(y => y.ExceptionLog))
-                .ForMember(x => x.JobTrigger, opt => opt.MapFrom(y => y.JobTrigger.TriggerKey));
+                .ForMember(x => x.JobTrigger, opt => opt.MapFrom(y => y.JobTrigger.TriggerKey))
+                .ForMember(x => x.JobTriggerId, opt => opt.MapFrom(y => y.JobTrigger.Id));
         }
     }
 }

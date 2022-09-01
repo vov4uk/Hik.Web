@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture.Xunit2;
@@ -28,16 +29,14 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async void ExecuteAsync_EmptyConfig_ExceptionThrown()
+        public void ExecuteAsync_EmptyConfig_ExceptionThrown()
         {
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
                 .Returns(false);
 
             var service = CreateService();
 
-            var result = await service.ExecuteAsync(default, default, default);
-            Assert.False(result.IsSuccess);
-            Assert.Equal("Invalid config", result.Error);
+            Assert.ThrowsAsync<NullReferenceException>( async() => await service.ExecuteAsync(default, default, default));            
         }
 
         [Theory]
@@ -64,7 +63,7 @@ namespace Hik.Client.Tests.Services
                 .Returns(true);
             this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()))
                 .Returns(new List<string>() { "c:\\file1.jpg", "c:\\file2.jpg" });
-            filesMock.Setup(x => x.CompressFile(It.IsAny<string>())).Returns(string.Empty);
+            filesMock.Setup(x => x.ZipFile(It.IsAny<string>())).Returns(string.Empty);
             filesMock.Setup(x => x.DeleteFile(It.IsAny<string>()));
             filesMock.Setup(x => x.GetFileName(It.IsAny<string>())).Returns("file");
             ftpMock.As<IClientBase>().Setup(x => x.InitializeClient());
@@ -91,7 +90,7 @@ namespace Hik.Client.Tests.Services
                 .Returns(true);
             this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()))
                 .Returns(new List<string>() { "c:\\file1.jpg", "c:\\file2.jpg" });
-            filesMock.Setup(x => x.CompressFile(It.IsAny<string>())).Returns(string.Empty);
+            filesMock.Setup(x => x.ZipFile(It.IsAny<string>())).Returns(string.Empty);
             filesMock.Setup(x => x.DeleteFile(It.IsAny<string>()));
             filesMock.Setup(x => x.GetFileName(It.IsAny<string>())).Returns("file");
             ftpMock.As<IClientBase>().Setup(x => x.InitializeClient());

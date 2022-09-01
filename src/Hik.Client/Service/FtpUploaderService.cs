@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +19,8 @@ namespace Hik.Client.Service
     {
         private readonly IFilesHelper filesHelper;
         private readonly IUploaderClient ftp;
+        private readonly ImageCodecInfo imageCodec;
+        private readonly EncoderParameters encoderParameters;
 
         public FtpUploaderService(
             IDirectoryHelper directoryHelper,
@@ -27,12 +31,15 @@ namespace Hik.Client.Service
         {
             this.filesHelper = filesHelper;
             this.ftp = ftp;
+            this.imageCodec = ImageCodecInfo.GetImageEncoders().FirstOrDefault(c => c.FormatID == ImageFormat.Jpeg.Guid);
+            this.encoderParameters = new EncoderParameters(1);
+            encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 25L);
         }
 
         protected override async Task<MediaFiles> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var fConfig = config as FtpUploaderConfig;
-            var allFiles = this.directoryHelper.EnumerateFiles(fConfig.DestinationFolder, fConfig.AllowedFileExtentions);
+            var allFiles = this.directoryHelper.EnumerateFiles(fConfig.DestinationFolder, fConfig.AllowedFileExtentions).SkipLast(fConfig.SkipLast);
 
             var result = new List<MediaFileDto>();
             if (allFiles.Any())
@@ -41,12 +48,23 @@ namespace Hik.Client.Service
                 {
                     try
                     {
-                        filesHelper.CompressFile(filePath);
+                        if (IsPicture(filePath))
+                        {
+                            var tmp = filesHelper.GetTempFileName();
+                            SaveJpg(filePath, tmp);
+                            filesHelper.RenameFile(tmp, filePath);
+                        }
+
+                        filesHelper.ZipFile(filePath);
                         filesHelper.DeleteFile(filePath);
                     }
                     catch (IOException e)
                     {
                         logger.LogError(e, "Failed to process file");
+                    }
+                    catch (InvalidDataException e)
+                    {
+                        logger.LogError(e, "Invalid file");
                     }
                 }
 
@@ -66,7 +84,7 @@ namespace Hik.Client.Service
             return result;
         }
 
-        private async Task MoveToFtp(List<string> compressedFiles, string remoteFolder)
+        private async Task MoveToFtp(IEnumerable<string> compressedFiles, string remoteFolder)
         {
             ftp.InitializeClient();
             if (ftp.Login())
@@ -82,6 +100,33 @@ namespace Hik.Client.Service
             {
                 ftp.ForceExit();
                 throw new InvalidOperationException("Unable to login to FTP");
+            }
+        }
+
+        private bool IsPicture(string filePath)
+        {
+            return filesHelper.GetExtension(filePath) == ".jpg";
+        }
+
+        private void SaveJpg(string source, string destination)
+        {
+            try
+            {
+                CompressImage(source, destination);
+                filesHelper.DeleteFile(source);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error saving file {destination}");
+            }
+        }
+
+        private void CompressImage(string source, string destination)
+        {
+            using (Bitmap bitmap = new Bitmap(source))
+            {
+                filesHelper.DeleteFile(destination);
+                bitmap.Save(destination, this.imageCodec, this.encoderParameters);
             }
         }
     }

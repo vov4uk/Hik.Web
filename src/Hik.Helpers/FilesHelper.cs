@@ -129,15 +129,22 @@ namespace Hik.Helpers
             return Path.GetDirectoryName(path);
         }
 
-        public string CompressFile(string path)
+        public string ZipFile(string path)
         {
             string newPath = Path.ChangeExtension(path, ".zip");
-            using (ZipArchive archive = ZipFile.Open(newPath, ZipArchiveMode.Create))
+            using (ZipArchive archive = System.IO.Compression.ZipFile.Open(newPath, ZipArchiveMode.Create))
             {
                 archive.CreateEntryFromFile(path, Path.GetFileName(path), CompressionLevel.Optimal);
             }
-
             return newPath;
+        }
+
+        public void UnZipFile(string path)
+        {
+            using (ZipArchive archive = System.IO.Compression.ZipFile.Open(path, ZipArchiveMode.Read))
+            {
+                archive.ExtractToDirectory(Path.GetDirectoryName(path), overwriteFiles: true);
+            }
         }
     }
 }

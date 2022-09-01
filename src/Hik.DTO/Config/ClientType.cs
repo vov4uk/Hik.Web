@@ -2,6 +2,7 @@
 {
     public enum ClientType
     {
+        None,
         HikVisionVideo,
         HikVisionPhoto,
         Yi,

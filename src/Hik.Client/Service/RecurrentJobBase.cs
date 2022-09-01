@@ -22,21 +22,18 @@ namespace Hik.Client.Service
             this.logger = logger;
         }
 
-        public async Task<Result<IReadOnlyCollection<MediaFileDto>>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public Task<Result<IReadOnlyCollection<MediaFileDto>>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            return await FirstFailureOrSuccess(
-                FailureIf(config == null, "Invalid config"),
-                FailureIf(!this.directoryHelper.DirExist(config?.DestinationFolder), $"DestinationFolder doesn't exist: {config?.DestinationFolder}"))
-                .OnSuccessTry(
-                    async () =>
-                    {
-                        return await RunAsync(config, from, to);
-                    },
-                    e =>
-                    {
-                        this.logger.LogError(e, e.Message);
-                        return e.Message;
-                    });
+            return Try(
+                async () =>
+                {
+                    return await RunAsync(config, from, to);
+                },
+                e =>
+                {
+                    this.logger.LogError(e, e.Message);
+                    return e.Message;
+                });
         }
 
         protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to);

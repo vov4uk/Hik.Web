@@ -7,7 +7,7 @@
 {
   <div class="row">
       <div class="card-body text-center">
-          <h2 class="card-title">@Model.Dto.Job.JobTrigger</h2>
+            <h2 class="card-title"><a asp-page="./Job" asp-route-jobTriggerId="@Model.Dto.Job.JobTriggerId">@Model.Dto.Job.JobTrigger</a></h2>
       </div>
   </div>
 
@@ -107,18 +107,18 @@ else if (Model.Dto.Items != null && Model.Dto.Items.Any())
       
           e = e || window.event;
       
-          if (e.keyCode == '37') {
+          if (e.keyCode == '37') { // <-
              if (index > 0) {
                 updateImage(index - 1);
               }
           }
-          else if (e.keyCode == '39') {
+          else if (e.keyCode == '39') { // ->
             if (index < images.length - 1) {
                 updateImage(index + 1);
               }
           }
-          else if (e.keyCode == '27') {
-             popup.classList.toggle("active");
+          else if (e.keyCode == '27') { //esc
+             popup.classList.remove("active");
           }
       }
 

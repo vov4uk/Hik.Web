@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text;
+using FluentValidation;
 
 namespace Hik.DTO.Config
 {
@@ -8,9 +10,9 @@ namespace Hik.DTO.Config
     {
         public int ProcessingPeriodHours { get; set; }
 
-        public DeviceConfig Camera { get; set; } = new DeviceConfig() { PortNumber = 8000 };
+        public DeviceConfig Camera { get; set; }
 
-        public ClientType ClientType { get; set; } = ClientType.HikVisionVideo;
+        public ClientType ClientType { get; set; }
 
         public bool SyncTime { get; set; } = true;
 
@@ -36,6 +38,17 @@ namespace Hik.DTO.Config
             sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
             sb.AppendLine(this.GetHtmlRow("User name", this.Camera.UserName));
             return sb.ToString();
+        }
+    }
+
+    public class CameraConfigValidator : AbstractValidator<CameraConfig>
+    {
+        public CameraConfigValidator()
+        {
+            RuleFor(x => x.ProcessingPeriodHours).GreaterThan(0);
+            RuleFor(x => x.ClientType).NotEqual(ClientType.None);
+            RuleFor(x => x.Camera).NotNull().SetValidator(new DeviceConfigValidator());
+            RuleFor(x => x.DestinationFolder).Must(x => Directory.Exists(x));
         }
     }
 }

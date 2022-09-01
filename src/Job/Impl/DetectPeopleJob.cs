@@ -25,6 +25,7 @@ namespace Job.Impl
             : base(trigger, config, db, email, logger)
         {
             this.worker = service;
+            this.configValidator = new DetectPeopleConfigValidator();
         }
 
         protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()

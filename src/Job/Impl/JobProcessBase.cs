@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using FluentValidation;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
@@ -20,6 +21,7 @@ namespace Job.Impl
         protected readonly IHikDatabase db;
         protected readonly IEmailHelper email;
         protected JobTrigger jobTrigger;
+        protected AbstractValidator<T> configValidator;
 
         protected JobProcessBase(string trigger, T config, IHikDatabase db, IEmailHelper email, ILogger logger)
         {
@@ -41,6 +43,9 @@ namespace Job.Impl
             {
                 await CreateJobInstanceAsync();
                 Config.Alias = TriggerKey;
+
+                this.configValidator.ValidateAndThrow(Config);
+
                 var result = await RunAsync();
                 await SaveResultsInternalAsync(result);
             }

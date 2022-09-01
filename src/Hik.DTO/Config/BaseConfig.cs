@@ -3,10 +3,10 @@ using System.Text;
 
 namespace Hik.DTO.Config
 {
-    public class BaseConfig
+    public abstract class BaseConfig
     {
         [JsonProperty("JobTimeoutMinutes")]
-        public int Timeout { get; set; } = 45;
+        public int Timeout { get; set; } = 29;
 
         public string Alias { get; set; }
 
@@ -14,11 +14,11 @@ namespace Hik.DTO.Config
 
         public bool SentEmailOnError { get; set; } = true;
 
-        public bool ShowInSearch { get; set; } = true;
+        public bool ShowInSearch { get; set; } = false;
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.AppendLine(this.GetRow(nameof(Alias), this.Alias));
             sb.AppendLine(this.GetRow(nameof(DestinationFolder), this.DestinationFolder));
             sb.AppendLine(this.GetRow(nameof(Timeout), this.Timeout.ToString()));
@@ -28,7 +28,7 @@ namespace Hik.DTO.Config
 
         public virtual string ToHtmlTable()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.AppendLine(this.GetHtmlRow(nameof(Alias), this.Alias));
             sb.AppendLine(this.GetHtmlRow(nameof(DestinationFolder), this.DestinationFolder));
             sb.AppendLine(this.GetHtmlRow(nameof(Timeout), this.Timeout.ToString()));

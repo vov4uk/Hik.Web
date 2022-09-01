@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Hik.Client.Service
 {
@@ -35,10 +37,40 @@ namespace Hik.Client.Service
         protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
             var aConfig = config as ArchiveConfig;
+
+            if (aConfig.UnzipFiles)
+            {
+                var allZips = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, new[] { ".zip" }).SkipLast(aConfig.SkipLast);
+                foreach (var zip in allZips)
+                {
+                    try
+                    {
+                        this.filesHelper.UnZipFile(zip);
+                    }
+                    catch (IOException e)
+                    {
+                        logger.LogError(e, $"Failed to unzip file - {zip}");
+                    }
+                    catch (InvalidDataException e)
+                    {
+                        logger.LogError(e, $"Invalid zip file - {zip}");
+                    }
+
+                    try
+                    {
+                        this.filesHelper.DeleteFile(zip);
+                    }
+                    catch (IOException e)
+                    {
+                        logger.LogError(e, $"Failed to delete file - {zip}");
+                    }
+                }
+            }
+
             this.regex = this.GetRegex(aConfig.FileNamePattern);
 
             var result = new List<MediaFileDto>();
-            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions).SkipLast(aConfig.SkipLast);
+            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions).SkipLast(aConfig.UnzipFiles ? 0 : aConfig.SkipLast);
 
             foreach (var filePath in allFiles)
             {
@@ -49,14 +81,17 @@ namespace Hik.Client.Service
                 string newFileName = date.ToArchiveFileString(duration, fileExt);
                 string newFilePath = MoveFile(aConfig.DestinationFolder, filePath, date, newFileName);
 
-                result.Add(new MediaFileDto
+                var dto = new MediaFileDto
                 {
                     Date = date,
                     Name = filesHelper.GetFileName(newFilePath),
                     Path = newFilePath,
                     Duration = duration,
                     Size = filesHelper.FileSize(newFilePath),
-                });
+                };
+                result.Add(dto);
+
+                logger.LogInformation($"{filePath} -> {JsonConvert.SerializeObject(dto)}");
             }
 
             return result.AsReadOnly();

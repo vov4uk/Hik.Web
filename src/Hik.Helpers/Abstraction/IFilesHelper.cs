@@ -38,6 +38,8 @@ namespace Hik.Helpers.Abstraction
 
         string GetDirectoryName(string path);
 
-        public string CompressFile(string path);
+        string ZipFile(string path);
+
+        void UnZipFile(string path);
     }
 }

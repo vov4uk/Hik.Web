@@ -162,9 +162,9 @@
         [InlineData(2020, 12, 31, ClientType.Yi720p, "/tmp/sd/record/2020Y12M31D00H/00M00S60.mp4", "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, ClientType clientType, string remoteFilePath, string localFilePath)
         {
-            var cameraConfig = new CameraConfig { ClientType = clientType, DestinationFolder = "C:\\", Alias = "test" };
+            var cameraConfig = new CameraConfig { ClientType = clientType, DestinationFolder = "C:\\", Alias = "test", Camera = new () };
 
-            MediaFileDto remoteFile = new MediaFileDto { Date = new DateTimeOffset(y, m, d, 0, 0, 0, new TimeSpan(0, 0, 0)).UtcDateTime, Duration = 60, Name = "00M00S" };
+            MediaFileDto remoteFile = new() { Date = new DateTimeOffset(y, m, d, 0, 0, 0, new TimeSpan(0, 0, 0)).UtcDateTime, Duration = 60, Name = "00M00S" };
 
             var tempName = localFilePath + ".tmp";
             var targetName = localFilePath;
