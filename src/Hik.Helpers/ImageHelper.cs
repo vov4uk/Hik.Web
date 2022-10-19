@@ -39,5 +39,16 @@ namespace Hik.Helpers
                 image.Save(newPath, image.RawFormat);
             }
         }
+
+        public string GetDescriptionDate(string path)
+        {
+            if (!string.IsNullOrEmpty(path) && File.Exists(path + "desc"))
+            {
+                string desc = File.ReadAllText(path + "desc");
+                File.Delete(path + "desc");
+                return desc;
+            }
+            return null;
+        }
     }
 }

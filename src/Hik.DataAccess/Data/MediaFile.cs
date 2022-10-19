@@ -22,6 +22,8 @@ namespace Hik.DataAccess.Data
 
         public string Path { get; set; }
 
+        public string Objects { get; set; }
+
         public DateTime Date { get; set; }
 
         public int? Duration { get; set; }

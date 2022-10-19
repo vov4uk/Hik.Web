@@ -29,7 +29,7 @@
       <li class="item">
               <img
                 alt="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")"
-                name="@photo.Name"
+                name="@photo.Name (@photo.Objects)"
                 src="@Url.Content($"/Search?fileId={@photo?.Id}&handler=ImageThumbnail")"
                 class="thumbnail-border" />
               <span class="image-overlay">@photo.Name</span>

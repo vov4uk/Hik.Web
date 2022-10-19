@@ -79,6 +79,9 @@ namespace Hik.Client.Service
 
                 string fileExt = filesHelper.GetExtension(filePath);
                 string newFileName = date.ToArchiveFileString(duration, fileExt);
+
+                string desciption = imageHelper.GetDescriptionDate(filePath);
+
                 string newFilePath = MoveFile(aConfig.DestinationFolder, filePath, date, newFileName);
 
                 var dto = new MediaFileDto
@@ -88,6 +91,7 @@ namespace Hik.Client.Service
                     Path = newFilePath,
                     Duration = duration,
                     Size = filesHelper.FileSize(newFilePath),
+                    Objects = desciption,
                 };
                 result.Add(dto);
 
