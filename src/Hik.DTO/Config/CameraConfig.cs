@@ -18,6 +18,8 @@ namespace Hik.DTO.Config
 
         public int SyncTimeDeltaSeconds { get; set; } = 5;
 
+        public string RemotePath { get; set; }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

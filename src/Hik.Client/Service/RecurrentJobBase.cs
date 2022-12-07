@@ -22,13 +22,10 @@ namespace Hik.Client.Service
             this.logger = logger;
         }
 
-        public Task<Result<IReadOnlyCollection<MediaFileDto>>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
+        public async Task<Result<IReadOnlyCollection<MediaFileDto>>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            return Try(
-                async () =>
-                {
-                    return await RunAsync(config, from, to);
-                },
+            return await Try(
+                () => RunAsync(config, from, to),
                 e =>
                 {
                     this.logger.LogError(e, e.Message);

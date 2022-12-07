@@ -40,13 +40,6 @@ namespace Job
                         var worker = AppBootstrapper.Container.Resolve<IArchiveService>(loggerParameter);
                         return new ArchiveJob(trigger, config, worker, db, email, logger);
                     }
-                case "Job.Impl.DetectPeopleJob, Job":
-                case "DetectPeople":
-                    {
-                        var config = HikConfigExtensions.GetConfig<DetectPeopleConfig>(parameters.ConfigFilePath);
-                        var worker = AppBootstrapper.Container.Resolve<IDetectPeopleService>(loggerParameter);
-                        return new DetectPeopleJob(trigger, config, worker, db, email, logger);
-                    }
                 case "Job.Impl.FtpUploader, Job":
                 case "FtpUploader":
                     {

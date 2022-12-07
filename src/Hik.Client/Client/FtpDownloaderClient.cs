@@ -26,7 +26,9 @@ namespace Hik.Client
 
         public override async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
-            FtpListItem[] filesFromFtp = await ftp.GetListingAsync($"/{config.Alias.Split(".")[1]}");
+            string path = !string.IsNullOrEmpty(config.RemotePath) ? config.RemotePath : $"/{config.Alias.Split(".")[1]}";
+
+            FtpListItem[] filesFromFtp = await ftp.GetListingAsync(path);
 
             var files = filesFromFtp.Select(item => new MediaFileDto
             {
