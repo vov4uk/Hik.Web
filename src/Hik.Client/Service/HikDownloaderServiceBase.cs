@@ -107,7 +107,7 @@ namespace Hik.Client.Service
         private async Task<IReadOnlyCollection<MediaFileDto>> InternalDownload(CameraConfig config, DateTime from, DateTime to)
         {
             var result = await ProcessCameraAsync(config, from, to);
-            if (!result.Any())
+            if (result?.Any() != true)
             {
                 logger.LogWarning($"{from} - {to} : No files downloaded");
             }

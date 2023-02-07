@@ -71,7 +71,7 @@ namespace Hik.Client.Client
             }
             else
             {
-                logger.LogError($"File not found {remoteFilePath}");
+                logger.LogWarning($"File not found {remoteFilePath}");
                 return false;
             }
         }

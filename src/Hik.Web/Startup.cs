@@ -39,10 +39,6 @@ namespace Hik.Web
             services
                 .AddDataBaseConfiguration(this.configuration)
                 .AddAutoMapper(projectsAssemblies)
-                .AddLogging(opt =>
-                {
-                    opt.AddConsole();
-                })
                 .Configure<ApiBehaviorOptions>(options =>
                 {
                     options.SuppressInferBindingSourcesForParameters = true;

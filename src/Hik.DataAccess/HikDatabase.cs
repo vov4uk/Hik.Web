@@ -73,7 +73,7 @@ namespace Hik.DataAccess
                 {
                     var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
                     var trigger = await triggerRepo.FindByAsync(x => x.Id == job.JobTriggerId);
-                    trigger.LastSync = job.Started;
+                    trigger.LastSync = job.LatestFileEndDate ?? job.Started;
                     triggerRepo.Update(trigger);
                 }
 

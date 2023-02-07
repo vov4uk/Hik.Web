@@ -71,7 +71,7 @@ namespace Hik.Client
 
         protected override string ToDirectoryNameString(MediaFileDto file)
         {
-            return file.Date.ToPhotoDirectoryNameString();
+            return config.SaveFilesToRootFolder ? string.Empty : file.Date.ToPhotoDirectoryNameString();
         }
     }
 }

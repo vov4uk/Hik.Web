@@ -20,6 +20,10 @@ namespace Hik.DTO.Config
 
         public string RemotePath { get; set; }
 
+        // If false - will save files in tree structure {Year}-{Month}\{Day}\{Hour}
+        // Else directrly to root folder
+        public bool SaveFilesToRootFolder { get; set; } = false;
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -50,7 +54,7 @@ namespace Hik.DTO.Config
             RuleFor(x => x.ProcessingPeriodHours).GreaterThan(0);
             RuleFor(x => x.ClientType).NotEqual(ClientType.None);
             RuleFor(x => x.Camera).NotNull().SetValidator(new DeviceConfigValidator());
-            RuleFor(x => x.DestinationFolder).Must(x => Directory.Exists(x));
+            RuleFor(x => x.DestinationFolder).Must(x => !string.IsNullOrEmpty(x));
         }
     }
 }

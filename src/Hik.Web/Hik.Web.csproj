@@ -90,7 +90,6 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Prefer32Bit>True</Prefer32Bit>
-    <DefineConstants>RELEASE;$(DefineConstants)</DefineConstants>
     <!-- <DefineConstants>USE_AUTHORIZATION;RELEASE;$(DefineConstants)</DefineConstants> -->
   </PropertyGroup>
 

@@ -4,11 +4,13 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers;
 using Job.Email;
 using Job.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,6 +45,11 @@ namespace Job.Impl
             {
                 await CreateJobInstanceAsync();
                 Config.Alias = TriggerKey;
+
+                if (!Directory.Exists(Config.DestinationFolder))
+                {
+                    Directory.CreateDirectory(Config.DestinationFolder);
+                }
 
                 this.configValidator.ValidateAndThrow(Config);
 

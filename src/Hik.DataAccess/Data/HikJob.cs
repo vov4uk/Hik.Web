@@ -1,4 +1,5 @@
-﻿using Hik.DataAccess.Abstractions;
+﻿using AutoMapper.Configuration.Annotations;
+using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Metadata;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,9 @@ namespace Hik.DataAccess.Data
 
         [ForeignKey("JobTrigger")]
         public int JobTriggerId { get; set; }
+
+        [NotMapped]
+        public DateTime? LatestFileEndDate { get; set; }
 
         public bool Success { get; set; } = true;
 
