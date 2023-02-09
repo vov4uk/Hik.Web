@@ -9,7 +9,7 @@
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     <IsTestProject>true</IsTestProject>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
-    <Platforms>x64;ARM64</Platforms>
+    <Platforms>x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
