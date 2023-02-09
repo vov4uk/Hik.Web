@@ -4,7 +4,7 @@
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.1</TargetFramework>
     <DebugType>full</DebugType>
-    <Platforms>x64;ARM64</Platforms>
+    <Platforms>x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
