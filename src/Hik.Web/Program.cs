@@ -67,7 +67,7 @@ namespace Hik.Web
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
-                    logging.SetMinimumLevel(LogLevel.Information);
+                    logging.SetMinimumLevel(LogLevel.Trace);
                     logging.AddConsole();
                     logging.AddFile("Logs\\hikweb-{Date}.txt");
                 });
