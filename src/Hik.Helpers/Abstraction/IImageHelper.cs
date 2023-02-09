@@ -8,6 +8,6 @@ namespace Hik.Helpers.Abstraction
 
         byte[] GetThumbnail(string path, int width, int height);
 
-        string GetDescriptionDate(string path);
+        string GetDescriptionData(string path);
     }
 }

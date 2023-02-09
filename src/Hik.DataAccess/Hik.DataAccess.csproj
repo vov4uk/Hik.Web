@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFramework>net6.0</TargetFramework>
+	  <TargetFramework>net7.0</TargetFramework>
 	  <AssemblyName>Hik.DataAccess</AssemblyName>
 	  <RootNamespace>Hik.DataAccess</RootNamespace>
     <Platforms>x64;ARM64</Platforms>

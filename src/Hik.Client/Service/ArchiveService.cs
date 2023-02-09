@@ -85,7 +85,7 @@ namespace Hik.Client.Service
                 string fileExt = filesHelper.GetExtension(filePath);
                 string newFileName = date.ToArchiveFileString(duration, fileExt);
 
-                string desciption = imageHelper.GetDescriptionDate(filePath);
+                string desciption = imageHelper.GetDescriptionData(filePath);
 
                 string newFilePath = MoveFile(aConfig.DestinationFolder, filePath, date, newFileName);
 
@@ -172,9 +172,9 @@ namespace Hik.Client.Service
         private Regex GetRegex(string template)
         {
             // Handels regex special characters.
-            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => @"\" + m.Value);
-            string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)") + "$";
-            return new Regex(pattern);
+            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => @"\" + m.Value, RegexOptions.None, TimeSpan.FromMilliseconds(100));
+            string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)", RegexOptions.None, TimeSpan.FromMilliseconds(100)) + "$";
+            return new Regex(pattern, RegexOptions.None, TimeSpan.FromMilliseconds(100));
         }
 
         private bool IsPicture(string filePath)

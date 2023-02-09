@@ -9,15 +9,15 @@ namespace Hik.DTO.Config
 
         public string SourceFolder { get; set; }
 
-        public string FileNamePattern { get; set; } // = "{0}";
+        public string FileNamePattern { get; set; }
 
-        public string FileNameDateTimeFormat { get; set; } //= "yyyyMMddHHmmssfff";
+        public string FileNameDateTimeFormat { get; set; }
 
         public int SkipLast { get; set; } = 0;
 
         public int AbnormalFilesCount { get; set; } = 0;
 
-        public string[] AllowedFileExtentions { get; set; } // = { ".mp4", ".jpg", ".ini" };
+        public string[] AllowedFileExtentions { get; set; }
     }
 
     public class ArchiveConfigValidator : AbstractValidator<ArchiveConfig>

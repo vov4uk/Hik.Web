@@ -54,6 +54,7 @@ namespace Job.Impl
                     }
                     catch (IOException)
                     {
+                        //OK
                     }
                 }
 

@@ -131,7 +131,7 @@ namespace Hik.Client.Tests.Services
                 .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
-            this.imageMock.Setup(x => x.GetDescriptionDate(It.IsAny<string>())).Returns(string.Empty);
+            this.imageMock.Setup(x => x.GetDescriptionData(It.IsAny<string>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
             this.filesMock.Setup(x => x.FileSize(targetFile))
@@ -194,7 +194,7 @@ namespace Hik.Client.Tests.Services
                 .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
-            this.imageMock.Setup(x => x.GetDescriptionDate(It.IsAny<string>())).Returns(string.Empty);
+            this.imageMock.Setup(x => x.GetDescriptionData(It.IsAny<string>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.FileSize(targetFile))
                 .Returns(1024);

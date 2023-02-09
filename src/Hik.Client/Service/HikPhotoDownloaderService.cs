@@ -42,6 +42,10 @@ namespace Hik.Client.Service
                     photo.DownloadDuration = (int)(finish - start).TotalSeconds;
                     this.OnFileDownloaded(new FileDownloadedEventArgs(photo));
                 }
+                else
+                {
+                    photo.Path = "FailedToDownload";
+                }
             }
 
             return remoteFiles;

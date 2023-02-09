@@ -57,6 +57,7 @@ namespace Hik.Web.Queries.QuartzJobConfig
             }
             catch (JsonException)
             {
+                //OK
             }
 
             return unPrettyJson;

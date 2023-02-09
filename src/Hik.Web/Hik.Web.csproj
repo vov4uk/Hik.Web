@@ -76,29 +76,12 @@
   <PropertyGroup>
     <!-- Exclude the project from analysis -->
     <SonarQubeExclude>true</SonarQubeExclude>
-    <TargetFrameworks>net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>net7.0</TargetFrameworks>
     <StartupObject>Hik.Web.Program</StartupObject>
   </PropertyGroup>
 
   <PropertyGroup>
     <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Prefer32Bit>True</Prefer32Bit>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Prefer32Bit>True</Prefer32Bit>
-    <!-- <DefineConstants>USE_AUTHORIZATION;RELEASE;$(DefineConstants)</DefineConstants> -->
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <Prefer32Bit>True</Prefer32Bit>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <Prefer32Bit>True</Prefer32Bit>
   </PropertyGroup>
 
 </Project>
