@@ -26,8 +26,8 @@ namespace Hik.DTO.Config
         {
             RuleFor(x => x.FileNamePattern).NotEmpty();
             RuleFor(x => x.FileNameDateTimeFormat).NotEmpty();
-            RuleFor(x => x.DestinationFolder).Must(x => Directory.Exists(x));
-            RuleFor(x => x.SourceFolder).Must(x => Directory.Exists(x));
+            RuleFor(x => x.DestinationFolder).NotNull();
+            RuleFor(x => x.SourceFolder).NotNull();
             RuleFor(x => x.AllowedFileExtentions).NotEmpty();
         }
     }

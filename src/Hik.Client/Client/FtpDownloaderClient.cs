@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
+using FluentFTP.Exceptions;
 using Hik.Client.Client;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -18,7 +19,7 @@ namespace Hik.Client
             CameraConfig config,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
-            IFtpClient ftp,
+            IAsyncFtpClient ftp,
             ILogger logger)
             : base(config, filesHelper, directoryHelper, ftp, logger)
         {
@@ -28,7 +29,7 @@ namespace Hik.Client
         {
             string path = !string.IsNullOrEmpty(config.RemotePath) ? config.RemotePath : $"/{config.Alias.Split(".")[1]}";
 
-            FtpListItem[] filesFromFtp = await ftp.GetListingAsync(path);
+            FtpListItem[] filesFromFtp = await ftp.GetListing(path);
 
             var files = filesFromFtp.Select(item => new MediaFileDto
             {
@@ -56,7 +57,7 @@ namespace Hik.Client
                 remoteFile.Path = localFilePath;
                 try
                 {
-                    await ftp.DeleteFileAsync(remoteFilePath, token);
+                    await ftp.DeleteFile(remoteFilePath);
                 }
                 catch (FtpException ex)
                 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
+using FluentFTP.Exceptions;
 using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
@@ -23,7 +24,7 @@ namespace Hik.Client.Client
             CameraConfig config,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
-            IFtpClient ftp,
+            IAsyncFtpClient ftp,
             ILogger logger)
             : base(config?.Camera, ftp, logger)
         {
@@ -52,7 +53,7 @@ namespace Hik.Client.Client
 
         protected async Task<bool> DownloadInternalAsync(MediaFileDto remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
         {
-            var remoteFileExist = await ftp.FileExistsAsync(remoteFilePath, token);
+            var remoteFileExist = await ftp.FileExists(remoteFilePath, token);
 
             if (remoteFileExist)
             {
@@ -63,7 +64,7 @@ namespace Hik.Client.Client
                     .Handle<FtpException>()
                     .Or<TimeoutException>()
                     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(3))
-                    .ExecuteAsync(() => ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token));
+                    .ExecuteAsync(() => ftp.DownloadFile(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token));
 
                 filesHelper.RenameFile(tempFile, localFilePath);
 

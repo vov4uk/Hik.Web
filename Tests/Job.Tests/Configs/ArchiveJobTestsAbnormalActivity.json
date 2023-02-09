@@ -4,5 +4,7 @@
   "DestinationFolder": "C:\\FFOutput",
   "SourceFolder": "C:\\Floor1",
   "FileNameDateTimeFormat": "yyyyMMdd_HHmmss",
-  "AbnormalFilesCount": 1
+  "AbnormalFilesCount": 1,
+  "FileNamePattern": "{0}",
+  "AllowedFileExtentions": [".ini"]
 }

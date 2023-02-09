@@ -20,7 +20,7 @@ namespace Hik.Client
             CameraConfig config,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
-            IFtpClient ftp,
+            IAsyncFtpClient ftp,
             ILogger logger)
             : base(config, filesHelper, directoryHelper, ftp, logger)
         {

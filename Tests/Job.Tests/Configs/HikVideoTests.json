@@ -2,9 +2,12 @@
   "ProcessingPeriodHours": 48,
   "JobTimeoutMinutes": 25,
   "Alias": "StreetCamera",
-  "IPAddress": "192.168.1.64",
-  "PortNumber": 8000,
-  "UserName": "admin",
-  "Password": "admin",
-  "DestinationFolder": "G:\\Cloud"
+  "DestinationFolder": "G:\\Cloud",
+  "ClientType" : "HikvisionVideo",
+  "Camera": {
+    "IPAddress": "192.168.1.64",
+    "PortNumber": 8000,
+    "UserName": "admin",
+    "Password": "admin"
+  }
 }

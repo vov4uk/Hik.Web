@@ -38,6 +38,11 @@ namespace Hik.Client.Service
         {
             var aConfig = config as ArchiveConfig;
 
+            if (aConfig == null)
+            {
+                throw new ArgumentException("Invalid config");
+            }
+
             if (aConfig.UnzipFiles)
             {
                 var allZips = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, new[] { ".zip" }).SkipLast(aConfig.SkipLast);

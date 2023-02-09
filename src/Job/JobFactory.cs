@@ -50,7 +50,7 @@ namespace Job
                             (pi, ctx) => config?.FtpServer);
 
                         var ftpParameter = new ResolvedParameter(
-                            (pi, ctx) => pi.ParameterType == typeof(IFtpClient) && pi.Name == "ftp",
+                            (pi, ctx) => pi.ParameterType == typeof(IAsyncFtpClient) && pi.Name == "ftp",
                             (pi, ctx) => new FtpClient());
 
                         var client = AppBootstrapper.Container.Resolve<IUploaderClient>(configParameter, ftpParameter, loggerParameter);

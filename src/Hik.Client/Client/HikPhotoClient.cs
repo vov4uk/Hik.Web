@@ -32,18 +32,25 @@ namespace Hik.Client
 
         public Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
         {
-            string targetFilePath = GetPathSafety(remoteFile);
-
-            if (!filesHelper.FileExists(targetFilePath))
+            try
             {
-                string tempFile = ToFileNameString(remoteFile);
-                hikApi.PhotoService.DownloadFile(session.UserId, remoteFile.Name, remoteFile.Size, tempFile);
+                string targetFilePath = GetPathSafety(remoteFile);
 
-                this.imageHelper.SetDate(tempFile, targetFilePath, remoteFile.Date);
-                filesHelper.DeleteFile(tempFile);
-                remoteFile.Path = targetFilePath;
+                if (!filesHelper.FileExists(targetFilePath))
+                {
+                    string tempFile = ToFileNameString(remoteFile);
+                    hikApi.PhotoService.DownloadFile(session.UserId, remoteFile.Name, remoteFile.Size, tempFile);
 
-                return Task.FromResult(true);
+                    this.imageHelper.SetDate(tempFile, targetFilePath, remoteFile.Date);
+                    filesHelper.DeleteFile(tempFile);
+                    remoteFile.Path = targetFilePath;
+
+                    return Task.FromResult(true);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, $"Failed to download {remoteFile.Name} : {remoteFile.Path}");
             }
 
             return Task.FromResult(false);

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Job.Tests.Impl
 {
@@ -17,8 +18,7 @@ namespace Job.Tests.Impl
         protected readonly Mock<IFilesHelper> filesHelper;
         protected readonly Mock<IFileProvider> filesProvider;
 
-        public GarbageCollectorJobTests()
-            : base()
+        public GarbageCollectorJobTests(ITestOutputHelper output) : base(output)
         {
             directoryHelper = new(MockBehavior.Strict);
             filesHelper = new();
@@ -37,7 +37,7 @@ namespace Job.Tests.Impl
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\Junk"));
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
-            filesProvider.Setup(x => x.GetFilesOlderThan(null, It.IsAny<DateTime>()))
+            filesProvider.Setup(x => x.GetFilesOlderThan(It.IsAny<string>(), It.IsAny<DateTime>()))
                 .Returns(new List<MediaFileDto>() { new () })
                 .Verifiable();
             filesHelper.Setup(x => x.FileSize(It.IsAny<string>()))
@@ -63,7 +63,7 @@ namespace Job.Tests.Impl
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\Junk"));
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
-            filesProvider.Setup(x => x.GetFilesOlderThan(null, It.IsAny<DateTime>()))
+            filesProvider.Setup(x => x.GetFilesOlderThan(It.IsAny<string>(), It.IsAny<DateTime>()))
                 .Returns(new List<MediaFileDto>() {
                     new () { Date = new (2022, 01,01)},
                     new () { Date = new (2022, 01,11)},
@@ -159,7 +159,7 @@ namespace Job.Tests.Impl
         private GarbageCollectorJob CreateJob(string configFileName = "GCTests.json")
         {
             var config = GetConfig<GarbageCollectorConfig>(configFileName);
-            return new GarbageCollectorJob($"{group}.{triggerKey}", config, directoryHelper.Object, filesHelper.Object, filesProvider.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+            return new GarbageCollectorJob($"{group}.{triggerKey}", config, directoryHelper.Object, filesHelper.Object, filesProvider.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
         }
     }
 }

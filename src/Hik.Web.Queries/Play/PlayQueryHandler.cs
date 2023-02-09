@@ -34,7 +34,9 @@ namespace Hik.Web.Queries.Play
                 {
                     var beforeFile = filesRepo.GetAll()
                         .Where(x => x.JobTriggerId == file.JobTriggerId && x.Id < file.Id)
-                        .OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).FirstOrDefault();
+                        .OrderByDescending(x => x.Date)
+                        .ThenByDescending(x => x.Id)
+                        .FirstOrDefault();
 
                     MediaFileDto previousFile = default;
                     if (beforeFile != null)
@@ -44,7 +46,8 @@ namespace Hik.Web.Queries.Play
 
                     var afterFile = filesRepo.GetAll()
                         .Where(x => x.JobTriggerId == file.JobTriggerId && x.Id > file.Id)
-                        .OrderBy(x => x.Date).ThenBy(x => x.Id).FirstOrDefault();
+                        .OrderBy(x => x.Date).ThenBy(x => x.Id)
+                        .FirstOrDefault();
 
                     MediaFileDto nextFile = default;
                     if (afterFile != null)

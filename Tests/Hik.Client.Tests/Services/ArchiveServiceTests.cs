@@ -52,7 +52,7 @@ namespace Hik.Client.Tests.Services
                 .Returns(true);
             this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()))
                 .Returns(new List<string> { "Hello World!" });
-            this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>()))
+            this.filesMock.Setup(x => x.UnZipFile(It.IsAny<string>()))
                 .Throws<OperationCanceledException>();
 
             var config = fixture.Build<ArchiveConfig>()
@@ -75,7 +75,7 @@ namespace Hik.Client.Tests.Services
 
             var service = CreateArchiveService();
             await service.ExecuteAsync(fixture.Create<ArchiveConfig>(), default(DateTime), default(DateTime));
-            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
+            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.AtLeastOnce);
         }
 
         [Fact]
@@ -88,7 +88,10 @@ namespace Hik.Client.Tests.Services
                 .Returns(new List<string> { "File" });
 
             var service = CreateArchiveService();
-            var config = fixture.Build<ArchiveConfig>().With(x => x.SkipLast, 1).Create();
+            var config = fixture.Build<ArchiveConfig>()
+                .With(x => x.SkipLast, 1)
+                .With(x => x.UnzipFiles, false)
+                .Create();
             await service.ExecuteAsync(config, default(DateTime), default(DateTime));
             this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
         }
@@ -128,6 +131,7 @@ namespace Hik.Client.Tests.Services
                 .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
+            this.imageMock.Setup(x => x.GetDescriptionDate(It.IsAny<string>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
             this.filesMock.Setup(x => x.FileSize(targetFile))
@@ -190,6 +194,7 @@ namespace Hik.Client.Tests.Services
                 .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
+            this.imageMock.Setup(x => x.GetDescriptionDate(It.IsAny<string>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.FileSize(targetFile))
                 .Returns(1024);

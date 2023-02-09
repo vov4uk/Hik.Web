@@ -7,6 +7,7 @@ using Moq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Job.Tests.Impl
 {
@@ -14,8 +15,7 @@ namespace Job.Tests.Impl
     {
         protected readonly Mock<IFileProvider> filesProvider;
 
-        public DbMigrationJobTests()
-            : base()
+        public DbMigrationJobTests(ITestOutputHelper output) : base(output)
         {
             filesProvider = new(MockBehavior.Strict);
         }
@@ -68,7 +68,7 @@ namespace Job.Tests.Impl
         private DbMigrationJob CreateJob(string configFileName = "DBMigrationTests.json")
         {
             var config = GetConfig<MigrationConfig>(configFileName);
-            return new DbMigrationJob(config, filesProvider.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+            return new DbMigrationJob(config, filesProvider.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
         }
     }
 }

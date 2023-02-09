@@ -8,12 +8,13 @@ using Hik.DTO.Contracts;
 using Job.Impl;
 using Moq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Job.Tests.Impl
 {
     public class FtpUploaderJobTests : ServiceJobBaseTests<IFtpUploaderService>
     {
-        public FtpUploaderJobTests() : base() { }
+        public FtpUploaderJobTests(ITestOutputHelper output) : base(output) { }
 
         [Fact]
         public async Task ExecuteAsync_2FilesFound_StatisticsUpdated()
@@ -45,10 +46,10 @@ namespace Job.Tests.Impl
             Assert.Equal(DateTime.Today, job.JobInstance.PeriodEnd.Value.Date);
         }
 
-        private FtpUploaderJob CreateJob(string configFileName = "ArchiveJobTests.json")
+        private FtpUploaderJob CreateJob(string configFileName = "FtpUploader.json")
         {
             var config = GetConfig<FtpUploaderConfig>(configFileName);
-            return new FtpUploaderJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+            return new FtpUploaderJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
         }
     }
 }

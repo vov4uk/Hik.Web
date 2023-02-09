@@ -10,13 +10,13 @@ namespace Hik.Client.Client
     public abstract class FtpClientBase : IClientBase
     {
         protected readonly DeviceConfig deviceConfig;
-        protected readonly IFtpClient ftp;
+        protected readonly IAsyncFtpClient ftp;
         protected readonly ILogger logger;
         private bool disposedValue = false;
 
         protected FtpClientBase(
             DeviceConfig config,
-            IFtpClient ftp,
+            IAsyncFtpClient ftp,
             ILogger logger)
         {
             this.deviceConfig = config ?? throw new ArgumentNullException(nameof(config));
@@ -33,11 +33,11 @@ namespace Hik.Client.Client
         {
             ftp.Host = deviceConfig.IpAddress;
             ftp.Port = deviceConfig.PortNumber;
-            ftp.ConnectTimeout = 5 * 1000;
-            ftp.DataConnectionReadTimeout = 5 * 1000;
-            ftp.ReadTimeout = 5 * 1000;
-            ftp.DataConnectionConnectTimeout = 5 * 1000;
-            ftp.RetryAttempts = 3;
+            ftp.Config.ConnectTimeout = 5 * 1000;
+            ftp.Config.DataConnectionReadTimeout = 5 * 1000;
+            ftp.Config.ReadTimeout = 5 * 1000;
+            ftp.Config.DataConnectionConnectTimeout = 5 * 1000;
+            ftp.Config.RetryAttempts = 3;
             ftp.Credentials = new NetworkCredential(deviceConfig.UserName, deviceConfig.Password);
         }
 

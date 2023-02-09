@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentFTP;
+using FluentFTP.Exceptions;
 using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,7 @@ namespace Hik.Client.Client
 {
     public class FtpUploaderClient : FtpClientBase, IUploaderClient
     {
-        public FtpUploaderClient(DeviceConfig config, IFtpClient ftp, ILogger logger)
+        public FtpUploaderClient(DeviceConfig config, IAsyncFtpClient ftp, ILogger logger)
             : base(config, ftp, logger)
         {
         }
@@ -22,7 +23,7 @@ namespace Hik.Client.Client
                    .Handle<FtpException>()
                    .Or<TimeoutException>()
                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(3))
-                   .ExecuteAsync(() => ftp.UploadFilesAsync(localPaths, remoteDir, FtpRemoteExists.Overwrite));
+                   .ExecuteAsync(() => ftp.UploadFiles(localPaths, remoteDir, FtpRemoteExists.Overwrite));
         }
     }
 }

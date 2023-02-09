@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using FluentFTP;
+using FluentFTP.Exceptions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
@@ -15,7 +16,7 @@ namespace Hik.Client.Tests
 {
     public class FtpDownloaderClientTests
     {
-        private readonly Mock<IFtpClient> ftpMock;
+        private readonly Mock<IAsyncFtpClient> ftpMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IDirectoryHelper> dirMock;
         private readonly Mock<ILogger> loggerMock;
@@ -41,7 +42,7 @@ namespace Hik.Client.Tests
         {
             var config = new CameraConfig { Camera = new DeviceConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" } };
 
-            var ftp = new FtpClient();
+            var ftp = new AsyncFtpClient();
             var client = new FtpDownloaderClient(config, this.filesMock.Object, this.dirMock.Object, ftp, loggerMock.Object);
             client.InitializeClient();
 
@@ -53,12 +54,12 @@ namespace Hik.Client.Tests
         [Fact]
         public async Task GetFilesListAsync_CallWithValidParameters_ReturnMapppedFiles()
         {
-            ftpMock.Setup(x => x.GetListingAsync("/CameraName", default)).ReturnsAsync(new FtpListItem[]
+            ftpMock.Setup(x => x.GetListing("/CameraName", default)).ReturnsAsync(new FtpListItem[]
             {
                 new FtpListItem(){Name = "192.168.8.103_01_20220517095135158_MOTION_DETECTION", FullName = "/192.168.8.103_01_20220517095135158_MOTION_DETECTION.jpg"}
             });
 
-            var config = new CameraConfig { Alias = "Group.CameraName" };
+            var config = new CameraConfig { Alias = "Group.CameraName", Camera = new DeviceConfig() };
 
             var client = new FtpDownloaderClient(config, this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object, loggerMock.Object);
             var mediaFiles = await client.GetFilesListAsync(default, default);
@@ -93,7 +94,7 @@ namespace Hik.Client.Tests
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(false);
-            this.ftpMock.Setup(x => x.FileExistsAsync(It.IsAny<string>(), CancellationToken.None))
+            this.ftpMock.Setup(x => x.FileExists(It.IsAny<string>(), CancellationToken.None))
                 .ReturnsAsync(false);
 
             var client = this.GetClient();
@@ -112,14 +113,14 @@ namespace Hik.Client.Tests
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(false);
-            this.ftpMock.Setup(x => x.FileExistsAsync(It.IsAny<string>(), CancellationToken.None))
+            this.ftpMock.Setup(x => x.FileExists(It.IsAny<string>(), CancellationToken.None))
                 .ReturnsAsync(true);
             this.filesMock.Setup(x => x.GetTempFileName())
                 .Returns(randomName);
             this.filesMock.Setup(x => x.RenameFile(randomName, It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>()))
                 .Returns(-1);
-            this.ftpMock.Setup(x => x.DownloadFileAsync(randomName, It.IsAny<string>(), FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DownloadFile(randomName, It.IsAny<string>(), FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
 
             var client = this.GetClient();
@@ -139,16 +140,16 @@ namespace Hik.Client.Tests
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(false);
-            this.ftpMock.Setup(x => x.FileExistsAsync(It.IsAny<string>(), CancellationToken.None))
+            this.ftpMock.Setup(x => x.FileExists(It.IsAny<string>(), CancellationToken.None))
                 .ReturnsAsync(true);
             this.filesMock.Setup(x => x.GetTempFileName())
                 .Returns(randomName);
             this.filesMock.Setup(x => x.RenameFile(randomName, It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>()))
                 .Returns(file.Size);
-            this.ftpMock.Setup(x => x.DownloadFileAsync(randomName, It.IsAny<string>(), FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DownloadFile(randomName, It.IsAny<string>(), FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
-            this.ftpMock.Setup(x => x.DeleteFileAsync(file.Path, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DeleteFile(file.Path, CancellationToken.None))
                 .Returns(Task.CompletedTask);
 
             var client = this.GetClient();
@@ -168,17 +169,17 @@ namespace Hik.Client.Tests
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(false);
-            this.ftpMock.Setup(x => x.FileExistsAsync(It.IsAny<string>(), CancellationToken.None))
+            this.ftpMock.Setup(x => x.FileExists(It.IsAny<string>(), CancellationToken.None))
                 .ReturnsAsync(true);
             this.filesMock.Setup(x => x.GetTempFileName())
                 .Returns(randomName);
             this.filesMock.Setup(x => x.RenameFile(randomName, It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>()))
                 .Returns(file.Size);
-            this.ftpMock.Setup(x => x.DownloadFileAsync(randomName, It.IsAny<string>(), FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DownloadFile(randomName, It.IsAny<string>(), FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
-            this.ftpMock.Setup(x => x.DeleteFileAsync(file.Path, CancellationToken.None))
-                .ThrowsAsync(new Exception("Something went wrong"));
+            this.ftpMock.Setup(x => x.DeleteFile(file.Path, CancellationToken.None))
+                .ThrowsAsync(new FtpException("Something went wrong"));
 
             var client = this.GetClient();
             var isDownloaded = await client.DownloadFileAsync(file, CancellationToken.None);

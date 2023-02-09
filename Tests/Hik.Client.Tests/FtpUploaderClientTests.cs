@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.Xunit2;
 using FluentFTP;
+using FluentFTP.Exceptions;
 using Hik.Client.Client;
 using Hik.DTO.Config;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace Hik.Client.Tests
 {
     public class FtpUploaderClientTests
     {
-        private readonly Mock<IFtpClient> ftpMock;
+        private readonly Mock<IAsyncFtpClient> ftpMock;
         private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
 
@@ -36,7 +37,7 @@ namespace Hik.Client.Tests
         {
             var config = new DeviceConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" };
 
-            var ftp = new FtpClient();
+            var ftp = new AsyncFtpClient();
             var client = new FtpUploaderClient(config, ftp, loggerMock.Object);
             client.InitializeClient();
 
@@ -51,17 +52,16 @@ namespace Hik.Client.Tests
         {
             var config = new DeviceConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" };
 
-            ftpMock.SetupSequence(x => x.UploadFilesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), FtpRemoteExists.Overwrite, true, FtpVerify.None, FtpError.None, default, null))
+            ftpMock.SetupSequence(x => x.UploadFiles(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), FtpRemoteExists.Overwrite, true, FtpVerify.None, FtpError.None, default, null, null))
                 .Throws<TimeoutException>()
                 .Throws<FtpHashUnsupportedException>()
-                .ReturnsAsync(1);
+                .ReturnsAsync(new List<FtpResult>());
 
             var client = new FtpUploaderClient(config, ftpMock.Object, loggerMock.Object);
             await client.UploadFilesAsync(files, remotePath);
 
-            ftpMock.Verify(x => x.UploadFilesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), FtpRemoteExists.Overwrite, true, FtpVerify.None, FtpError.None, default, null),
+            ftpMock.Verify(x => x.UploadFiles(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), FtpRemoteExists.Overwrite, true, FtpVerify.None, FtpError.None, default, null, null),
                 Times.Exactly(3));
-
         }
     }
 }

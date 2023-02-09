@@ -48,7 +48,13 @@ namespace Job.Impl
 
                 if (!Directory.Exists(Config.DestinationFolder))
                 {
-                    Directory.CreateDirectory(Config.DestinationFolder);
+                    try
+                    {
+                        Directory.CreateDirectory(Config.DestinationFolder);
+                    }
+                    catch (IOException)
+                    {
+                    }
                 }
 
                 this.configValidator.ValidateAndThrow(Config);

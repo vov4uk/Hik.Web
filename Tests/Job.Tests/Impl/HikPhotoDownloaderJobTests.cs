@@ -9,12 +9,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Job.Tests.Impl
 {
     public class HikPhotoDownloaderJobTests : ServiceJobBaseTests<IHikPhotoDownloaderService>
     {
-        public HikPhotoDownloaderJobTests() : base() { }
+        public HikPhotoDownloaderJobTests(ITestOutputHelper output) : base(output) { }
 
         [Fact]
         public async Task ExecuteAsync_FileDownloaded_SaveFilesAsync()
@@ -73,7 +74,7 @@ namespace Job.Tests.Impl
         private HikPhotoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
         {
             var config = GetConfig<CameraConfig>(configFileName);
-            return new HikPhotoDownloaderJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+            return new HikPhotoDownloaderJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
         }
     }
 }
