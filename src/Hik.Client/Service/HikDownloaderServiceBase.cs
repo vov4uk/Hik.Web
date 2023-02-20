@@ -52,39 +52,33 @@ namespace Hik.Client.Service
 
         protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            try
+            IReadOnlyCollection<MediaFileDto> jobResult = null;
+
+            CameraConfig cameraConfig = config as CameraConfig ?? throw new ArgumentNullException(nameof(config));
+
+            using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(cameraConfig.Timeout)))
             {
-                CameraConfig cameraConfig = config as CameraConfig ?? throw new ArgumentNullException(nameof(config));
-                IReadOnlyCollection<MediaFileDto> jobResult = null;
+                TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
 
-                using (cancelTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(cameraConfig.Timeout)))
+                cancelTokenSource.Token.Register(() =>
                 {
-                    TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
+                    taskCompletionSource.TrySetCanceled();
+                });
 
-                    cancelTokenSource.Token.Register(() =>
-                    {
-                        taskCompletionSource.TrySetCanceled();
-                    });
+                Task<IReadOnlyCollection<MediaFileDto>> downloadTask = InternalDownload(cameraConfig, from, to);
+                Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
 
-                    Task<IReadOnlyCollection<MediaFileDto>> downloadTask = InternalDownload(cameraConfig, from, to);
-                    Task completedTask = await Task.WhenAny(downloadTask, taskCompletionSource.Task);
-
-                    if (completedTask == downloadTask)
-                    {
-                        jobResult = await downloadTask;
-                        taskCompletionSource.TrySetResult(true);
-                    }
-
-                    await taskCompletionSource.Task;
+                if (completedTask == downloadTask)
+                {
+                    jobResult = await downloadTask;
+                    taskCompletionSource.TrySetResult(true);
                 }
 
-                cancelTokenSource = null;
-                return jobResult;
+                await taskCompletionSource.Task;
             }
-            catch (HikException ex)
-            {
-                throw new InvalidOperationException($"{ex.ErrorMessage}, Code : {ex.ErrorCode}");
-            }
+
+            cancelTokenSource = null;
+            return jobResult;
         }
 
         protected virtual void OnFileDownloaded(FileDownloadedEventArgs e)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using Hik.Api;
 using Hik.Client.Abstraction.Services;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -28,6 +29,14 @@ namespace Hik.Client.Service
                 () => RunAsync(config, from, to),
                 e =>
                 {
+                    if (e is HikException)
+                    {
+                        var ex = e as HikException;
+                        var msg = $"{ex.ErrorMessage}, Code : {ex.ErrorCode}";
+                        this.logger.LogError(ex, msg);
+                        return msg;
+                    }
+
                     this.logger.LogError(e, e.Message);
                     return e.Message;
                 });

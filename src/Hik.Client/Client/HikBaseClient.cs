@@ -50,7 +50,7 @@ namespace Hik.Client
             logger.LogInformation("SDK Logs : {sdkLogsPath}", sdkLogsPath);
             hikApi.Initialize();
             hikApi.SetupLogs(3, sdkLogsPath, false);
-            hikApi.SetConnectTime(2000, 1);
+            hikApi.SetConnectTime(3000, 3);
             hikApi.SetReconnect(10000, 1);
         }
 
