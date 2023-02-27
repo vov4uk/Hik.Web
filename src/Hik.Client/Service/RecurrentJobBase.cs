@@ -32,7 +32,7 @@ namespace Hik.Client.Service
                     if (e is HikException)
                     {
                         var ex = e as HikException;
-                        var msg = $"{ex.ErrorMessage}, Code : {ex.ErrorCode}";
+                        var msg = $"Code : {ex.ErrorCode}; {ex.ErrorMessage}";
                         this.logger.LogError(ex, msg);
                         return msg;
                     }
