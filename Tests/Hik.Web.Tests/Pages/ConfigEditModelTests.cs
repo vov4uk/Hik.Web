@@ -52,7 +52,7 @@ namespace Hik.Web.Tests.Pages
                 .ReturnsAsync(new QuartzJobConfigDto { Config = CronConfig });
 
             this._mediator.Setup(x => x.Send(It.Is<UpdateQuartzJobConfigCommand>(y => y.Json == "Abra kadabra"), default(CancellationToken)))
-                .ReturnsAsync(MediatR.Unit.Value);
+                .Returns(Task.CompletedTask);
             var sut = new ConfigEditModel(this._mediator.Object);
             await sut.OnGetAsync(name, group);
             sut.ModelState.SetModelValue(JsonKey, "Abra kadabra", "");
@@ -72,7 +72,7 @@ namespace Hik.Web.Tests.Pages
                 .ReturnsAsync(new QuartzJobConfigDto { Config = CronConfig });
 
             this._mediator.Setup(x => x.Send(It.Is<UpdateQuartzJobConfigCommand>(y => y.Json == "Abra kadabra"), default(CancellationToken)))
-                .ReturnsAsync(MediatR.Unit.Value);
+                .Returns(Task.CompletedTask);
             var sut = new ConfigEditModel(this._mediator.Object);
             await sut.OnGetAsync(name, group);
             sut.ModelState.SetModelValue(JsonKey, new string[] {"Abra", "Abra kadabra"}, "");

@@ -3,7 +3,6 @@ using Hik.Web.Commands.Cron;
 using Hik.Web.Pages;
 using Hik.Web.Queries.QuartzTriggers;
 using Job;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moq;
@@ -34,7 +33,7 @@ namespace Hik.Web.Tests.Pages
         public async Task OnPostRestartAsync_Redirect()
         {
             this._mediator.Setup(x => x.Send(It.IsAny<RestartSchedulerCommand>(), default(CancellationToken)))
-                .ReturnsAsync(Unit.Value);
+                .Returns(Task.CompletedTask);
 
             var sut = new SchedulerModel(this._mediator.Object);
             var result = await sut.OnPostRestartAsync();

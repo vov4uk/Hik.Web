@@ -106,7 +106,7 @@ namespace Job
             {
                 StartInfo =
                 {
-                    FileName = $"{Parameters.Group}\\JobHost.exe",
+                    FileName = JobHost,
                     Arguments = Parameters.ToString(),
                     CreateNoWindow = true,
                     UseShellExecute = false,

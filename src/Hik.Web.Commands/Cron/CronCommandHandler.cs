@@ -20,16 +20,14 @@ namespace Hik.Web.Commands.Cron
             this.cronHelper = cronHelper;
         }
 
-        public async Task<Unit> Handle(RestartSchedulerCommand request, CancellationToken cancellationToken)
+        public async Task Handle(RestartSchedulerCommand request, CancellationToken cancellationToken)
         {
             await cronHelper.RestartSchedulerAsync(configuration);
-            return Unit.Value;
         }
 
-        public async Task<Unit> Handle(UpdateQuartzJobCommand request, CancellationToken cancellationToken)
+        public async Task Handle(UpdateQuartzJobCommand request, CancellationToken cancellationToken)
         {
             await cronHelper.UpdateCronAsync(configuration, request.Cron);
-            return Unit.Value;
         }
 
         public async Task<int> Handle(StartActivityCommand request, CancellationToken cancellationToken)

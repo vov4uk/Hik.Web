@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 
 namespace Hik.Web
@@ -48,9 +49,9 @@ namespace Hik.Web
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
                 (BasicAuthentication, null);
             services.AddAuthorization();
-#endif            
+#endif
             services.AddRazorPages();
-
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
             services.AddHttpLogging(options =>
             {
                 options.LoggingFields = HttpLoggingFields.RequestPropertiesAndHeaders |
