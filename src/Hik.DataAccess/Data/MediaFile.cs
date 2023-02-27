@@ -22,6 +22,8 @@ namespace Hik.DataAccess.Data
 
         public string Path { get; set; }
 
+        public string Objects { get; set; }
+
         public DateTime Date { get; set; }
 
         public int? Duration { get; set; }
@@ -38,14 +40,14 @@ namespace Hik.DataAccess.Data
         {
             if (Debugger.IsAttached)
             {
-                return this.Path.Replace("E:\\Cloud\\", "W:\\");
+                return this.Path?.Replace("E:\\Cloud\\", "W:\\");
             }
 
-            if (!System.IO.Path.HasExtension(this.Path))
+            if (!string.IsNullOrEmpty(Path) && !System.IO.Path.HasExtension(this.Path))
             {
                 return System.IO.Path.Combine(this.Path, this.Name);
             }
-            return this.Path;
+            return this.Path ?? string.Empty;
         }
     }
 }

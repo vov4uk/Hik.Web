@@ -10,8 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 
 namespace Hik.Web
@@ -42,15 +44,14 @@ namespace Hik.Web
                 {
                     options.SuppressInferBindingSourcesForParameters = true;
                 });
-
+#if USE_AUTHORIZATION
             services.AddAuthentication(BasicAuthentication)
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
                 (BasicAuthentication, null);
-
-            services
-                .AddAuthorization()
-                .AddRazorPages();
-
+            services.AddAuthorization();
+#endif
+            services.AddRazorPages();
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
             services.AddHttpLogging(options =>
             {
                 options.LoggingFields = HttpLoggingFields.RequestPropertiesAndHeaders |
@@ -76,16 +77,23 @@ namespace Hik.Web
 
             app.UseDeveloperExceptionPage()
                 .UseStaticFiles()
-                .UseRouting()
-                .UseAuthentication()
+                .UseRouting();
+
+#if USE_AUTHORIZATION
+            app.UseAuthentication()
                 .UseAuthorization()
-                .UseEndpoints(endpoints =>
-                {
-                    endpoints.MapRazorPages()
-                    .RequireAuthorization();
-                })
                 .UseHttpsRedirection()
                 .UseHsts();
+#endif
+            app.UseEndpoints(endpoints =>
+                {
+#if USE_AUTHORIZATION
+                 endpoints.MapRazorPages()
+                    .RequireAuthorization();
+#else
+                    endpoints.MapRazorPages();
+#endif
+                });
         }
     }
 }

@@ -5,7 +5,7 @@ using CSharpFunctionalExtensions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 
-namespace Hik.Client.Abstraction
+namespace Hik.Client.Abstraction.Services
 {
     public interface IRecurrentJob
     {

@@ -46,13 +46,21 @@ namespace Hik.Web.Queries.QuartzJobConfig
         {
             if (string.IsNullOrEmpty(unPrettyJson))
                 return string.Empty;
-
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>(unPrettyJson);
-
-            return JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions()
+            try
             {
-                WriteIndented = true
-            });
+                var jsonElement = JsonSerializer.Deserialize<JsonElement>(unPrettyJson);
+
+                return JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions()
+                {
+                    WriteIndented = true
+                });
+            }
+            catch (JsonException)
+            {
+                //OK
+            }
+
+            return unPrettyJson;
         }
     }
 }

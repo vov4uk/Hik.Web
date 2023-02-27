@@ -128,11 +128,6 @@ namespace Hik.Client.Helpers
             return $"{date.Year:0000}-{date.Month:00}\\{date.Day:00}\\{date.Hour:00}";
         }
 
-        public static string ToPhotoDirectoryShortNameString(this DateTime date)
-        {
-            return $"{date.Year:0000}-{date.Month:00}\\{date.Day:00}";
-        }
-
         public static string ToVideoUserFriendlyString(this MediaFileDto file)
         {
             return $"{file.Name} | {file.Date.ToString(StartDateTimePrintFormat)} - {file.Duration} | {FormatBytes(file.Size)} ";

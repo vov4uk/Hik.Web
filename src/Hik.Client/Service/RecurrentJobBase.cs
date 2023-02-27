@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using Hik.Client.Abstraction;
+using Hik.Api;
+using Hik.Client.Abstraction.Services;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
@@ -24,20 +25,20 @@ namespace Hik.Client.Service
 
         public async Task<Result<IReadOnlyCollection<MediaFileDto>>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            return await FirstFailureOrSuccess(
-                FailureIf(config == null, "Invalid config"),
-                FailureIf(!this.directoryHelper.DirExist(config?.DestinationFolder), $"DestinationFolder doesn't exist: {config?.DestinationFolder}"))
-                .OnSuccessTry(async () =>
+            return await Try(
+                () => RunAsync(config, from, to),
+                e =>
                 {
-                    try
+                    if (e is HikException)
                     {
-                        return await RunAsync(config, from, to);
+                        var ex = e as HikException;
+                        var msg = $"Code : {ex.ErrorCode}; {ex.ErrorMessage}";
+                        this.logger.LogError(ex, msg);
+                        return msg;
                     }
-                    catch (Exception e)
-                    {
-                        this.logger.LogError(e, e.Message);
-                        throw;
-                    }
+
+                    this.logger.LogError(e, e.Message);
+                    return e.Message;
                 });
         }
 

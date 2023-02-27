@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Hik.Client.Abstraction;
+    using Hik.Client.Abstraction.Services;
     using Hik.DataAccess.Data;
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
@@ -11,10 +11,11 @@
     using Moq;
     using Newtonsoft.Json;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class ArchiveJobTests : ServiceJobBaseTests<IArchiveService>
     {
-        public ArchiveJobTests() : base() { }
+        public ArchiveJobTests(ITestOutputHelper output) : base(output) { }
 
         [Fact]
         public void Constructor_ConfigNotExist_Exception()
@@ -196,7 +197,7 @@
         private ArchiveJob CreateJob(string configFileName = "ArchiveJobTests.json")
         {
             var config = GetConfig<ArchiveConfig>(configFileName);
-            return new ArchiveJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock.Object);
+            return new ArchiveJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
         }
     }
 }

@@ -2,10 +2,11 @@
 {
     public enum ClientType
     {
+        None,
         HikVisionVideo,
         HikVisionPhoto,
         Yi,
         Yi720p,
-        FTP,
+        FTPDownload,
     }
 }

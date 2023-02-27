@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace Hik.Helpers.Abstraction
 {
@@ -8,5 +7,7 @@ namespace Hik.Helpers.Abstraction
         void SetDate(string path, string newPath, DateTime date);
 
         byte[] GetThumbnail(string path, int width, int height);
+
+        string GetDescriptionData(string path);
     }
 }

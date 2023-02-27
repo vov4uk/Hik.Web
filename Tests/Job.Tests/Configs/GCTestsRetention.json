@@ -1,4 +1,5 @@
 {
   "DestinationFolder": "C:\\Junk",
-  "RetentionPeriodDays": 10
+  "RetentionPeriodDays": 10,
+  "FileExtention": ".ini"
 }

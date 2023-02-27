@@ -225,7 +225,7 @@
         [InlineData(2020, 12, 31, 3600, "ch000000001", "C:\\2020-12\\31\\00\\20201231_000000_010000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, int duration, string name, string fileName)
         {
-            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test" };
+            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test", Camera = new DTO.Config.DeviceConfig() };
 
             int downloadHandler = 1;
             this.SetupLoginAndHddStatusCheck();
@@ -239,13 +239,13 @@
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(targetName))
                 .Returns(1);
-            this.filesMock.Setup(x => x.RenameFile(tempName, targetName));
+            this.filesMock.Setup(x => x.RenameFile(tempName + ".mp4", targetName));
             this.filesMock.Setup(x => x.FileExists(targetName))
                 .Returns(false);
             this.filesMock.Setup(x => x.GetTempFileName())
                 .Returns(tempName);
 
-            this.videoServiceMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), remoteFile.Name, tempName))
+            this.videoServiceMock.Setup(x => x.StartDownloadFile(It.IsAny<int>(), remoteFile.Name, tempName + ".mp4"))
                 .Returns(downloadHandler);
             this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<int>()))
                 .Returns(100);
@@ -260,8 +260,8 @@
             this.dirMock.Verify(x => x.CreateDirIfNotExist(It.IsAny<string>()), Times.Once);
             this.filesMock.Verify(x => x.FileExists(targetName), Times.Once);
             this.filesMock.Verify(x => x.GetTempFileName(), Times.Once);
-            this.filesMock.Verify(x => x.RenameFile(tempName, targetName), Times.Once);
-            this.videoServiceMock.Verify(x => x.StartDownloadFile(It.IsAny<int>(), remoteFile.Name, tempName), Times.Once);
+            this.filesMock.Verify(x => x.RenameFile(tempName + ".mp4", targetName), Times.Once);
+            this.videoServiceMock.Verify(x => x.StartDownloadFile(It.IsAny<int>(), remoteFile.Name, tempName + ".mp4"), Times.Once);
         }
 
         [Fact]
@@ -306,7 +306,8 @@
             using (client = this.GetHikClient())
             {
                 client.Login();
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None));
+                var result = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
+                Assert.False(result);
             }
 
             this.videoServiceMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);

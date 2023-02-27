@@ -1,14 +1,16 @@
 ﻿using CSharpFunctionalExtensions;
-using Hik.Api;
+using FluentValidation;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
+using Hik.Helpers;
 using Job.Email;
 using Job.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,6 +23,7 @@ namespace Job.Impl
         protected readonly IHikDatabase db;
         protected readonly IEmailHelper email;
         protected JobTrigger jobTrigger;
+        protected AbstractValidator<T> configValidator;
 
         protected JobProcessBase(string trigger, T config, IHikDatabase db, IEmailHelper email, ILogger logger)
         {
@@ -42,6 +45,21 @@ namespace Job.Impl
             {
                 await CreateJobInstanceAsync();
                 Config.Alias = TriggerKey;
+
+                if (!Directory.Exists(Config.DestinationFolder))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(Config.DestinationFolder);
+                    }
+                    catch (IOException)
+                    {
+                        //OK
+                    }
+                }
+
+                this.configValidator.ValidateAndThrow(Config);
+
                 var result = await RunAsync();
                 await SaveResultsInternalAsync(result);
             }
@@ -79,7 +97,7 @@ namespace Job.Impl
             if (Config.SentEmailOnError)
             {
                 var details = JobInstance.ToHtmlTable(Config);
-                email.Send(error, Config.Alias, details);
+                email.Send(error, TriggerKey, details);
             }
         }
 
@@ -95,13 +113,13 @@ namespace Job.Impl
             });
         }
 
-        private async Task SaveResultsInternalAsync(Result<IReadOnlyCollection<MediaFileDto>> files)
+        private async Task SaveResultsInternalAsync(Result<IReadOnlyCollection<MediaFileDto>> result)
         {
-            if (files.IsSuccess)
+            if (result.IsSuccess)
             {
-                if (files.Value?.Any() == true)
+                if (result.Value?.Any() == true)
                 {
-                    await SaveResultsAsync(files.Value);
+                    await SaveResultsAsync(result.Value);
                 }
                 else
                 {
@@ -112,7 +130,7 @@ namespace Job.Impl
             }
             else
             {
-                HandleError(files.Error);
+                HandleError(result.Error);
             }
         }
     }

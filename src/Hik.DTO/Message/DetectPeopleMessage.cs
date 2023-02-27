@@ -8,5 +8,7 @@
         public string NewFilePath { get; set; }
         public string OldFilePath { get; set; }
         public string UniqueId { get; set; }
+
+        public bool CompressNewFile { get; set; } = true;
     }
 }

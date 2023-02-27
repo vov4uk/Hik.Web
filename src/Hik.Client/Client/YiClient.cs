@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
-    public class YiClient : FtpBaseClient
+    public class YiClient : FtpDownloaderClientBase
     {
         private const string YiFileNameFormat = "mm'M00S'";
 
@@ -20,7 +20,7 @@ namespace Hik.Client
             CameraConfig config,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
-            IFtpClient ftp,
+            IAsyncFtpClient ftp,
             ILogger logger)
             : base(config, filesHelper, directoryHelper, ftp, logger)
         {

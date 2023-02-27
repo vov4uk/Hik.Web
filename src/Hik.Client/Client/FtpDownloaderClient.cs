@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
+using FluentFTP.Exceptions;
 using Hik.Client.Client;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -12,13 +13,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
-    public class RSyncClient : FtpBaseClient
+    public class FtpDownloaderClient : FtpDownloaderClientBase
     {
-        public RSyncClient(
+        public FtpDownloaderClient(
             CameraConfig config,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
-            IFtpClient ftp,
+            IAsyncFtpClient ftp,
             ILogger logger)
             : base(config, filesHelper, directoryHelper, ftp, logger)
         {
@@ -26,7 +27,9 @@ namespace Hik.Client
 
         public override async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
-            FtpListItem[] filesFromFtp = await ftp.GetListingAsync($"/{config.Alias.Split(".")[1]}");
+            string path = !string.IsNullOrEmpty(config.RemotePath) ? config.RemotePath : $"/{config.Alias.Split(".")[1]}";
+
+            FtpListItem[] filesFromFtp = await ftp.GetListing(path);
 
             var files = filesFromFtp.Select(item => new MediaFileDto
             {
@@ -54,11 +57,11 @@ namespace Hik.Client
                 remoteFile.Path = localFilePath;
                 try
                 {
-                    await ftp.DeleteFileAsync(remoteFilePath, token);
+                    await ftp.DeleteFile(remoteFilePath);
                 }
-                catch (Exception ex)
+                catch (FtpException ex)
                 {
-                    logger.LogError(ex.ToString());
+                    logger.LogError(ex, "Failed to delete remote file");
                     return false;
                 }
 

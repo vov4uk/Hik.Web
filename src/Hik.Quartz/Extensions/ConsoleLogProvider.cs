@@ -17,7 +17,7 @@ namespace Hik.Quartz.Extensions
             {
                 if (level >= LogLevel.Trace && func != null)
                 {
-                    logger.Log(GetMicrosoftLogLevel(level), func(),parameters);
+                    logger.Log(GetMicrosoftLogLevel(level), func(), parameters);
                 }
                 return true;
             };

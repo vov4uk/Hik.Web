@@ -12,10 +12,10 @@ namespace Hik.Web.Commands.Config
             fileHelper = filesHelper;
         }
 
-        public Task<Unit> Handle(UpdateQuartzJobConfigCommand request, CancellationToken cancellationToken)
+        public Task Handle(UpdateQuartzJobConfigCommand request, CancellationToken cancellationToken)
         {
             fileHelper.WriteAllText(request.Path, request.Json);
-            return Task.FromResult(Unit.Value);
+            return Task.CompletedTask;
         }
     }
 }

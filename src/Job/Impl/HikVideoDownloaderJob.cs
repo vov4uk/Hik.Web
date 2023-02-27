@@ -1,5 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
-using Hik.Client.Abstraction;
+using Hik.Client.Abstraction.Services;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -25,6 +25,7 @@ namespace Job.Impl
             : base(trigger, config, db, email, logger)
         {
             this.downloader = service;
+            this.configValidator = new CameraConfigValidator();
         }
 
         protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
@@ -35,6 +36,7 @@ namespace Job.Impl
             logger.LogInformation("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
             JobInstance.PeriodStart = period.PeriodStart;
             JobInstance.PeriodEnd = period.PeriodEnd;
+            JobInstance.LatestFileEndDate = jobTrigger.LastSync;
             await db.UpdateJobAsync(JobInstance);
 
             var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
@@ -51,6 +53,7 @@ namespace Job.Impl
         private async void Downloader_VideoDownloaded(object sender, Hik.Client.Events.FileDownloadedEventArgs e)
         {
             JobInstance.FilesCount++;
+            JobInstance.LatestFileEndDate = e.File.Date.AddSeconds(e.File.Duration ?? 0);
             var files = new[] { e.File };
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
 

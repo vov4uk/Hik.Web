@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hik.Client
 {
-    public sealed class HikVideoClient : HikBaseClient, IClient
+    public sealed class HikVideoClient : HikBaseClient, IDownloaderClient
     {
         private const int ProgressCheckPeriodMilliseconds = 5000;
 
@@ -32,23 +32,34 @@ namespace Hik.Client
 
         public async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
         {
-            string targetFilePath = GetPathSafety(remoteFile);
-            string tempFile = filesHelper.GetTempFileName();
-            if (this.StartVideoDownload(remoteFile, targetFilePath, tempFile))
+            try
             {
-                do
+                string targetFilePath = GetPathSafety(remoteFile);
+                string tempFile = filesHelper.GetTempFileName() + ".mp4";
+                if (this.StartVideoDownload(remoteFile, targetFilePath, tempFile))
                 {
-                    await Task.Delay(ProgressCheckPeriodMilliseconds, token);
-                    token.ThrowIfCancellationRequested();
-                    this.UpdateVideoProgress();
+                    do
+                    {
+                        await Task.Delay(ProgressCheckPeriodMilliseconds, token);
+                        token.ThrowIfCancellationRequested();
+                        this.UpdateVideoProgress();
+                    }
+                    while (this.IsDownloading);
+
+                    filesHelper.RenameFile(tempFile, targetFilePath);
+                    remoteFile.Size = filesHelper.FileSize(targetFilePath);
+                    remoteFile.Path = targetFilePath;
+
+                    return true;
                 }
-                while (this.IsDownloading);
-
-                filesHelper.RenameFile(tempFile, targetFilePath);
-                remoteFile.Size = filesHelper.FileSize(targetFilePath);
-                remoteFile.Path = targetFilePath;
-
-                return true;
+                else
+                {
+                    logger.LogWarning("DownloadFileAsync failed to start");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "DownloadFileAsync failed");
             }
 
             return false;
@@ -71,7 +82,7 @@ namespace Hik.Client
 
         protected override string ToDirectoryNameString(MediaFileDto file)
         {
-            return file.ToVideoDirectoryNameString();
+            return config.SaveFilesToRootFolder ? string.Empty : file.ToVideoDirectoryNameString();
         }
 
         protected override void StopDownload()
@@ -93,14 +104,14 @@ namespace Hik.Client
             {
                 if (!filesHelper.FileExists(targetFilePath))
                 {
-                    logger.LogDebug($"{targetFilePath}");
+                    logger.LogInformation($"{targetFilePath} - before download");
                     downloadId = hikApi.VideoService.StartDownloadFile(session.UserId, file.Name, tempFile);
 
-                    logger.LogDebug($"{file.ToVideoUserFriendlyString()} - downloading");
+                    logger.LogInformation($"{file.ToVideoUserFriendlyString()} - downloading");
                     return true;
                 }
 
-                logger.LogDebug($"{file.ToVideoUserFriendlyString()} - exist");
+                logger.LogInformation($"{file.ToVideoUserFriendlyString()} - exist");
                 return false;
             }
             else
@@ -134,7 +145,7 @@ namespace Hik.Client
             else if (progressValue < ProgressBarMinimum || progressValue > ProgressBarMaximum)
             {
                 StopDownload();
-                throw new InvalidOperationException($"HikVideoClient.UpdateDownloadProgress failed, progress value = {progressValue}");
+                throw new InvalidOperationException($"UpdateDownloadProgress failed, progress value = {progressValue}");
             }
         }
     }

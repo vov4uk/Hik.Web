@@ -1,5 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
-using Hik.Client.Abstraction;
+using Hik.Client.Abstraction.Services;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -22,11 +22,12 @@ namespace Job.Impl
             : base(trigger, config, db, email, logger)
         {
             this.worker = worker;
+            this.configValidator = new ArchiveConfigValidator();
         }
 
-        protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
+        protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
-            return await worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MaxValue);
+            return worker.ExecuteAsync(Config, DateTime.MinValue, DateTime.MaxValue);
         }
 
         protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)

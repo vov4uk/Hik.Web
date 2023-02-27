@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
+using FluentFTP.Exceptions;
 using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
@@ -14,27 +14,23 @@ using Polly;
 
 namespace Hik.Client.Client
 {
-    public abstract class FtpBaseClient : IClient
+    public abstract class FtpDownloaderClientBase : FtpClientBase, IDownloaderClient
     {
         protected readonly CameraConfig config;
         protected readonly IFilesHelper filesHelper;
         protected readonly IDirectoryHelper directoryHelper;
-        protected readonly IFtpClient ftp;
-        protected readonly ILogger logger;
-        private bool disposedValue = false;
 
-        protected FtpBaseClient(
+        protected FtpDownloaderClientBase(
             CameraConfig config,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
-            IFtpClient ftp,
+            IAsyncFtpClient ftp,
             ILogger logger)
+            : base(config?.Camera, ftp, logger)
         {
             this.config = config ?? throw new ArgumentNullException(nameof(config));
             this.filesHelper = filesHelper;
             this.directoryHelper = directoryHelper;
-            this.ftp = ftp;
-            this.logger = logger;
         }
 
         public async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
@@ -55,50 +51,9 @@ namespace Hik.Client.Client
 
         public abstract Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
 
-        public void ForceExit()
-        {
-            Dispose(true);
-        }
-
-        public void InitializeClient()
-        {
-            ftp.Host = config.IpAddress;
-            ftp.ConnectTimeout = 5 * 1000;
-            ftp.DataConnectionReadTimeout = 5 * 1000;
-            ftp.ReadTimeout = 5 * 1000;
-            ftp.DataConnectionConnectTimeout = 5 * 1000;
-            ftp.RetryAttempts = 3;
-            ftp.Credentials = new NetworkCredential(config.UserName, config.Password);
-        }
-
-        public bool Login()
-        {
-            ftp.Connect();
-            return true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                logger.LogDebug("Logout the device");
-
-                ftp?.Disconnect();
-                ftp?.Dispose();
-
-                disposedValue = true;
-            }
-        }
-
         protected async Task<bool> DownloadInternalAsync(MediaFileDto remoteFile, string localFilePath, string remoteFilePath, CancellationToken token)
         {
-            var remoteFileExist = await ftp.FileExistsAsync(remoteFilePath, token);
+            var remoteFileExist = await ftp.FileExists(remoteFilePath, token);
 
             if (remoteFileExist)
             {
@@ -109,7 +64,7 @@ namespace Hik.Client.Client
                     .Handle<FtpException>()
                     .Or<TimeoutException>()
                     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(3))
-                    .ExecuteAsync(() => ftp.DownloadFileAsync(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token));
+                    .ExecuteAsync(() => ftp.DownloadFile(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token));
 
                 filesHelper.RenameFile(tempFile, localFilePath);
 
@@ -117,7 +72,7 @@ namespace Hik.Client.Client
             }
             else
             {
-                logger.LogError($"File not found {remoteFilePath}");
+                logger.LogWarning($"File not found {remoteFilePath}");
                 return false;
             }
         }

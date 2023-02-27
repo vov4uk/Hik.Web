@@ -1,5 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
-using Hik.Client.Abstraction;
+using Hik.Client.Abstraction.Services;
 using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -24,6 +24,7 @@ namespace Job.Impl
             : base(trigger, config, db, email, logger)
         {
             this.service = service;
+            this.configValidator = new CameraConfigValidator();
         }
 
         protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()

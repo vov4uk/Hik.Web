@@ -1,0 +1,12 @@
+{
+  "Alias": "Floor1",
+  "DestinationFolder": "C:\\FFOutput",
+  "RemoteFolder": "RemoteFolder",
+  "AllowedFileExtentions": [ ".ini" ],
+  "FtpServer": {
+    "IPAddress": "192.168.1.64",
+    "PortNumber": 8000,
+    "UserName": "admin",
+    "Password": "admin"
+  }
+}

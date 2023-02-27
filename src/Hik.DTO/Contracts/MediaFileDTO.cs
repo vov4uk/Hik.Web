@@ -11,6 +11,8 @@ namespace Hik.DTO.Contracts
 
         public string Path { get; set; }
 
+        public string Objects { get; set; }
+
         public long Size { get; set; }
 
         [Display(Name = "Started"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]

@@ -30,9 +30,9 @@ namespace Hik.Web.Commands.Tests
                 .Returns(Task.CompletedTask);
 
             var sut = new CronCommandHandler(configuration.Object, cronHelper.Object);
-            var result = await sut.Handle(request, CancellationToken.None);
+            await sut.Handle(request, CancellationToken.None);
 
-            Assert.Equal(Unit.Value, result);
+            cronHelper.Verify(x => x.RestartSchedulerAsync(configuration.Object), Times.Once);
         }
 
 
@@ -86,9 +86,9 @@ namespace Hik.Web.Commands.Tests
                 .Returns(Task.CompletedTask);
 
             var sut = new CronCommandHandler(configuration.Object, cronHelper.Object);
-            var result = await sut.Handle(request, CancellationToken.None);
+            await sut.Handle(request, CancellationToken.None);
 
-            Assert.Equal(Unit.Value, result);
+            cronHelper.Verify(x => x.UpdateCronAsync(configuration.Object, It.IsAny<CronDto>()), Times.Once);
         }
     }
 }

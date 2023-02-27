@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
+using Hik.Client.Abstraction.Services;
 using Hik.Client.Events;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
@@ -40,6 +41,10 @@ namespace Hik.Client.Service
                     photo.DownloadStarted = start;
                     photo.DownloadDuration = (int)(finish - start).TotalSeconds;
                     this.OnFileDownloaded(new FileDownloadedEventArgs(photo));
+                }
+                else
+                {
+                    photo.Path = "FailedToDownload";
                 }
             }
 

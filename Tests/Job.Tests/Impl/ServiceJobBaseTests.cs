@@ -1,9 +1,10 @@
-﻿using Hik.Client.Abstraction;
+﻿using Hik.Client.Abstraction.Services;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Moq;
 using System;
 using System.Collections.Generic;
+using Xunit.Abstractions;
 
 namespace Job.Tests.Impl
 {
@@ -12,8 +13,8 @@ namespace Job.Tests.Impl
     {
         protected readonly Mock<T> serviceMock;
 
-        public ServiceJobBaseTests()
-            : base()
+        public ServiceJobBaseTests(ITestOutputHelper output)
+            : base(output)
         {
             serviceMock = new (MockBehavior.Strict);
         }

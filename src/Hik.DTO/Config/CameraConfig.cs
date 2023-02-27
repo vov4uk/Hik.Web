@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text;
+using FluentValidation;
 
 namespace Hik.DTO.Config
 {
@@ -8,19 +10,19 @@ namespace Hik.DTO.Config
     {
         public int ProcessingPeriodHours { get; set; }
 
-        public string IpAddress { get; set; }
+        public DeviceConfig Camera { get; set; }
 
-        public int PortNumber { get; set; } = 8000;
-
-        public string UserName { get; set; }
-
-        public string Password { get; set; }
-
-        public ClientType ClientType { get; set; } = ClientType.HikVisionVideo;
+        public ClientType ClientType { get; set; }
 
         public bool SyncTime { get; set; } = true;
 
         public int SyncTimeDeltaSeconds { get; set; } = 5;
+
+        public string RemotePath { get; set; }
+
+        // If false - will save files in tree structure {Year}-{Month}\{Day}\{Hour}
+        // Else directrly to root folder
+        public bool SaveFilesToRootFolder { get; set; } = false;
 
         public override string ToString()
         {
@@ -28,8 +30,8 @@ namespace Hik.DTO.Config
             sb.AppendLine();
             sb.AppendLine(this.GetRow("Alias", this.Alias));
             sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetRow("IP Address", $"{this.IpAddress}:{this.PortNumber}"));
-            sb.AppendLine(this.GetRow("User name", this.UserName));
+            sb.AppendLine(this.GetRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
+            sb.AppendLine(this.GetRow("User name", this.Camera.UserName));
 
             return sb.ToString();
         }
@@ -39,9 +41,20 @@ namespace Hik.DTO.Config
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(this.GetHtmlRow("Alias", this.Alias));
             sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.IpAddress}:{this.PortNumber}"));
-            sb.AppendLine(this.GetHtmlRow("User name", this.UserName));
+            sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
+            sb.AppendLine(this.GetHtmlRow("User name", this.Camera.UserName));
             return sb.ToString();
+        }
+    }
+
+    public class CameraConfigValidator : AbstractValidator<CameraConfig>
+    {
+        public CameraConfigValidator()
+        {
+            RuleFor(x => x.ProcessingPeriodHours).GreaterThan(0);
+            RuleFor(x => x.ClientType).NotEqual(ClientType.None);
+            RuleFor(x => x.Camera).NotNull().SetValidator(new DeviceConfigValidator());
+            RuleFor(x => x.DestinationFolder).Must(x => !string.IsNullOrEmpty(x));
         }
     }
 }

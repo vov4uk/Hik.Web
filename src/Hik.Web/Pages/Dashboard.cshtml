@@ -55,7 +55,7 @@
                             var lastFileDelta = (jobTrigger.LastSync ?? now) - latestFile;
                             var lastSyncDelta = now - (jobTrigger.LastSync ?? new DateTime());
                             var success = (lastFileDelta.TotalHours < 2 && lastSyncDelta.TotalHours < 2)
-                                       || (className.Contains("GarbageCollectorJob") && lastSyncDelta.TotalHours < 24);
+                                       || (className.Contains("GarbageCollector") && lastSyncDelta.TotalHours < 24);
                             var status = success ? "" : "failed";
                             <tr data-status="@status" class="failed">
                                 <td><a asp-page="./DashboardDetails" asp-route-triggerId="@jobTrigger.JobTriggerId">@triggerString</a></td>

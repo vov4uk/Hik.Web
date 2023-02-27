@@ -3,5 +3,6 @@
   "RetentionPeriodDays": 10,
   "Triggers": [
     "JobHost.Entrance"
-  ]
+  ],
+  "FileExtention":  ".ini"
 }

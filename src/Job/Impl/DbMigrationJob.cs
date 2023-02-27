@@ -19,6 +19,7 @@ namespace Job.Impl
             : base(config.TriggerKey, config, db, email, logger)
         {
             this.filesProvider = fileProvider;
+            this.configValidator = new MigrationConfigValidator();
         }
 
         protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()

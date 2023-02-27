@@ -25,9 +25,9 @@ namespace Hik.Web.Commands.Tests
             fileHelper.Setup(x => x.WriteAllText(request.Path, request.Json));
 
             var sut = new UpdateQuartzJobConfigCommandHandler(fileHelper.Object);
-            var result = await sut.Handle(request, CancellationToken.None);
+            await sut.Handle(request, CancellationToken.None);
 
-            Assert.Equal(Unit.Value, result);
+            fileHelper.Verify(x => x.WriteAllText(request.Path, request.Json), Times.Once);
         }
     }
 }

@@ -30,6 +30,7 @@ namespace Hik.Web.Queries.Test
                 .Returns(repoMock.Object);
             uowFactoryMock.Setup(x => x.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
                 .Returns(uowMock.Object);
+            videoHelper.SetupGet(x => x.DefaultPoster).Returns(string.Empty);
         }
 
         [Theory]

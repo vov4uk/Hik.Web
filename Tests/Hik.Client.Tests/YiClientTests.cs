@@ -16,7 +16,7 @@
 
     public class YiClientTests
     {
-        private readonly Mock<IFtpClient> ftpMock;
+        private readonly Mock<IAsyncFtpClient> ftpMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IDirectoryHelper> dirMock;
         private readonly Fixture fixture;
@@ -41,14 +41,14 @@
         [Fact]
         public void InitializeClient_CallInitializeClient_ClientInitialized()
         {
-            var config = new CameraConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" };
-            var ftp = new FtpClient();
+            var config = new CameraConfig { Camera = new DeviceConfig { IpAddress = "192.168.0.1", UserName = "admin", Password = "admin" } };
+            var ftp = new AsyncFtpClient();
             var client = new YiClient(config, this.filesMock.Object, this.dirMock.Object, ftp, loggerMock.Object);
             client.InitializeClient();
 
-            Assert.Equal(config.IpAddress, ftp.Host);
-            Assert.Equal(config.UserName, ftp.Credentials.UserName);
-            Assert.Equal(config.Password, ftp.Credentials.Password);
+            Assert.Equal(config.Camera.IpAddress, ftp.Host);
+            Assert.Equal(config.Camera.UserName, ftp.Credentials.UserName);
+            Assert.Equal(config.Camera.Password, ftp.Credentials.Password);
         }
 
         #endregion InitializeClient
@@ -57,11 +57,11 @@
         [Fact]
         public void Login_CallLogin_LoginSucessfully()
         {
-            this.ftpMock.Setup(x => x.Connect());
+            this.ftpMock.Setup(x => x.Connect(default(CancellationToken))).Returns(Task.CompletedTask);
             var client = this.GetClient();
             bool loginResult = client.Login();
 
-            this.ftpMock.Verify(x => x.Connect(), Times.Once);
+            this.ftpMock.Verify(x => x.Connect(default(CancellationToken)), Times.Once);
 
             Assert.True(loginResult);
         }
@@ -72,7 +72,7 @@
         [Fact]
         public void Dispose_Using_DisconnectAndDispose()
         {
-            this.ftpMock.Setup(x => x.Disconnect()).Verifiable();
+            this.ftpMock.Setup(x => x.Disconnect(default(CancellationToken))).Returns(Task.CompletedTask).Verifiable();
             this.ftpMock.Setup(x => x.Dispose()).Verifiable();
             using (var client = this.GetClient())
             {
@@ -96,14 +96,14 @@
         [Fact]
         public void Dispose_DisposeTwice_CalledOnlyOnce()
         {
-            this.ftpMock.Setup(x => x.Disconnect());
+            this.ftpMock.Setup(x => x.Disconnect(default(CancellationToken))).Returns(Task.CompletedTask);
             this.ftpMock.Setup(x => x.Dispose());
             using (var client = this.GetClient())
             {
                 client.Dispose();
             }
 
-            this.ftpMock.Verify(x => x.Disconnect(), Times.Once);
+            this.ftpMock.Verify(x => x.Disconnect(default(CancellationToken)), Times.Once);
             this.ftpMock.Verify(x => x.Dispose(), Times.Once);
         }
 
@@ -162,9 +162,9 @@
         [InlineData(2020, 12, 31, ClientType.Yi720p, "/tmp/sd/record/2020Y12M31D00H/00M00S60.mp4", "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, ClientType clientType, string remoteFilePath, string localFilePath)
         {
-            var cameraConfig = new CameraConfig { ClientType = clientType, DestinationFolder = "C:\\", Alias = "test" };
+            var cameraConfig = new CameraConfig { ClientType = clientType, DestinationFolder = "C:\\", Alias = "test", Camera = new () };
 
-            MediaFileDto remoteFile = new MediaFileDto { Date = new DateTimeOffset(y, m, d, 0, 0, 0, new TimeSpan(0, 0, 0)).UtcDateTime, Duration = 60, Name = "00M00S" };
+            MediaFileDto remoteFile = new() { Date = new DateTimeOffset(y, m, d, 0, 0, 0, new TimeSpan(0, 0, 0)).UtcDateTime, Duration = 60, Name = "00M00S" };
 
             var tempName = localFilePath + ".tmp";
             var targetName = localFilePath;
@@ -179,9 +179,9 @@
             this.filesMock.Setup(x => x.RenameFile(tempName, targetName));
             this.filesMock.Setup(x => x.FileExists(targetName))
                 .Returns(false);
-            this.ftpMock.Setup(x => x.FileExistsAsync(remoteFilePath, CancellationToken.None))
+            this.ftpMock.Setup(x => x.FileExists(remoteFilePath, CancellationToken.None))
                 .ReturnsAsync(true);
-            this.ftpMock.Setup(x => x.DownloadFileAsync(tempName, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DownloadFile(tempName, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
 
             var client = new YiClient(cameraConfig, this.filesMock.Object, this.dirMock.Object, ftpMock.Object, loggerMock.Object);
@@ -217,7 +217,7 @@
             this.filesMock.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(false);
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.ftpMock.Setup(x => x.FileExistsAsync(It.IsAny<string>(), CancellationToken.None))
+            this.ftpMock.Setup(x => x.FileExists(It.IsAny<string>(), CancellationToken.None))
                 .ReturnsAsync(false);
 
             var client = this.GetClient();
@@ -232,11 +232,11 @@
         [Fact]
         public void ForceExit_InvokeMethod_DisconnectClient()
         {
-            this.ftpMock.Setup(x => x.Disconnect());
+            this.ftpMock.Setup(x => x.Disconnect(default(CancellationToken))).Returns(Task.CompletedTask);
             this.ftpMock.Setup(x => x.Dispose());
             var client = this.GetClient();
             client.ForceExit();
-            this.ftpMock.Verify(x => x.Disconnect(), Times.Once);
+            this.ftpMock.Verify(x => x.Disconnect(default(CancellationToken)), Times.Once);
             this.ftpMock.Verify(x => x.Dispose(), Times.Once);
         }
 

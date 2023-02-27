@@ -46,7 +46,7 @@ namespace Hik.Web.Tests.Pages
         public async Task OnPostAsync_ValidModel_ChangesSaved()
         {
             this._mediator.Setup(x => x.Send(It.IsAny<UpdateQuartzJobCommand>(), default(CancellationToken)))
-                .ReturnsAsync(Unit.Value);
+                .Returns(Task.CompletedTask);
 
             var sut = new CronEditModel(this._mediator.Object);
             sut.OnGetAddNew();

@@ -37,5 +37,9 @@ namespace Hik.Helpers.Abstraction
         string GetTempFileName();
 
         string GetDirectoryName(string path);
+
+        string ZipFile(string path);
+
+        void UnZipFile(string path);
     }
 }

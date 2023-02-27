@@ -16,12 +16,6 @@ namespace Hik.Web
                 .As<IMediator>()
                 .InstancePerLifetimeScope();
 
-            builder.Register<ServiceFactory>(context =>
-            {
-                var componentContext = context.Resolve<IComponentContext>();
-                return type => componentContext.Resolve(type);
-            });
-
             var referencedAssembliesNames = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
             List<Assembly> hikAssemblies = referencedAssembliesNames
                 .Where(assembly => assembly.FullName.StartsWith("Hik."))

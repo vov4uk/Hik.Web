@@ -4,6 +4,6 @@ namespace Hik.Client.Abstraction
 {
     public interface IClientFactory
     {
-        IClient Create(CameraConfig camera);
+        IDownloaderClient Create(CameraConfig camera);
     }
 }
