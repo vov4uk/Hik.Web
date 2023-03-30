@@ -10,7 +10,7 @@ using Hik.Client.Abstraction.Services;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using MediaFiles = System.Collections.Generic.IReadOnlyCollection<Hik.DTO.Contracts.MediaFileDto>;
 
 namespace Hik.Client.Service
@@ -60,11 +60,11 @@ namespace Hik.Client.Service
                     }
                     catch (IOException e)
                     {
-                        logger.LogError(e, "Failed to process file");
+                        logger.Error(e, "Failed to process file");
                     }
                     catch (InvalidDataException e)
                     {
-                        logger.LogError(e, "Invalid file");
+                        logger.Error(e, "Invalid file");
                     }
                 }
 
@@ -117,7 +117,7 @@ namespace Hik.Client.Service
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Error saving file {destination}");
+                logger.Error(ex, $"Error saving file {destination}");
             }
         }
 

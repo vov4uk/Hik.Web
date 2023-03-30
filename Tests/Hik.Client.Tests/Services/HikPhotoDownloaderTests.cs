@@ -8,7 +8,7 @@ using Hik.Client.Service;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Moq;
 using Xunit;
 
@@ -210,7 +210,7 @@ namespace Hik.Client.Tests.Services
 
         private HikPhotoDownloaderService CreateHikDownloader()
         {
-            this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>()))
+            this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>(), It.IsAny<ILogger>()))
                 .Returns(this.clientMock.Object);
 
             return new HikPhotoDownloaderService(this.directoryMock.Object, this.clientFactoryMock.Object, this.loggerMock.Object);

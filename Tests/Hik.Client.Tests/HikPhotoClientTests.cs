@@ -16,7 +16,7 @@
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Hik.Helpers.Abstraction;
-    using Microsoft.Extensions.Logging;
+    using Serilog;
     using Moq;
     using Xunit;
     using DeviceConfig = DTO.Config.DeviceConfig;
@@ -98,10 +98,10 @@
             dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             filesMock.Setup(x => x.FileSize(targetName))
                 .Returns(1);
-            filesMock.Setup(x => x.DeleteFile(localFileName));
+            filesMock.Setup(x => x.RenameFile(localFileName, targetName));
             filesMock.Setup(x => x.FileExists(targetName))
                 .Returns(false);
-            imageMock.Setup(x => x.SetDate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()));
+            imageMock.Setup(x => x.SetDate(It.IsAny<string>(), It.IsAny<DateTime>()));
 
             photoServiceMock.Setup(x => x.DownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()));
 

@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using FluentFTP.Exceptions;
 using Hik.Api;
 using Hik.Client.Abstraction.Services;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using static CSharpFunctionalExtensions.Result;
 
 namespace Hik.Client.Service
@@ -25,21 +26,27 @@ namespace Hik.Client.Service
 
         public async Task<Result<IReadOnlyCollection<MediaFileDto>>> ExecuteAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            return await Try(
-                () => RunAsync(config, from, to),
-                e =>
-                {
-                    if (e is HikException)
-                    {
-                        var ex = e as HikException;
-                        var msg = $"Code : {ex.ErrorCode}; {ex.ErrorMessage}";
-                        this.logger.LogError(ex, msg);
-                        return msg;
-                    }
-
-                    this.logger.LogError(e, e.Message);
-                    return e.Message;
-                });
+            try
+            {
+                var result = await RunAsync(config, from, to);
+                return Success(result);
+            }
+            catch (HikException ex)
+            {
+                var msg = $"Code : {ex.ErrorCode}; {ex.ErrorMessage}";
+                this.logger.Error(ex, msg);
+                return Failure<IReadOnlyCollection<MediaFileDto>>(msg);
+            }
+            catch (FtpException ftp)
+            {
+                this.logger.Error(ftp.InnerException, ftp.InnerException?.Message);
+                return Failure<IReadOnlyCollection<MediaFileDto>>(ftp.InnerException?.Message);
+            }
+            catch (Exception e)
+            {
+                this.logger.Error(e, e.Message);
+                return Failure<IReadOnlyCollection<MediaFileDto>>(e.Message);
+            }
         }
 
         protected abstract Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to);

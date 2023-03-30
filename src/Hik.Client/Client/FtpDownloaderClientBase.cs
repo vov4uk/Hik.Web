@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
-using FluentFTP.Exceptions;
 using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
-using Polly;
+using Serilog;
 
 namespace Hik.Client.Client
 {
@@ -44,7 +42,7 @@ namespace Hik.Client.Client
             }
             else
             {
-                logger.LogDebug($"{remoteFile.Name} - exist");
+                logger.Debug($"{remoteFile.Name} - exist");
                 return false;
             }
         }
@@ -57,14 +55,10 @@ namespace Hik.Client.Client
 
             if (remoteFileExist)
             {
-                logger.LogDebug($"{remoteFile.Name} - downloading");
+                logger.Debug($"{remoteFile.Name} - downloading");
                 var tempFile = filesHelper.GetTempFileName();
 
-                await Policy
-                    .Handle<FtpException>()
-                    .Or<TimeoutException>()
-                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(3))
-                    .ExecuteAsync(() => ftp.DownloadFile(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token));
+                await ftp.DownloadFile(tempFile, remoteFilePath, FtpLocalExists.Skip, FtpVerify.None, null, token);
 
                 filesHelper.RenameFile(tempFile, localFilePath);
 
@@ -72,7 +66,7 @@ namespace Hik.Client.Client
             }
             else
             {
-                logger.LogWarning($"File not found {remoteFilePath}");
+                logger.Warning($"File not found {remoteFilePath}");
                 return false;
             }
         }

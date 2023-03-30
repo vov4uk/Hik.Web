@@ -16,7 +16,7 @@
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Hik.Helpers.Abstraction;
-    using Microsoft.Extensions.Logging;
+    using Serilog;
     using Moq;
     using Xunit;
 

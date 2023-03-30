@@ -2,7 +2,8 @@ using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog.Events;
+using Serilog;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -19,6 +20,17 @@ namespace Hik.Web
 
         public static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                // Filter out ASP.NET Core infrastructre logs that are Information and below
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.File("Logs\\hikweb-{Date}.txt")
+                .WriteTo.Seq("http://localhost:5341")
+                .CreateLogger();
+
             var isService = !(Debugger.IsAttached || args.Contains(ConsoleParameter));
             var builder = CreateHostBuilder(isService, args.Where(arg => arg != ConsoleParameter).ToArray());
 
@@ -45,6 +57,7 @@ namespace Hik.Web
             ConnectionString = config.GetSection("DBConfiguration").GetSection("ConnectionString").Value;
 
             var host = Host.CreateDefaultBuilder(args)
+                .UseSerilog()
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
@@ -61,15 +74,7 @@ namespace Hik.Web
 #else
                     .UseUrls($"http://+:{port}")
 #endif
-
                     .UseStartup<Startup>();
-                })
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.SetMinimumLevel(LogLevel.Trace);
-                    logging.AddConsole();
-                    logging.AddFile("Logs\\hikweb-{Date}.txt");
                 });
 
             if (isService)

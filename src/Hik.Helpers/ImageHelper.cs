@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Buffers.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Text;
+using System.Reflection.Emit;
 using Hik.Helpers.Abstraction;
-using Newtonsoft.Json;
+
 
 namespace Hik.Helpers
 {
@@ -31,32 +29,37 @@ namespace Hik.Helpers
                 bytes = new byte[m.Length];
                 m.Position = 0;
                 m.Read(bytes, 0, bytes.Length);
-            }            
+            }
             return bytes ?? DefaultPoster;
         }
 
-        public void SetDate(string path, string newPath, DateTime date)
+        public void SetDate(string path, DateTime date)
         {
-            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            if (!string.IsNullOrEmpty(path) && File.Exists(path) && Path.GetExtension(path) == ".jpg")
             {
-                using Image image = Image.FromFile(path);
-                var newItem = (PropertyItem)FormatterServices.GetUninitializedObject(typeof(PropertyItem));
-                newItem.Value = Encoding.ASCII.GetBytes(date.ToString("yyyy':'MM':'dd' 'HH':'mm':'ss"));
-                newItem.Type = 2;
-                newItem.Id = 306;
-                image.SetPropertyItem(newItem);
-                image.Save(newPath, image.RawFormat);
+                using (var tfile = new TagLib.Jpeg.File(path, TagLib.ReadStyle.PictureLazy))
+                {
+                    tfile.GetTag(TagLib.TagTypes.XMP, true);
+                    tfile.GetTag(TagLib.TagTypes.TiffIFD, true);
+                    tfile.ImageTag.DateTime = date;
+                    tfile.Save();
+                }
             }
         }
 
         public string GetDescriptionData(string path)
         {
-            if (!string.IsNullOrEmpty(path) && File.Exists(path + "desc"))
+            if (!string.IsNullOrEmpty(path) && File.Exists(path) && Path.GetExtension(path) == ".jpg")
             {
-                string desc = File.ReadAllText(path + "desc");
-                File.Delete(path + "desc");
-                return desc;
+                using (var tfile = new TagLib.Jpeg.File(path, TagLib.ReadStyle.PictureLazy))
+                {
+                    if (!string.IsNullOrEmpty(tfile.ImageTag.Comment))
+                    {
+                        return tfile.ImageTag.Comment;
+                    }
+                }
             }
+
             return null;
         }
     }

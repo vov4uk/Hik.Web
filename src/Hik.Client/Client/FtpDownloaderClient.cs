@@ -9,7 +9,7 @@ using Hik.Client.Client;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client
 {
@@ -61,7 +61,7 @@ namespace Hik.Client
                 }
                 catch (FtpException ex)
                 {
-                    logger.LogError(ex, "Failed to delete remote file");
+                    logger.Error(ex, "Failed to delete remote file");
                     return false;
                 }
 

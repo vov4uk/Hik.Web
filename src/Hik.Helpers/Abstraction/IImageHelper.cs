@@ -4,7 +4,7 @@ namespace Hik.Helpers.Abstraction
 {
     public interface IImageHelper
     {
-        void SetDate(string path, string newPath, DateTime date);
+        void SetDate(string path, DateTime date);
 
         byte[] GetThumbnail(string path, int width, int height);
 

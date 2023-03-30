@@ -5,7 +5,7 @@ using FluentFTP;
 using FluentFTP.Exceptions;
 using Hik.Client.Abstraction;
 using Hik.DTO.Config;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Polly;
 
 namespace Hik.Client.Client

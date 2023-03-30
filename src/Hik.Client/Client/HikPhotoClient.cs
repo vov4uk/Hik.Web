@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Hik.Api;
 using Hik.Api.Abstraction;
 using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client
 {
@@ -41,16 +42,22 @@ namespace Hik.Client
                     string tempFile = ToFileNameString(remoteFile);
                     hikApi.PhotoService.DownloadFile(session.UserId, remoteFile.Name, remoteFile.Size, tempFile);
 
-                    this.imageHelper.SetDate(tempFile, targetFilePath, remoteFile.Date);
-                    filesHelper.DeleteFile(tempFile);
+                    filesHelper.RenameFile(tempFile, targetFilePath);
+                    this.imageHelper.SetDate(targetFilePath, remoteFile.Date);
+
                     remoteFile.Path = targetFilePath;
 
                     return Task.FromResult(true);
                 }
             }
+            catch (HikException e)
+            {
+                var msg = $"Failed to download {remoteFile.Name} : {remoteFile.Path}. Code : {e.ErrorCode}; {e.ErrorMessage}";
+                logger.Error(e, msg);
+            }
             catch (Exception e)
             {
-                logger.LogError(e, $"Failed to download {remoteFile.Name} : {remoteFile.Path}");
+                logger.Error(e, $"Failed to download {remoteFile.Name} : {remoteFile.Path}");
             }
 
             return Task.FromResult(false);
@@ -60,7 +67,7 @@ namespace Hik.Client
         {
             ValidateDateParameters(periodStart, periodEnd);
 
-            logger.LogInformation($"Get photos from {periodStart} to {periodEnd}");
+            logger.Information($"Get photos from {periodStart} to {periodEnd}");
 
             var remoteFiles = await hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd, session);
 

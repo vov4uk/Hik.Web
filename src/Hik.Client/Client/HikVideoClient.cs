@@ -9,7 +9,7 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client
 {
@@ -52,14 +52,10 @@ namespace Hik.Client
 
                     return true;
                 }
-                else
-                {
-                    logger.LogWarning("DownloadFileAsync failed to start");
-                }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "DownloadFileAsync failed");
+                logger.Error(ex, $"DownloadFile {remoteFile.Name} failed");
             }
 
             return false;
@@ -69,7 +65,7 @@ namespace Hik.Client
         {
             ValidateDateParameters(periodStart, periodEnd);
 
-            logger.LogInformation($"Get videos from {periodStart} to {periodEnd}");
+            logger.Information($"Get videos from {periodStart} to {periodEnd}");
 
             var remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
             return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
@@ -94,7 +90,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.LogWarning("File not downloading now");
+                logger.Warning("File not downloading now");
             }
         }
 
@@ -104,21 +100,20 @@ namespace Hik.Client
             {
                 if (!filesHelper.FileExists(targetFilePath))
                 {
-                    logger.LogInformation($"{targetFilePath} - before download");
                     downloadId = hikApi.VideoService.StartDownloadFile(session.UserId, file.Name, tempFile);
 
-                    logger.LogInformation($"{file.ToVideoUserFriendlyString()} - downloading");
+                    logger.Information($"{file.ToVideoUserFriendlyString()} - downloading");
                     return true;
                 }
 
-                logger.LogInformation($"{file.ToVideoUserFriendlyString()} - exist");
-                return false;
+                logger.Warning($"{file.ToVideoUserFriendlyString()} - exist");
             }
             else
             {
-                logger.LogWarning("Downloading, please stop firstly!");
-                return false;
+                logger.Warning("Downloading, please stop firstly!");
             }
+
+            return false;
         }
 
         private void UpdateVideoProgress()
@@ -131,7 +126,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.LogWarning("File not downloading now");
+                logger.Warning("File not downloading now");
             }
         }
 
@@ -140,7 +135,7 @@ namespace Hik.Client
             if (progressValue == ProgressBarMaximum)
             {
                 StopDownload();
-                logger.LogDebug("Downloaded");
+                logger.Debug("Downloaded");
             }
             else if (progressValue < ProgressBarMinimum || progressValue > ProgressBarMaximum)
             {

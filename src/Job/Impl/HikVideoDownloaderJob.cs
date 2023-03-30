@@ -5,7 +5,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -33,7 +33,7 @@ namespace Job.Impl
             downloader.FileDownloaded += this.Downloader_VideoDownloaded;
 
             var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
-            logger.LogInformation("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
+            logger.Information("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
             JobInstance.PeriodStart = period.PeriodStart;
             JobInstance.PeriodEnd = period.PeriodEnd;
             JobInstance.LatestFileEndDate = jobTrigger.LastSync;

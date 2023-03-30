@@ -10,7 +10,7 @@
     using DTO.Contracts;
     using FluentFTP;
     using Hik.Helpers.Abstraction;
-    using Microsoft.Extensions.Logging;
+    using Serilog;
     using Moq;
     using Xunit;
 
@@ -55,13 +55,17 @@
 
         #region Login
         [Fact]
-        public void Login_CallLogin_LoginSucessfully()
+        public void Login_CallLogin_LoginSuccessfully()
         {
-            this.ftpMock.Setup(x => x.Connect(default(CancellationToken))).Returns(Task.CompletedTask);
+            //this.ftpMock.Setup(x => x.Connect(default(CancellationToken))).Returns(Task.CompletedTask);
+            this.ftpMock.Setup(x => x.AutoConnect(default(CancellationToken)))
+                .ReturnsAsync(new FtpProfile());
+            this.ftpMock.Setup(x => x.Connect(It.IsAny<FtpProfile>(), default(CancellationToken)))
+                .Returns(Task.CompletedTask);
             var client = this.GetClient();
             bool loginResult = client.Login();
 
-            this.ftpMock.Verify(x => x.Connect(default(CancellationToken)), Times.Once);
+            this.ftpMock.Verify(x => x.Connect(It.IsAny<FtpProfile>(), default(CancellationToken)), Times.Once);
 
             Assert.True(loginResult);
         }
@@ -181,7 +185,7 @@
                 .Returns(false);
             this.ftpMock.Setup(x => x.FileExists(remoteFilePath, CancellationToken.None))
                 .ReturnsAsync(true);
-            this.ftpMock.Setup(x => x.DownloadFile(tempName, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DownloadFile(tempName, remoteFilePath, FtpLocalExists.Skip, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
 
             var client = new YiClient(cameraConfig, this.filesMock.Object, this.dirMock.Object, ftpMock.Object, loggerMock.Object);

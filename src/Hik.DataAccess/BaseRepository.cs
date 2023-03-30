@@ -1,6 +1,7 @@
 ﻿using Hik.DataAccess.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -14,14 +15,17 @@ namespace Hik.DataAccess
     public class BaseRepository<TEntity> : IBaseRepository<TEntity>
         where TEntity : class, IEntity
     {
+        ILogger logger;
+
         protected DbContext Database { get; }
 
         protected DbSet<TEntity> DbSet { get; }
 
-        public BaseRepository(DbContext context)
+        public BaseRepository(DbContext context, ILogger logger)
         {
             this.Database = context;
             this.DbSet = this.Database.Set<TEntity>();
+            this.logger = logger;
         }
 
         public virtual async ValueTask<TEntity> AddAsync(TEntity entity)
@@ -53,7 +57,7 @@ namespace Hik.DataAccess
             {
                 result = result.Include(includeExpression);
             }
-
+            logger.Information($"GetAll : {result?.ToQueryString()}");
             return result;
         }
 
@@ -66,6 +70,7 @@ namespace Hik.DataAccess
                 .ToListAsync();
 
             var result = DbSet.Where(p => ids.Contains(p.Id));
+            logger.Information($"GetLatestGroupedBy : {result?.ToQueryString()}");
             return await result?.ToListAsync();
         }
 
@@ -80,12 +85,15 @@ namespace Hik.DataAccess
                 .ToListAsync();
 
             var result = DbSet.Where(p => ids.Contains(p.Id));
+            logger.Information($"GetLatestGroupedBy : {result?.ToQueryString()}");
             return await result?.ToListAsync();
         }
 
         public virtual Task<List<TEntity>> LastAsync(int last)
         {
-            return DbSet.OrderByDescending(x => x).Take(last).ToListAsync();
+            var result = DbSet.OrderByDescending(x => x).Take(last);
+            logger.Information($"LastAsync : {result?.ToQueryString()}");
+            return result?.ToListAsync();
         }
 
         public virtual async Task<TEntity> FindByAsync(Expression<Func<TEntity, bool>> predicate,
@@ -97,6 +105,8 @@ namespace Hik.DataAccess
             {
                 result = result.Include(includeExpression);
             }
+
+            logger.Information($"FindByAsync : {result?.ToQueryString()}");
 
             return await result?.FirstOrDefaultAsync();
         }
@@ -110,6 +120,8 @@ namespace Hik.DataAccess
             {
                 result = result.Include(includeExpression);
             }
+
+            logger.Information($"FindManyAsync : {result?.ToQueryString()}");
 
             return await result?.ToListAsync();
         }
@@ -127,6 +139,8 @@ namespace Hik.DataAccess
 
             result = result.OrderByDescending(orderByDesc).Skip(skip).Take(top);
 
+            logger.Information($"FindManyByDescAsync : {result?.ToQueryString()}");
+
             return await result?.ToListAsync();
         }
 
@@ -143,6 +157,8 @@ namespace Hik.DataAccess
 
             result = result.OrderBy(orderByAsc).Skip(skip).Take(top);
 
+            logger.Information($"FindManyByAscAsync : {result?.ToQueryString()}");
+
             return await result?.ToListAsync();
         }
 
@@ -155,7 +171,7 @@ namespace Hik.DataAccess
             {
                 result = result.Include(includeExpression);
             }
-
+            logger.Information($"CountAsync : {result?.ToQueryString()}");
             return await result?.CountAsync();
         }
 

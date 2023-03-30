@@ -4,10 +4,9 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using Hik.Helpers;
 using Job.Email;
 using Job.Extensions;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,7 +31,7 @@ namespace Job.Impl
             this.db = db;
             this.email = email;
             Config = config ?? throw new ArgumentNullException(nameof(config));
-            logger.LogInformation("Config {config}", Config.ToString());
+            logger.Information("Config {config}", Config.ToString());
         }
 
         public T Config { get; protected set; }
@@ -66,7 +65,7 @@ namespace Job.Impl
             catch (Exception e)
             {
                 HandleError(e.Message);
-                logger.LogError(e, "Something went wrong");
+                logger.Error(e, "Something went wrong");
             }
         }
 
@@ -91,7 +90,7 @@ namespace Job.Impl
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to save error");
+                logger.Error(ex, "Failed to save error");
             }
 
             if (Config.SentEmailOnError)
@@ -123,7 +122,7 @@ namespace Job.Impl
                 }
                 else
                 {
-                    logger.LogWarning("Results empty");
+                    logger.Warning("Results empty");
                 }
 
                 await db.SaveJobResultAsync(JobInstance);

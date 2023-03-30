@@ -9,7 +9,7 @@ using Hik.Client.Events;
 using Hik.Client.Helpers;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client.Service
 {
@@ -26,8 +26,9 @@ namespace Hik.Client.Service
             foreach (var video in remoteFiles)
             {
                 ThrowIfCancellationRequested();
-                logger.LogDebug($"{j++,2}/{remoteFiles.Count} : ");
-                if (await DownloadRemoteVideoFileAsync(video, token))
+                logger.Debug($"{j++,2}/{remoteFiles.Count} : {video.Name}");
+                bool downloaded = await DownloadRemoteVideoFileAsync(video, token);
+                if (downloaded)
                 {
                     OnFileDownloaded(new FileDownloadedEventArgs(video));
                 }
@@ -38,15 +39,14 @@ namespace Hik.Client.Service
 
         public override async Task<IReadOnlyCollection<MediaFileDto>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            List<MediaFileDto> videos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
-            return videos;
+            return (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
         }
 
         private async Task<bool> DownloadRemoteVideoFileAsync(MediaFileDto file, CancellationToken token)
         {
             DateTime start = DateTime.Now;
-
-            if (await Client.DownloadFileAsync(file, token))
+            bool downloaded = await Client.DownloadFileAsync(file, token);
+            if (downloaded)
             {
                 file.DownloadStarted = start;
                 var finish = DateTime.Now;
@@ -54,12 +54,11 @@ namespace Hik.Client.Service
                 file.DownloadDuration = duration;
 
                 int? videoDuration = file.Duration;
-                logger.LogDebug($"Duration {duration.FormatSeconds()}, avg speed {((long)Utils.SafeDivision(file.Size, duration.Value)).FormatBytes()}/s");
-                logger.LogDebug($"Video    {videoDuration.FormatSeconds()}, avg rate {((long)Utils.SafeDivision(file.Size, videoDuration.Value)).FormatBytes()}/s");
-                return true;
+                logger.Debug($"Duration {duration.FormatSeconds()}, avg speed {((long)Utils.SafeDivision(file.Size, duration.Value)).FormatBytes()}/s");
+                logger.Debug($"Video    {videoDuration.FormatSeconds()}, avg rate {((long)Utils.SafeDivision(file.Size, videoDuration.Value)).FormatBytes()}/s");
             }
 
-            return false;
+            return downloaded;
         }
     }
 }

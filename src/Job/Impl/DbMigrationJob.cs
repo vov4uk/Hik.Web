@@ -4,7 +4,7 @@ using Hik.DataAccess.Abstractions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,7 +35,7 @@ namespace Job.Impl
                 if (batch.Any())
                 {
                     files.AddRange(batch);
-                    logger.LogInformation("Files found {count}", files.Count);
+                    logger.Information("Files found {count}", files.Count);
                 }
                 else
                 {

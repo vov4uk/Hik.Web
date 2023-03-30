@@ -3,12 +3,11 @@ using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -32,30 +31,30 @@ namespace Job.Tests.Impl
             emailMock = new (MockBehavior.Strict);
 
             var logger = new Mock<ILogger>();
-            logger.Setup(logger => logger.Log(
-                It.IsAny<LogLevel>(),
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => true),
-                It.IsAny<Exception>(),
-                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)
-            ))
-            .Callback(new InvocationAction(invocation =>
-            {
-                var logLevel = (LogLevel)invocation.Arguments[0];
-                var eventId = (EventId)invocation.Arguments[1];
-                var state = invocation.Arguments[2];
-                var exception = (Exception?)invocation.Arguments[3];
-                var formatter = invocation.Arguments[4];
+            //logger.Setup(logger => logger.Log(
+            //    It.IsAny<LogLevel>(),
+            //    It.IsAny<EventId>(),
+            //    It.Is<It.IsAnyType>((v, t) => true),
+            //    It.IsAny<Exception>(),
+            //    It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)
+            //))
+            //.Callback(new InvocationAction(invocation =>
+            //{
+            //    var logLevel = (LogLevel)invocation.Arguments[0];
+            //    var eventId = (EventId)invocation.Arguments[1];
+            //    var state = invocation.Arguments[2];
+            //    var exception = (Exception?)invocation.Arguments[3];
+            //    var formatter = invocation.Arguments[4];
 
-                var invokeMethod = formatter.GetType().GetMethod("Invoke");
-                var actualMessage = (string?)invokeMethod?.Invoke(formatter, new[] { state, exception });
+            //    var invokeMethod = formatter.GetType().GetMethod("Invoke");
+            //    var actualMessage = (string?)invokeMethod?.Invoke(formatter, new[] { state, exception });
 
-                output.WriteLine(actualMessage);
-                if (exception != null)
-                {
-                    output.WriteLine(exception.ToString());
-                }
-            }));
+            //    output.WriteLine(actualMessage);
+            //    if (exception != null)
+            //    {
+            //        output.WriteLine(exception.ToString());
+            //    }
+            //}));
 
             loggerMock = logger.Object;
         }

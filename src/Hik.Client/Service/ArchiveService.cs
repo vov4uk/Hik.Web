@@ -9,8 +9,8 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace Hik.Client.Service
 {
@@ -54,11 +54,11 @@ namespace Hik.Client.Service
                     }
                     catch (IOException e)
                     {
-                        logger.LogError(e, $"Failed to unzip file - {zip}");
+                        logger.Error(e, $"Failed to unzip file - {zip}");
                     }
                     catch (InvalidDataException e)
                     {
-                        logger.LogError(e, $"Invalid zip file - {zip}");
+                        logger.Error(e, $"Invalid zip file - {zip}");
                     }
 
                     try
@@ -67,7 +67,7 @@ namespace Hik.Client.Service
                     }
                     catch (IOException e)
                     {
-                        logger.LogError(e, $"Failed to delete file - {zip}");
+                        logger.Error(e, $"Failed to delete file - {zip}");
                     }
                 }
             }
@@ -100,7 +100,7 @@ namespace Hik.Client.Service
                 };
                 result.Add(dto);
 
-                logger.LogInformation($"{filePath} -> {JsonConvert.SerializeObject(dto)}");
+                logger.Debug($"{filePath} -> {JsonConvert.SerializeObject(dto)}");
             }
 
             return result.AsReadOnly();
@@ -109,16 +109,8 @@ namespace Hik.Client.Service
         private string MoveFile(string destinationFolder, string oldFilePath, DateTime date, string newFileName)
         {
             string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(destinationFolder, date));
-            if (IsPicture(oldFilePath))
-            {
-                this.imageHelper.SetDate(oldFilePath, newFilePath, date);
-                this.filesHelper.DeleteFile(oldFilePath);
-            }
-            else
-            {
-                this.filesHelper.RenameFile(oldFilePath, newFilePath);
-            }
-
+            this.filesHelper.RenameFile(oldFilePath, newFilePath);
+            this.imageHelper.SetDate(newFilePath, date);
             return newFilePath;
         }
 
@@ -175,11 +167,6 @@ namespace Hik.Client.Service
             template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => @"\" + m.Value, RegexOptions.None, TimeSpan.FromMilliseconds(100));
             string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)", RegexOptions.None, TimeSpan.FromMilliseconds(100)) + "$";
             return new Regex(pattern, RegexOptions.None, TimeSpan.FromMilliseconds(100));
-        }
-
-        private bool IsPicture(string filePath)
-        {
-            return filesHelper.GetExtension(filePath) == ".jpg";
         }
     }
 }

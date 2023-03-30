@@ -6,7 +6,7 @@ using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client
 {
@@ -47,7 +47,7 @@ namespace Hik.Client
             dirHelper.CreateDirIfNotExist(sdkLogsPath);
             dirHelper.CreateDirIfNotExist(config.DestinationFolder);
 
-            logger.LogInformation("SDK Logs : {sdkLogsPath}", sdkLogsPath);
+            logger.Information("SDK Logs : {sdkLogsPath}", sdkLogsPath);
             hikApi.Initialize();
             hikApi.SetupLogs(3, sdkLogsPath, false);
             hikApi.SetConnectTime(3000, 3);
@@ -59,10 +59,10 @@ namespace Hik.Client
             if (session == null)
             {
                 session = hikApi.Login(config.Camera.IpAddress, config.Camera.PortNumber, config.Camera.UserName, config.Camera.Password);
-                logger.LogInformation("Sucessfull login to {config}", config);
+                logger.Information("Sucessfull login to {IpAdress}", config.Camera.IpAddress);
                 var status = hikApi.GetHddStatus(session.UserId);
 
-                logger.LogInformation(status?.ToString());
+                logger.Information(status?.ToString());
 
                 if (status is { IsErrorStatus: true })
                 {
@@ -73,7 +73,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.LogWarning("Already logged in");
+                logger.Warning("Already logged in");
                 return false;
             }
         }
@@ -83,19 +83,19 @@ namespace Hik.Client
             if (config.SyncTime)
             {
                 var cameraTime = hikApi.GetTime(session.UserId);
-                logger.LogInformation("Camera time :{cameraTime}", cameraTime);
+                logger.Information("Camera time :{cameraTime}", cameraTime);
                 var currentTime = DateTime.Now;
                 if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
                 {
                     hikApi.SetTime(currentTime, session.UserId);
-                    logger.LogWarning("Camera time updated :{currentTime}", currentTime);
+                    logger.Warning("Camera time updated :{currentTime}", currentTime);
                 }
             }
         }
 
         public void ForceExit()
         {
-            logger.LogWarning("Force Exit");
+            logger.Warning("Force Exit");
             StopDownload();
             Dispose(true);
         }
@@ -110,7 +110,7 @@ namespace Hik.Client
         {
             if (!disposedValue)
             {
-                logger.LogInformation("Logout the device");
+                logger.Information("Logout the device");
                 if (session != null)
                 {
                     hikApi.Logout(session.UserId);

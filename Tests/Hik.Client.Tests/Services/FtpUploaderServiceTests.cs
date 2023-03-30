@@ -6,10 +6,9 @@ using AutoFixture.Xunit2;
 using Hik.Client.Abstraction;
 using Hik.Client.Service;
 using Hik.DTO.Config;
-using Hik.Helpers;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
 using Moq;
+using Serilog;
 using Xunit;
 
 namespace Hik.Client.Tests.Services

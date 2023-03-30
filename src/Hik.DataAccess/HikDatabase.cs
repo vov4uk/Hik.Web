@@ -6,7 +6,7 @@ using AutoMapper;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.DataAccess
 {
@@ -166,27 +166,27 @@ namespace Hik.DataAccess
                 foreach (var trigger in triggers)
                 {
                     var parts = trigger.Split(".");
-                    logger.LogInformation("Try cleanup {trigger}", trigger);
+                    logger.Information("Try cleanup {trigger}", trigger);
                     var jobTrigger = await triggerRepo.FindByAsync(x => x.Group == parts[0] && x.TriggerKey == parts[1]);
                     if (jobTrigger != null)
                     {
-                       logger.LogInformation("{trigger} found, Id = {Id}, To = {to}", trigger, jobTrigger.Id, to);
+                       logger.Information("{trigger} found, Id = {Id}, To = {to}", trigger, jobTrigger.Id, to);
 
                        var files = await filesRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Date <= to,
                             x => x.DownloadDuration,
                             x => x.DownloadHistory);
                         filesRepo.RemoveRange(files);
                         await unitOfWork.SaveChangesAsync();
-                        logger.LogInformation("{trigger} files cleared", trigger);
+                        logger.Information("{trigger} files cleared", trigger);
 
                         var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Finished <= to, x => x.DownloadedFiles);
                         jobRepo.RemoveRange(jobs);
                         await unitOfWork.SaveChangesAsync();
-                        logger.LogInformation("{trigger} jobs cleared", trigger);
+                        logger.Information("{trigger} jobs cleared", trigger);
                     }
                 }
 
-                logger.LogInformation("Cleanup done");
+                logger.Information("Cleanup done");
             }
         }
 

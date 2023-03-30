@@ -12,7 +12,7 @@ using Hik.Helpers.Abstraction;
 using Job.Email;
 using Job.Extensions;
 using Job.Impl;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -21,9 +21,21 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public static class JobFactory
     {
-        public static IJobProcess GetJob(Parameters parameters, ILogger logger, IEmailHelper email)
+        public static IJobProcess GetJob(Parameters parameters, IEmailHelper email)
         {
+            ILogger logger;
+
             string trigger = $"{parameters.Group}.{parameters.TriggerKey}";
+            logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("TriggerKey", parameters.TriggerKey)
+                .Enrich.WithProperty("ActivityId", parameters.ActivityId)
+                .WriteTo.Console()
+                .WriteTo.File($"Logs\\{parameters.TriggerKey}-{{Date}}.txt")
+                .WriteTo.Seq("http://localhost:5341")
+                .CreateLogger();
+
             IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(new DbConfiguration { ConnectionString = parameters.ConnectionString });
             IHikDatabase db = new HikDatabase(unitOfWorkFactory, logger);
 
@@ -51,7 +63,7 @@ namespace Job
 
                         var ftpParameter = new ResolvedParameter(
                             (pi, ctx) => pi.ParameterType == typeof(IAsyncFtpClient) && pi.Name == "ftp",
-                            (pi, ctx) => new FtpClient());
+                            (pi, ctx) => new AsyncFtpClient());
 
                         var client = AppBootstrapper.Container.Resolve<IUploaderClient>(configParameter, ftpParameter, loggerParameter);
 
@@ -85,7 +97,7 @@ namespace Job
                 case "HikVideoDownloader":
                     {
                         var config = HikConfigExtensions.GetConfig<CameraConfig>(parameters.ConfigFilePath);
-                        var factory = AppBootstrapper.Container.Resolve<IClientFactory>(loggerParameter);
+                        var factory = AppBootstrapper.Container.Resolve<IClientFactory>();
                         var factoryParameter = new ResolvedParameter(
                             (pi, ctx) => pi.ParameterType == typeof(IClientFactory) && pi.Name == "clientFactory",
                             (pi, ctx) => factory);
@@ -96,7 +108,7 @@ namespace Job
                 case "HikPhotoDownloader":
                     {
                         var config = HikConfigExtensions.GetConfig<CameraConfig>(parameters.ConfigFilePath);
-                        var factory = AppBootstrapper.Container.Resolve<IClientFactory>(loggerParameter);
+                        var factory = AppBootstrapper.Container.Resolve<IClientFactory>();
                         var factoryParameter = new ResolvedParameter(
                             (pi, ctx) => pi.ParameterType == typeof(IClientFactory) && pi.Name == "clientFactory",
                             (pi, ctx) => factory);

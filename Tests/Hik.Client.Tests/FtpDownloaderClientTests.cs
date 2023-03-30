@@ -4,7 +4,7 @@ using FluentFTP.Exceptions;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Moq;
 using System;
 using System.Linq;
@@ -120,7 +120,7 @@ namespace Hik.Client.Tests
             this.filesMock.Setup(x => x.RenameFile(randomName, It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>()))
                 .Returns(-1);
-            this.ftpMock.Setup(x => x.DownloadFile(randomName, It.IsAny<string>(), FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DownloadFile(randomName, It.IsAny<string>(), FtpLocalExists.Skip, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
 
             var client = this.GetClient();
@@ -147,7 +147,7 @@ namespace Hik.Client.Tests
             this.filesMock.Setup(x => x.RenameFile(randomName, It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>()))
                 .Returns(file.Size);
-            this.ftpMock.Setup(x => x.DownloadFile(randomName, It.IsAny<string>(), FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DownloadFile(randomName, It.IsAny<string>(), FtpLocalExists.Skip, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
             this.ftpMock.Setup(x => x.DeleteFile(file.Path, CancellationToken.None))
                 .Returns(Task.CompletedTask);
@@ -176,7 +176,7 @@ namespace Hik.Client.Tests
             this.filesMock.Setup(x => x.RenameFile(randomName, It.IsAny<string>()));
             this.filesMock.Setup(x => x.FileSize(It.IsAny<string>()))
                 .Returns(file.Size);
-            this.ftpMock.Setup(x => x.DownloadFile(randomName, It.IsAny<string>(), FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DownloadFile(randomName, It.IsAny<string>(), FtpLocalExists.Skip, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
             this.ftpMock.Setup(x => x.DeleteFile(file.Path, CancellationToken.None))
                 .ThrowsAsync(new FtpException("Something went wrong"));

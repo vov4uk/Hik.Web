@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hik.Client.Abstraction;
@@ -8,7 +7,7 @@ using Hik.Client.Abstraction.Services;
 using Hik.Client.Events;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client.Service
 {
@@ -19,12 +18,9 @@ namespace Hik.Client.Service
         {
         }
 
-        public override async Task<IReadOnlyCollection<MediaFileDto>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
+        public override Task<IReadOnlyCollection<MediaFileDto>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            List<MediaFileDto> photos = (await this.Client.GetFilesListAsync(periodStart, periodEnd)).ToList();
-
-            this.logger.LogInformation("Found {count} photos", photos.Count);
-            return photos;
+            return this.Client.GetFilesListAsync(periodStart, periodEnd);
         }
 
         public override async Task<IReadOnlyCollection<MediaFileDto>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDto> remoteFiles, CancellationToken token)

@@ -9,7 +9,7 @@ using Hik.Client.Service;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Moq;
 using Xunit;
 
@@ -175,7 +175,7 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteAsync_CancelationOnClintItitialize_ClientDisposed()
+        public async Task ExecuteAsync_CancellationOnClintInitialize_ClientDisposed()
         {
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
@@ -198,7 +198,7 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteAsync_CancelationOnDownload_ExceptionFiredAfterFirtstFileDownloaded()
+        public async Task ExecuteAsync_CancellationOnDownload_ExceptionFiredAfterFirstFileDownloaded()
         {
             int filesCount = 5;
 
@@ -231,7 +231,7 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteAsync_CancelationOnLogin_ExceptionFiredGetRemoteFilesListNotStarted()
+        public async Task ExecuteAsync_CancellationOnLogin_ExceptionFiredGetRemoteFilesListNotStarted()
         {
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
@@ -287,7 +287,7 @@ namespace Hik.Client.Tests.Services
 
         private VideoDownloaderService CreateHikDownloader()
         {
-            this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>()))
+            this.clientFactoryMock.Setup(x => x.Create(It.IsAny<CameraConfig>(), It.IsAny<ILogger>()))
                 .Returns(this.clientMock.Object);
 
             return new VideoDownloaderService(this.directoryMock.Object, this.clientFactoryMock.Object, loggerMock.Object);

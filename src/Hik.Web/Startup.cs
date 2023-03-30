@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -51,6 +51,7 @@ namespace Hik.Web
             services.AddAuthorization();
 #endif
             services.AddRazorPages();
+
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
             services.AddHttpLogging(options =>
             {
@@ -77,6 +78,7 @@ namespace Hik.Web
 
             app.UseDeveloperExceptionPage()
                 .UseStaticFiles()
+                .UseSerilogRequestLogging()
                 .UseRouting();
 
 #if USE_AUTHORIZATION

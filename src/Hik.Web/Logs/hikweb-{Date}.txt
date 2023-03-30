@@ -1,0 +1,264 @@
+2023-03-29 14:47:32.541 +03:00 [INF] Now listening on: http://[::]:50001
+2023-03-29 14:47:33.043 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2023-03-29 14:47:33.045 +03:00 [INF] Hosting environment: Development
+2023-03-29 14:47:33.046 +03:00 [INF] Content root path: C:\Code\My\HikWeb\src\Hik.Web\bin\x64\Debug
+2023-03-29 14:47:47.475 +03:00 [INF] Query: JobTriggersQueryHandler; Duration: 809ms; Body: {}
+2023-03-29 14:47:47.484 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 4ms; Body: {}
+2023-03-29 14:47:47.548 +03:00 [INF] HTTP GET / responded 200 in 956.9956 ms
+2023-03-29 14:47:56.463 +03:00 [INF] Query: DashboardQueryHandler; Duration: 4974ms; Body: {}
+2023-03-29 14:47:56.465 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 0ms; Body: {}
+2023-03-29 14:47:56.473 +03:00 [INF] HTTP GET /Dashboard responded 200 in 4992.4263 ms
+2023-03-29 14:48:24.722 +03:00 [INF] Query: DashboardQueryHandler; Duration: 12169ms; Body: {}
+2023-03-29 14:48:24.724 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 0ms; Body: {}
+2023-03-29 14:48:24.726 +03:00 [INF] HTTP GET /Dashboard responded 200 in 12176.0877 ms
+2023-03-29 14:48:45.007 +03:00 [INF] Query: DashboardQueryHandler; Duration: 4234ms; Body: {}
+2023-03-29 14:48:45.013 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 0ms; Body: {}
+2023-03-29 14:48:45.014 +03:00 [INF] HTTP GET /Dashboard responded 200 in 4242.3480 ms
+2023-03-30 10:32:12.762 +03:00 [INF] Now listening on: http://[::]:50001
+2023-03-30 10:32:13.268 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2023-03-30 10:32:13.268 +03:00 [INF] Hosting environment: Development
+2023-03-30 10:32:13.269 +03:00 [INF] Content root path: C:\Code\My\HikWeb\src\Hik.Web\bin\x64\Debug
+2023-03-30 10:32:23.681 +03:00 [ERR] HTTP GET / responded 500 in 233.5343 ms
+Autofac.Core.DependencyResolutionException: An exception was thrown while activating Hik.Web.Queries.JobTriggers.JobTriggersQueryHandler.
+ ---> Autofac.Core.DependencyResolutionException: None of the constructors found on type 'Hik.Web.Queries.JobTriggers.JobTriggersQueryHandler' can be invoked with the available services and parameters:
+Cannot resolve parameter 'Serilog.ILogger logger' of constructor 'Void .ctor(Hik.DataAccess.Abstractions.IUnitOfWorkFactory, Serilog.ILogger)'.
+
+See https://autofac.rtfd.io/help/no-constructors-bindable for more info.
+   at Autofac.Core.Activators.Reflection.ReflectionActivator.<>c__DisplayClass14_0.<UseSingleConstructorActivation>b__0(ResolveRequestContext ctxt, Action`1 next)
+   at Autofac.Core.Resolving.Middleware.DelegateMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.DisposalTrackingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.ActivatorErrorHandlingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   --- End of inner exception stack trace ---
+   at Autofac.Core.Resolving.Middleware.ActivatorErrorHandlingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Pipeline.ResolvePipeline.Invoke(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.RegistrationPipelineInvokeMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.SharingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.CircularDependencyDetectorMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Pipeline.ResolvePipeline.Invoke(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.ResolveOperation.GetOrCreateInstance(ISharingLifetimeScope currentOperationScope, ResolveRequest request)
+   at Autofac.Core.Resolving.ResolveOperation.ExecuteOperation(ResolveRequest request)
+   at Autofac.Core.Resolving.ResolveOperation.Execute(ResolveRequest request)
+   at Autofac.Core.Lifetime.LifetimeScope.ResolveComponent(ResolveRequest request)
+   at Autofac.ResolutionExtensions.TryResolveService(IComponentContext context, Service service, IEnumerable`1 parameters, Object& instance)
+   at Autofac.ResolutionExtensions.ResolveService(IComponentContext context, Service service, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve(IComponentContext context, Type serviceType, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve(IComponentContext context, Type serviceType)
+   at Autofac.Extensions.DependencyInjection.AutofacServiceProvider.GetRequiredService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at MediatR.Wrappers.RequestHandlerWrapperImpl`2.<>c__DisplayClass1_0.<Handle>g__Handler|0()
+   at MediatR.Wrappers.RequestHandlerWrapperImpl`2.Handle(IRequest`1 request, IServiceProvider serviceProvider, CancellationToken cancellationToken)
+   at MediatR.Mediator.Send[TResponse](IRequest`1 request, CancellationToken cancellationToken)
+   at Hik.Web.Pages.IndexModel.OnGet(String msg) in C:\Code\My\HikWeb\src\Hik.Web\Pages\Index.cshtml.cs:line 35
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.ExecutorFactory.NonGenericTaskHandlerMethod.Execute(Object receiver, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeHandlerMethodAsync()
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeNextPageFilterAsync()
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.Rethrow(PageHandlerExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResourceFilter>g__Awaited|25_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResourceExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeFilterPipelineAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2023-03-30 10:32:23.756 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+Autofac.Core.DependencyResolutionException: An exception was thrown while activating Hik.Web.Queries.JobTriggers.JobTriggersQueryHandler.
+ ---> Autofac.Core.DependencyResolutionException: None of the constructors found on type 'Hik.Web.Queries.JobTriggers.JobTriggersQueryHandler' can be invoked with the available services and parameters:
+Cannot resolve parameter 'Serilog.ILogger logger' of constructor 'Void .ctor(Hik.DataAccess.Abstractions.IUnitOfWorkFactory, Serilog.ILogger)'.
+
+See https://autofac.rtfd.io/help/no-constructors-bindable for more info.
+   at Autofac.Core.Activators.Reflection.ReflectionActivator.<>c__DisplayClass14_0.<UseSingleConstructorActivation>b__0(ResolveRequestContext ctxt, Action`1 next)
+   at Autofac.Core.Resolving.Middleware.DelegateMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.DisposalTrackingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.ActivatorErrorHandlingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   --- End of inner exception stack trace ---
+   at Autofac.Core.Resolving.Middleware.ActivatorErrorHandlingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Pipeline.ResolvePipeline.Invoke(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.RegistrationPipelineInvokeMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.SharingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.CircularDependencyDetectorMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Pipeline.ResolvePipeline.Invoke(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.ResolveOperation.GetOrCreateInstance(ISharingLifetimeScope currentOperationScope, ResolveRequest request)
+   at Autofac.Core.Resolving.ResolveOperation.ExecuteOperation(ResolveRequest request)
+   at Autofac.Core.Resolving.ResolveOperation.Execute(ResolveRequest request)
+   at Autofac.Core.Lifetime.LifetimeScope.ResolveComponent(ResolveRequest request)
+   at Autofac.ResolutionExtensions.TryResolveService(IComponentContext context, Service service, IEnumerable`1 parameters, Object& instance)
+   at Autofac.ResolutionExtensions.ResolveService(IComponentContext context, Service service, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve(IComponentContext context, Type serviceType, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve(IComponentContext context, Type serviceType)
+   at Autofac.Extensions.DependencyInjection.AutofacServiceProvider.GetRequiredService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at MediatR.Wrappers.RequestHandlerWrapperImpl`2.<>c__DisplayClass1_0.<Handle>g__Handler|0()
+   at MediatR.Wrappers.RequestHandlerWrapperImpl`2.Handle(IRequest`1 request, IServiceProvider serviceProvider, CancellationToken cancellationToken)
+   at MediatR.Mediator.Send[TResponse](IRequest`1 request, CancellationToken cancellationToken)
+   at Hik.Web.Pages.IndexModel.OnGet(String msg) in C:\Code\My\HikWeb\src\Hik.Web\Pages\Index.cshtml.cs:line 35
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.ExecutorFactory.NonGenericTaskHandlerMethod.Execute(Object receiver, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeHandlerMethodAsync()
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeNextPageFilterAsync()
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.Rethrow(PageHandlerExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResourceFilter>g__Awaited|25_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResourceExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeFilterPipelineAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2023-03-30 10:38:34.491 +03:00 [INF] Now listening on: http://[::]:50001
+2023-03-30 10:38:34.861 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2023-03-30 10:38:34.862 +03:00 [INF] Hosting environment: Development
+2023-03-30 10:38:34.862 +03:00 [INF] Content root path: C:\Code\My\HikWeb\src\Hik.Web\bin\x64\Debug
+2023-03-30 10:39:00.379 +03:00 [ERR] Failed to start activity
+Autofac.Core.DependencyResolutionException: An exception was thrown while activating Hik.Client.Client.FtpUploaderClient.
+ ---> Autofac.Core.DependencyResolutionException: An exception was thrown while invoking the constructor 'Void .ctor(Hik.DTO.Config.DeviceConfig, FluentFTP.IAsyncFtpClient, Serilog.ILogger)' on type 'FtpUploaderClient'.
+ ---> System.InvalidCastException: Unable to cast object of type 'FluentFTP.FtpClient' to type 'FluentFTP.IAsyncFtpClient'.
+   at lambda_method92(Closure, Object[])
+   at Autofac.Core.Activators.Reflection.BoundConstructor.Instantiate()
+   --- End of inner exception stack trace ---
+   at Autofac.Core.Activators.Reflection.BoundConstructor.Instantiate()
+   at Autofac.Core.Activators.Reflection.ReflectionActivator.<>c__DisplayClass14_0.<UseSingleConstructorActivation>b__0(ResolveRequestContext ctxt, Action`1 next)
+   at Autofac.Core.Resolving.Middleware.DelegateMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.DisposalTrackingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.ActivatorErrorHandlingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   --- End of inner exception stack trace ---
+   at Autofac.Core.Resolving.Middleware.ActivatorErrorHandlingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Pipeline.ResolvePipeline.Invoke(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.RegistrationPipelineInvokeMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.SharingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.CircularDependencyDetectorMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Pipeline.ResolvePipeline.Invoke(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.ResolveOperation.GetOrCreateInstance(ISharingLifetimeScope currentOperationScope, ResolveRequest request)
+   at Autofac.Core.Resolving.ResolveOperation.ExecuteOperation(ResolveRequest request)
+   at Autofac.Core.Resolving.ResolveOperation.Execute(ResolveRequest request)
+   at Autofac.Core.Lifetime.LifetimeScope.ResolveComponent(ResolveRequest request)
+   at Autofac.Core.Container.ResolveComponent(ResolveRequest request)
+   at Autofac.ResolutionExtensions.TryResolveService(IComponentContext context, Service service, IEnumerable`1 parameters, Object& instance)
+   at Autofac.ResolutionExtensions.ResolveService(IComponentContext context, Service service, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve(IComponentContext context, Type serviceType, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve[TService](IComponentContext context, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve[TService](IComponentContext context, Parameter[] parameters)
+   at Job.JobFactory.GetJob(Parameters parameters, IEmailHelper email) in C:\Code\My\HikWeb\src\Job\JobFactory.cs:line 68
+   at Job.Activity.RunAsTask() in C:\Code\My\HikWeb\src\Job\Activity.cs:line 127
+   at Job.Activity.Start() in C:\Code\My\HikWeb\src\Job\Activity.cs:line 55
+2023-03-30 10:40:00.036 +03:00 [INF] Cannot start, Upload_Da4a is already running.
+2023-03-30 10:42:56.496 +03:00 [INF] Now listening on: http://[::]:50001
+2023-03-30 10:42:57.315 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2023-03-30 10:42:57.316 +03:00 [INF] Hosting environment: Development
+2023-03-30 10:42:57.317 +03:00 [INF] Content root path: C:\Code\My\HikWeb\src\Hik.Web\bin\x64\Debug
+2023-03-30 10:42:59.698 +03:00 [INF] Query: JobTriggersQueryHandler; Duration: 1521ms; Body: {}
+2023-03-30 10:42:59.712 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 7ms; Body: {}
+2023-03-30 10:42:59.798 +03:00 [INF] HTTP GET / responded 200 in 1789.9422 ms
+2023-03-30 10:43:37.661 +03:00 [INF] Query: JobTriggersQueryHandler; Duration: 3642ms; Body: {}
+2023-03-30 10:43:37.662 +03:00 [INF] Query: JobTriggersQueryHandler; Duration: 2201ms; Body: {}
+2023-03-30 10:43:37.663 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 0ms; Body: {}
+2023-03-30 10:43:37.665 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 0ms; Body: {}
+2023-03-30 10:43:37.669 +03:00 [INF] HTTP GET / responded 200 in 19331.0245 ms
+2023-03-30 10:43:37.669 +03:00 [INF] HTTP GET / responded 200 in 2240.6840 ms
+2023-03-30 10:54:18.118 +03:00 [INF] Now listening on: http://[::]:50001
+2023-03-30 10:54:18.477 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2023-03-30 10:54:18.478 +03:00 [INF] Hosting environment: Development
+2023-03-30 10:54:18.480 +03:00 [INF] Content root path: C:\Code\My\HikWeb\src\Hik.Web\bin\x64\Debug
+2023-03-30 10:54:21.352 +03:00 [INF] Query: JobTriggersQueryHandler; Duration: 1023ms; Body: {}
+2023-03-30 10:54:21.362 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 4ms; Body: {}
+2023-03-30 10:54:21.438 +03:00 [INF] HTTP GET / responded 200 in 1184.1777 ms
+2023-03-30 10:54:28.733 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 0ms; Body: {}
+2023-03-30 10:54:28.980 +03:00 [INF] HTTP GET /Scheduler responded 200 in 256.9547 ms
+2023-03-30 10:54:30.693 +03:00 [INF] HTTP POST / responded 302 in 35.1534 ms
+2023-03-30 10:54:37.184 +03:00 [INF] Query: JobTriggersQueryHandler; Duration: 6481ms; Body: {}
+2023-03-30 10:54:39.140 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 567ms; Body: {}
+2023-03-30 10:54:39.145 +03:00 [INF] HTTP GET / responded 200 in 8445.3922 ms
+2023-03-30 10:54:50.091 +03:00 [ERR] Failed to start activity
+System.ArgumentNullException: Value cannot be null. (Parameter 'config')
+   at Job.Impl.JobProcessBase`1..ctor(String trigger, T config, IHikDatabase db, IEmailHelper email, ILogger logger) in C:\Code\My\HikWeb\src\Job\Impl\JobProcessBase.cs:line 33
+   at Job.Impl.HikVideoDownloaderJob..ctor(String trigger, CameraConfig config, IHikVideoDownloaderService service, IHikDatabase db, IEmailHelper email, ILogger logger) in C:\Code\My\HikWeb\src\Job\Impl\HikVideoDownloaderJob.cs:line 25
+   at Job.JobFactory.GetJob(Parameters parameters, IEmailHelper email) in C:\Code\My\HikWeb\src\Job\JobFactory.cs:line 105
+   at Job.Activity.RunAsTask() in C:\Code\My\HikWeb\src\Job\Activity.cs:line 127
+   at Job.Activity.Start() in C:\Code\My\HikWeb\src\Job\Activity.cs:line 55
+2023-03-30 10:54:55.261 +03:00 [INF] Query: JobTriggersQueryHandler; Duration: 61ms; Body: {}
+2023-03-30 10:54:55.261 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 0ms; Body: {}
+2023-03-30 10:54:55.263 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 0ms; Body: {}
+2023-03-30 10:54:55.266 +03:00 [INF] HTTP GET / responded 200 in 67.5108 ms
+2023-03-30 10:54:55.269 +03:00 [INF] HTTP GET /Scheduler responded 200 in 12.3620 ms
+2023-03-30 10:54:57.158 +03:00 [INF] HTTP POST / responded 302 in 3.8579 ms
+2023-03-30 10:55:00.297 +03:00 [INF] Query: JobTriggersQueryHandler; Duration: 233ms; Body: {}
+2023-03-30 10:55:00.305 +03:00 [INF] Query: QuartzTriggersQueryHandler; Duration: 0ms; Body: {}
+2023-03-30 10:55:00.307 +03:00 [INF] HTTP GET / responded 200 in 442.1065 ms
+2023-03-30 10:55:08.010 +03:00 [INF] Cannot start, Upload_Da4a is already running.
+2023-03-30 10:56:46.722 +03:00 [INF] Now listening on: http://[::]:50001
+2023-03-30 10:56:47.343 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2023-03-30 10:56:47.344 +03:00 [INF] Hosting environment: Development
+2023-03-30 10:56:47.345 +03:00 [INF] Content root path: C:\Code\My\HikWeb\src\Hik.Web\bin\x64\Debug
+2023-03-30 10:57:07.578 +03:00 [ERR] Failed to start activity
+System.ArgumentException: No such type exist 'DetectPeople'
+   at Job.JobFactory.GetJob(Parameters parameters, IEmailHelper email) in C:\Code\My\HikWeb\src\Job\JobFactory.cs:line 126
+   at Job.Activity.RunAsTask() in C:\Code\My\HikWeb\src\Job\Activity.cs:line 127
+   at Job.Activity.Start() in C:\Code\My\HikWeb\src\Job\Activity.cs:line 55
+2023-03-30 10:57:10.933 +03:00 [ERR] Failed to start activity
+Autofac.Core.DependencyResolutionException: An exception was thrown while activating Hik.Client.Client.FtpUploaderClient.
+ ---> Autofac.Core.DependencyResolutionException: An exception was thrown while invoking the constructor 'Void .ctor(Hik.DTO.Config.DeviceConfig, FluentFTP.IAsyncFtpClient, Serilog.ILogger)' on type 'FtpUploaderClient'.
+ ---> System.ArgumentNullException: Value cannot be null. (Parameter 'config')
+   at Hik.Client.Client.FtpClientBase..ctor(DeviceConfig config, IAsyncFtpClient ftp, ILogger logger) in C:\Code\My\HikWeb\src\Hik.Client\Client\FtpClientBase.cs:line 23
+   at Hik.Client.Client.FtpUploaderClient..ctor(DeviceConfig config, IAsyncFtpClient ftp, ILogger logger) in C:\Code\My\HikWeb\src\Hik.Client\Client\FtpUploaderClient.cs:line 16
+   at lambda_method92(Closure, Object[])
+   at Autofac.Core.Activators.Reflection.BoundConstructor.Instantiate()
+   --- End of inner exception stack trace ---
+   at Autofac.Core.Activators.Reflection.BoundConstructor.Instantiate()
+   at Autofac.Core.Activators.Reflection.ReflectionActivator.<>c__DisplayClass14_0.<UseSingleConstructorActivation>b__0(ResolveRequestContext ctxt, Action`1 next)
+   at Autofac.Core.Resolving.Middleware.DelegateMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.DisposalTrackingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.ActivatorErrorHandlingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   --- End of inner exception stack trace ---
+   at Autofac.Core.Resolving.Middleware.ActivatorErrorHandlingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Pipeline.ResolvePipeline.Invoke(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.RegistrationPipelineInvokeMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.SharingMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.Middleware.CircularDependencyDetectorMiddleware.Execute(ResolveRequestContext context, Action`1 next)
+   at Autofac.Core.Resolving.Pipeline.ResolvePipelineBuilder.<>c__DisplayClass14_0.<BuildPipeline>b__1(ResolveRequestContext ctxt)
+   at Autofac.Core.Pipeline.ResolvePipeline.Invoke(ResolveRequestContext ctxt)
+   at Autofac.Core.Resolving.ResolveOperation.GetOrCreateInstance(ISharingLifetimeScope currentOperationScope, ResolveRequest request)
+   at Autofac.Core.Resolving.ResolveOperation.ExecuteOperation(ResolveRequest request)
+   at Autofac.Core.Resolving.ResolveOperation.Execute(ResolveRequest request)
+   at Autofac.Core.Lifetime.LifetimeScope.ResolveComponent(ResolveRequest request)
+   at Autofac.Core.Container.ResolveComponent(ResolveRequest request)
+   at Autofac.ResolutionExtensions.TryResolveService(IComponentContext context, Service service, IEnumerable`1 parameters, Object& instance)
+   at Autofac.ResolutionExtensions.ResolveService(IComponentContext context, Service service, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve(IComponentContext context, Type serviceType, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve[TService](IComponentContext context, IEnumerable`1 parameters)
+   at Autofac.ResolutionExtensions.Resolve[TService](IComponentContext context, Parameter[] parameters)
+   at Job.JobFactory.GetJob(Parameters parameters, IEmailHelper email) in C:\Code\My\HikWeb\src\Job\JobFactory.cs:line 68
+   at Job.Activity.RunAsTask() in C:\Code\My\HikWeb\src\Job\Activity.cs:line 127
+   at Job.Activity.Start() in C:\Code\My\HikWeb\src\Job\Activity.cs:line 55

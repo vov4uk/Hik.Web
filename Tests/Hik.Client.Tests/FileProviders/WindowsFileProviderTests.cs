@@ -1,7 +1,7 @@
 ﻿using Hik.Client.FileProviders;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
 using Moq;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;

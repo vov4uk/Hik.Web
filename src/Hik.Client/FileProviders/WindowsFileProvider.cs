@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Hik.DTO.Contracts;
 using Hik.Helpers;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client.FileProviders
 {
@@ -37,7 +37,7 @@ namespace Hik.Client.FileProviders
         {
             if (!isInitialized)
             {
-                logger.LogInformation("Initialize!");
+                logger.Information("Initialize!");
                 folders = new Dictionary<DateTime, IList<string>>();
                 foreach (var topDirectory in directories)
                 {
@@ -56,7 +56,7 @@ namespace Hik.Client.FileProviders
                 }
 
                 dates = new Stack<DateTime>(folders.Keys.OrderByDescending(x => x).ToList());
-                logger.LogInformation($"{dates.Count} dates found");
+                logger.Information($"{dates.Count} dates found");
             }
 
             isInitialized = true;
@@ -67,7 +67,7 @@ namespace Hik.Client.FileProviders
             var result = new List<MediaFileDto>();
             if (!isInitialized)
             {
-                logger.LogInformation("GetNextBatch !isInitialized");
+                logger.Information("GetNextBatch !isInitialized");
                 return result;
             }
 
@@ -83,7 +83,7 @@ namespace Hik.Client.FileProviders
                 }
             }
 
-            logger.LogInformation($"GetNextBatch result {result.Count}");
+            logger.Information($"GetNextBatch result {result.Count}");
             return result;
         }
 

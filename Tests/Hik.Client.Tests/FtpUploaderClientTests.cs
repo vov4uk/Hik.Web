@@ -7,7 +7,7 @@ using FluentFTP;
 using FluentFTP.Exceptions;
 using Hik.Client.Client;
 using Hik.DTO.Config;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Moq;
 using Xunit;
 
@@ -17,13 +17,11 @@ namespace Hik.Client.Tests
     {
         private readonly Mock<IAsyncFtpClient> ftpMock;
         private readonly Mock<ILogger> loggerMock;
-        private readonly Fixture fixture;
 
         public FtpUploaderClientTests()
         {
             this.ftpMock = new(MockBehavior.Strict);
             this.loggerMock = new();
-            this.fixture = new();
         }
 
         [Fact]
