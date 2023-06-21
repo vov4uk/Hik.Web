@@ -40,7 +40,7 @@ namespace Hik.Web.Queries.Search
                         skip: 0,
                         top: 5,
                         includes: x => x.DownloadDuration);
-                    var afterFiles = files.ConvertAll(y => HikDatabase.Mapper.Map<MediaFile, MediaFileDto>(y));
+                    var afterFiles = files.ConvertAll(HikDatabase.Mapper.Map<MediaFile, MediaFileDto>);
 
                     return new SearchDto
                     {
@@ -70,9 +70,9 @@ namespace Hik.Web.Queries.Search
                         predicate,
                         x => x.Date,
                         skip: 0,
-                        top: top,
+                        take: top,
                         includes : x => x.DownloadDuration);
-            return files.ConvertAll(y => HikDatabase.Mapper.Map<MediaFile, MediaFileDto>(y));
+            return files.ConvertAll(HikDatabase.Mapper.Map<MediaFile, MediaFileDto>);
         }
     }
 }

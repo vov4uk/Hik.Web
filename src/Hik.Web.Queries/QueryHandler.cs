@@ -16,7 +16,7 @@ namespace Hik.Web.Queries
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
-                .WriteTo.File("Logs\\Query-{Date}.txt")
+                .WriteTo.File("Logs\\QueryHandler.txt", rollingInterval: RollingInterval.Day)
                 .WriteTo.Seq("http://localhost:5341")
                 .CreateLogger();
         }

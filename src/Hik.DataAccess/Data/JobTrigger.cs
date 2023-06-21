@@ -21,11 +21,21 @@ namespace Hik.DataAccess.Data
 
         public bool ShowInSearch { get; set; }
 
-        public List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
+        public virtual List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
 
-        public List<HikJob> Jobs { get; set; } = new List<HikJob>();
+        public virtual List<HikJob> Jobs { get; set; } = new List<HikJob>();
 
         public DateTime? LastSync { get; set; }
+
+        public int? LastExecutedJobId { get; set; }
+
+        [ForeignKey("LastExecutedJobId")]
+        public virtual HikJob LastExecutedJob { get; set; }
+
+        public int? LastSuccessJobId { get; set; }
+
+        [ForeignKey("LastSuccessJobId")]
+        public virtual HikJob LastSuccessJob { get; set; }
 
         public virtual List<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
 

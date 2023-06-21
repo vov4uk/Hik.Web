@@ -12,5 +12,6 @@ namespace Hik.DataAccess.Metadata
         public const string DailyStatistics = nameof(DailyStatistics);
         public const string DownloadHistory = nameof(DownloadHistory);
         public const string DownloadDuration = nameof(DownloadDuration);
+        public const string MigrationHistory = nameof(MigrationHistory);
     }
 }

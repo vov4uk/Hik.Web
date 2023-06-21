@@ -1,9 +1,11 @@
-﻿using Hik.DataAccess;
+﻿using System.Diagnostics;
+using Hik.DataAccess;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Hik.Web.Queries.JobDetails;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Hik.Web.Queries
 {
@@ -22,7 +24,7 @@ namespace Hik.Web.Queries
             {
                 var jobsRepo = uow.GetRepository<HikJob>();
 
-                var job = await jobsRepo.FindByAsync(x => x.Id == query.JobId, x => x.ExceptionLog, x => x.JobTrigger);
+                var job = await jobsRepo.FindByAsync(x => x.Id == query.JobId, x => x.ExceptionLog);
 
                 if (job != null)
                 {

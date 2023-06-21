@@ -9,6 +9,7 @@ using Job.Extensions;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -64,8 +65,8 @@ namespace Job.Impl
             }
             catch (Exception e)
             {
+                logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", e.Message, e.ToStringDemystified());
                 HandleError(e.Message);
-                logger.Error(e, "Something went wrong");
             }
         }
 
@@ -88,9 +89,9 @@ namespace Job.Impl
                     db.LogExceptionToAsync(JobInstance.Id, error),
                     db.SaveJobResultAsync(JobInstance));
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                logger.Error(ex, "Failed to save error");
+                logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to save error", e.ToStringDemystified());
             }
 
             if (Config.SentEmailOnError)

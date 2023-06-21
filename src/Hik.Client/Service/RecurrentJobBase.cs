@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using FluentFTP.Exceptions;
 using Hik.Api;
 using Hik.Client.Abstraction.Services;
 using Hik.DTO.Config;
@@ -34,17 +34,12 @@ namespace Hik.Client.Service
             catch (HikException ex)
             {
                 var msg = $"Code : {ex.ErrorCode}; {ex.ErrorMessage}";
-                this.logger.Error(ex, msg);
+                Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", msg, ex.ToStringDemystified());
                 return Failure<IReadOnlyCollection<MediaFileDto>>(msg);
-            }
-            catch (FtpException ftp)
-            {
-                this.logger.Error(ftp.InnerException, ftp.InnerException?.Message);
-                return Failure<IReadOnlyCollection<MediaFileDto>>(ftp.InnerException?.Message);
             }
             catch (Exception e)
             {
-                this.logger.Error(e, e.Message);
+                Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", e.Message, e.ToStringDemystified());
                 return Failure<IReadOnlyCollection<MediaFileDto>>(e.Message);
             }
         }

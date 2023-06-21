@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Hik.Api;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.DTO.Config;
@@ -15,7 +14,6 @@ namespace Hik.Client.Service
 {
     public abstract class HikDownloaderServiceBase : RecurrentJobBase
     {
-        protected const int JobTimeout = 30;
         private readonly IClientFactory clientFactory;
         private CancellationTokenSource cancelTokenSource;
 

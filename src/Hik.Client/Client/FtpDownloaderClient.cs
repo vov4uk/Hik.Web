@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
-using FluentFTP.Exceptions;
 using Hik.Client.Client;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -55,16 +54,7 @@ namespace Hik.Client
             if (size == remoteFile.Size)
             {
                 remoteFile.Path = localFilePath;
-                try
-                {
-                    await ftp.DeleteFile(remoteFilePath);
-                }
-                catch (FtpException ex)
-                {
-                    logger.Error(ex, "Failed to delete remote file");
-                    return false;
-                }
-
+                await ftp.DeleteFile(remoteFilePath);
                 return true;
             }
 

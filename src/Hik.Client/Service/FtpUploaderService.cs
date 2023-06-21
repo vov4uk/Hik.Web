@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -60,11 +61,11 @@ namespace Hik.Client.Service
                     }
                     catch (IOException e)
                     {
-                        logger.Error(e, "Failed to process file");
+                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to process file", e.ToStringDemystified());
                     }
                     catch (InvalidDataException e)
                     {
-                        logger.Error(e, "Invalid file");
+                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Invalid file", e.ToStringDemystified());
                     }
                 }
 

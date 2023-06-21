@@ -2,13 +2,14 @@ using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Serilog.Events;
 using Serilog;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Hik.DataAccess.SQL;
+using System.Threading.Tasks;
 
 namespace Hik.Web
 {
@@ -18,21 +19,18 @@ namespace Hik.Web
         public static string Version { get; set; }
         public static string ConnectionString { get; set; }
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                // Filter out ASP.NET Core infrastructre logs that are Information and below
-                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
-                .WriteTo.File("Logs\\hikweb-{Date}.txt")
+                .WriteTo.File("Logs\\hikweb_.txt", rollingInterval: RollingInterval.Day)
                 .WriteTo.Seq("http://localhost:5341")
                 .CreateLogger();
 
             var isService = !(Debugger.IsAttached || args.Contains(ConsoleParameter));
-            var builder = CreateHostBuilder(isService, args.Where(arg => arg != ConsoleParameter).ToArray());
+            var builder = await CreateHostBuilder(isService, args.Where(arg => arg != ConsoleParameter).ToArray());
 
             var host = builder.Build();
 
@@ -40,7 +38,7 @@ namespace Hik.Web
             host.Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(bool isService, string[] args)
+        public static async Task<IHostBuilder> CreateHostBuilder(bool isService, string[] args)
         {
             Directory.SetCurrentDirectory(AssemblyDirectory);
 
@@ -55,6 +53,8 @@ namespace Hik.Web
             var port = config.GetSection("Hosting:Port").Value;
 
             ConnectionString = config.GetSection("DBConfiguration").GetSection("ConnectionString").Value;
+
+            await MigrationTools.RunMigration(ConnectionString);
 
             var host = Host.CreateDefaultBuilder(args)
                 .UseSerilog()

@@ -14,7 +14,7 @@ namespace Hik.Quartz.Extensions
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext() 
                 .WriteTo.Console()
-                .WriteTo.File($"Logs\\Quartz.txt")
+                .WriteTo.File($"Logs\\Quartz_.txt")
                 .CreateLogger();
 
             return (level, func, exception, parameters) =>

@@ -1,5 +1,4 @@
-﻿using AutoMapper.Configuration.Annotations;
-using Hik.DataAccess.Abstractions;
+﻿using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Metadata;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,7 @@ namespace Hik.DataAccess.Data
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey("JobTrigger")]
+        [ForeignKey("FK_Job_JobTrigger_JobTriggerId")]
         public int JobTriggerId { get; set; }
 
         [NotMapped]
@@ -34,10 +33,11 @@ namespace Hik.DataAccess.Data
 
         public int FilesCount { get; set; }
 
-        public JobTrigger JobTrigger { get; set; }
+        [NotMapped]
+        public virtual JobTrigger JobTrigger { get; set; }
 
-        public ExceptionLog ExceptionLog { get; set; }
+        public virtual ExceptionLog ExceptionLog { get; set; }
 
-        public List<DownloadHistory> DownloadedFiles { get; set; } = new List<DownloadHistory>();
+        public virtual List<DownloadHistory> DownloadedFiles { get; set; } = new List<DownloadHistory>();
     }
 }

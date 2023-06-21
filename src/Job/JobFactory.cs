@@ -32,7 +32,7 @@ namespace Job
                 .Enrich.WithProperty("TriggerKey", parameters.TriggerKey)
                 .Enrich.WithProperty("ActivityId", parameters.ActivityId)
                 .WriteTo.Console()
-                .WriteTo.File($"Logs\\{parameters.TriggerKey}-{{Date}}.txt")
+                .WriteTo.File($"Logs\\{parameters.TriggerKey}_.txt", rollingInterval: RollingInterval.Day)
                 .WriteTo.Seq("http://localhost:5341")
                 .CreateLogger();
 

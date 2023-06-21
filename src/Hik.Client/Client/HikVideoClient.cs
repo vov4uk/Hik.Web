@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hik.Api.Abstraction;
-using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -13,7 +12,7 @@ using Serilog;
 
 namespace Hik.Client
 {
-    public sealed class HikVideoClient : HikBaseClient, IDownloaderClient
+    public sealed class HikVideoClient : HikBaseClient
     {
         private const int ProgressCheckPeriodMilliseconds = 5000;
 
@@ -30,38 +29,7 @@ namespace Hik.Client
 
         private bool IsDownloading => downloadId >= 0;
 
-        public async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
-        {
-            try
-            {
-                string targetFilePath = GetPathSafety(remoteFile);
-                string tempFile = filesHelper.GetTempFileName() + ".mp4";
-                if (this.StartVideoDownload(remoteFile, targetFilePath, tempFile))
-                {
-                    do
-                    {
-                        await Task.Delay(ProgressCheckPeriodMilliseconds, token);
-                        token.ThrowIfCancellationRequested();
-                        this.UpdateVideoProgress();
-                    }
-                    while (this.IsDownloading);
-
-                    filesHelper.RenameFile(tempFile, targetFilePath);
-                    remoteFile.Size = filesHelper.FileSize(targetFilePath);
-                    remoteFile.Path = targetFilePath;
-
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, $"DownloadFile {remoteFile.Name} failed");
-            }
-
-            return false;
-        }
-
-        public async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             ValidateDateParameters(periodStart, periodEnd);
 
@@ -69,6 +37,30 @@ namespace Hik.Client
 
             var remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
             return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
+        }
+
+        protected override async Task<bool> DownloadFileInternalAsync(MediaFileDto remoteFile, CancellationToken token)
+        {
+            string targetFilePath = GetPathSafety(remoteFile);
+            string tempFile = filesHelper.GetTempFileName() + ".mp4";
+            if (this.StartVideoDownload(remoteFile, targetFilePath, tempFile))
+            {
+                do
+                {
+                    await Task.Delay(ProgressCheckPeriodMilliseconds, token);
+                    token.ThrowIfCancellationRequested();
+                    this.UpdateVideoProgress();
+                }
+                while (this.IsDownloading);
+
+                filesHelper.RenameFile(tempFile, targetFilePath);
+                remoteFile.Size = filesHelper.FileSize(targetFilePath);
+                remoteFile.Path = targetFilePath;
+
+                return true;
+            }
+
+            return false;
         }
 
         protected override string ToFileNameString(MediaFileDto file)

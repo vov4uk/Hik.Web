@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
+using FluentFTP.Exceptions;
 using Hik.Client.Abstraction;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
@@ -42,7 +44,7 @@ namespace Hik.Client.Client
             }
             else
             {
-                logger.Debug($"{remoteFile.Name} - exist");
+                logger.Information($"{remoteFile.Name} - exist");
                 return false;
             }
         }
@@ -55,14 +57,22 @@ namespace Hik.Client.Client
 
             if (remoteFileExist)
             {
-                logger.Debug($"{remoteFile.Name} - downloading");
-                var tempFile = filesHelper.GetTempFileName();
+                try
+                {
+                    logger.Debug($"{remoteFile.Name} - downloading");
+                    var tempFile = filesHelper.GetTempFileName();
 
-                await ftp.DownloadFile(tempFile, remoteFilePath, FtpLocalExists.Skip, FtpVerify.None, null, token);
+                    await ftp.DownloadFile(tempFile, remoteFilePath, FtpLocalExists.Skip, FtpVerify.None, null, token);
 
-                filesHelper.RenameFile(tempFile, localFilePath);
+                    filesHelper.RenameFile(tempFile, localFilePath);
 
-                return await PostDownloadFileProcessAsync(remoteFile, localFilePath, remoteFilePath, token);
+                    return await PostDownloadFileProcessAsync(remoteFile, localFilePath, remoteFilePath, token);
+                }
+                catch (FtpException ex)
+                {
+                    this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", ex.InnerException?.Message, ex.InnerException?.ToStringDemystified());
+                    return false;
+                }
             }
             else
             {

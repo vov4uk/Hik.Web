@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
+using Hik.Api;
 using Hik.Api.Abstraction;
 using Hik.Api.Data;
 using Hik.Client.Abstraction;
@@ -10,18 +15,19 @@ using Serilog;
 
 namespace Hik.Client
 {
-    public abstract class HikBaseClient : IClientBase
+    public abstract class HikBaseClient : IDownloaderClient
     {
         protected const int ProgressBarMaximum = 100;
         protected const int ProgressBarMinimum = 0;
-        protected readonly CameraConfig config;
-        protected readonly IHikApi hikApi;
-        protected readonly IFilesHelper filesHelper;
-        protected readonly IDirectoryHelper dirHelper;
-        protected readonly ILogger logger;
-        protected int downloadId = -1;
-        protected Session session;
+
         private bool disposedValue = false;
+        protected readonly CameraConfig config;
+        protected readonly IDirectoryHelper dirHelper;
+        protected int downloadId = -1;
+        protected readonly IFilesHelper filesHelper;
+        protected readonly IHikApi hikApi;
+        protected readonly ILogger logger;
+        protected Session session;
 
         protected HikBaseClient(
             CameraConfig config,
@@ -39,7 +45,92 @@ namespace Hik.Client
             this.logger = logger;
         }
 
+        private string GetWorkingDirectory(MediaFileDto file)
+        {
+            return filesHelper.CombinePath(config.DestinationFolder, ToDirectoryNameString(file));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                logger.Information("Logout the device");
+                if (session != null)
+                {
+                    hikApi.Logout(session.UserId);
+                }
+
+                session = null;
+
+                hikApi.Cleanup();
+                disposedValue = true;
+            }
+        }
+
+        protected abstract Task<bool> DownloadFileInternalAsync(MediaFileDto remoteFile, CancellationToken token);
+
+        protected string GetPathSafety(MediaFileDto remoteFile)
+        {
+            string workingDirectory = GetWorkingDirectory(remoteFile);
+            dirHelper.CreateDirIfNotExist(workingDirectory);
+
+            return filesHelper.CombinePath(workingDirectory, ToFileNameString(remoteFile));
+        }
+
+        protected void ResetDownloadStatus()
+        {
+            downloadId = -1;
+        }
+
+        protected abstract void StopDownload();
+
+        protected abstract string ToDirectoryNameString(MediaFileDto file);
+
+        protected abstract string ToFileNameString(MediaFileDto file);
+
+        protected void ValidateDateParameters(DateTime start, DateTime end)
+        {
+            if (end <= start)
+            {
+                throw new ArgumentException("Start period grater than end");
+            }
+        }
+
         protected IMapper Mapper { get; private set; }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
+        {
+            try
+            {
+                return await DownloadFileInternalAsync(remoteFile, token);
+            }
+            catch (HikException e)
+            {
+                var msg = $"Failed to download {remoteFile.Name} : {remoteFile.Path}. Code : {e.ErrorCode}; {e.ErrorMessage}";
+                this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", msg, e.ToStringDemystified());
+            }
+            catch (Exception e)
+            {
+                this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Failed to download {remoteFile.Name} : {remoteFile.Path}", e.ToStringDemystified());
+            }
+
+            return false;
+        }
+
+        public void ForceExit()
+        {
+            logger.Warning("Force Exit");
+            StopDownload();
+            Dispose(true);
+        }
+
+        public abstract Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
 
         public void InitializeClient()
         {
@@ -91,68 +182,6 @@ namespace Hik.Client
                     logger.Warning("Camera time updated :{currentTime}", currentTime);
                 }
             }
-        }
-
-        public void ForceExit()
-        {
-            logger.Warning("Force Exit");
-            StopDownload();
-            Dispose(true);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                logger.Information("Logout the device");
-                if (session != null)
-                {
-                    hikApi.Logout(session.UserId);
-                }
-
-                session = null;
-
-                hikApi.Cleanup();
-                disposedValue = true;
-            }
-        }
-
-        protected abstract string ToFileNameString(MediaFileDto file);
-
-        protected abstract string ToDirectoryNameString(MediaFileDto file);
-
-        protected abstract void StopDownload();
-
-        protected void ValidateDateParameters(DateTime start, DateTime end)
-        {
-            if (end <= start)
-            {
-                throw new ArgumentException("Start period grater than end");
-            }
-        }
-
-        protected string GetPathSafety(MediaFileDto remoteFile)
-        {
-            string workingDirectory = GetWorkingDirectory(remoteFile);
-            dirHelper.CreateDirIfNotExist(workingDirectory);
-
-            return filesHelper.CombinePath(workingDirectory, ToFileNameString(remoteFile));
-        }
-
-        protected void ResetDownloadStatus()
-        {
-            downloadId = -1;
-        }
-
-        private string GetWorkingDirectory(MediaFileDto file)
-        {
-            return filesHelper.CombinePath(config.DestinationFolder, ToDirectoryNameString(file));
         }
     }
 }

@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="7.0.0" />
     <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.38.1" />
     <PackageReference Include="FluentFTP" Version="46.0.2" />
     <PackageReference Include="FluentFTP.Logging" Version="1.0.0" />

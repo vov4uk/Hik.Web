@@ -29,11 +29,13 @@ namespace Hik.DataAccess.Abstractions
 
         Task<List<T>> LastAsync(int last);
 
+        IQueryable<T> FindBy(Expression<Func<T, bool>> predicate);
+
         Task<T> FindByAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
 
         Task<List<T>> FindManyAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
 
-        Task<List<T>> FindManyByDescAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> orderByDesc, int skip, int top, params Expression<Func<T, object>>[] includes);
+        Task<List<T>> FindManyByDescAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> orderByDesc, int skip, int take, params Expression<Func<T, object>>[] includes);
 
         Task<List<T>> FindManyByAscAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> orderByAsc, int skip, int top, params Expression<Func<T, object>>[] includes);
 

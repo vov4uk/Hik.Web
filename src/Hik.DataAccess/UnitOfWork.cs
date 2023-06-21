@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 
 namespace Hik.DataAccess
 {
@@ -20,7 +19,6 @@ namespace Hik.DataAccess
         public UnitOfWork(TContext context)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            Context.Database.EnsureCreated();
         }
 
         public IBaseRepository<TEntity> GetRepository<TEntity>()
@@ -31,14 +29,7 @@ namespace Hik.DataAccess
             var type = typeof(TEntity);
             if (!repositories.ContainsKey(type))
             {
-                var logger = new LoggerConfiguration()
-                    .MinimumLevel.Information()
-                    .Enrich.FromLogContext()
-                    .WriteTo.File($"Logs\\SQL.txt")
-                    .CreateLogger();
-
-
-                repositories[type] = new BaseRepository<TEntity>(Context, logger);
+                repositories[type] = new BaseRepository<TEntity>(Context);
             }
             return (IBaseRepository<TEntity>)repositories[type];
         }

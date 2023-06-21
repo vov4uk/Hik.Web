@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -54,11 +55,11 @@ namespace Hik.Client.Service
                     }
                     catch (IOException e)
                     {
-                        logger.Error(e, $"Failed to unzip file - {zip}");
+                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Failed to unzip file - {zip}", e.ToStringDemystified());
                     }
                     catch (InvalidDataException e)
                     {
-                        logger.Error(e, $"Invalid zip file - {zip}");
+                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Invalid zip file - {zip}", e.ToStringDemystified());
                     }
 
                     try
@@ -67,7 +68,7 @@ namespace Hik.Client.Service
                     }
                     catch (IOException e)
                     {
-                        logger.Error(e, $"Failed to delete file - {zip}");
+                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Failed to delete file - {zip}", e.ToStringDemystified());
                     }
                 }
             }

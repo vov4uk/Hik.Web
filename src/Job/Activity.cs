@@ -65,10 +65,10 @@ namespace Job
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Log.Error(ex, "Failed to start activity");
-                email.Send(ex.Message);
+                Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to start activity", e.ToStringDemystified());
+                email.Send(e.Message);
             }
         }
 
@@ -131,9 +131,9 @@ namespace Job
             {
                 await job.ExecuteAsync();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Log.Error(ex, "Failed to start task");
+                Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to start task", e.ToStringDemystified());
             }
             finally
             {
