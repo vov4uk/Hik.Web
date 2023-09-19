@@ -89,7 +89,7 @@ namespace Hik.Client.Client
 
         protected string GetWorkingDirectory(MediaFileDto file)
         {
-            return filesHelper.CombinePath(config.DestinationFolder, file.ToVideoDirectoryNameString());
+            return filesHelper.CombinePath(config.DestinationFolder, file.Date.ToDirectoryName());
         }
     }
 }

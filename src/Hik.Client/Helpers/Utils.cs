@@ -123,7 +123,7 @@ namespace Hik.Client.Helpers
             return years <= 1 ? "one year" : $"{years} years";
         }
 
-        public static string ToPhotoDirectoryNameString(this DateTime date)
+        public static string ToDirectoryName(this DateTime date)
         {
             return $"{date.Year:0000}-{date.Month:00}\\{date.Day:00}\\{date.Hour:00}";
         }
@@ -136,11 +136,6 @@ namespace Hik.Client.Helpers
         public static string ToPhotoFileNameString(this MediaFileDto file)
         {
             return $"{file.Date.ToString(DateFormat)}.jpg";
-        }
-
-        public static string ToVideoDirectoryNameString(this MediaFileDto file)
-        {
-            return $"{file.Date.Year:0000}-{file.Date.Month:00}\\{file.Date.Day:00}\\{file.Date.Hour:00}";
         }
 
         public static string ToVideoFileNameString(this MediaFileDto file)

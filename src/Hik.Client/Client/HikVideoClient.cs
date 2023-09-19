@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hik.Api.Abstraction;
+using Hik.Api.Data;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -35,7 +36,7 @@ namespace Hik.Client
 
             logger.Information($"Get videos from {periodStart} to {periodEnd}");
 
-            var remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
+            IReadOnlyCollection<HikRemoteFile> remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
             return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
         }
 
@@ -70,7 +71,7 @@ namespace Hik.Client
 
         protected override string ToDirectoryNameString(MediaFileDto file)
         {
-            return config.SaveFilesToRootFolder ? string.Empty : file.ToVideoDirectoryNameString();
+            return config.SaveFilesToRootFolder ? string.Empty : file.Date.ToDirectoryName();
         }
 
         protected override void StopDownload()
