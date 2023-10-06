@@ -18,7 +18,7 @@ namespace Hik.Web.Queries.JobTriggers
             this.factory = factory;
         }
 
-        protected override async Task<IHandlerResult> HandleAsync(JobTriggersQuery request, CancellationToken cancellationToken)
+        protected override Task<IHandlerResult> HandleAsync(JobTriggersQuery request, CancellationToken cancellationToken)
         {
             var timer = new Stopwatch();
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
@@ -26,7 +26,7 @@ namespace Hik.Web.Queries.JobTriggers
                 var triggerRepo = uow.GetRepository<JobTrigger>();
 
                 timer.Restart();
-                var triggers = await triggerRepo.GetAll(x => x.LastExecutedJob).ToListAsync();
+                var triggers = triggerRepo.GetAll(x => x.LastExecutedJob).ToList();
                 timer.Stop();
                 Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "triggers", timer.ElapsedMilliseconds);
 
@@ -57,10 +57,10 @@ namespace Hik.Web.Queries.JobTriggers
                 timer.Stop();
                 Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "items", timer.ElapsedMilliseconds);
 
-                return new JobTriggersDto()
+                return Task.FromResult<IHandlerResult>(new JobTriggersDto()
                 {
                     Items = items
-                };
+                });
             }
         }
     }

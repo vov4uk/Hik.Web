@@ -65,7 +65,7 @@ namespace Hik.Web.Queries.Test
 
             Assert.IsType<JobDetailsDto>(result);
             var dto = (JobDetailsDto)result;
-            Assert.Equal("TriggerKey", dto.Job.JobTrigger);
+            Assert.Equal(".TriggerKey", dto.Job.JobTrigger);
             Assert.Equal(100, dto.TotalItems);
 
             Assert.NotEmpty(dto.Items);

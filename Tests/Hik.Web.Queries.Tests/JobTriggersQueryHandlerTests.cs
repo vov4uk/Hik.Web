@@ -70,8 +70,8 @@ namespace Hik.Web.Queries.Test
 
             triggerRepoMock.Setup(x => x.GetAllAsync())
                 .ReturnsAsync(triggers);
-            triggerRepoMock.Setup(x => x.GetAll(x => x.Jobs))
-                .Returns(triggers.AsQueryable());
+            triggerRepoMock.Setup(x => x.GetAll(x => x.LastExecutedJob))
+                .Returns(triggers.AsQueryable);
 
             var handler = new JobTriggersQueryHandler(uowFactoryMock.Object);
             var result = await handler.Handle(request, CancellationToken.None);
@@ -81,7 +81,7 @@ namespace Hik.Web.Queries.Test
             Assert.NotEmpty(dto.Items);
             Assert.Equal(3, dto.Items.Count);
             var lastJob = dto.Items.Last().LastJob;
-            Assert.Equal(32, lastJob.Id);
+            Assert.Null(lastJob);
         }
     }
 }
