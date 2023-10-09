@@ -158,7 +158,7 @@
             var status = new HdInfo { HdStatus = 0 };
             sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(result);
-            sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
+            sdkMock.Setup(x => x.GetHddStatus(DefaultUserId, It.IsAny<int>()))
                 .Returns(status);
             return result;
         }

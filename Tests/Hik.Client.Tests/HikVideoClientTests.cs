@@ -92,7 +92,7 @@
             bool loginResult = client.Login();
 
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>(), It.IsAny<int>()), Times.Once);
             Assert.True(loginResult);
         }
 
@@ -102,14 +102,14 @@
             DeviceInfo outDevice = this.fixture.Create<DeviceInfo>();
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new Session(DefaultUserId, outDevice.DefaultIpChannel, new List<IpChannel>()));
-            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
+            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId, It.IsAny<int>()))
                 .Returns(new HdInfo { HdStatus = 2 });
 
             var client = this.GetHikClient();
 
             Assert.Throws<InvalidOperationException>(() => { client.Login(); });
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once());
+            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>(), It.IsAny<int>()), Times.Once());
         }
 
         [Fact]
@@ -118,14 +118,14 @@
             DeviceInfo outDevice = this.fixture.Create<DeviceInfo>();
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new Session(DefaultUserId, outDevice.DefaultIpChannel, new List<IpChannel>()));
-            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
+            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId, It.IsAny<int>()))
                 .Returns(default(HdInfo));
 
             var clientLoggedIn = this.GetHikClient().Login();
 
             Assert.True(clientLoggedIn);
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>(), It.IsAny<int>()), Times.Once);
         }
 
         [Fact]
@@ -140,7 +140,7 @@
             Assert.True(first);
             Assert.False(second);
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>(), It.IsAny<int>()), Times.Once);
         }
 
         #endregion Login
@@ -373,7 +373,7 @@
             var status = new HdInfo { HdStatus = 0 };
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(result);
-            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
+            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId, It.IsAny<int>()))
                 .Returns(status);
             return result;
         }
