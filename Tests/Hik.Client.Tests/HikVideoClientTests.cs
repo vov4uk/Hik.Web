@@ -85,7 +85,7 @@
 
         #region Login
         [Fact]
-        public void Login_CallLogin_LoginSucessfully()
+        public void Login_CallLogin_LoginSuccessfully()
         {
             this.SetupLoginAndHddStatusCheck();
             var client = this.GetHikClient();
@@ -109,7 +109,7 @@
 
             Assert.Throws<InvalidOperationException>(() => { client.Login(); });
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once());
         }
 
         [Fact]
