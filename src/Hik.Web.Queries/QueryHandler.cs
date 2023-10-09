@@ -8,7 +8,7 @@ namespace Hik.Web.Queries
     public abstract class QueryHandler<TRequest> : IRequestHandler<TRequest, IHandlerResult>
         where TRequest : IRequest<IHandlerResult>
     {
-        private static ILogger logger;
+        static readonly ILogger logger;
 
         static QueryHandler()
         {

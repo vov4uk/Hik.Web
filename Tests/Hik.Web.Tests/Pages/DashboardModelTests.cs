@@ -58,7 +58,7 @@ namespace Hik.Web.Tests.Pages
             Assert.True(sut.JobTriggers.ContainsKey(archiveJob));
             Assert.Equal(2, sut.JobTriggers[videoJob].Count);
             Assert.Equal(2, sut.JobTriggers[photoJob].Count);
-            Assert.Equal(1, sut.JobTriggers[archiveJob].Count);
+            Assert.Single(sut.JobTriggers[archiveJob]);
         }
     }
 }

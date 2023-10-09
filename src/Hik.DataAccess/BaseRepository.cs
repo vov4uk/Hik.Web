@@ -96,7 +96,7 @@ namespace Hik.DataAccess
             return result?.ToListAsync();
         }
 
-        public virtual async Task<TEntity> FindByAsync(Expression<Func<TEntity, bool>> predicate,
+        public virtual Task<TEntity> FindByAsync(Expression<Func<TEntity, bool>> predicate,
             params Expression<Func<TEntity, object>>[] includes)
         {
             var result = DbSet.Where(predicate);
@@ -108,7 +108,7 @@ namespace Hik.DataAccess
 
             Log.Information($"FindByAsync : {result?.ToQueryString()}");
 
-            return await result?.FirstOrDefaultAsync();
+            return result?.FirstOrDefaultAsync();
         }
 
         public virtual IQueryable<TEntity> FindBy(Expression<Func<TEntity, bool>> predicate)
@@ -120,7 +120,7 @@ namespace Hik.DataAccess
             return query;
         }
 
-        public virtual async Task<List<TEntity>> FindManyAsync(Expression<Func<TEntity, bool>> predicate,
+        public virtual Task<List<TEntity>> FindManyAsync(Expression<Func<TEntity, bool>> predicate,
             params Expression<Func<TEntity, object>>[] includes)
         {
             var result = DbSet.Where(predicate);
@@ -132,10 +132,10 @@ namespace Hik.DataAccess
 
             Log.Information($"FindManyAsync : {result?.ToQueryString()}");
 
-            return await result?.ToListAsync();
+            return result?.ToListAsync();
         }
 
-        public virtual async Task<List<TEntity>> FindManyByDescAsync(
+        public virtual Task<List<TEntity>> FindManyByDescAsync(
             Expression<Func<TEntity, bool>> predicate,
             Expression<Func<TEntity, object>> orderByDesc,
             int skip,
@@ -153,10 +153,10 @@ namespace Hik.DataAccess
 
             Log.Information($"FindManyByDescAsync : {result?.ToQueryString()}");
 
-            return await result?.ToListAsync();
+            return result?.ToListAsync();
         }
 
-        public virtual async Task<List<TEntity>> FindManyByAscAsync(Expression<Func<TEntity, bool>> predicate,
+        public virtual Task<List<TEntity>> FindManyByAscAsync(Expression<Func<TEntity, bool>> predicate,
             Expression<Func<TEntity, object>> orderByAsc, int skip, int top,
             params Expression<Func<TEntity, object>>[] includes)
         {
@@ -171,10 +171,10 @@ namespace Hik.DataAccess
 
             Log.Information($"FindManyByAscAsync : {result?.ToQueryString()}");
 
-            return await result?.ToListAsync();
+            return result?.ToListAsync();
         }
 
-        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate,
+        public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate,
             params Expression<Func<TEntity, object>>[] includes)
         {
             var result = DbSet.Where(predicate);
@@ -184,7 +184,7 @@ namespace Hik.DataAccess
                 result = result.Include(includeExpression);
             }
             Log.Information($"CountAsync : {result?.ToQueryString()}");
-            return await result?.CountAsync();
+            return result?.CountAsync() ?? Task.FromResult(-1);
         }
 
         public void Update(TEntity entity)
