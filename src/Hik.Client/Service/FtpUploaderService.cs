@@ -32,7 +32,7 @@ namespace Hik.Client.Service
         {
             this.filesHelper = filesHelper;
             this.ftp = ftp;
-            this.imageCodec = ImageCodecInfo.GetImageEncoders().FirstOrDefault(c => c.FormatID == ImageFormat.Jpeg.Guid);
+            this.imageCodec = Array.Find(ImageCodecInfo.GetImageEncoders(), c => c.FormatID == ImageFormat.Jpeg.Guid);
             this.encoderParameters = new EncoderParameters(1);
             encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 25L);
         }

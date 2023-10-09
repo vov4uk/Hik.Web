@@ -46,8 +46,9 @@ namespace Hik.Client.FileProviders
                     {
                         var trim = directory.Remove(0, Math.Max(0, directory.Length - 13)).Replace("\\", "-").Split("-");
 
-                        if (trim.Length == 4 && DateTime.TryParse($"{trim[0]}-{trim[1]}-{trim[2]} {trim[3]}:00:00", out var dt))
+                        if (trim.Length == 4)
                         {
+                            var dt = new DateTime(Convert.ToInt32(trim[0]), Convert.ToInt32(trim[1]), Convert.ToInt32(trim[2]), Convert.ToInt32(trim[3]), 0, 0, DateTimeKind.Local);
                             folders.SafeAdd(dt, directory);
                         }
                     }
