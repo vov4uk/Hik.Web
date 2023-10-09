@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Hik.DataAccess.SQL
 {
-    public class MigrationTools
+    public static class MigrationTools
     {
         public static async Task RunMigration(string connectionString)
         {

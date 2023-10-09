@@ -64,7 +64,7 @@ namespace Hik.DataAccess
             var idsQuery = DbSet
                 .GroupBy(groupBy)
                 .Select(p => p.Max(x => x.Id));
-            
+
             var ids = await idsQuery.ToListAsync();
 
             var result = DbSet.Where(p => ids.Contains(p.Id));

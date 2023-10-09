@@ -4,7 +4,6 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace Hik.Web.Queries.JobTriggers
@@ -29,17 +28,6 @@ namespace Hik.Web.Queries.JobTriggers
                 var triggers = triggerRepo.GetAll(x => x.LastExecutedJob).ToList();
                 timer.Stop();
                 Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "triggers", timer.ElapsedMilliseconds);
-
-                //timer.Restart();
-                //var jobsQuery = triggerRepo.GetAll(x => x.Jobs)
-                //    .Select(x => x.Jobs.OrderByDescending(y => y.Id).FirstOrDefault())
-                //    .Where(x => x != null);
-
-                //List<HikJob> jobs = await jobsQuery.ToListAsync();
-
-                //timer.Stop();
-                //Log.Information("Query: {type}; Method {method} SQL: {sql};", this.GetType().Name, "jobs", jobsQuery.ToQueryString());
-                //Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "jobs", timer.ElapsedMilliseconds);
 
                 var items = new List<TriggerDto>();
 

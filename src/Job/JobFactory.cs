@@ -23,10 +23,8 @@ namespace Job
     {
         public static IJobProcess GetJob(Parameters parameters, IEmailHelper email)
         {
-            ILogger logger;
-
             string trigger = $"{parameters.Group}.{parameters.TriggerKey}";
-            logger = new LoggerConfiguration()
+            ILogger logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("TriggerKey", parameters.TriggerKey)

@@ -8,18 +8,13 @@ namespace Hik.Web.Queries
     public abstract class QueryHandler<TRequest> : IRequestHandler<TRequest, IHandlerResult>
         where TRequest : IRequest<IHandlerResult>
     {
-        static readonly ILogger logger;
-
-        static QueryHandler()
-        {
-            logger = new LoggerConfiguration()
+        private readonly ILogger logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .WriteTo.File("Logs\\QueryHandler_.txt", rollingInterval: RollingInterval.Day)
                 .WriteTo.Seq("http://localhost:5341")
                 .CreateLogger();
-        }
 
         private readonly Stopwatch timer = new();
 

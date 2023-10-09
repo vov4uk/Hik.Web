@@ -29,7 +29,7 @@ namespace Hik.Client
         public override Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             var result = new List<MediaFileDto>();
-            periodStart = new DateTime(periodStart.Year, periodStart.Month, periodStart.Day, periodStart.Hour, periodStart.Minute, 0, 0);
+            periodStart = new DateTime(periodStart.Year, periodStart.Month, periodStart.Day, periodStart.Hour, periodStart.Minute, 0, 0, DateTimeKind.Local);
             var end = periodEnd.AddMinutes(-1);
 
             while (periodStart < end)

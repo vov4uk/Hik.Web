@@ -103,7 +103,6 @@ namespace Job
                 EnableRaisingEvents = true,
             };
 
-            //hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
             hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
             hostProcess.Exited += (object sender, EventArgs e) =>
             {
@@ -146,14 +145,6 @@ namespace Job
             if (!string.IsNullOrEmpty(e.Data))
             {
                 Log.Information("HasExited : {hasExited} - {data} - {sender}", (sender as Process)?.HasExited, e.Data, sender );
-            }
-        }
-
-        private void LogData(object sender, DataReceivedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                Log.Information("{data}", e.Data);
             }
         }
     }

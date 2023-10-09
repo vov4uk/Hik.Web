@@ -202,7 +202,7 @@ namespace Hik.DataAccess
             var newItems = new List<DailyStatistic>();
             do
             {
-                if (!daily.Any(d => d.Period == from))
+                if (!daily.Exists(d => d.Period == from))
                 {
                     newItems.Add(new DailyStatistic
                         {

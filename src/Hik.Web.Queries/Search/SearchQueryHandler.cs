@@ -28,7 +28,7 @@ namespace Hik.Web.Queries.Search
 
                 if (latestFile.Any())
                 {
-                    var file = latestFile.First();
+                    var file = latestFile[0];
                     var msg = (file.Date <= request.DateTime && request.DateTime <= file.Date.AddSeconds(file.Duration ?? 0)) ? "Match" : "Out of range";
 
                     var beforeFiles = await GetMediaFilesAsync(filesRepo,
