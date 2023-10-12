@@ -16,7 +16,7 @@ namespace Hik.Web.Queries.QuartzJob
 
         protected override async Task<IHandlerResult> HandleAsync(QuartzJobQuery request, CancellationToken cancellationToken)
         {
-            var cron = await cronHelper.GetCronAsync(configuration, request.Name, request.Group);
+            var cron = await cronHelper.GetTriggerAsync(configuration, request.Name, request.Group);
 
             if (cron != null)
             {

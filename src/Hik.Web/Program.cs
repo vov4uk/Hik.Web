@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using Hik.DataAccess.SQL;
 using System.Threading.Tasks;
+using Serilog.Events;
 
 namespace Hik.Web
 {
@@ -21,11 +22,22 @@ namespace Hik.Web
 
         public static async Task Main(string[] args)
         {
+            Directory.SetCurrentDirectory(AssemblyDirectory);
+
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
-                .WriteTo.File("Logs\\hikweb_.txt", rollingInterval: RollingInterval.Day)
+                // Add this line:
+                .WriteTo.File(
+                "Logs\\hikweb_.txt",
+                rollingInterval: RollingInterval.Day,
+                fileSizeLimitBytes: 10 * 1024 * 1024,
+                retainedFileCountLimit: 2,
+                rollOnFileSizeLimit: true,
+                shared: true,
+                flushToDiskInterval: TimeSpan.FromSeconds(1))
                 .WriteTo.Seq("http://localhost:5341")
                 .CreateLogger();
 
@@ -35,13 +47,13 @@ namespace Hik.Web
             var host = builder.Build();
 
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            Log.Information($"App started - version {Version}");
             host.Run();
         }
 
         public static async Task<IHostBuilder> CreateHostBuilder(bool isService, string[] args)
         {
-            Directory.SetCurrentDirectory(AssemblyDirectory);
-
             var env = isService ? "Production" : "Development";
             var config = new ConfigurationBuilder()
                 .SetBasePath(Environment.CurrentDirectory)

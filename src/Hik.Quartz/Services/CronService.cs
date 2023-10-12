@@ -26,7 +26,7 @@ namespace Hik.Quartz.Services
             this.filesHelper = filesHelper;
         }
 
-        public async Task<IReadOnlyCollection<CronDto>> GetAllCronsAsync()
+        public async Task<IReadOnlyCollection<CronDto>> GetAllTriggersAsync()
         {
             IScheduler scheduler = await new StdSchedulerFactory().GetScheduler("default") ?? throw new InvalidOperationException("Unable to load default scheduler");
 
@@ -44,7 +44,7 @@ namespace Hik.Quartz.Services
             return resultList.OrderBy(x => x.Name).ToList();
         }
 
-        public async Task<CronDto> GetCronAsync(IConfiguration configuration, string name, string group)
+        public async Task<CronDto> GetTriggerAsync(IConfiguration configuration, string name, string group)
         {
             var options = new QuartzOption(configuration);
             var xmlFilePath = options.Plugin.JobInitializer.FileNames;
@@ -83,7 +83,7 @@ namespace Hik.Quartz.Services
 
         public async Task UpdateTriggerAsync(IConfiguration configuration, CronDto cron)
         {
-            var triggerList = await GetCronList(configuration);
+            var triggerList = await GetTriggersList(configuration);
 
             string className = cron.ClassName;
 
@@ -103,12 +103,12 @@ namespace Hik.Quartz.Services
 
             triggerList[className].Add(cron);
 
-            InitializeJobs(configuration, triggerList);
+            InitializeTriggers(configuration, triggerList);
         }
 
         public async Task DeleteTriggerAsync(IConfiguration configuration, string group, string name, string className)
         {
-            var triggerList = await GetCronList(configuration);
+            var triggerList = await GetTriggersList(configuration);
 
             if (triggerList.ContainsKey(className))
             {
@@ -120,10 +120,10 @@ namespace Hik.Quartz.Services
                 }
             }
 
-            InitializeJobs(configuration, triggerList);
+            InitializeTriggers(configuration, triggerList);
         }
 
-        private async Task<Dictionary<string, List<CronDto>>> GetCronList(IConfiguration configuration)
+        private async Task<Dictionary<string, List<CronDto>>> GetTriggersList(IConfiguration configuration)
         {
             var xmlFilePath = new QuartzOption(configuration).Plugin.JobInitializer.FileNames;
             var jsonFilePath = xmlFilePath + ".json";
@@ -134,7 +134,7 @@ namespace Hik.Quartz.Services
             return cronList;
         }
 
-        private void InitializeJobs(IConfiguration configuration, Dictionary<string, List<CronDto>> cronList)
+        private void InitializeTriggers(IConfiguration configuration, Dictionary<string, List<CronDto>> cronList)
         {
             var xmlFilePath = new QuartzOption(configuration).Plugin.JobInitializer.FileNames;
             var jsonFilePath = xmlFilePath + ".json";

@@ -3,13 +3,13 @@ using Hik.Quartz.Contracts.Xml;
 using Hik.Quartz.Extensions;
 using Newtonsoft.Json;
 using Quartz.Impl.Triggers;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System;
 
 namespace Hik.Quartz.Contracts
 {
-    public class CronDto
+    public class TriggerDTO
     {
         private static readonly CronExpressionDescriptor.Options CronFormatOptions = new CronExpressionDescriptor.Options()
         {
@@ -18,8 +18,8 @@ namespace Hik.Quartz.Contracts
             Locale = "uk"
         };
 
-        public CronDto() { }
-        public CronDto(Cron cron)
+        public TriggerDTO() { }
+        public TriggerDTO(Cron cron)
         {
             Name = cron.Name;
             Description = cron.Description;
@@ -30,7 +30,7 @@ namespace Hik.Quartz.Contracts
             RunAsTask = bool.Parse(cron.Jobdatamap.Entry.FirstOrDefault(x => x.Key == CronTriggerImplExtensions.RunAsTask)?.Value);
         }
 
-        public CronDto(string configPath, string expression, DateTime triggerStarted, DateTime? next)
+        public TriggerDTO(string configPath, string expression, DateTime triggerStarted, DateTime? next)
         {
             ConfigPath = configPath;
             Expression = expression;
@@ -38,7 +38,7 @@ namespace Hik.Quartz.Contracts
             NextRun = next;
         }
 
-        public CronDto(CronTriggerImpl cron)
+        public TriggerDTO(CronTriggerImpl cron)
         {
             ConfigPath = cron.GetConfig();
             Expression = cron.CronExpressionString;

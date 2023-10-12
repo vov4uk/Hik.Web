@@ -5,7 +5,7 @@
 
 @{
     var selectList = new SelectList(
-        new List<SelectListItem> 
+        new List<SelectListItem>
         {
             new SelectListItem {Text = "Archive", Value = "Archive"},
             new SelectListItem {Text = "FtpUploader", Value = "FtpUploader"},
@@ -40,13 +40,13 @@
             else
             {
                 <div class="form-group">
-                @Html.LabelFor(model => model.Dto.Cron.Group)
-                <input asp-for="Dto.Cron.Group" class="form-control"/>
-            </div>
-            <div class="form-group">
-                @Html.LabelFor(model => model.Dto.Cron.Name)
-                <input asp-for="Dto.Cron.Name" class="form-control"/>
-            </div>
+                    @Html.LabelFor(model => model.Dto.Cron.Group)
+                    <input asp-for="Dto.Cron.Group" class="form-control"/>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Dto.Cron.Name)
+                    <input asp-for="Dto.Cron.Name" class="form-control"/>
+                </div>
             }
 
             <div class="form-group">

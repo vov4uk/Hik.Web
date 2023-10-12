@@ -4,6 +4,8 @@ using System.Resources;
 using System;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using Serilog;
+using Hik.Quartz.Contracts.Xml;
 
 namespace Hik.DataAccess.SQL
 {
@@ -14,6 +16,8 @@ namespace Hik.DataAccess.SQL
             var db = new DataContext(new DbConfiguration { ConnectionString = connectionString });
 
             db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
+
+            Log.Information("SQLite : Migration Started");
 
             await db.Database.ExecuteSqlRawAsync(@"CREATE TABLE IF NOT EXISTS MigrationHistory (
      ScriptName         TEXT NOT NULL,
@@ -29,9 +33,12 @@ namespace Hik.DataAccess.SQL
                 {
                     await db.Database.ExecuteSqlRawAsync(Convert.ToString(entry.Value));
                     await db.MigrationHistory.AddAsync(new Data.MigrationHistory { ScriptName = Convert.ToString(entry.Key), ExecutionDate = DateTime.Now });
+                    Log.Information($"SQLite : {entry.Key} executed");
                 }
             }
             await db.SaveChangesAsync();
+
+            Log.Information("SQLite : Migration Finished");
         }
     }
 }

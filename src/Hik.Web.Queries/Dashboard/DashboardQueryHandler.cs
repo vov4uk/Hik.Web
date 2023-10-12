@@ -4,7 +4,6 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace Hik.Web.Queries.Dashboard

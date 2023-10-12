@@ -1,11 +1,9 @@
-﻿using System.Diagnostics;
-using Hik.DataAccess;
+﻿using Hik.DataAccess;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Hik.Web.Queries.JobDetails;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 
 namespace Hik.Web.Queries
 {

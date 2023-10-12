@@ -25,7 +25,7 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_FoundCron_ReturnCron(QuartzJobQuery request)
         {
-            cronHelper.Setup(x => x.GetCronAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
+            cronHelper.Setup(x => x.GetTriggerAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(new CronDto() { Name = request.Name, Group = request.Group });
 
             var handler = new QuartzJobQueryHandler(configuration.Object, cronHelper.Object);
@@ -42,7 +42,7 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_NoCronFound_ReturnNull(QuartzJobQuery request)
         {
-            cronHelper.Setup(x => x.GetCronAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
+            cronHelper.Setup(x => x.GetTriggerAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(default(CronDto));
 
             var handler = new QuartzJobQueryHandler(configuration.Object, cronHelper.Object);

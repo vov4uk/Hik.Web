@@ -29,7 +29,7 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_FileNotExist_CreateEmptyFile(QuartzJobConfigQuery request)
         {
-            cronHelper.Setup(x => x.GetCronAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
+            cronHelper.Setup(x => x.GetTriggerAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(new CronDto() { Name = request.Name, Group = request.Group , ConfigPath = "config.json" });
             filesHelper.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(false);
@@ -53,7 +53,7 @@ namespace Hik.Web.Queries.Test
   ""DestinationFolder"": ""C:\\Junk"",
   ""RetentionPeriodDays"": 7
 }";
-            cronHelper.Setup(x => x.GetCronAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
+            cronHelper.Setup(x => x.GetTriggerAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(new CronDto() { Name = request.Name, Group = request.Group , ConfigPath = "config.json" });
             filesHelper.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(true);
@@ -74,7 +74,7 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_FileEmpty_EmptyJson(QuartzJobConfigQuery request)
         {
-            cronHelper.Setup(x => x.GetCronAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
+            cronHelper.Setup(x => x.GetTriggerAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(new CronDto() { Name = request.Name, Group = request.Group , ConfigPath = "config.json" });
             filesHelper.Setup(x => x.FileExists(It.IsAny<string>()))
                 .Returns(true);
@@ -95,7 +95,7 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_NoCronFound_ReturnNull(QuartzJobConfigQuery request)
         {
-            cronHelper.Setup(x => x.GetCronAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
+            cronHelper.Setup(x => x.GetTriggerAsync(It.IsAny<IConfiguration>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(default(CronDto));
 
             var handler = new QuartzJobConfigQueryHandler(configuration.Object, filesHelper.Object, cronHelper.Object);

@@ -61,11 +61,37 @@ namespace Hik.DataAccess.SQL {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to 
+        ///PRAGMA foreign_keys = off;
+        ///BEGIN TRANSACTION;
+        ///
+        ///CREATE TABLE IF NOT EXISTS DailyStatistics (
+        ///    Id            INTEGER       NOT NULL CONSTRAINT PK_DailyStatistics PRIMARY KEY AUTOINCREMENT,
+        ///    JobTriggerId  INTEGER       NOT NULL,
+        ///    Period        DATETIME2 (0) NOT NULL,
+        ///    FilesCount    INTEGER       NOT NULL,
+        ///    FilesSize     INTEGER       NOT NULL,
+        ///    TotalDuration INTEGER,
+        ///    CONSTRAINT FK_DailyStatistics_JobTrigger_JobTriggerId FOREIGN KEY ( JobTriggerId ) REFERENCES JobTrigger (Id) O [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string _20230331000000_init {
             get {
                 return ResourceManager.GetString("_20230331000000_init", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER TABLE JobTrigger ADD COLUMN ClassName text default &apos;&apos;;
+        ///ALTER TABLE JobTrigger ADD COLUMN Config text default &apos;&apos;;
+        ///ALTER TABLE JobTrigger ADD COLUMN Description text default &apos;&apos;;
+        ///ALTER TABLE JobTrigger ADD COLUMN CronExpression text default &apos;&apos;;
+        ///ALTER TABLE JobTrigger ADD COLUMN RunAsTask BOOLEAN       DEFAULT (true);
+        ///ALTER TABLE JobTrigger ADD COLUMN IsEnabled BOOLEAN       DEFAULT (true);
+        ///.
+        /// </summary>
+        internal static string _20231012000000_update_jobtriggers {
+            get {
+                return ResourceManager.GetString("_20231012000000_update_jobtriggers", resourceCulture);
             }
         }
     }

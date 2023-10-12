@@ -38,7 +38,7 @@ namespace Hik.Web.Commands.Cron
 
         public async Task<int> Handle(StartActivityCommand request, CancellationToken cancellationToken)
         {
-            var trigger = await cronHelper.GetCronAsync(configuration, request.Name, request.Group);
+            var trigger = await cronHelper.GetTriggerAsync(configuration, request.Name, request.Group);
             if (trigger != null)
             {
                 bool runAsTask = Debugger.IsAttached || trigger.RunAsTask;

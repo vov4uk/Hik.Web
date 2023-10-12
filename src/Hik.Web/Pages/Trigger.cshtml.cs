@@ -1,0 +1,45 @@
+using Hik.Quartz.Contracts;
+using Hik.Web.Commands.Cron;
+using Hik.Web.Queries.QuartzJob;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace Hik.Web.Pages
+{
+    public class TriggerModel : PageModel
+    {
+        private readonly IMediator _mediator;
+
+        public TriggerModel(IMediator mediator)
+        {
+            this._mediator = mediator;
+        }
+
+        [BindProperty]
+        public QuartzJobDto Dto { get; set; }
+
+        public void OnGetAddNew()
+        {
+            Dto = new QuartzJobDto() { Cron = new CronDto() };
+        }
+
+        public async Task OnGetAsync(string name, string group)
+        {
+            Dto = await this._mediator.Send(new QuartzJobQuery { Name = name, Group = group }) as QuartzJobDto;
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            await this._mediator.Send(new UpdateQuartzJobCommand { Cron = Dto.Cron });
+
+            return RedirectToPage("./Scheduler", new { msg = "Changes saved. Take effect after Scheduler restart" });
+        }
+    }
+}

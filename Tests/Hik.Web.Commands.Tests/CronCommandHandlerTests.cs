@@ -43,7 +43,7 @@ namespace Hik.Web.Commands.Tests
             Mock<IConfigurationSection> configurationSection = new(MockBehavior.Strict);
             Mock<IConfigurationSection> connectionStringSection = new(MockBehavior.Strict);
 
-            cronHelper.Setup(x => x.GetCronAsync(It.IsAny<IConfiguration>(), request.Name, request.Group))
+            cronHelper.Setup(x => x.GetTriggerAsync(It.IsAny<IConfiguration>(), request.Name, request.Group))
                 .ReturnsAsync(new CronDto()
                 {
                     Name = request.Name,
@@ -69,7 +69,7 @@ namespace Hik.Web.Commands.Tests
         [Theory]
         public async Task Handle_NoTriigerFound_ActivityNotStarted(StartActivityCommand request)
         {
-            cronHelper.Setup(x => x.GetCronAsync(It.IsAny<IConfiguration>(), request.Name, request.Group))
+            cronHelper.Setup(x => x.GetTriggerAsync(It.IsAny<IConfiguration>(), request.Name, request.Group))
                 .ReturnsAsync(default(CronDto));
 
             var sut = new CronCommandHandler(configuration.Object, cronHelper.Object);
