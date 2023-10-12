@@ -9,6 +9,7 @@ namespace Hik.Web.Commands.Cron
 {
     public class CronCommandHandler : IRequestHandler<RestartSchedulerCommand>,
         IRequestHandler<UpdateQuartzJobCommand>,
+        IRequestHandler<DeleteQuartzJobCommand>,
         IRequestHandler<StartActivityCommand, int>
     {
         private readonly ICronService cronHelper;
@@ -27,7 +28,12 @@ namespace Hik.Web.Commands.Cron
 
         public async Task Handle(UpdateQuartzJobCommand request, CancellationToken cancellationToken)
         {
-            await cronHelper.UpdateCronAsync(configuration, request.Cron);
+            await cronHelper.UpdateTriggerAsync(configuration, request.Cron);
+        }
+
+        public async Task Handle(DeleteQuartzJobCommand request, CancellationToken cancellationToken)
+        {
+            await cronHelper.DeleteTriggerAsync(configuration, request.Group, request.Name, request.ClassName);
         }
 
         public async Task<int> Handle(StartActivityCommand request, CancellationToken cancellationToken)

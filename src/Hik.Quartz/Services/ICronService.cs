@@ -9,7 +9,9 @@ namespace Hik.Quartz.Services
     {
         Task<CronDto> GetCronAsync(IConfiguration configuration, string name, string group);
 
-        Task UpdateCronAsync(IConfiguration configuration, CronDto cron);
+        Task UpdateTriggerAsync(IConfiguration configuration, CronDto cron);
+
+        Task DeleteTriggerAsync(IConfiguration configuration, string group, string name, string className);
 
         Task<IReadOnlyCollection<CronDto>> GetAllCronsAsync();
 

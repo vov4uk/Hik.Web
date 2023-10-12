@@ -4,6 +4,19 @@
 @{ ViewData["Title"] = "Edit"; }
 
 @{
+    var selectList = new SelectList(
+        new List<SelectListItem> 
+        {
+            new SelectListItem {Text = "Archive", Value = "Archive"},
+            new SelectListItem {Text = "FtpUploader", Value = "FtpUploader"},
+            new SelectListItem {Text = "GarbageCollector", Value = "GarbageCollector"},
+            new SelectListItem {Text = "HikVideoDownloader", Value = "HikVideoDownloader"},
+            new SelectListItem {Text = "HikPhotoDownloader", Value = "HikPhotoDownloader"},
+            new SelectListItem {Text = "DbMigration", Value = "DbMigration"}, 
+        }, "Value", "Text");
+}
+
+@{
     var title =$"{@Model.Dto.Cron.Group}.{@Model.Dto.Cron.Name}";
 <div class="row">
     <div class="card-body text-center">
@@ -46,7 +59,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Dto.Cron.ClassName" class="control-label"></label>
-                <input asp-for="Dto.Cron.ClassName" class="form-control" />
+                @Html.DropDownListFor(x=>Model.Dto.Cron.ClassName, selectList, "", new { @class = "form-control"})
             </div>
             <div class="form-group">
                 <label asp-for="Dto.Cron.ConfigPath" class="control-label"></label>

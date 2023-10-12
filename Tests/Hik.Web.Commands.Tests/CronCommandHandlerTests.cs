@@ -82,13 +82,13 @@ namespace Hik.Web.Commands.Tests
         [Theory]
         public async Task Handle_CronUpdated(UpdateQuartzJobCommand request)
         {
-            cronHelper.Setup(x => x.UpdateCronAsync(configuration.Object, It.IsAny<CronDto>()))
+            cronHelper.Setup(x => x.UpdateTriggerAsync(configuration.Object, It.IsAny<CronDto>()))
                 .Returns(Task.CompletedTask);
 
             var sut = new CronCommandHandler(configuration.Object, cronHelper.Object);
             await sut.Handle(request, CancellationToken.None);
 
-            cronHelper.Verify(x => x.UpdateCronAsync(configuration.Object, It.IsAny<CronDto>()), Times.Once);
+            cronHelper.Verify(x => x.UpdateTriggerAsync(configuration.Object, It.IsAny<CronDto>()), Times.Once);
         }
     }
 }

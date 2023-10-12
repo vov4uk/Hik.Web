@@ -41,6 +41,7 @@
                 <th>As Task</th>
                 <th></th>
                 <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -59,6 +60,11 @@
                     <form method="POST">
                         <input type="submit" class="btn btn-primary" asp-page="/Index" asp-page-handler="Run" asp-route-group="@cron.Group" asp-route-name="@cron.Name" value="Start" />
                      </form>
+                </td>
+                <td>
+                    <form method="POST">
+                        <input type="submit" class="btn btn-primary" asp-page-handler="Delete" value="Delete" asp-route-group="@cron.Group" asp-route-name="@cron.Name" asp-route-classname="@cron.ClassName" />
+                    </form>
                 </td>
             </tr>
             }

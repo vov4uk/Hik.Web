@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hik.DTO.Contracts;
 using Hik.Helpers;
@@ -12,6 +13,8 @@ namespace Hik.Client.FileProviders
     public class WindowsFileProvider : IFileProvider
     {
         protected readonly ILogger logger;
+
+        private const string DatePattern = "\\d+\\-\\d+\\\\\\d+\\\\\\d+";
         private readonly IFilesHelper filesHelper;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IVideoHelper videoHelper;
@@ -42,15 +45,15 @@ namespace Hik.Client.FileProviders
                 foreach (var topDirectory in directories)
                 {
                     List<string> subFolders = directoryHelper.EnumerateAllDirectories(topDirectory);
-                    foreach (var directory in subFolders)
+                    foreach (var directory in subFolders.Where(x => Regex.IsMatch(x, DatePattern)))
                     {
-                        var trim = directory.Remove(0, Math.Max(0, directory.Length - 13)).Replace("\\", "-").Split("-");
+                        var trim = directory.Remove(0, Math.Max(0, directory.Length - 13))
+                            .Replace("\\", "-")
+                            .Split("-")
+                            .Select(int.Parse)
+                            .ToArray();
 
-                        if (trim.Length == 4)
-                        {
-                            var dt = new DateTime(Convert.ToInt32(trim[0]), Convert.ToInt32(trim[1]), Convert.ToInt32(trim[2]), Convert.ToInt32(trim[3]), 0, 0, DateTimeKind.Local);
-                            folders.SafeAdd(dt, directory);
-                        }
+                        folders.SafeAdd(new DateTime(trim[0], trim[1], trim[2], trim[3], 0, 0, DateTimeKind.Local), directory);
                     }
 
                     folders.SafeAdd(DateTime.Today, topDirectory);
@@ -100,7 +103,15 @@ namespace Hik.Client.FileProviders
                     {
                         var size = filesHelper.FileSize(file);
                         var duration = readDuration ? await videoHelper.GetDuration(file) : 0;
-                        files.Add(new MediaFileDto { Date = last, Name = filesHelper.GetFileName(file), Path = file, Size = size, Duration = duration });
+                        files.Add(
+                            new MediaFileDto
+                            {
+                                Date = last,
+                                Name = filesHelper.GetFileName(file),
+                                Path = file,
+                                Size = size,
+                                Duration = duration,
+                            });
                     }
                 }
             }

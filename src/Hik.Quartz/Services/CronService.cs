@@ -81,21 +81,15 @@ namespace Hik.Quartz.Services
             await scheduler.Start();
         }
 
-        public async Task UpdateCronAsync(IConfiguration configuration, CronDto cron)
+        public async Task UpdateTriggerAsync(IConfiguration configuration, CronDto cron)
         {
-            JobSchedulingData data = new JobSchedulingData();
-
-            var xmlFilePath = new QuartzOption(configuration).Plugin.JobInitializer.FileNames;
-            var jsonFilePath = xmlFilePath + ".json";
-            var json = await filesHelper.ReadAllText(jsonFilePath);
-
-            var dict = JsonConvert.DeserializeObject<Dictionary<string, List<CronDto>>>(json);
+            var triggerList = await GetCronList(configuration);
 
             string className = cron.ClassName;
 
-            if (dict.ContainsKey(className))
+            if (triggerList.ContainsKey(className))
             {
-                var arr = dict[className];
+                var arr = triggerList[className];
                 var original = arr.FirstOrDefault(x => x.Group == cron.Group && x.Name == cron.Name);
                 if (original != null)
                 {
@@ -104,14 +98,50 @@ namespace Hik.Quartz.Services
             }
             else
             {
-                dict.Add(className, new List<CronDto>());
+                triggerList.Add(className, new List<CronDto>());
             }
 
-            dict[className].Add(cron);
+            triggerList[className].Add(cron);
 
-            filesHelper.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(dict));
+            InitializeJobs(configuration, triggerList);
+        }
 
-            QuartzStartup.InitializeJobs(xmlFilePath, dict);
+        public async Task DeleteTriggerAsync(IConfiguration configuration, string group, string name, string className)
+        {
+            var triggerList = await GetCronList(configuration);
+
+            if (triggerList.ContainsKey(className))
+            {
+                var arr = triggerList[className];
+                var original = arr.FirstOrDefault(x => x.Group == group && x.Name == name);
+                if (original != null)
+                {
+                    arr.Remove(original);
+                }
+            }
+
+            InitializeJobs(configuration, triggerList);
+        }
+
+        private async Task<Dictionary<string, List<CronDto>>> GetCronList(IConfiguration configuration)
+        {
+            var xmlFilePath = new QuartzOption(configuration).Plugin.JobInitializer.FileNames;
+            var jsonFilePath = xmlFilePath + ".json";
+            var json = await filesHelper.ReadAllText(jsonFilePath);
+
+            Dictionary<string, List<CronDto>> cronList = JsonConvert.DeserializeObject<Dictionary<string, List<CronDto>>>(json) ?? new Dictionary<string, List<CronDto>>();
+
+            return cronList;
+        }
+
+        private void InitializeJobs(IConfiguration configuration, Dictionary<string, List<CronDto>> cronList)
+        {
+            var xmlFilePath = new QuartzOption(configuration).Plugin.JobInitializer.FileNames;
+            var jsonFilePath = xmlFilePath + ".json";
+
+            filesHelper.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(cronList));
+
+            QuartzStartup.InitializeJobs(xmlFilePath, cronList);
         }
     }
 }

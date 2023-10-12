@@ -34,6 +34,18 @@ namespace Hik.Web.Pages
             return RedirectToPage("./Scheduler", new { msg = "Scheduler restarted" });
         }
 
+        public async Task<IActionResult> OnPostDeleteAsync(string name, string group, string classname)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            await this._mediator.Send(new DeleteQuartzJobCommand { Name = name, Group = group, ClassName = classname });
+
+            return RedirectToPage("./Scheduler", new { msg = "Trigger deleted. Take effect after Scheduler restart" });
+        }
+
         public IActionResult OnPostKillAll()
         {
             RunningActivities activities = new();
