@@ -28,7 +28,6 @@ namespace Hik.DTO.Config
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine();
-            sb.AppendLine(this.GetRow("Alias", this.Alias));
             sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
             sb.AppendLine(this.GetRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
             sb.AppendLine(this.GetRow("User name", this.Camera.UserName));
@@ -39,7 +38,6 @@ namespace Hik.DTO.Config
         public override string ToHtmlTable()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(this.GetHtmlRow("Alias", this.Alias));
             sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
             sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
             sb.AppendLine(this.GetHtmlRow("User name", this.Camera.UserName));

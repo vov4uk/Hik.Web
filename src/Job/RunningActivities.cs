@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Job
 {
     [ExcludeFromCodeCoverage]
-    public class RunningActivities : IEnumerable<Activity>
+    public static class RunningActivities
     {
         private static readonly ConcurrentDictionary<string, Activity> Bag = new ();
 
@@ -20,14 +19,9 @@ namespace Job
             return Bag.TryRemove(activity.Id, out var ignore);
         }
 
-        public IEnumerator<Activity> GetEnumerator()
+        public static IEnumerable<Activity> GetEnumerator()
         {
-            return Bag.Values.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            return Bag.Values;
         }
     }
 }

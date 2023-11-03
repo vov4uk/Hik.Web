@@ -6,6 +6,7 @@ using AutoMapper;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Serilog;
 
 namespace Hik.DataAccess
@@ -22,15 +23,6 @@ namespace Hik.DataAccess
             this.logger = logger;
         }
 
-        public async Task<HikJob> CreateJobInstanceAsync(HikJob job)
-        {
-            using var unitOfWork = this.factory.CreateUnitOfWork();
-            var jobRepo = unitOfWork.GetRepository<HikJob>();
-            var newJob = await jobRepo.AddAsync(job);
-            await unitOfWork.SaveChangesAsync();
-            return newJob;
-        }
-
         public async Task LogExceptionToAsync(int jobId, string message)
         {
             using var unitOfWork = this.factory.CreateUnitOfWork();
@@ -44,43 +36,31 @@ namespace Hik.DataAccess
             await unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<JobTrigger> GetOrCreateJobTriggerAsync(string triggerKey)
+        public async Task<JobTrigger> GetJobTriggerAsync(string group, string key)
         {
-            var jobNameParts = triggerKey.Split(".");
-            var group = jobNameParts[0];
-            var key = jobNameParts[1];
-
-            using var unitOfWork = this.factory.CreateUnitOfWork();
+            using var unitOfWork = this.factory.CreateUnitOfWork(Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking);
             var repo = unitOfWork.GetRepository<JobTrigger>();
             var jobTrigger = await repo.FindByAsync(x => x.TriggerKey == key && x.Group == group);
-            if (jobTrigger == null)
-            {
-                jobTrigger = await repo.AddAsync(new JobTrigger { TriggerKey = key, Group = group });
-                await unitOfWork.SaveChangesAsync();
-            }
             return jobTrigger;
         }
 
-        public async Task SaveJobResultAsync(HikJob job)
+        public async Task<HikJob> CreateJobAsync(HikJob job)
         {
-            using (var unitOfWork = factory.CreateUnitOfWork())
+            using (var uow = factory.CreateUnitOfWork())
             {
-                var jobRepo = unitOfWork.GetRepository<HikJob>();
-                job.Finished = DateTime.Now;
-                jobRepo.Update(job);
+                var jobRepo = uow.GetRepository<HikJob>();
+                var jobInstance = await jobRepo.AddAsync(job);
 
-                if (job.Success)
-                {
-                    var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
-                    var trigger = await triggerRepo.FindByAsync(x => x.Id == job.JobTriggerId);
-                    trigger.LastSync = job.LatestFileEndDate ?? job.Started;
-                    trigger.LastExecutedJobId = job.Id;
-                    if (job.PeriodEnd != null)
-                    {
-                        trigger.LastSuccessJobId = job.Id;
-                    }
-                    triggerRepo.Update(trigger);
-                }
+                return jobInstance;
+            }
+        }
+
+        public async Task UpdateJobTriggerAsync(JobTrigger trigger)
+        {
+            using (var unitOfWork = factory.CreateUnitOfWork(Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking))
+            {
+                var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
+                triggerRepo.Update(trigger);
 
                 await unitOfWork.SaveChangesAsync();
             }
@@ -88,13 +68,14 @@ namespace Hik.DataAccess
 
         public async Task UpdateJobAsync(HikJob job)
         {
-            using (var unitOfWork = factory.CreateUnitOfWork())
+            using (var unitOfWork = factory.CreateUnitOfWork(Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking))
             {
-                var jobRepo = unitOfWork.GetRepository<HikJob>();
-                jobRepo.Update(job);
+                var repo = unitOfWork.GetRepository<HikJob>();
+                repo.Update(job);
                 await unitOfWork.SaveChangesAsync();
             }
         }
+
 
         public async Task<List<MediaFile>> SaveFilesAsync(HikJob job, IReadOnlyCollection<MediaFileDto> files)
         {

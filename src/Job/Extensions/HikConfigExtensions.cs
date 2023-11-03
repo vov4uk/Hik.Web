@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using Hik.DTO.Config;
 using Newtonsoft.Json;
 
@@ -9,21 +8,13 @@ namespace Job.Extensions
     [ExcludeFromCodeCoverage]
     public static class HikConfigExtensions
     {
-        public static T GetConfig<T>(string configFilePath)
+        public static T GetConfig<T>(string json)
         {
-            if (File.Exists(configFilePath))
+            if (!string.IsNullOrEmpty(json))
             {
-                return JsonConvert.DeserializeObject<T>(File.ReadAllText(configFilePath));
+                return JsonConvert.DeserializeObject<T>(json);
             }
             return default(T);
-        }
-
-        public static string GetConfigPath(string configFileName)
-        {
-#if DEBUG
-            configFileName = configFileName.Replace(".json", ".debug.json");
-#endif
-            return Path.Combine(Environment.CurrentDirectory, "Config", configFileName);
         }
 
         public static (DateTime PeriodStart, DateTime PeriodEnd) CalculateProcessingPeriod(BaseConfig config, DateTime? lastSync)

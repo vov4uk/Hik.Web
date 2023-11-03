@@ -81,17 +81,47 @@ namespace Hik.DataAccess.SQL {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ALTER TABLE JobTrigger ADD COLUMN ClassName text default &apos;&apos;;
-        ///ALTER TABLE JobTrigger ADD COLUMN Config text default &apos;&apos;;
-        ///ALTER TABLE JobTrigger ADD COLUMN Description text default &apos;&apos;;
+        ///   Looks up a localized string similar to BEGIN TRANSACTION;
+        ///
+        ///ALTER TABLE JobTrigger ADD COLUMN ClassName text default &apos;&apos;;
+        ///ALTER TABLE JobTrigger ADD COLUMN [Config] text default &apos;&apos;;
+        ///ALTER TABLE JobTrigger ADD COLUMN [Description] text default &apos;&apos;;
         ///ALTER TABLE JobTrigger ADD COLUMN CronExpression text default &apos;&apos;;
         ///ALTER TABLE JobTrigger ADD COLUMN RunAsTask BOOLEAN       DEFAULT (true);
         ///ALTER TABLE JobTrigger ADD COLUMN IsEnabled BOOLEAN       DEFAULT (true);
-        ///.
+        ///
+        ///COMMIT.
         /// </summary>
         internal static string _20231012000000_update_jobtriggers {
             get {
                 return ResourceManager.GetString("_20231012000000_update_jobtriggers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BEGIN TRANSACTION;
+        ///
+        ///ALTER TABLE JobTrigger ADD COLUMN SentEmailOnError BOOLEAN       DEFAULT (true);
+        ///
+        ///COMMIT.
+        /// </summary>
+        internal static string _20231027000000_add_sendemailonerror_column {
+            get {
+                return ResourceManager.GetString("_20231027000000_add_sendemailonerror_column", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BEGIN TRANSACTION;
+        ///
+        ///ALTER TABLE JobTrigger DROP COLUMN LastSuccessJobId;
+        ///ALTER TABLE JobTrigger DROP COLUMN RunAsTask;
+        ///
+        ///COMMIT.
+        /// </summary>
+        internal static string _20231103000000_remove_obsolete_columns {
+            get {
+                return ResourceManager.GetString("_20231103000000_remove_obsolete_columns", resourceCulture);
             }
         }
     }

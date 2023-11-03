@@ -86,10 +86,10 @@
         [InlineData(2020, 12, 31, "20201231_000000.jpg", "C:\\2020-12\\31\\00\\")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, string localFileName, string localFolder)
         {
-            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test", Camera = new DeviceConfig() };
+            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Camera = new DeviceConfig() };
 
             SetupLoginAndHddStatusCheck();
-            MediaFileDto remoteFile = new () { Date = new DateTime(y, m, d)};
+            MediaFileDto remoteFile = new() { Date = new DateTime(y, m, d) };
 
             var targetName = localFolder + localFileName;
 

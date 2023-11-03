@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using Hik.Client.Abstraction.Services;
 using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
@@ -18,8 +19,12 @@ namespace Job.Impl
         private const string TimeFormat = "HH':'mm':'ss";
         private readonly IArchiveService worker;
 
-        public ArchiveJob(string trigger, ArchiveConfig config, IArchiveService worker, IHikDatabase db, IEmailHelper email, ILogger logger)
-            : base(trigger, config, db, email, logger)
+        public ArchiveJob(JobTrigger trigger,
+            IArchiveService worker,
+            IHikDatabase db,
+            IEmailHelper email,
+            ILogger logger)
+            : base(trigger, db, email, logger)
         {
             this.worker = worker;
             this.configValidator = new ArchiveConfigValidator();
@@ -39,8 +44,7 @@ namespace Job.Impl
             var abnormalFilesCount = Config.AbnormalFilesCount;
             if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
             {
-                email.Send(
-                    $"{TriggerKey}: {files.Count} taken. From {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(TimeFormat)}",
+                email.Send($"{jobTrigger.ClassName}: {files.Count} taken. From {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(TimeFormat)}",
                     "EOM");
             }
 
@@ -48,6 +52,10 @@ namespace Job.Impl
 
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
+        }
+
+        protected override void SetProcessingPeriod(HikJob job)
+        {
         }
     }
 }

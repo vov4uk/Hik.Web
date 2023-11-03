@@ -59,7 +59,7 @@ namespace Hik.Client.Tests
                 new FtpListItem(){Name = "192.168.8.103_01_20220517095135158_MOTION_DETECTION", FullName = "/192.168.8.103_01_20220517095135158_MOTION_DETECTION.jpg"}
             });
 
-            var config = new CameraConfig { Alias = "Group.CameraName", Camera = new DeviceConfig() };
+            var config = new CameraConfig { Camera = new DeviceConfig(), RemotePath = "/CameraName" };
 
             var client = new FtpDownloaderClient(config, this.filesMock.Object, this.dirMock.Object, this.ftpMock.Object, loggerMock.Object);
             var mediaFiles = await client.GetFilesListAsync(default, default);

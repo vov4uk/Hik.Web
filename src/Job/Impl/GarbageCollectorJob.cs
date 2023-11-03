@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using Hik.Client.FileProviders;
 using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
@@ -19,15 +20,14 @@ namespace Job.Impl
         protected readonly IFilesHelper filesHelper;
         protected readonly IFileProvider filesProvider;
 
-        public GarbageCollectorJob(string trigger,
-            GarbageCollectorConfig config,
+        public GarbageCollectorJob(JobTrigger trigger,
             IDirectoryHelper directory,
             IFilesHelper files,
             IFileProvider provider,
             IHikDatabase db,
             IEmailHelper email,
             ILogger logger)
-            : base(trigger,config, db, email, logger)
+            : base(trigger, db, email, logger)
         {
 
             this.directoryHelper = directory;
@@ -70,6 +70,10 @@ namespace Job.Impl
             {
                 await db.DeleteObsoleteJobsAsync(Config.Triggers, JobInstance.PeriodEnd.Value);
             }
+        }
+
+        protected override void SetProcessingPeriod(HikJob job)
+        {
         }
 
         private void DeleteFiles(IReadOnlyCollection<MediaFileDto> filesToDelete)

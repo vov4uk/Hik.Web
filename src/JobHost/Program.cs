@@ -11,18 +11,18 @@ namespace JobHost
     {
         private static async Task Main(string[] args)
         {
-            var email = new EmailHelper();
-            var parameters = Parameters.Parse(args);
-
+            IEmailHelper email = null;
             try
             {
-                IJobProcess job = JobFactory.GetJob(parameters, email);
+                email = new EmailHelper();
+                var parameters = Parameters.Parse(args);
+                IJobProcess job = await JobFactory.GetJobAsync(parameters);
 
                 await job.ExecuteAsync();
             }
             catch (Exception ex)
             {
-                email.Send(ex.Message);
+                email?.Send(ex.Message);
                 Environment.ExitCode = -1;
             }
         }

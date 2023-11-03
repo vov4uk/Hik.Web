@@ -81,16 +81,15 @@ else if (Model.Dto.Items != null && Model.Dto.Items.Any())
 {
     @section Scripts
     {
-        <script type="text/javascript">            
+        <script type="text/javascript">
             const list = document.querySelectorAll(".thumbnails .item img");
-            
             const images = [...list].map((i) => {
                 const { alt, name } = i;
                 return { alt, name };
-            });  
-            
+            });
+
             // popup
-            
+
             const popup = document.querySelector(".popup");
             const closeBtn = document.querySelector(".close-btn");
             const largeImage = document.querySelector(".large-image");
@@ -98,9 +97,9 @@ else if (Model.Dto.Items != null && Model.Dto.Items.Any())
             const leftArrow = document.querySelector(".left-arrow");
             const rightArrow = document.querySelector(".right-arrow");
             const imageName = document.querySelector(".image-name");
-            
+
             document.onkeydown = checkKey;
-            
+
             function checkKey(e) {
             
                 e = e || window.event;
@@ -119,10 +118,10 @@ else if (Model.Dto.Items != null && Model.Dto.Items.Any())
                    popup.classList.remove("active");
                 }
             }
-            
-            
+
+
             let index = 0; // will track our current image;
-            
+
             list.forEach((item, i) => {
               item.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -131,7 +130,7 @@ else if (Model.Dto.Items != null && Model.Dto.Items.Any())
                 popup.classList.toggle("active");
               });
             });
-            
+
             const updateImage = (i) => {
                 let img = images[i];
                 largeImage.src = img.alt;
@@ -139,17 +138,17 @@ else if (Model.Dto.Items != null && Model.Dto.Items.Any())
                 imageIndex.innerHTML = `0${i + 1}`;
                 index = i;
             };
-            
+
             closeBtn.addEventListener("click", () => {
               popup.classList.toggle("active");
             });
-            
+
             leftArrow.addEventListener("click", () => {
               if (index > 0) {
                 updateImage(index - 1);
               }
             });
-            
+
             rightArrow.addEventListener("click", () => {
               if (index < images.length - 1) {
                 updateImage(index + 1);

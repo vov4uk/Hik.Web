@@ -8,18 +8,13 @@ namespace Hik.DTO.Config
         [JsonProperty("JobTimeoutMinutes")]
         public int Timeout { get; set; } = 29;
 
-        public string Alias { get; set; }
-
         public string DestinationFolder { get; set; }
-
-        public bool SentEmailOnError { get; set; } = true;
 
         public bool ShowInSearch { get; set; } = false;
 
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.AppendLine(this.GetRow(nameof(Alias), this.Alias));
             sb.AppendLine(this.GetRow(nameof(DestinationFolder), this.DestinationFolder));
             sb.AppendLine(this.GetRow(nameof(Timeout), this.Timeout.ToString()));
 
@@ -29,7 +24,6 @@ namespace Hik.DTO.Config
         public virtual string ToHtmlTable()
         {
             var sb = new StringBuilder();
-            sb.AppendLine(this.GetHtmlRow(nameof(Alias), this.Alias));
             sb.AppendLine(this.GetHtmlRow(nameof(DestinationFolder), this.DestinationFolder));
             sb.AppendLine(this.GetHtmlRow(nameof(Timeout), this.Timeout.ToString()));
             return sb.ToString();

@@ -10,8 +10,6 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class Activity
     {
-        private static readonly EmailHelper email = new EmailHelper();
-        private DateTime started = default;
         public Parameters Parameters { get; private set; }
         public int ProcessId
         {
@@ -34,8 +32,6 @@ namespace Job
 
         public string Id => $"{Parameters.Group}.{Parameters.TriggerKey}";
 
-        public DateTime StartTime => hostProcess?.StartTime ?? started;
-
         private Process hostProcess = default;
 
         public Activity(Parameters parameters)
@@ -50,25 +46,23 @@ namespace Job
             {
                 if (RunningActivities.Add(this))
                 {
-                    if (Parameters.RunAsTask)
-                    {
+#if DEBUG
                         await RunAsTask();
-                    }
-                    else
-                    {
+#else
                         await StartProcess();
-                    }
+#endif
                 }
                 else
                 {
-                    Log.Information("Cannot start, {triggerKey} is already running.", Parameters.TriggerKey);
+                    Log.Warning("Cannot start, {triggerKey} is already running.", Parameters.TriggerKey);
                 }
 
             }
             catch (Exception e)
             {
+                RunningActivities.Remove(this);
                 Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to start activity", e.ToStringDemystified());
-                email.Send(e.Message);
+                new EmailHelper().Send(e.Message, Parameters.TriggerKey, null);
             }
         }
 
@@ -123,9 +117,7 @@ namespace Job
 
         private async Task RunAsTask()
         {
-            IJobProcess job = JobFactory.GetJob(Parameters, email);
-            started = DateTime.Now;
-
+            var job = await JobFactory.GetJobAsync(Parameters);
             try
             {
                 await job.ExecuteAsync();
@@ -144,7 +136,7 @@ namespace Job
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                Log.Information("HasExited : {hasExited} - {data} - {sender}", (sender as Process)?.HasExited, e.Data, sender );
+                Log.Error("HasExited : {hasExited} - {data} - {sender}", (sender as Process)?.HasExited, e.Data, sender );
             }
         }
     }

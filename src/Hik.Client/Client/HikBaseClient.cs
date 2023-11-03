@@ -83,7 +83,7 @@ namespace Hik.Client
 
         public void InitializeClient()
         {
-            string sdkLogsPath = filesHelper.CombinePath(Environment.CurrentDirectory, "logs", config.Alias + "_SdkLog");
+            string sdkLogsPath = filesHelper.CombinePath(Environment.CurrentDirectory, "logs", config.Camera.IpAddress + "_SdkLog");
             dirHelper.CreateDirIfNotExist(sdkLogsPath);
             dirHelper.CreateDirIfNotExist(config.DestinationFolder);
 

@@ -1,6 +1,5 @@
 ﻿using Hik.Helpers;
 using Hik.DTO.Contracts;
-using Hik.Web.Queries.JobTriggers;
 using Hik.Web.Queries.QuartzTriggers;
 using Job;
 using MediatR;
@@ -10,12 +9,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hik.Web.Commands.Cron;
+using Hik.Web.Queries.QuartzTrigger;
 
 namespace Hik.Web.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly RunningActivities activities = new();
         private readonly IMediator _mediator;
 
         public IndexModel(IMediator mediator)
@@ -32,39 +31,41 @@ namespace Hik.Web.Pages
             ResponseMsg = msg;
             TriggersDtos = new Dictionary<string, IList<TriggerDto>>();
 
-            var triggers = await _mediator.Send(new JobTriggersQuery()) as JobTriggersDto;
+            var triggers = await _mediator.Send(new QuartzTriggersQuery() { ActiveOnly = true, IncludeLastJob = true }) as QuartzTriggersDto;
 
-            var cronTriggers = await _mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
-
-            foreach (var cronTrigger in cronTriggers.Items)
+            foreach (var cronTrigger in triggers.Triggers)
             {
-                var group = cronTrigger.Group;
-                var name = cronTrigger.Name;
-                var act = activities.FirstOrDefault(x => x.Parameters.TriggerKey == name && x.Parameters.Group == group);
-                var tri = triggers.Items.FirstOrDefault(x => x.Name == name && x.Group == group);
+                var act = RunningActivities.GetEnumerator()
+                    .FirstOrDefault(x => x.Parameters.TriggerKey == cronTrigger.Name && x.Parameters.Group == cronTrigger.Group);
 
-                if (tri == null || tri.LastJob == null)
-                {
-                    continue;
-                }
+                cronTrigger.ProcessId = act?.ProcessId;
 
-                tri.ProcessId = act?.ProcessId;
-                tri.Cron = cronTrigger;
-
-                TriggersDtos.SafeAdd(cronTrigger.ClassName, tri);
+                TriggersDtos.SafeAdd(cronTrigger.ClassName, cronTrigger);
             }
         }
 
-        public IActionResult OnPostRun(string group, string name)
+        public async Task<IActionResult> OnPostRun(int id)
         {
-            _mediator.Send(new StartActivityCommand() { Name = name, Group = group}).ConfigureAwait(false).GetAwaiter();
+            var triggerDto = await _mediator.Send(new QuartzTriggerQuery() { Id = id }) as QuartzTriggerDto;
+            if (triggerDto?.Trigger != null)
+            {
+                var trigger = triggerDto.Trigger;
+                await _mediator.Send(new StartActivityCommand()
+                {
+                    Name = trigger.Name,
+                    Group = trigger.Group,
+                    Environment = Program.Environment,
+                    AppConfigsPath = Program.AssemblyDirectory
+                });
+                return RedirectToPage("./Index", new { msg = $"Activity {trigger.Group}.{trigger.Name} started" });
+            }
 
-            return RedirectToPage("./Index", new { msg = $"Activity {group}.{name} started" });
+            return RedirectToPage("./Index", new { msg = $"Failed to start triiger {id}" });
         }
 
         public IActionResult OnPostKill(string activityId)
         {
-            var activity = activities.SingleOrDefault(a => a.Id == activityId);
+            var activity = RunningActivities.GetEnumerator().SingleOrDefault(a => a.Id == activityId);
             if (activity != null)
             {
                 activity?.Kill();

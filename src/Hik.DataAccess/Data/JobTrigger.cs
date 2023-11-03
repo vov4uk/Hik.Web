@@ -29,21 +29,16 @@ namespace Hik.DataAccess.Data
 
         public string CronExpression { get; set; }
 
-        public bool RunAsTask { get; set; }
-
         public bool IsEnabled { get; set; }
+
+        public bool SentEmailOnError { get; set; }
 
         public DateTime? LastSync { get; set; }
 
         public int? LastExecutedJobId { get; set; }
 
-        public int? LastSuccessJobId { get; set; }
-
         [ForeignKey("LastExecutedJobId")]
         public virtual HikJob LastExecutedJob { get; set; }
-
-        [ForeignKey("LastSuccessJobId")]
-        public virtual HikJob LastSuccessJob { get; set; }
 
         public virtual List<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
 

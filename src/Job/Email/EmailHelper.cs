@@ -14,14 +14,14 @@ namespace Job.Email
         {
 #if RELEASE
             string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
-            Settings = Extensions.HikConfigExtensions.GetConfig<EmailConfig>(configPath);
+            Settings = Extensions.HikConfigExtensions.GetConfig<EmailConfig>(System.IO.File.ReadAllText(configPath));
 #endif
         }
 
-        public void Send(string error, string alias = null, string hikJobDetails = null)
+        public void Send(string error, string className = null, string hikJobDetails = null)
         {
             var body = BuildBody(hikJobDetails);
-            var subject = $"{alias ?? "Hik.Web"} {error}".Replace('\r', ' ').Replace('\n', ' ');
+            var subject = $"{className ?? "Hik.Web"} {error}".Replace('\r', ' ').Replace('\n', ' ');
             Send(subject, body);
         }
 

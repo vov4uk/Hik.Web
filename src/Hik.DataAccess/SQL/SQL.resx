@@ -124,4 +124,10 @@
   <data name="_20231012000000_update_jobtriggers" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>20231012000000_update_jobtriggers.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_20231027000000_add_sendemailonerror_column" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>20231027000000_add_sendemailonerror_column.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_20231103000000_remove_obsolete_columns" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>20231103000000_remove_obsolete_columns.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

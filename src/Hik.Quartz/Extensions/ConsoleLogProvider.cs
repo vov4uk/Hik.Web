@@ -2,19 +2,34 @@
 using Quartz.Logging;
 using System;
 using LogLevel = Quartz.Logging.LogLevel;
+using System.IO;
 
 namespace Hik.Quartz.Extensions
 {
     public class ConsoleLogProvider : ILogProvider
     {
+
+        private readonly string LogsPath;
+        public ConsoleLogProvider() { }
+
+        public ConsoleLogProvider(string logsPath)
+        {
+            LogsPath = logsPath;
+        }
+
         public Logger GetLogger(string name)
         {
-
             var logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext() 
                 .WriteTo.Console()
-                .WriteTo.File($"Logs\\Quartz_.txt")
+                .WriteTo.File(Path.Combine(LogsPath, "Quartz_.txt"),
+                rollingInterval: RollingInterval.Day,
+                   fileSizeLimitBytes: 10 * 1024 * 1024,
+                   retainedFileCountLimit: 2,
+                   rollOnFileSizeLimit: true,
+                   shared: true,
+                   flushToDiskInterval: TimeSpan.FromSeconds(10))
                 .CreateLogger();
 
             return (level, func, exception, parameters) =>

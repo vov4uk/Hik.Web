@@ -1,34 +1,69 @@
-﻿using Hik.DataAccess.Abstractions;
+﻿using Hik.DataAccess;
+using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
-using Hik.Quartz.Contracts;
-using Hik.Quartz.Services;
+using Hik.DTO.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hik.Web.Queries.QuartzTriggers
 {
     public class QuartzTriggersQueryHandler : QueryHandler<QuartzTriggersQuery>
     {
-        private readonly ICronService cronHelper;
         private readonly IUnitOfWorkFactory factory;
 
-        public QuartzTriggersQueryHandler(ICronService cronHelper, IUnitOfWorkFactory factory)
+        public QuartzTriggersQueryHandler(IUnitOfWorkFactory factory)
         {
-            this.cronHelper = cronHelper;
             this.factory = factory;
         }
 
         protected override async Task<IHandlerResult> HandleAsync(QuartzTriggersQuery request, CancellationToken cancellationToken)
         {
-            IReadOnlyCollection<CronDto> cronTriggers = await this.cronHelper.GetAllTriggersAsync();
+            List<JobTrigger> triggers = new ();
 
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var repo = uow.GetRepository<JobTrigger>();
-
-                var triggers = await repo.GetAllAsync();
+                if (request.ActiveOnly)
+                {
+                    if (request.IncludeLastJob)
+                    {
+                        triggers = await repo.FindManyAsync(x => x.IsEnabled, x => x.LastExecutedJob);
+                    }
+                    else
+                    {
+                        triggers = await repo.FindManyAsync(x => x.IsEnabled);
+                    }
+                }
+                else
+                {
+                    if (request.IncludeLastJob)
+                    {
+                        triggers = repo.GetAll(x => x.LastExecutedJob).ToList();
+                    }
+                    else
+                    {
+                        triggers = await repo.GetAllAsync();
+                    }
+                }
             }
 
-            return new QuartzTriggersDto() { Items = cronTriggers };
+            var items = new List<TriggerDto>();
+
+            foreach (var trigger in triggers)
+            {
+                var triggerDto = HikDatabase.Mapper.Map<JobTrigger, TriggerDto>(trigger);
+                var latestJob = trigger.LastExecutedJob;
+                if (latestJob != null)
+                {
+                    triggerDto.LastJob = HikDatabase.Mapper.Map<HikJob, HikJobDto>(latestJob);
+                }
+                items.Add(triggerDto);
+            }
+
+
+            return new QuartzTriggersDto()
+            {
+                Triggers = items
+            };
         }
     }
 }

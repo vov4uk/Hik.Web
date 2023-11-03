@@ -1,8 +1,12 @@
 using Autofac;
 using Autofac.Features.Variance;
+using Hik.DataAccess;
+using Hik.Helpers;
 using Hik.Quartz;
+using Hik.Quartz.Services;
 using Hik.Web.Commands;
 using Hik.Web.Queries;
+using Hik.Web.Queries.QuartzTriggers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpLogging;
@@ -13,8 +17,11 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using System;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Collections.Generic;
+using Hik.Quartz.Contracts.Xml;
 
 namespace Hik.Web
 {
@@ -73,6 +80,9 @@ namespace Hik.Web
         {
             var quartz = new QuartzStartup(configuration);
 
+            var triggers = GetTriggersFromDataBase().GetAwaiter().GetResult();
+            QuartzStartup.InitializeJobs(this.configuration, triggers);
+
             lifetime.ApplicationStarted.Register(quartz.Start);
             lifetime.ApplicationStopping.Register(quartz.Stop);
 
@@ -96,6 +106,21 @@ namespace Hik.Web
                     endpoints.MapRazorPages();
 #endif
                 });
+        }
+
+        internal async Task<IReadOnlyCollection<Cron>> GetTriggersFromDataBase()
+        {
+            var connection = this.configuration.GetSection("DBConfiguration").Get<DbConfiguration>();
+            QuartzTriggersQueryHandler handler = new QuartzTriggersQueryHandler(new UnitOfWorkFactory(connection));
+            var triggersDto = await handler.Handle(new QuartzTriggersQuery { ActiveOnly = true }, CancellationToken.None) as QuartzTriggersDto;
+
+            return triggersDto.Triggers.Where(x =>
+            !string.IsNullOrEmpty(x.Name) &&
+            !string.IsNullOrEmpty(x.Group) &&
+            !string.IsNullOrEmpty(x.CronExpression) &&
+            !string.IsNullOrEmpty(x.Description))
+                .Select(x =>x.ToCron())
+                .ToList();
         }
     }
 }

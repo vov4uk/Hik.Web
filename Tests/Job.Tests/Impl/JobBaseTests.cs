@@ -61,19 +61,19 @@ namespace Job.Tests.Impl
 
         protected void SetupSaveJobResultAsync()
         {
-            dbMock.Setup(x => x.SaveJobResultAsync(It.IsAny<HikJob>()))
+            dbMock.Setup(x => x.UpdateJobTriggerAsync(It.IsAny<JobTrigger>()))
                 .Returns(Task.CompletedTask);
         }
 
-        protected void SetupCreateJobInstanceAsync()
+        protected void SetupCreateJobInstance()
         {
-            dbMock.Setup(x => x.CreateJobInstanceAsync(It.IsAny<HikJob>()))
+            dbMock.Setup(x => x.CreateJobAsync(It.IsAny<int>()))
                 .ReturnsAsync(new HikJob());
         }
 
         protected void SetupGetOrCreateJobTriggerAsync()
         {
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
+            dbMock.Setup(x => x.GetJobTriggerAsync(group, triggerKey))
                 .ReturnsAsync(new JobTrigger());
         }
 
@@ -95,9 +95,9 @@ namespace Job.Tests.Impl
                 .Returns(Task.CompletedTask);
         }
 
-        protected static T GetConfig<T>(string configFileName)
+        protected static string GetConfig(string configFileName)
         {
-            return HikConfigExtensions.GetConfig<T>(Path.Combine(TestsHelper.CurrentDirectory, configFileName));
+            return File.ReadAllText(Path.Combine(TestsHelper.CurrentDirectory, configFileName));
         }
     }
 }

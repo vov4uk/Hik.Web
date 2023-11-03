@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using Hik.Client.Abstraction.Services;
 using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
@@ -15,13 +16,12 @@ namespace Job.Impl
     {
         private readonly IHikPhotoDownloaderService service;
         public HikPhotoDownloaderJob(
-            string trigger,
-            CameraConfig config,
+            JobTrigger trigger,
             IHikPhotoDownloaderService service,
             IHikDatabase db,
             IEmailHelper email,
             ILogger logger)
-            : base(trigger, config, db, email, logger)
+            : base(trigger, db, email, logger)
         {
             this.service = service;
             this.configValidator = new CameraConfigValidator();
@@ -29,13 +29,16 @@ namespace Job.Impl
 
         protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
+            var files = await service.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
+            return files;
+        }
+
+        protected override void SetProcessingPeriod(HikJob job)
+        {
             var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
             logger.Information("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
             JobInstance.PeriodStart = period.PeriodStart;
             JobInstance.PeriodEnd = period.PeriodEnd;
-
-            var files = await service.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
-            return files;
         }
     }
 }

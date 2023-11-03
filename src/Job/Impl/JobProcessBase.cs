@@ -6,6 +6,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -25,27 +26,38 @@ namespace Job.Impl
         protected JobTrigger jobTrigger;
         protected AbstractValidator<T> configValidator;
 
-        protected JobProcessBase(string trigger, T config, IHikDatabase db, IEmailHelper email, ILogger logger)
+        protected JobProcessBase(JobTrigger trigger, IHikDatabase db, IEmailHelper email, ILogger logger)
         {
-            TriggerKey = trigger;
+            jobTrigger = trigger;
             this.logger = logger;
             this.db = db;
             this.email = email;
-            Config = config ?? throw new ArgumentNullException(nameof(config));
+            Config = HikConfigExtensions.GetConfig<T>(trigger.Config) ?? throw new ArgumentNullException(nameof(Config));
             logger.Information("Config {config}", Config.ToString());
         }
 
         public T Config { get; protected set; }
-        public string TriggerKey { get; private set; }
-        internal HikJob JobInstance { get; private set; }
+
+        public HikJob JobInstance { get; private set; }
 
         public async Task ExecuteAsync()
         {
+            var job = new HikJob
+            {
+                Started = DateTime.Now,
+                JobTriggerId = jobTrigger.Id,
+                Success = true
+            };
+
+            SetProcessingPeriod(job);
+
+            JobInstance = await db.CreateJobAsync(job);
+
+            jobTrigger.LastExecutedJob = JobInstance;
+            await db.UpdateJobTriggerAsync(jobTrigger);
+
             try
             {
-                await CreateJobInstanceAsync();
-                Config.Alias = TriggerKey;
-
                 if (!Directory.Exists(Config.DestinationFolder))
                 {
                     try
@@ -63,6 +75,14 @@ namespace Job.Impl
                 var result = await RunAsync();
                 await SaveResultsInternalAsync(result);
             }
+            catch (DbUpdateException e)
+            {
+                logger.Error("Trigger {trigger} ErrorMsg: {errorMsg}; Trace: {trace}", jobTrigger.TriggerKey, $"DB error : {e.Message}", e.ToStringDemystified());
+                if (jobTrigger.SentEmailOnError)
+                {
+                    email.Send(e.Message, jobTrigger.TriggerKey, null);
+                }
+            }
             catch (Exception e)
             {
                 logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", e.Message, e.ToStringDemystified());
@@ -71,6 +91,8 @@ namespace Job.Impl
         }
 
         protected abstract Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync();
+
+        protected abstract void SetProcessingPeriod(HikJob job);
 
         protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
@@ -84,33 +106,22 @@ namespace Job.Impl
         {
             try
             {
+                this.JobInstance.Finished = DateTime.Now;
                 this.JobInstance.Success = false;
                 Task.WaitAll(
                     db.LogExceptionToAsync(JobInstance.Id, error),
-                    db.SaveJobResultAsync(JobInstance));
+                    db.UpdateJobAsync(JobInstance));
             }
             catch (Exception e)
             {
-                logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to save error", e.ToStringDemystified());
+                logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Failed to save error : {error}", e.ToStringDemystified());
             }
 
-            if (Config.SentEmailOnError)
+            if (jobTrigger.SentEmailOnError)
             {
-                var details = JobInstance.ToHtmlTable(Config);
-                email.Send(error, TriggerKey, details);
+                var details = JobInstance?.ToHtmlTable(Config);
+                email.Send(error, jobTrigger.TriggerKey , details);
             }
-        }
-
-        private async Task CreateJobInstanceAsync()
-        {
-            this.jobTrigger = await db.GetOrCreateJobTriggerAsync(TriggerKey);
-
-            JobInstance = await db.CreateJobInstanceAsync(new HikJob
-            {
-                Started = DateTime.Now,
-                JobTriggerId = jobTrigger.Id,
-                Success = true
-            });
         }
 
         private async Task SaveResultsInternalAsync(Result<IReadOnlyCollection<MediaFileDto>> result)
@@ -123,10 +134,14 @@ namespace Job.Impl
                 }
                 else
                 {
-                    logger.Warning("Results empty");
+                    logger.Information("Results empty");
                 }
 
-                await db.SaveJobResultAsync(JobInstance);
+                this.JobInstance.Finished = DateTime.Now;
+                await db.UpdateJobAsync(JobInstance);
+
+                jobTrigger.LastSync = JobInstance.LatestFileEndDate ?? JobInstance.Started;
+                await db.UpdateJobTriggerAsync(jobTrigger);
             }
             else
             {

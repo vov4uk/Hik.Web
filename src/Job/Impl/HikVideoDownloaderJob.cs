@@ -1,11 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 using Hik.Client.Abstraction.Services;
 using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
 using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -16,13 +18,12 @@ namespace Job.Impl
         private readonly IHikVideoDownloaderService downloader;
 
         public HikVideoDownloaderJob(
-            string trigger,
-            CameraConfig config,
+            JobTrigger trigger,
             IHikVideoDownloaderService service,
             IHikDatabase db,
             IEmailHelper email,
             ILogger logger)
-            : base(trigger, config, db, email, logger)
+            : base(trigger, db, email, logger)
         {
             this.downloader = service;
             this.configValidator = new CameraConfigValidator();
@@ -31,15 +32,7 @@ namespace Job.Impl
         protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
             downloader.FileDownloaded += this.Downloader_VideoDownloaded;
-
-            var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
-            logger.Information("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
-            JobInstance.PeriodStart = period.PeriodStart;
-            JobInstance.PeriodEnd = period.PeriodEnd;
-            JobInstance.LatestFileEndDate = jobTrigger.LastSync;
-            await db.UpdateJobAsync(JobInstance);
-
-            var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
+            var files = await downloader.ExecuteAsync(Config, JobInstance.PeriodStart.Value, JobInstance.PeriodEnd.Value);
 
             downloader.FileDownloaded -= this.Downloader_VideoDownloaded;
             return files;
@@ -50,6 +43,15 @@ namespace Job.Impl
             return Task.CompletedTask;
         }
 
+        protected override void SetProcessingPeriod(HikJob job)
+        {
+            (DateTime PeriodStart, DateTime PeriodEnd) period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
+            logger.Information("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
+            JobInstance.PeriodStart = period.PeriodStart;
+            JobInstance.PeriodEnd = period.PeriodEnd;
+            JobInstance.LatestFileEndDate = jobTrigger.LastSync;
+        }
+
         private async void Downloader_VideoDownloaded(object sender, Hik.Client.Events.FileDownloadedEventArgs e)
         {
             JobInstance.FilesCount++;
@@ -57,9 +59,10 @@ namespace Job.Impl
             var files = new[] { e.File };
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
 
-            await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
+            logger.Information("Downloader_VideoDownloaded : Update Daily Statistics");
+            await db.UpdateDailyStatisticsAsync(JobInstance.JobTriggerId, files);
+            logger.Information("Downloader_VideoDownloaded : Update Daily Statistics. Done");
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
-            await db.UpdateJobAsync(JobInstance);
         }
     }
 }

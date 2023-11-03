@@ -225,11 +225,11 @@
         [InlineData(2020, 12, 31, 3600, "ch000000001", "C:\\2020-12\\31\\00\\20201231_000000_010000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, int duration, string name, string fileName)
         {
-            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test", Camera = new DTO.Config.DeviceConfig() };
+            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Camera = new DTO.Config.DeviceConfig() };
 
             int downloadHandler = 1;
             this.SetupLoginAndHddStatusCheck();
-            MediaFileDto remoteFile = new MediaFileDto { Date = new DateTime(y,m,d), Duration = duration, Name = name};
+            MediaFileDto remoteFile = new MediaFileDto { Date = new DateTime(y, m, d), Duration = duration, Name = name };
 
             var tempName = fileName + ".tmp";
             var targetName = fileName;

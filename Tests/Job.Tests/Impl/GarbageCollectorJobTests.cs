@@ -1,4 +1,5 @@
 ﻿using Hik.Client.FileProviders;
+using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
@@ -31,7 +32,7 @@ namespace Job.Tests.Impl
             var topFolders = new[] { "C:\\Junk" };
 
             SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
+            SetupCreateJobInstance();
             SetupSaveJobResultAsync();
             SetupUpdateDailyStatisticsAsync();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\Junk"));
@@ -55,7 +56,7 @@ namespace Job.Tests.Impl
             var topFolders = new[] { "C:\\Junk" };
 
             SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
+            SetupCreateJobInstance();
             SetupSaveJobResultAsync();
             SetupUpdateDailyStatisticsAsync();
             dbMock.Setup(x => x.DeleteObsoleteJobsAsync(It.IsAny<string[]>(), It.IsAny<DateTime>()))
@@ -89,7 +90,7 @@ namespace Job.Tests.Impl
             var topFolders = new[] { "C:\\FTP\\Floor0" };
 
             SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
+            SetupCreateJobInstance();
             SetupSaveJobResultAsync();
             SetupUpdateDailyStatisticsAsync();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\FTP\\Floor0"));
@@ -124,7 +125,7 @@ namespace Job.Tests.Impl
             var topFolders = new[] { "C:\\FTP\\Floor0" };
 
             SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
+            SetupCreateJobInstance();
             SetupSaveJobResultAsync();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\FTP\\Floor0"));
             filesProvider.Setup(x => x.Initialize(topFolders))
@@ -158,8 +159,8 @@ namespace Job.Tests.Impl
 
         private GarbageCollectorJob CreateJob(string configFileName = "GCTests.json")
         {
-            var config = GetConfig<GarbageCollectorConfig>(configFileName);
-            return new GarbageCollectorJob($"{group}.{triggerKey}", config, directoryHelper.Object, filesHelper.Object, filesProvider.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
+            var config = GetConfig(configFileName);
+            return new GarbageCollectorJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config }, directoryHelper.Object, filesHelper.Object, filesProvider.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
         }
     }
 }

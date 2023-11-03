@@ -8,14 +8,14 @@ namespace Hik.DataAccess
     [ExcludeFromCodeCoverage]
     public class DataContext : DbContext
     {
-        private readonly string ConnectionString;
+        IDbConfiguration Configuration;
         public DataContext(DbContextOptions<DataContext> options)
             : base(options) { }
 
         public DataContext(IDbConfiguration configuration)
             : base()
         {
-            ConnectionString = configuration.ConnectionString;
+            this.Configuration = configuration;
         }
 
         public DbSet<JobTrigger> JobTriggers { get; set; }
@@ -30,11 +30,11 @@ namespace Hik.DataAccess
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            if (!string.IsNullOrEmpty(ConnectionString))
+            if (!string.IsNullOrEmpty(this.Configuration.ConnectionString))
             {
-                optionsBuilder.UseSqlite(ConnectionString, options =>
+                optionsBuilder.UseSqlite(this.Configuration.ConnectionString, options =>
                 {
-                    options.CommandTimeout(30);
+                    options.CommandTimeout(this.Configuration.CommandTimeout);
                 });
 #if DEBUG
                 optionsBuilder.EnableSensitiveDataLogging();

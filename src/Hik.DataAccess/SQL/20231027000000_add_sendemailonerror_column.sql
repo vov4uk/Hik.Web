@@ -1,0 +1,5 @@
+﻿BEGIN TRANSACTION;
+
+ALTER TABLE JobTrigger ADD COLUMN SentEmailOnError BOOLEAN       DEFAULT (true);
+
+COMMIT

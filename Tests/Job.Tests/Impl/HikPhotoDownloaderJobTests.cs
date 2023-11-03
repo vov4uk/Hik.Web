@@ -22,9 +22,9 @@ namespace Job.Tests.Impl
         {
             var lastSync = new DateTime(2021, 5, 31, 0, 0, 0);
 
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
+            dbMock.Setup(x => x.GetJobTriggerAsync(group, triggerKey))
                 .ReturnsAsync(new JobTrigger() { LastSync = lastSync });
-            SetupCreateJobInstanceAsync();
+            SetupCreateJobInstance();
             SetupSaveJobResultAsync();
             dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
                 .Returns(Task.CompletedTask);
@@ -49,7 +49,7 @@ namespace Job.Tests.Impl
         public async Task ExecuteAsync_ExceptionFired_ExceptionHandled()
         {
             SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
+            SetupCreateJobInstance();
             SetupSaveJobResultAsync();
             SetupLogExceptionToAsync();
             emailMock.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -73,8 +73,8 @@ namespace Job.Tests.Impl
 
         private HikPhotoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
         {
-            var config = GetConfig<CameraConfig>(configFileName);
-            return new HikPhotoDownloaderJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
+            var config = GetConfig(configFileName);
+            return new HikPhotoDownloaderJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config } , serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
         }
     }
 }
