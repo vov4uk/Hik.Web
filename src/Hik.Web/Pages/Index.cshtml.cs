@@ -55,7 +55,7 @@ namespace Hik.Web.Pages
                     Name = trigger.Name,
                     Group = trigger.Group,
                     Environment = Program.Environment,
-                    AppConfigsPath = Program.AssemblyDirectory
+                    WorkingDirectory = Program.AssemblyDirectory
                 });
                 return RedirectToPage("./Index", new { msg = $"Activity {trigger.Group}.{trigger.Name} started" });
             }

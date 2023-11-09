@@ -25,6 +25,8 @@ namespace Hik.Web
 
         internal static string Environment { get; set; }
 
+        internal static DbConfiguration DBConfig { get; set; }
+
         public static async Task Main(string[] args)
         {
             Console.WriteLine($"AssemblyDirectory : {AssemblyDirectory}");
@@ -62,9 +64,9 @@ namespace Hik.Web
                 .WriteTo.Seq(loggerConfig.ServerUrl)
                 .CreateLogger();
 
-            var connection = config.GetSection("DBConfiguration").Get<DbConfiguration>();
+            DBConfig = config.GetSection("DBConfiguration").Get<DbConfiguration>();
 
-            await MigrationTools.RunMigration(connection);
+            await MigrationTools.RunMigration(DBConfig);
 
             var builder = CreateHostBuilder(isService, config);
 

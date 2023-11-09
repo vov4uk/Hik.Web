@@ -1,0 +1,34 @@
+﻿@using Hik.DTO.Config;
+@model ArchiveConfig
+
+<h2>Archive</h2>
+@await Html.PartialAsync("_BaseConfig.cshtml", Model)
+
+<div class="form-group">
+    <label asp-for="@Model.UnzipFiles" class="control-label"></label>
+    @Html.CheckBoxFor(m => m.UnzipFiles)
+</div>
+<div class="form-group">
+    <label asp-for="@Model.SourceFolder" class="control-label"></label>
+    <input asp-for="@Model.SourceFolder" class="form-control" />
+</div>
+<div class="form-group">
+    <label asp-for="@Model.FileNamePattern" class="control-label"></label>
+    <input asp-for="@Model.FileNamePattern" class="form-control" />
+</div>
+<div class="form-group">
+    <label asp-for="@Model.FileNameDateTimeFormat" class="control-label"></label>
+    <input asp-for="@Model.FileNameDateTimeFormat" class="form-control" />
+</div>
+<div class="form-group">
+    <label asp-for="@Model.SkipLast" class="control-label"></label>
+    <input asp-for="@Model.SkipLast" class="form-control" />
+</div>
+<div class="form-group">
+    <label asp-for="@Model.AbnormalFilesCount" class="control-label"></label>
+    <input asp-for="@Model.AbnormalFilesCount" class="form-control" />
+</div>
+<div class="form-group">
+    <label asp-for="@Model.AllowedFileExtentions" class="control-label"></label>
+    <input asp-for="@Model.AllowedFileExtentions" class="form-control" />
+</div>

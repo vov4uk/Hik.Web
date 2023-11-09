@@ -72,10 +72,6 @@ namespace Job.Impl
             }
         }
 
-        protected override void SetProcessingPeriod(HikJob job)
-        {
-        }
-
         private void DeleteFiles(IReadOnlyCollection<MediaFileDto> filesToDelete)
         {
             foreach (var file in filesToDelete)

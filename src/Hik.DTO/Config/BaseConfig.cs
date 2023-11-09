@@ -10,8 +10,6 @@ namespace Hik.DTO.Config
 
         public string DestinationFolder { get; set; }
 
-        public bool ShowInSearch { get; set; } = false;
-
         public override string ToString()
         {
             var sb = new StringBuilder();

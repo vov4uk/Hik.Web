@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using Autofac.Core;
-using FluentFTP;
 using Hik.Client.Abstraction;
 using Hik.Client.Abstraction.Services;
 using Hik.Client.FileProviders;
@@ -8,16 +7,12 @@ using Hik.Client.Infrastructure;
 using Hik.DataAccess;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
-using Hik.DTO.Config;
 using Hik.Helpers.Abstraction;
 using Job.Email;
-using Job.Extensions;
 using Job.Impl;
-using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Job
@@ -25,34 +20,9 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class JobFactory
     {
-        public static async Task<IJobProcess> GetJobAsync(Parameters parameters)
+        public static async Task<IJobProcess> GetJobAsync(Parameters parameters, DbConfiguration connection, ILogger logger)
         {
-            IConfigurationRoot appConfig = new ConfigurationBuilder()
-                .SetBasePath(parameters.ConfigPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{parameters.Environment}.json", optional: true, reloadOnChange: true)
-                .Build();
-
-            var loggerConfig = appConfig.GetSection("Serilog").Get<LoggerConfig>();
-            var connection = appConfig.GetSection("DBConfiguration").Get<DbConfiguration>();
-
             JobTrigger trigger;
-            ILogger logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .Enrich.FromLogContext()
-                .Enrich.WithProperty("TriggerKey", parameters.TriggerKey)
-                .Enrich.WithProperty("ActivityId", parameters.ActivityId)
-                .WriteTo.Console()
-                .WriteTo.File(
-                 Path.Combine(loggerConfig.DefaultLogsPath, $"{parameters.TriggerKey}_.txt"),
-                   rollingInterval: RollingInterval.Day,
-                   fileSizeLimitBytes: 10 * 1024 * 1024,
-                   retainedFileCountLimit: 2,
-                   rollOnFileSizeLimit: true,
-                   shared: true,
-                   flushToDiskInterval: TimeSpan.FromSeconds(1))
-                .WriteTo.Seq(loggerConfig.ServerUrl)
-                .CreateLogger();
 
             IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(connection);
             IHikDatabase db = new HikDatabase(unitOfWorkFactory, logger);

@@ -53,9 +53,5 @@ namespace Job.Impl
             var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
-
-        protected override void SetProcessingPeriod(HikJob job)
-        {
-        }
     }
 }

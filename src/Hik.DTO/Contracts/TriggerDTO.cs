@@ -1,4 +1,5 @@
 ﻿using CronExpressionDescriptor;
+using Hik.DTO.Config;
 using Hik.Quartz.Contracts.Xml;
 using Newtonsoft.Json;
 using Quartz;
@@ -9,6 +10,8 @@ namespace Hik.DTO.Contracts
 {
     public class TriggerDto
     {
+        BaseConfig config = null;
+
         private static readonly Options CronFormatOptions = new Options()
         {
             DayOfWeekStartIndexZero = false,
@@ -22,17 +25,41 @@ namespace Hik.DTO.Contracts
 
         public string Name { get; set; }
 
-        [JsonIgnore]
         [Display(Name = "Class name")]
         public string ClassName { get; set; }
 
         public string Description { get; set; }
 
         [Display(Name = "Cron")]
-        public string CronExpression { get; set; }
+        public string CronExpression { get; set; } = "";
 
         [Display(Name = "Config")]
         public string Config { get; set; }
+
+        [JsonIgnore]
+        public BaseConfig ConfigDto
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(Config) && config == null)
+                {
+                    switch (ClassName)
+                    {
+                        case "ArchiveJob": config = JsonConvert.DeserializeObject<ArchiveConfig>(Config); break;
+                        case "GarbageCollectorJob": config = JsonConvert.DeserializeObject<GarbageCollectorConfig>(Config); break;
+                        case "HikPhotoDownloaderJob": config = JsonConvert.DeserializeObject<CameraConfig>(Config); break;
+                        case "HikVideoDownloaderJob": config = JsonConvert.DeserializeObject<CameraConfig>(Config); break;
+                        default:
+                            config = null;  break;
+                    }
+                }
+                return config;
+            }
+            set
+            {
+               config = value;
+            }
+        }
 
         [JsonIgnore]
         public string ExpressionString => string.IsNullOrEmpty(CronExpression) ?
@@ -47,7 +74,7 @@ namespace Hik.DTO.Contracts
         public DateTime? NextRun
         { get
             {
-                return new CronExpression(this.CronExpression).GetTimeAfter(DateTimeOffset.UtcNow).Value.DateTime.ToLocalTime();
+                return string.IsNullOrEmpty(this.CronExpression) ? default : new CronExpression(this.CronExpression).GetTimeAfter(DateTimeOffset.UtcNow).Value.DateTime.ToLocalTime();
             }
         }
 

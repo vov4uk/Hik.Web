@@ -67,7 +67,7 @@ namespace Job.Tests.Impl
 
         protected void SetupCreateJobInstance()
         {
-            dbMock.Setup(x => x.CreateJobAsync(It.IsAny<int>()))
+            dbMock.Setup(x => x.CreateJobAsync(It.IsAny<HikJob>()))
                 .ReturnsAsync(new HikJob());
         }
 

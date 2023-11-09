@@ -1,0 +1,66 @@
+﻿@page
+@using Newtonsoft.Json;
+@model TestModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">
+       building Web apps with ASP.NET Core</a>.</p>
+    <br /><br />
+    <h3>List of Nominees</h3>
+    <form method="post">
+    <div id="selectTableContainer">
+        <partial name="_SelectTable" model="Model" />
+    </div>
+
+    <button type="button" id="addRowButton">Add Row</button>
+    <button type="submit">Submit</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("addRowButton").addEventListener("click", function () {
+            // Make an AJAX request to add a new row
+
+            // Capture the user's current selections
+            var selectedValues = [];
+            $('select').each(function () {
+                selectedValues.push($(this).val());
+            });
+            // Create a JavaScript object that combines both data
+            var requestData = {
+                YourSelectList: @Html.Raw(JsonConvert.SerializeObject(Model.YourSelectList)),
+                SelectedValues: selectedValues
+            };
+            // Serialize the request data
+            var serializedModel = JSON.stringify(requestData);
+
+            $.ajax({
+                url: '/Test?handler=AddRow&id=wtf',
+                method: "POST",
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    RequestVerificationToken:
+                        $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                data: JSON.stringify(serializedModel),
+                success: function (result) {
+                    $("#selectTableContainer").html(result);
+                },
+                error: function () {
+                    alert("Failed to add a new row.");
+                }
+            });
+        });
+
+        // Handle row deletion
+        $("#selectTableContainer").on("click", ".deleteRowButton", function () {
+            var row = $(this).closest("tr");
+            row.remove();
+        });
+    </script>
+}

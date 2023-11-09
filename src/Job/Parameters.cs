@@ -6,25 +6,23 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class Parameters
     {
-        public Guid ActivityId { get; set; }
+        public Guid ActivityId { get; private set; }
 
         public string TriggerKey { get; set; }
 
         public string Group { get; set; }
 
-        public string ConfigPath { get; set; }
-
         public string Environment { get; set; }
 
         public override string ToString()
-            => $"\"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigPath}\" \"{Environment}\"";
+            => $"\"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{Environment}\"";
 
-        public Parameters(string group, string triggerKey, string configPath, string environment)
+        public Parameters(string group, string triggerKey, string environment)
         {
             TriggerKey = triggerKey;
             Group = group;
-            ConfigPath = configPath;
             Environment = environment;
+            ActivityId = Guid.NewGuid();
         }
 
         private Parameters()
@@ -32,13 +30,12 @@ namespace Job
         }
 
         public static Parameters Parse(string[] args)
-            => new Parameters
+            => new()
             {
                 Group = args[0],
                 TriggerKey = args[1],
                 ActivityId = Guid.Parse(args[2]),
-                ConfigPath = args[3],
-                Environment = args[4]
+                Environment = args[3]
             };
     }
 }

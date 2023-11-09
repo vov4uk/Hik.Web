@@ -46,7 +46,7 @@ namespace Hik.Web.Tests
         [AutoData]
         public void OnPostKill_ActivityFound(string group, string name)
         {
-            RunningActivities.Add(new Activity(new Parameters(group, name,"", "")));
+            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null));
 
             var sut = new IndexModel(this._mediator.Object);
             var result = sut.OnPostKill($"{group}.{name}");

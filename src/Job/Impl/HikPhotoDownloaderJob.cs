@@ -33,12 +33,14 @@ namespace Job.Impl
             return files;
         }
 
-        protected override void SetProcessingPeriod(HikJob job)
+        protected override HikJob GetHikJob()
         {
+            var job = base.GetHikJob();
             var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
             logger.Information("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
-            JobInstance.PeriodStart = period.PeriodStart;
-            JobInstance.PeriodEnd = period.PeriodEnd;
+            job.PeriodStart = period.PeriodStart;
+            job.PeriodEnd = period.PeriodEnd;
+            return job;
         }
     }
 }

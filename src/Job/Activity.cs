@@ -1,4 +1,5 @@
-﻿using Job.Email;
+﻿using Hik.DataAccess;
+using Job.Email;
 using Serilog;
 using System;
 using System.Diagnostics;
@@ -10,6 +11,9 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class Activity
     {
+        private readonly DbConfiguration dbConfig;
+        private readonly string WorkingDirectory;
+
         public Parameters Parameters { get; private set; }
         public int ProcessId
         {
@@ -34,10 +38,11 @@ namespace Job
 
         private Process hostProcess = default;
 
-        public Activity(Parameters parameters)
+        public Activity(Parameters parameters, DbConfiguration dbConfig, string workingDirectory)
         {
-            parameters.ActivityId = Guid.NewGuid();
-            Parameters = parameters;
+            this.Parameters = parameters;
+            this.dbConfig = dbConfig;
+            this.WorkingDirectory = workingDirectory;
         }
 
         public async Task Start()
@@ -93,6 +98,7 @@ namespace Job
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
+                    WorkingDirectory = this.WorkingDirectory,
                 },
                 EnableRaisingEvents = true,
             };
@@ -117,7 +123,7 @@ namespace Job
 
         private async Task RunAsTask()
         {
-            var job = await JobFactory.GetJobAsync(Parameters);
+            var job = await JobFactory.GetJobAsync(Parameters, this.dbConfig, Log.Logger);
             try
             {
                 await job.ExecuteAsync();
@@ -136,7 +142,7 @@ namespace Job
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                Log.Error("HasExited : {hasExited} - {data} - {sender}", (sender as Process)?.HasExited, e.Data, sender );
+                Log.Error("{trigger} - {activityId} - {data}", Parameters.TriggerKey, Parameters.ActivityId, e.Data);
             }
         }
     }

@@ -42,22 +42,13 @@ namespace Job.Impl
 
         public async Task ExecuteAsync()
         {
-            var job = new HikJob
-            {
-                Started = DateTime.Now,
-                JobTriggerId = jobTrigger.Id,
-                Success = true
-            };
-
-            SetProcessingPeriod(job);
-
-            JobInstance = await db.CreateJobAsync(job);
-
-            jobTrigger.LastExecutedJob = JobInstance;
-            await db.UpdateJobTriggerAsync(jobTrigger);
-
             try
             {
+                JobInstance = await db.CreateJobAsync(GetHikJob());
+
+                jobTrigger.LastExecutedJob = JobInstance;
+                await db.UpdateJobTriggerAsync(jobTrigger);
+
                 if (!Directory.Exists(Config.DestinationFolder))
                 {
                     try
@@ -77,11 +68,8 @@ namespace Job.Impl
             }
             catch (DbUpdateException e)
             {
-                logger.Error("Trigger {trigger} ErrorMsg: {errorMsg}; Trace: {trace}", jobTrigger.TriggerKey, $"DB error : {e.Message}", e.ToStringDemystified());
-                if (jobTrigger.SentEmailOnError)
-                {
-                    email.Send(e.Message, jobTrigger.TriggerKey, null);
-                }
+                logger.Error("DbUpdateException. Trigger {trigger} ErrorMsg: {errorMsg}; Trace: {trace}", jobTrigger.TriggerKey, $"DB error : {e.Message}", e.ToStringDemystified());
+                HandleError(e.Message);
             }
             catch (Exception e)
             {
@@ -92,7 +80,15 @@ namespace Job.Impl
 
         protected abstract Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync();
 
-        protected abstract void SetProcessingPeriod(HikJob job);
+        protected virtual HikJob GetHikJob()
+        {
+            return new HikJob
+            {
+                Started = DateTime.Now,
+                JobTriggerId = jobTrigger.Id,
+                Success = true
+            };
+        }
 
         protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
@@ -102,7 +98,7 @@ namespace Job.Impl
             await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
 
-        private void HandleError(string error)
+        protected void HandleError(string error)
         {
             try
             {
@@ -111,6 +107,10 @@ namespace Job.Impl
                 Task.WaitAll(
                     db.LogExceptionToAsync(JobInstance.Id, error),
                     db.UpdateJobAsync(JobInstance));
+            }
+            catch (DbUpdateException e)
+            {
+                logger.Error("DbUpdateException. Trigger {trigger} ErrorMsg: {errorMsg}; Trace: {trace}", jobTrigger.TriggerKey, $"DB error : {e.Message}", e.ToStringDemystified());
             }
             catch (Exception e)
             {

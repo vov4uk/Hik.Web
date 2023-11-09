@@ -1,0 +1,11 @@
+﻿@using Hik.DTO.Config;
+@using Hik.DTO.Contracts;
+@model TriggerModel
+
+@await Html.PartialAsync("_Trigger.cshtml", Model)
+
+@{
+    var config = Model.Dto.ConfigDto as GarbageCollectorConfig;
+
+    @await Html.PartialAsync("_GCConfig.cshtml", config)
+}

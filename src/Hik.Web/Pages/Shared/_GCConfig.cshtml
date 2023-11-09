@@ -1,0 +1,28 @@
+﻿@using Hik.DTO.Config;
+@model GarbageCollectorConfig
+
+<h2>GC</h2>
+@await Html.PartialAsync("_BaseConfig.cshtml", Model)
+
+<div class="form-group">
+    <label asp-for="@Model.RetentionPeriodDays" class="control-label"></label>
+    <input asp-for="@Model.RetentionPeriodDays" class="form-control" />
+</div>
+<div class="form-group">
+    <label asp-for="@Model.FreeSpacePercentage" class="control-label"></label>
+    <input asp-for="@Model.FreeSpacePercentage" class="form-control" />
+</div>
+<div class="form-group">
+    <label asp-for="@Model.TopFolders" class="control-label"></label>
+    <input asp-for="@Model.TopFolders" class="form-control" />
+@*     @Html.TextAreaFor(model => model.TopFolders, new { @class = "form-control"}) *@
+</div>
+<div class="form-group">
+    <label asp-for="@Model.Triggers" class="control-label"></label>
+    <input asp-for="@Model.Triggers" class="form-control" />
+@*     @Html.TextAreaFor(model => model.Triggers, new { @class = "form-control"}) *@
+</div>
+<div class="form-group">
+    <label asp-for="@Model.FileExtention" class="control-label"></label>
+    <input asp-for="@Model.FileExtention" class="form-control" />
+</div>

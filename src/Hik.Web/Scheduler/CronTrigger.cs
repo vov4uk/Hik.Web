@@ -11,8 +11,8 @@ namespace Hik.Web.Scheduler
             var trigger = context.Trigger.Key.Name;
             var group = context.Trigger.Key.Group;
 
-            var parameters = new Parameters(group, trigger, Program.AssemblyDirectory, Program.Environment);
-            var activity = new Activity(parameters);
+            var parameters = new Parameters(group, trigger, Program.Environment);
+            var activity = new Activity(parameters, Program.DBConfig, Program.AssemblyDirectory);
             await activity.Start();
         }
     }
