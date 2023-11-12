@@ -49,6 +49,16 @@ namespace Hik.DataAccess
             return jobTrigger;
         }
 
+        public async Task<JobTrigger[]> GetJobTriggersAsync(int[] triggerIds)
+        {
+            using (var unitOfWork = this.factory.CreateUnitOfWork(Tracking.NoTracking))
+            {
+                var repo = unitOfWork.GetRepository<JobTrigger>();
+                var jobTriggers = await repo.FindManyAsync(x => triggerIds.Contains(x.Id));
+                return jobTriggers.ToArray();
+            }
+        }
+
         public async Task<HikJob> CreateJobAsync(HikJob job)
         {
             using (var uow = factory.CreateUnitOfWork(Tracking.NoTracking))
@@ -154,7 +164,7 @@ namespace Hik.DataAccess
             }
         }
 
-        public async Task DeleteObsoleteJobsAsync(string[] triggers, DateTime to)
+        public async Task DeleteObsoleteJobsAsync(int[] triggers, DateTime to)
         {
             using (var unitOfWork = factory.CreateUnitOfWork())
             {
@@ -164,9 +174,8 @@ namespace Hik.DataAccess
 
                 foreach (var trigger in triggers)
                 {
-                    var parts = trigger.Split(".");
                     logger.Information("Try cleanup {trigger}", trigger);
-                    var jobTrigger = await triggerRepo.FindByAsync(x => x.Group == parts[0] && x.TriggerKey == parts[1]);
+                    var jobTrigger = await triggerRepo.FindByAsync(x => x.Id == trigger);
                     if (jobTrigger != null)
                     {
                        logger.Information("{trigger} found, Id = {Id}, To = {to}", trigger, jobTrigger.Id, to);

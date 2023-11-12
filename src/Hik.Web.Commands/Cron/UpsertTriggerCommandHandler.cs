@@ -3,11 +3,12 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Serilog;
 
 namespace Hik.Web.Commands.Cron
 {
-    public class UpsertTriggerCommandHandler : IRequestHandler<UpsertTriggerCommand>
+    public class UpsertTriggerCommandHandler : IRequestHandler<UpsertTriggerCommand, int>
     {
         private readonly IUnitOfWorkFactory factory;
 
@@ -16,16 +17,17 @@ namespace Hik.Web.Commands.Cron
             this.factory = factory;
         }
 
-        async Task IRequestHandler<UpsertTriggerCommand>.Handle(UpsertTriggerCommand request, CancellationToken cancellationToken)
+        public async Task<int> Handle(UpsertTriggerCommand request, CancellationToken cancellationToken)
         {
             var timer = new Stopwatch();
+            JobTrigger updated = null;
+            EntityEntry<JobTrigger> newEntity = null;
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var triggerRepo = uow.GetRepository<JobTrigger>();
-                var modified = request.Trigger;
-
-                if (modified.Id != 0)
+                if (request.Trigger.Id != 0)
                 {
+                    var modified = request.Trigger;
                     timer.Restart();
                     var trigger = await triggerRepo.FindByAsync(x => x.Id == modified.Id);
                     timer.Stop();
@@ -42,37 +44,42 @@ namespace Hik.Web.Commands.Cron
                         trigger.ShowInSearch = modified.ShowInSearch;
                         triggerRepo.Update(trigger);
                     }
+
+                    updated = trigger;
                 }
                 else
                 {
+                    var added = request.Trigger;
                     timer.Restart();
-                    var trigger = await triggerRepo.FindByAsync(x => x.TriggerKey == modified.Name && x.Group == modified.Group);
+                    var trigger = await triggerRepo.FindByAsync(x => x.TriggerKey == added.Name && x.Group == added.Group);
                     timer.Stop();
                     Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "trigger", timer.ElapsedMilliseconds);
 
                     if (trigger == null)
                     {
-                        triggerRepo.Add(new JobTrigger
+                        newEntity = triggerRepo.Add(new JobTrigger
                         {
-                            TriggerKey = modified.Name,
-                            Group = modified.Group,
-                            Config = modified.Config,
-                            CronExpression = modified.CronExpression,
-                            Description = modified.Description,
-                            ClassName = modified.ClassName,
-                            IsEnabled = modified.IsEnabled,
-                            SentEmailOnError = modified.SentEmailOnError,
-                            ShowInSearch = modified.ShowInSearch,
+                            TriggerKey = added.Name,
+                            Group = added.Group,
+                            Config = added.Config,
+                            CronExpression = added.CronExpression,
+                            Description = added.Description,
+                            ClassName = added.ClassName,
+                            IsEnabled = added.IsEnabled,
+                            SentEmailOnError = added.SentEmailOnError,
+                            ShowInSearch = added.ShowInSearch,
                         });
+
                     }
                     else
                     {
-                        Log.Error($"Trigger {modified.Group}.{modified.Name} already exist");
+                        Log.Error($"Trigger {added.Group}.{added.Name} already exist");
                     }
                 }
 
-                 await uow.SaveChangesAsync();
+                await uow.SaveChangesAsync();
             }
+              return updated?.Id ?? newEntity.Entity.Id;
         }
     }
 }

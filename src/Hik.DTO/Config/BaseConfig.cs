@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Hik.DTO.Config
@@ -6,8 +7,10 @@ namespace Hik.DTO.Config
     public abstract class BaseConfig
     {
         [JsonProperty("JobTimeoutMinutes")]
+        [Display(Name = "Job timeout")]
         public int Timeout { get; set; } = 29;
 
+        [Display(Name = "Destination folder")]
         public string DestinationFolder { get; set; }
 
         public override string ToString()

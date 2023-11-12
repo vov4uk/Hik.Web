@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
 using Hik.Quartz.Contracts.Xml;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 
 namespace Hik.Web
 {
@@ -58,6 +60,9 @@ namespace Hik.Web
             services.AddAuthorization();
 #endif
             services.AddRazorPages();
+            services.AddFluentValidationAutoValidation();
+            services.AddFluentValidationClientsideAdapters();
+            services.AddValidatorsFromAssemblyContaining<Startup>();
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
             services.AddHttpLogging(options =>

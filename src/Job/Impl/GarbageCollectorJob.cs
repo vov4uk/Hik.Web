@@ -6,6 +6,7 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
 using Job.Email;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace Job.Impl
             this.configValidator = new GarbageCollectorConfigValidator();
         }
 
-        protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
+        protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
             IReadOnlyCollection<MediaFileDto> deleteFilesResult;
 
@@ -51,11 +52,13 @@ namespace Job.Impl
             }
             else
             {
-                deleteFilesResult = PersentageDelete(Config);
+                var triggers = await db.GetJobTriggersAsync(Config.Triggers);
+                var topFolders = triggers.Select(x => JsonConvert.DeserializeObject<BaseConfig>(x.Config).DestinationFolder).ToArray();
+                deleteFilesResult = PersentageDelete(Config, topFolders);
             }
 
             directoryHelper.DeleteEmptyDirs(Config.DestinationFolder);
-            return Task.FromResult(Result.Success(deleteFilesResult));
+            return Result.Success(deleteFilesResult);
         }
 
         protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
@@ -83,7 +86,7 @@ namespace Job.Impl
 #endif
             }
         }
-        private List<MediaFileDto> PersentageDelete(GarbageCollectorConfig gcConfig)
+        private List<MediaFileDto> PersentageDelete(GarbageCollectorConfig gcConfig, string[] topFolders)
         {
             List<MediaFileDto> deletedFiles = new();
             var destination = gcConfig.DestinationFolder;
@@ -98,7 +101,7 @@ namespace Job.Impl
 
                 if (freePercentage < gcConfig.FreeSpacePercentage)
                 {
-                    filesProvider.Initialize(gcConfig.TopFolders);
+                    filesProvider.Initialize(topFolders);
                     var filesToDelete = filesProvider.GetNextBatch(gcConfig.FileExtention);
                     if (!filesToDelete.Any())
                     {

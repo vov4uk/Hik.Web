@@ -50,12 +50,21 @@
                             <th>Email</th>
                             <th></th>
                             <th></th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var cron in jobTrigger)
                         {
                             var status = @cron.IsEnabled ? "" : "failed";
+                            string configType = "";
+                            switch (cron.ClassName)
+                            {
+                                case "GarbageCollectorJob": configType = "GC"; break;
+                                case "ArchiveJob": configType = "Archive"; break;
+                                default: configType = "Camera"; break;
+                            }
+
                             <tr data-status="@status" class="failed">
                                 <td>@cron.Id</td>
                                 <td><span title="@cron.ExpressionString">@cron.CronExpression</span></td>
@@ -68,6 +77,7 @@
                                     <span data-value="@cron.SentEmailOnError" class="checkmark"></span>
                                  </td>
                                 <td><a class="btn btn-primary" asp-page="./Trigger" asp-route-id="@cron.Id">Edit</a></td>
+                                <td><a class="btn btn-primary" asp-page="./Config/@configType" asp-route-id="@cron.Id">Config</a></td>
                                 <td>
                                     <form method="POST">
                                         <input type="submit" class="btn btn-primary" asp-page="/Index" asp-page-handler="Run" asp-route-id="@cron.Id" value="Start" />

@@ -18,12 +18,14 @@ namespace Hik.DataAccess.Abstractions
 
         Task<JobTrigger> GetJobTriggerAsync(string group, string key);
 
+        Task<JobTrigger[]> GetJobTriggersAsync(int[] triggerIds);
+
         Task<List<MediaFile>> SaveFilesAsync(HikJob job, IReadOnlyCollection<MediaFileDto> files);
 
         Task UpdateDailyStatisticsAsync(int jobTriggerId, IReadOnlyCollection<MediaFileDto> files);
 
         Task SaveDownloadHistoryFilesAsync(HikJob job, IReadOnlyCollection<MediaFile> files);
 
-        Task DeleteObsoleteJobsAsync(string[] triggers, DateTime to);
+        Task DeleteObsoleteJobsAsync(int[] triggers, DateTime to);
     }
 }
