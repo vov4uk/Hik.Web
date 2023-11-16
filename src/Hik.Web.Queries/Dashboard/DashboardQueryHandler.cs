@@ -43,7 +43,7 @@ namespace Hik.Web.Queries.Dashboard
                 timer.Stop();
                 Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "latestFiles", timer.ElapsedMilliseconds);
 
-                var dict = latestFiles.ToDictionary(p => p.JobTriggerId, p => p.Date);
+                var dict = latestFiles.ToDictionary(p => p.JobTriggerId, p => p.Date.AddSeconds(p.Duration ?? 0));
 
                 timer.Restart();
                 var latestFinishedJobs = await jobRepo.GetLatestGroupedBy(

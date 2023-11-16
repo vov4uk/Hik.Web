@@ -33,7 +33,7 @@ namespace Hik.Web.Commands.Cron
                     triggerRepo.Update(trigger);
                 }
 
-                await uow.SaveChangesAsync();
+                //uow.SaveChanges();
             }
         }
     }

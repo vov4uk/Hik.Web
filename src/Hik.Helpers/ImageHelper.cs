@@ -2,12 +2,12 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Reflection.Emit;
 using Hik.Helpers.Abstraction;
 
 
 namespace Hik.Helpers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
     public class ImageHelper : IImageHelper
     {
         private static byte[] DefaultPoster;

@@ -5,18 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hik.Web.Queries.Photo
 {
-    public class PhotoThumbnailQueryHandler : QueryHandler<PhotoThumbnailQuery>
+    public class VideoThumbnailQueryHandler : QueryHandler<VideoThumbnailQuery>
     {
         private readonly IUnitOfWorkFactory factory;
-        private readonly IImageHelper imageHelper;
+        private readonly IVideoHelper helper;
 
-        public PhotoThumbnailQueryHandler(IUnitOfWorkFactory factory, IImageHelper imageHelper)
+        public VideoThumbnailQueryHandler(IUnitOfWorkFactory factory, IVideoHelper helper)
         {
             this.factory = factory;
-            this.imageHelper = imageHelper;
+            this.helper = helper;
         }
 
-        protected override async Task<IHandlerResult> HandleAsync(PhotoThumbnailQuery request, CancellationToken cancellationToken)
+        protected override async Task<IHandlerResult> HandleAsync(VideoThumbnailQuery request, CancellationToken cancellationToken)
         {
             string path = null;
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
@@ -29,9 +29,9 @@ namespace Hik.Web.Queries.Photo
                 }
             }
 
-            byte[] bytes = imageHelper.GetThumbnail(path, 216, 122);
+            string bytes = await helper.GetThumbnailStringAsync(path, 216, 122);
 
-            return new PhotoThumbnailDto
+            return new VideoThumbnailDto
             {
                 Id = request.FileId,
                 Poster = bytes

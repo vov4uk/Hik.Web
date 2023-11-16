@@ -25,6 +25,7 @@ namespace Hik.Client.Service
 
         public override async Task<IReadOnlyCollection<MediaFileDto>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDto> remoteFiles, CancellationToken token)
         {
+            List<MediaFileDto> downloadedList = new List<MediaFileDto>();
             foreach (var photo in remoteFiles)
             {
                 DateTime start = DateTime.Now;
@@ -36,6 +37,7 @@ namespace Hik.Client.Service
                 {
                     photo.DownloadStarted = start;
                     photo.DownloadDuration = (int)(finish - start).TotalSeconds;
+                    downloadedList.Add(photo);
                     this.OnFileDownloaded(new FileDownloadedEventArgs(photo));
                 }
                 else
@@ -44,7 +46,7 @@ namespace Hik.Client.Service
                 }
             }
 
-            return remoteFiles;
+            return downloadedList;
         }
     }
 }

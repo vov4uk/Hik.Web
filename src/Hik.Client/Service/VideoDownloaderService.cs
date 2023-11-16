@@ -23,6 +23,7 @@ namespace Hik.Client.Service
         public override async Task<IReadOnlyCollection<MediaFileDto>> DownloadFilesFromClientAsync(IReadOnlyCollection<MediaFileDto> remoteFiles, CancellationToken token)
         {
             int j = 1;
+            List<MediaFileDto> downloadedList = new List<MediaFileDto>();
             foreach (var video in remoteFiles)
             {
                 ThrowIfCancellationRequested();
@@ -30,16 +31,18 @@ namespace Hik.Client.Service
                 bool downloaded = await DownloadRemoteVideoFileAsync(video, token);
                 if (downloaded)
                 {
+                    downloadedList.Add(video);
                     OnFileDownloaded(new FileDownloadedEventArgs(video));
                 }
             }
 
-            return remoteFiles;
+            return downloadedList;
         }
 
         public override async Task<IReadOnlyCollection<MediaFileDto>> GetRemoteFilesList(DateTime periodStart, DateTime periodEnd)
         {
-            return (await this.Client.GetFilesListAsync(periodStart, periodEnd)).SkipLast(1).ToList();
+            var list = await this.Client.GetFilesListAsync(periodStart, periodEnd);
+            return list.SkipLast(1).ToList();
         }
 
         private async Task<bool> DownloadRemoteVideoFileAsync(MediaFileDto file, CancellationToken token)

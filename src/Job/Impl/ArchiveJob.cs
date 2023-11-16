@@ -44,14 +44,12 @@ namespace Job.Impl
             var abnormalFilesCount = Config.AbnormalFilesCount;
             if (abnormalFilesCount > 0 && files.Count > abnormalFilesCount)
             {
-                email.Send($"{jobTrigger.ClassName}: {files.Count} taken. From {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(TimeFormat)}",
+                email.Send($"{jobTrigger.TriggerKey}: {files.Count} taken. From {JobInstance.PeriodStart?.ToString(DateTimeFormat)} to {JobInstance.PeriodEnd?.ToString(TimeFormat)}",
                     "EOM");
             }
 
+            db.SaveFiles(JobInstance, files);
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
-
-            var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
-            await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
         }
     }
 }

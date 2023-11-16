@@ -50,10 +50,8 @@
             SetupSaveJobResultAsync();
             dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), files))
                 .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .ReturnsAsync(new List<MediaFile>());
-            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
-                .Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.SaveFiles(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
+                .Returns(new List<MediaFile>());
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
                 .ReturnsAsync(files);
 
@@ -79,10 +77,8 @@
             SetupCreateJobInstance();
             SetupSaveJobResultAsync();
             SetupUpdateDailyStatisticsAsync(files);
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .ReturnsAsync(new List<MediaFile>());
-            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
-                .Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.SaveFiles(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
+                .Returns(new List<MediaFile>());
             emailMock.Setup(x => x.Send("Test.Key: 2 taken. From 0001-01-01 00:00:00 to 00:00:00", "EOM"))
                 .Verifiable();
             SetupExecuteAsync(files);
@@ -138,7 +134,7 @@
             SetupGetOrCreateJobTriggerAsync();
             SetupCreateJobInstance();
 
-            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>()))
+            dbMock.Setup(x => x.LogExceptionTo(It.IsAny<int>(), It.IsAny<string>()))
                 .Throws<Exception>();
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), DateTime.MinValue, DateTime.MaxValue))
@@ -180,10 +176,8 @@
             SetupGetOrCreateJobTriggerAsync();
             SetupCreateJobInstance();
             SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .ReturnsAsync(new List<MediaFile>());
-            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
-                .Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.SaveFiles(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
+                .Returns(new List<MediaFile>());
             SetupUpdateDailyStatisticsAsync(files);
 
             SetupExecuteAsync(files);

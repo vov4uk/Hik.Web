@@ -9,14 +9,17 @@ using System.Diagnostics.CodeAnalysis;
 namespace Hik.DataAccess.Data
 {
     [ExcludeFromCodeCoverage, Table(Tables.MediaFile)]
-    public class MediaFile : IEntity
+    public class MediaFile : IEntity, IAuditable
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey("JobTrigger")]
+        [ForeignKey("FK_MediaFile_JobTrigger_JobTriggerId")]
         public int JobTriggerId { get; set; }
+
+        [ForeignKey("FK_MediaFile_Job_JobId")]
+        public int JobId { get; set; }
 
         public string Name { get; set; }
 
@@ -28,13 +31,15 @@ namespace Hik.DataAccess.Data
 
         public int? Duration { get; set; }
 
+        public DateTime DownloadStarted { get; set; }
+
+        public int? DownloadDuration { get; set; }
+
         public long Size { get; set; }
 
         public JobTrigger JobTrigger { get; set; }
 
-        public virtual DownloadDuration DownloadDuration { get; set; }
-
-        public virtual DownloadHistory DownloadHistory { get; set; }
+        public HikJob Job { get; set; }
 
         public string GetPath()
         {

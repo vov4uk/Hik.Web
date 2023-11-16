@@ -19,7 +19,7 @@ namespace Job.Extensions
             sb.AppendLine(GetHtmlRow(nameof(job.PeriodStart), $"{job.PeriodStart} ({Hik.Client.Helpers.Utils.GetRelativeTime(job.PeriodStart)})"));
             sb.AppendLine(GetHtmlRow(nameof(job.PeriodEnd), $"{job.PeriodEnd} ({Hik.Client.Helpers.Utils.GetRelativeTime(job.PeriodEnd)})"));
             sb.AppendLine(GetHtmlRow(nameof(job.FilesCount), job.DownloadedFiles.Count.ToString()));
-            sb.AppendLine(GetHtmlRow("Latest", job.DownloadedFiles?.FindLast(x => true)?.MediaFile?.Date.ToString(CultureInfo.InvariantCulture)));
+            sb.AppendLine(GetHtmlRow("Latest", job.DownloadedFiles?.FindLast(x => true)?.Date.ToString(CultureInfo.InvariantCulture)));
             sb.AppendLine("</table>");
 
             return sb.ToString();

@@ -1,4 +1,5 @@
 ﻿using CronExpressionDescriptor;
+using FluentValidation;
 using Hik.DTO.Config;
 using Hik.Quartz.Contracts.Xml;
 using Newtonsoft.Json;
@@ -107,6 +108,18 @@ namespace Hik.DTO.Contracts
         public override string ToString()
         {
             return $"{Group}.{Name}";
+        }
+    }
+
+    public class TriggerDtoValidator : AbstractValidator<TriggerDto>
+    {
+        public TriggerDtoValidator()
+        {
+            RuleFor(x => x.Group).NotEmpty();
+            RuleFor(x => x.Name).NotEmpty();
+            RuleFor(x => x.ClassName).NotEmpty();
+            RuleFor(x => x.CronExpression).NotEmpty();
+            RuleFor(x => x.Description).NotEmpty();
         }
     }
 }

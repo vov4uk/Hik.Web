@@ -5,8 +5,9 @@ namespace Hik.Helpers
     public static class DictionaryExtensions
     {
         public static void SafeAdd<TKey, TValue>(this Dictionary<TKey, IList<TValue>> dict, TKey key, TValue value)
+            where TKey : notnull
         {
-            if (value != null)
+            if (dict != null && value != null)
             {
                 if (dict.ContainsKey(key))
                 {

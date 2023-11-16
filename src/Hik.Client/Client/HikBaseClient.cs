@@ -99,7 +99,7 @@ namespace Hik.Client
             if (session == null)
             {
                 session = hikApi.Login(config.Camera.IpAddress, config.Camera.PortNumber, config.Camera.UserName, config.Camera.Password);
-                logger.Information("Sucessfull login to {IpAdress}", config.Camera.IpAddress);
+                logger.Information("Successfully logged to {IpAddress}", config.Camera.IpAddress);
                 var status = hikApi.GetHddStatus(session.UserId);
 
                 logger.Information(status?.ToString());
@@ -120,16 +120,12 @@ namespace Hik.Client
 
         public void SyncTime()
         {
-            if (config.SyncTime)
+            var cameraTime = hikApi.GetTime(session.UserId);
+            var currentTime = DateTime.Now;
+            if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
             {
-                var cameraTime = hikApi.GetTime(session.UserId);
-                logger.Information("Camera time :{cameraTime}", cameraTime);
-                var currentTime = DateTime.Now;
-                if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
-                {
-                    hikApi.SetTime(currentTime, session.UserId);
-                    logger.Warning("Camera time updated :{currentTime}", currentTime);
-                }
+                hikApi.SetTime(currentTime, session.UserId);
+                logger.Warning("Camera time updated :from {cameraTime} to {currentTime}", cameraTime, currentTime);
             }
         }
 

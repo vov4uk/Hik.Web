@@ -7,6 +7,7 @@ using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
 using Job.Email;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -53,7 +54,7 @@ namespace Job.Impl
             else
             {
                 var triggers = await db.GetJobTriggersAsync(Config.Triggers);
-                var topFolders = triggers.Select(x => JsonConvert.DeserializeObject<BaseConfig>(x.Config).DestinationFolder).ToArray();
+                var topFolders = triggers.Select(x => JObject.Parse(x.Config).Value<string>("DestinationFolder")).ToArray();
                 deleteFilesResult = PersentageDelete(Config, topFolders);
             }
 

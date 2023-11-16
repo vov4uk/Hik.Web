@@ -28,10 +28,8 @@ namespace Job.Tests.Impl
             SetupSaveJobResultAsync();
             dbMock.Setup(x => x.UpdateDailyStatisticsAsync(It.IsAny<int>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
                 .Returns(Task.CompletedTask);
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .ReturnsAsync(new List<MediaFile>());
-            dbMock.Setup(x => x.SaveDownloadHistoryFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFile>>()))
-                .Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.SaveFiles(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
+                .Returns(new List<MediaFile>());
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), lastSync.AddMinutes(-1), It.IsAny<DateTime>()))
                 .ReturnsAsync(new List<MediaFileDto>() { new MediaFileDto() { Duration = 0, Name = "photo0.jpg" } });

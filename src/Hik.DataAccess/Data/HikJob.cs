@@ -38,6 +38,6 @@ namespace Hik.DataAccess.Data
 
         public virtual ExceptionLog ExceptionLog { get; set; }
 
-        public virtual List<DownloadHistory> DownloadedFiles { get; set; } = new List<DownloadHistory>();
+        public virtual List<MediaFile> DownloadedFiles { get; set; } = new List<MediaFile>();
     }
 }

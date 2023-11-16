@@ -50,26 +50,26 @@ namespace Job.Impl
             return job;
         }
 
-        private async void Downloader_VideoDownloaded(object sender, Hik.Client.Events.FileDownloadedEventArgs e)
-        {
-            JobInstance.FilesCount++;
-            JobInstance.LatestFileEndDate = e.File.Date.AddSeconds(e.File.Duration ?? 0);
-
-            try
-            {
-                var mediaFiles = await db.SaveFilesAsync(JobInstance, new[] { e.File });
-                await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
-            }
-            catch (Exception ex)
-            {
-                logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", ex.Message, ex.ToStringDemystified());
-                HandleError(ex.Message);
-            }
-        }
-
         protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
+        }
+
+        private void Downloader_VideoDownloaded(object sender, Hik.Client.Events.FileDownloadedEventArgs e)
+        {
+            try
+            {
+                JobInstance.FilesCount++;
+                JobInstance.LatestFileEndDate = e.File.Date.AddSeconds(e.File.Duration ?? 0);
+                db.UpdateJob(JobInstance);
+
+                db.SaveFile(JobInstance, e.File);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Downloader_VideoDownloaded: {errorMsg}; Trace: {trace}", GetFullMessage(ex), ex.ToStringDemystified());
+                HandleError(ex);
+            }
         }
     }
 }

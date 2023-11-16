@@ -61,14 +61,12 @@ namespace Job.Tests.Impl
 
         protected void SetupSaveJobResultAsync()
         {
-            dbMock.Setup(x => x.UpdateJobTriggerAsync(It.IsAny<JobTrigger>()))
-                .Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.UpdateJobTrigger(It.IsAny<JobTrigger>()));
         }
 
         protected void SetupCreateJobInstance()
         {
-            dbMock.Setup(x => x.CreateJobAsync(It.IsAny<HikJob>()))
-                .ReturnsAsync(new HikJob());
+            dbMock.Setup(x => x.CreateJob(It.IsAny<HikJob>()));
         }
 
         protected void SetupGetOrCreateJobTriggerAsync()
@@ -91,8 +89,7 @@ namespace Job.Tests.Impl
 
         protected void SetupLogExceptionToAsync()
         {
-            dbMock.Setup(x => x.LogExceptionToAsync(It.IsAny<int>(), It.IsAny<string>()))
-                .Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.LogExceptionTo(It.IsAny<int>(), It.IsAny<string>()));
         }
 
         protected static string GetConfig(string configFileName)

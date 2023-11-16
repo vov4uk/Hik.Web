@@ -3,18 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Hik.DataAccess.Abstractions
 {
     public interface IBaseRepository<T>
         where T : class, IEntity
     {
-        ValueTask<T> AddAsync(T entity);
-
-        EntityEntry<T> Add(T entity);
-
-        Task AddRangeAsync(IEnumerable<T> entities);
+        T Add(T entity);
 
         Task<List<T>> GetAllAsync();
 

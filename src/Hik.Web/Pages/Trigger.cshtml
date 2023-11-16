@@ -28,6 +28,7 @@
 <div class="row">
     <div class="col-md-4">
         <form method="post">
+            @Html.ValidationDiv()
 
             @if (!string.IsNullOrEmpty(Model.Dto.Name))
             {
@@ -40,7 +41,7 @@
             {
                 <div class="form-group">
                     <label asp-for="Dto.ClassName" class="control-label"></label>
-                    @Html.DropDownListFor(x => Model.Dto.ClassName, TriggerModel.JobTypesList, "", new { @class = "form-control"})
+                    @Html.DropDownListFor(x => Model.Dto.ClassName, TriggerModel.JobTypesList, "", new { @class = "form-control", @id = "classNameDropDown"})
                 </div>
                 <div class="form-group">
                     @Html.LabelFor(model => model.Dto.Group)
@@ -74,7 +75,7 @@
             </div>
             <div class="form-group">
                 @Html.LabelFor(model => model.Dto.Config)
-                @Html.TextAreaFor(model => model.Dto.Config, new { @class = "form-control", @rows = 20 })
+                @Html.TextAreaFor(model => model.Dto.Config, new { @class = "form-control", @rows = 20, @id = "configEditor" })
             </div>
 
             <div class="form-group">
@@ -83,3 +84,35 @@
         </form>
     </div>
 </div>
+
+@section Scripts
+{
+    <script type="text/javascript">
+
+
+        $("body").on("change", "#classNameDropDown", function () {
+            var t = $(this).find("option:selected").text();
+            var url = "/Trigger?classid=" + $(this).val() + "&handler=ConfigJson";
+
+            $.ajax({
+                url: url,
+                method: "GET",
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    RequestVerificationToken:
+                        $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                success: function (result) {
+                    $("#configEditor").html(result);
+                },
+                error: function () {
+                    alert("Failed.");
+                }
+            });
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

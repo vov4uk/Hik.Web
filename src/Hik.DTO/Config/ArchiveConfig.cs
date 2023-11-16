@@ -24,7 +24,7 @@ namespace Hik.DTO.Config
         public int AbnormalFilesCount { get; set; } = 0;
 
         [Display(Name = "Allowed file extentions")]
-        public string[] AllowedFileExtentions { get; set; }
+        public string AllowedFileExtentions { get; set; } =  "*.*;";
     }
 
     public class ArchiveConfigValidator : AbstractValidator<ArchiveConfig>

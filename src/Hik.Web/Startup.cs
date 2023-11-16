@@ -1,13 +1,10 @@
 using Autofac;
 using Autofac.Features.Variance;
 using Hik.DataAccess;
-using Hik.Helpers;
 using Hik.Quartz;
-using Hik.Quartz.Services;
 using Hik.Web.Commands;
 using Hik.Web.Queries;
 using Hik.Web.Queries.QuartzTriggers;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
@@ -24,12 +21,15 @@ using System.Collections.Generic;
 using Hik.Quartz.Contracts.Xml;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+#if USE_AUTHORIZATION
+using idunno.Authentication.Basic;
+using System.Security.Claims;
+#endif
 
 namespace Hik.Web
 {
     public class Startup
     {
-        private const string BasicAuthentication = "BasicAuthentication";
         private readonly IConfiguration configuration;
 
         public Startup(IConfiguration configuration)
@@ -54,9 +54,34 @@ namespace Hik.Web
                     options.SuppressInferBindingSourcesForParameters = true;
                 });
 #if USE_AUTHORIZATION
-            services.AddAuthentication(BasicAuthentication)
-                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>
-                (BasicAuthentication, null);
+
+            var allowedUsers = configuration.GetSection("BasicAuthentication:AllowedUsers").Get<string[]>();
+            services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
+            .AddBasic(options =>
+            {
+                options.Realm = "hikweb";
+                options.Events = new BasicAuthenticationEvents
+                {
+                    OnValidateCredentials = context =>
+                    {
+                        if (allowedUsers.Contains($"{context.Username}:{context.Password}"))
+                        {
+                            var claims = new[]
+                            {
+                                new Claim(ClaimTypes.NameIdentifier, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                                new Claim(ClaimTypes.Name, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                                new Claim(ClaimTypes.Role, "Admin")
+                            };
+
+                            context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                            context.Success();
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
             services.AddAuthorization();
 #endif
             services.AddRazorPages();
@@ -105,10 +130,9 @@ namespace Hik.Web
             app.UseEndpoints(endpoints =>
                 {
 #if USE_AUTHORIZATION
-                 endpoints.MapRazorPages()
-                    .RequireAuthorization();
+                 endpoints.MapRazorPages().RequireAuthorization();
 #else
-                    endpoints.MapRazorPages();
+                 endpoints.MapRazorPages();
 #endif
                 });
         }

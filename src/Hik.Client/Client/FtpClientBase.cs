@@ -59,7 +59,7 @@ namespace Hik.Client.Client
         {
             var profile = ftp.AutoConnect().GetAwaiter().GetResult();
             ftp.Connect(profile).GetAwaiter().GetResult();
-            logger.Information($"Successfully loggined to {deviceConfig.IpAddress}");
+            logger.Information("Successfully logged to {IpAddress}", deviceConfig.IpAddress);
             return true;
         }
 

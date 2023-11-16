@@ -10,11 +10,8 @@ namespace Hik.DataAccess.Abstractions
         IBaseRepository<TEntity> GetRepository<TEntity>()
             where TEntity : class, IEntity;
 
-        Task<int> SaveChangesAsync();
-
-        Task<int> SaveChangesAsync(HikJob job);
-
         void SaveChanges();
+        void SaveChanges(HikJob job);
     }
 
     public interface IUnitOfWork<out TContext> : IUnitOfWork where TContext : DbContext

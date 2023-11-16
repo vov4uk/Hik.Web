@@ -3,6 +3,7 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Moq;
 using Serilog;
 using System;
@@ -53,17 +54,16 @@ namespace Hik.DataAccess.Tests
         {
             ExceptionLog? actual = null;
             var exRepo = new Mock<IBaseRepository<ExceptionLog>>(MockBehavior.Strict);
-            exRepo.Setup(x => x.AddAsync(It.IsAny<ExceptionLog>()))
+            exRepo.Setup(x => x.Add(It.IsAny<ExceptionLog>()))
                 .Callback<ExceptionLog>((x) => actual = x)
-                .Returns(new ValueTask<ExceptionLog>(new ExceptionLog()));
+                .Returns(new ExceptionLog());
             uow.Setup(x => x.GetRepository<ExceptionLog>())
                 .Returns(exRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(0);
+            uow.Setup(x => x.SaveChanges());
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
-            await db.LogExceptionToAsync(jobId, message);
+            db.LogExceptionTo(jobId, message);
 
             uow.VerifyAll();
 
@@ -98,14 +98,13 @@ namespace Hik.DataAccess.Tests
                 .ReturnsAsync(default(JobTrigger));
 #pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 
-            jobRepo.Setup(x => x.AddAsync(It.IsAny<JobTrigger>()))
+            jobRepo.Setup(x => x.Add(It.IsAny<JobTrigger>()))
                 .Callback<JobTrigger>((x) => actual = x)
-                .Returns(new ValueTask<JobTrigger>(new JobTrigger()));
+                .Returns(new JobTrigger());
 
             uow.Setup(x => x.GetRepository<JobTrigger>())
                 .Returns(jobRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(0);
+            uow.Setup(x => x.SaveChanges());
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
@@ -182,23 +181,19 @@ namespace Hik.DataAccess.Tests
             };
 
             var fileRepo = new Mock<IBaseRepository<MediaFile>>(MockBehavior.Strict);
-            var downloadRepo = new Mock<IBaseRepository<DownloadDuration>>(MockBehavior.Strict);
 
-            fileRepo.Setup(x => x.AddRangeAsync(It.IsAny<List<MediaFile>>()))
-                .Returns(Task.CompletedTask);
-            downloadRepo.Setup(x => x.AddRangeAsync(It.IsAny<List<DownloadDuration>>()))
-                .Returns(Task.CompletedTask);
+
+            fileRepo.Setup(x => x.AddRange(It.IsAny<List<MediaFile>>()));
+
 
             uow.Setup(x => x.GetRepository<MediaFile>())
                 .Returns(fileRepo.Object);
-            uow.Setup(x => x.GetRepository<DownloadDuration>())
-                .Returns(downloadRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync(job))
-                .ReturnsAsync(0);
+
+            uow.Setup(x => x.SaveChanges(job));
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
-            var actual = await db.SaveFilesAsync(job, files);
+            var actual = db.SaveFiles(job, files);
             Assert.Equal(4, actual.Count);
             Assert.True(actual.TrueForAll(x => x.JobTriggerId == 31));
         }
@@ -218,48 +213,16 @@ namespace Hik.DataAccess.Tests
 
             var fileRepo = new Mock<IBaseRepository<MediaFile>>(MockBehavior.Strict);
 
-            fileRepo.Setup(x => x.AddRangeAsync(It.IsAny<List<MediaFile>>()))
-                .Returns(Task.CompletedTask);
+            fileRepo.Setup(x => x.AddRange(It.IsAny<List<MediaFile>>()));
 
             uow.Setup(x => x.GetRepository<MediaFile>())
                 .Returns(fileRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync(job))
-                .ReturnsAsync(0);
+            uow.Setup(x => x.SaveChanges(job));
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
-            var actual = await db.SaveFilesAsync(job, files);
+            var actual = db.SaveFiles(job, files);
             Assert.Equal(4, actual.Count);
-        }
-
-        [Fact]
-        public async Task SaveDownloadHistoryFilesAsync_FilesSaved()
-        {
-            HikJob job = new () { Started = new (2022, 01, 01), Success = true };
-
-            List<MediaFile> files = new List<MediaFile>()
-            {
-                new () { Date = new (2022, 01,01) },
-                new () { Date = new (2022, 01,11) },
-                new () { Date = new (2022, 01,21) },
-                new () { Date = new (2022, 01,31) },
-            };
-
-            var fileRepo = new Mock<IBaseRepository<DownloadHistory>>(MockBehavior.Strict);
-
-            fileRepo.Setup(x => x.AddRangeAsync(It.IsAny<List<DownloadHistory>>()))
-                .Returns(Task.CompletedTask);
-
-            uow.Setup(x => x.GetRepository<DownloadHistory>())
-                .Returns(fileRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync(job))
-                .ReturnsAsync(0);
-
-            var db = new HikDatabase(uowFactory.Object, logger.Object);
-
-            await db.SaveDownloadHistoryFilesAsync(job, files);
-
-            fileRepo.Verify(x => x.AddRangeAsync(It.IsAny<List<DownloadHistory>>()), Times.Once);
         }
 
         [Fact]
@@ -290,14 +253,12 @@ namespace Hik.DataAccess.Tests
             statRepo.Setup(x => x.FindManyAsync(It.IsAny<Expression<Func<DailyStatistic, bool>>>(), It.IsAny<Expression<Func<DailyStatistic, object>>[]>()))
                 .ReturnsAsync(statistics);
             statRepo.Setup(x => x.Update(It.IsAny<DailyStatistic>()));
-            statRepo.Setup(x => x.AddRangeAsync(It.IsAny<List<DailyStatistic>>()))
-                .Callback<IEnumerable<DailyStatistic>>(x => newStatistics.AddRange(x))
-                .Returns(Task.CompletedTask);
+            statRepo.Setup(x => x.AddRange(It.IsAny<List<DailyStatistic>>()))
+                .Callback<IEnumerable<DailyStatistic>>(x => newStatistics.AddRange(x));
 
             uow.Setup(x => x.GetRepository<DailyStatistic>())
                 .Returns(statRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(0);
+            uow.Setup(x => x.SaveChanges());
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
@@ -327,8 +288,7 @@ namespace Hik.DataAccess.Tests
                 .Returns(jobRepo.Object);
             uow.Setup(x => x.GetRepository<HikJob>())
                 .Returns(hikJobRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(0);
+            uow.Setup(x => x.SaveChanges());
 
 #pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
             jobRepo.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<JobTrigger, bool>>>(), It.IsAny<Expression<Func<JobTrigger, object>>[]>()))
@@ -337,7 +297,7 @@ namespace Hik.DataAccess.Tests
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
-            await db.DeleteObsoleteJobsAsync(new string[] {"Test.Job"}, DateTime.Now);
+            await db.DeleteObsoleteJobsAsync(new int[] {1}, DateTime.Now);
 
             fileRepo.Verify(x => x.RemoveRange(It.IsAny<IEnumerable<MediaFile>>()), Times.Never);
         }
@@ -354,8 +314,7 @@ namespace Hik.DataAccess.Tests
                 .Returns(jobRepo.Object);
             uow.Setup(x => x.GetRepository<HikJob>())
                 .Returns(hikJobRepo.Object);
-            uow.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(0);
+            uow.Setup(x => x.SaveChanges());
 
             jobRepo.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<JobTrigger, bool>>>(), It.IsAny<Expression<Func<JobTrigger, object>>[]>()))
                 .ReturnsAsync(new JobTrigger());
@@ -368,7 +327,7 @@ namespace Hik.DataAccess.Tests
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
-            await db.DeleteObsoleteJobsAsync(new string[] { "Test.Job" }, DateTime.Now);
+            await db.DeleteObsoleteJobsAsync(new int[] { 1 }, DateTime.Now);
 
             fileRepo.Verify(x => x.RemoveRange(It.IsAny<IEnumerable<MediaFile>>()), Times.Once);
             hikJobRepo.Verify(x => x.RemoveRange(It.IsAny<IEnumerable<HikJob>>()), Times.Once);

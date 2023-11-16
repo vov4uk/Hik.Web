@@ -76,7 +76,7 @@ namespace Hik.Client.Service
             this.regex = this.GetRegex(aConfig.FileNamePattern);
 
             var result = new List<MediaFileDto>();
-            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions).SkipLast(aConfig.UnzipFiles ? 0 : aConfig.SkipLast);
+            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions.Split(";")).SkipLast(aConfig.UnzipFiles ? 0 : aConfig.SkipLast);
 
             foreach (var filePath in allFiles)
             {
@@ -159,7 +159,7 @@ namespace Hik.Client.Service
 
         private List<string> ReverseStringFormat(string str)
         {
-            return this.regex.Match(str).Groups.Select(x => x.Value).ToList();
+            return this.regex.Match(str).Groups.Values.Select(x => x.Value).ToList();
         }
 
         private Regex GetRegex(string template)

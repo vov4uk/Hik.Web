@@ -7,12 +7,12 @@ using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Job.Impl
@@ -44,10 +44,10 @@ namespace Job.Impl
         {
             try
             {
-                JobInstance = await db.CreateJobAsync(GetHikJob());
+                JobInstance = db.CreateJob(GetHikJob());
 
                 jobTrigger.LastExecutedJob = JobInstance;
-                await db.UpdateJobTriggerAsync(jobTrigger);
+                db.UpdateJobTrigger(jobTrigger);
 
                 if (!Directory.Exists(Config.DestinationFolder))
                 {
@@ -64,17 +64,12 @@ namespace Job.Impl
                 this.configValidator.ValidateAndThrow(Config);
 
                 var result = await RunAsync();
-                await SaveResultsInternalAsync(result);
-            }
-            catch (DbUpdateException e)
-            {
-                logger.Error("DbUpdateException. Trigger {trigger} ErrorMsg: {errorMsg}; Trace: {trace}", jobTrigger.TriggerKey, $"DB error : {e.Message}", e.ToStringDemystified());
-                HandleError(e.Message);
+                await SaveResultsInternal(result);
             }
             catch (Exception e)
             {
-                logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", e.Message, e.ToStringDemystified());
-                HandleError(e.Message);
+                logger.Error("ExecuteAsync: {errorMsg}; Trace: {trace}", GetFullMessage(e), e.ToStringDemystified());
+                HandleError(e);
             }
         }
 
@@ -93,9 +88,13 @@ namespace Job.Impl
         protected virtual async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
             JobInstance.FilesCount = files.Count;
-            var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
+            db.SaveFiles(JobInstance, files);
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
-            await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
+        }
+
+        protected void HandleError(Exception e)
+        {
+            HandleError(GetFullMessage(e));
         }
 
         protected void HandleError(string error)
@@ -104,13 +103,9 @@ namespace Job.Impl
             {
                 this.JobInstance.Finished = DateTime.Now;
                 this.JobInstance.Success = false;
-                Task.WaitAll(
-                    db.LogExceptionToAsync(JobInstance.Id, error),
-                    db.UpdateJobAsync(JobInstance));
-            }
-            catch (DbUpdateException e)
-            {
-                logger.Error("DbUpdateException. Trigger {trigger} ErrorMsg: {errorMsg}; Trace: {trace}", jobTrigger.TriggerKey, $"DB error : {e.Message}", e.ToStringDemystified());
+
+                db.LogExceptionTo(JobInstance.Id, error);
+                db.UpdateJob(JobInstance);
             }
             catch (Exception e)
             {
@@ -124,11 +119,11 @@ namespace Job.Impl
             }
         }
 
-        private async Task SaveResultsInternalAsync(Result<IReadOnlyCollection<MediaFileDto>> result)
+        private async Task SaveResultsInternal(Result<IReadOnlyCollection<MediaFileDto>> result)
         {
             if (result.IsSuccess)
             {
-                if (result.Value?.Any() == true)
+                if (result.Value?.Count > 0)
                 {
                     await SaveResultsAsync(result.Value);
                 }
@@ -138,15 +133,22 @@ namespace Job.Impl
                 }
 
                 this.JobInstance.Finished = DateTime.Now;
-                await db.UpdateJobAsync(JobInstance);
+                db.UpdateJob(JobInstance);
 
                 jobTrigger.LastSync = JobInstance.LatestFileEndDate ?? JobInstance.Started;
-                await db.UpdateJobTriggerAsync(jobTrigger);
+                db.UpdateJobTrigger(jobTrigger);
             }
             else
             {
                 HandleError(result.Error);
             }
+        }
+
+        public static string GetFullMessage(Exception ex)
+        {
+            return ex.InnerException == null
+                 ? ex.Message
+                 : ex.Message + " --> " + GetFullMessage(ex.InnerException);
         }
     }
 }

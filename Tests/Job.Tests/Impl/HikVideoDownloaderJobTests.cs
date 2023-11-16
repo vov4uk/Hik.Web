@@ -24,12 +24,11 @@ namespace Job.Tests.Impl
 
             dbMock.Setup(x => x.GetJobTriggerAsync(group, triggerKey))
                 .ReturnsAsync(new JobTrigger() { LastSync = lastSync });
-            dbMock.Setup(x => x.UpdateJobAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
+            dbMock.Setup(x => x.UpdateJob(It.IsAny<HikJob>()));
             SetupCreateJobInstance();
             SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .ReturnsAsync(new List<MediaFile>());
+            dbMock.Setup(x => x.SaveFiles(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
+                .Returns(new List<MediaFile>());
 
             serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), lastSync.AddMinutes(-1), It.IsAny<DateTime>()))
                 .Callback(() =>

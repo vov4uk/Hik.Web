@@ -21,8 +21,6 @@ namespace Hik.DataAccess
         public DbSet<JobTrigger> JobTriggers { get; set; }
         public DbSet<HikJob> Jobs { get; set; }
         public DbSet<MediaFile> MediaFiles { get; set; }
-        public DbSet<DownloadHistory> DownloadHistory { get; set; }
-        public DbSet<DownloadDuration> DownloadDuration { get; set; }
         public DbSet<DailyStatistic> DailyStatistics { get; set; }
         public DbSet<ExceptionLog> Exceptions { get; set; }
         public DbSet<MigrationHistory> MigrationHistory { get; set; }
@@ -36,9 +34,7 @@ namespace Hik.DataAccess
                 {
                     options.CommandTimeout(this.Configuration.CommandTimeout);
                 });
-#if DEBUG
                 optionsBuilder.EnableSensitiveDataLogging();
-#endif
             }
         }
     }

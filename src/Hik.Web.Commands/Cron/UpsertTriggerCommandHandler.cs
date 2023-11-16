@@ -3,7 +3,6 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Serilog;
 
 namespace Hik.Web.Commands.Cron
@@ -21,7 +20,7 @@ namespace Hik.Web.Commands.Cron
         {
             var timer = new Stopwatch();
             JobTrigger updated = null;
-            EntityEntry<JobTrigger> newEntity = null;
+            JobTrigger newEntity = null;
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var triggerRepo = uow.GetRepository<JobTrigger>();
@@ -77,9 +76,9 @@ namespace Hik.Web.Commands.Cron
                     }
                 }
 
-                await uow.SaveChangesAsync();
+                //uow.SaveChanges();
             }
-              return updated?.Id ?? newEntity.Entity.Id;
+              return updated?.Id ?? newEntity.Id;
         }
     }
 }

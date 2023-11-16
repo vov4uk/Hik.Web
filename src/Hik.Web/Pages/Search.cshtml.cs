@@ -98,6 +98,12 @@ namespace Hik.Web.Pages
             return File(thumbnail.Poster, "image/jpg");
         }
 
+        public async Task<IActionResult> OnGetVideoThumbnail(int fileId)
+        {
+            var thumbnail = await mediator.Send(new VideoThumbnailQuery() { FileId = fileId }) as VideoThumbnailDto;
+            return File(Convert.FromBase64String(thumbnail.Poster.Replace("data:image/jpg;base64,","")), "image/jpg");
+        }
+
         private async Task<string> GetFilePath(int fileId)
         {
             var file = await mediator.Send(new FilePathQuery() { FileId = fileId }) as FilePathDto;

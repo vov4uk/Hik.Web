@@ -120,7 +120,6 @@ namespace Hik.Client.Service
                     if (config.SyncTime && Client is HikBaseClient hikClient)
                     {
                         hikClient.SyncTime();
-                        logger.Information($"Successfully sync time on {config.Camera.IpAddress}");
                     }
 
                     ThrowIfCancellationRequested();

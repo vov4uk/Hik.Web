@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
 namespace Hik.DataAccess
@@ -25,20 +26,24 @@ namespace Hik.DataAccess
             this.DbSet = this.Database.Set<TEntity>();
         }
 
-        public virtual async ValueTask<TEntity> AddAsync(TEntity entity)
+        public virtual TEntity Add(TEntity entity)
         {
-            var result = await DbSet.AddAsync(entity);
-            return result.Entity;
-        }
+            EntityEntry<TEntity> ent = null;
+            using (var transaction = Database.Database.BeginTransaction())
+            {
+                try
+                {
+                    ent = DbSet.Add(entity);
+                    Database.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.Message);
+                }
+            }
 
-        public virtual EntityEntry<TEntity> Add(TEntity entity)
-        {
-            return DbSet.Add(entity);
-        }
-
-        public virtual Task AddRangeAsync(IEnumerable<TEntity> entities)
-        {
-            return DbSet.AddRangeAsync(entities);
+            return ent?.Entity;
         }
 
         public virtual Task<List<TEntity>> GetAllAsync()
@@ -189,8 +194,19 @@ namespace Hik.DataAccess
 
         public void Update(TEntity entity)
         {
-            DbSet.Attach(entity);
-            Database.Entry(entity).State = EntityState.Modified;
+            using (var transaction = Database.Database.BeginTransaction())
+            {
+                try
+                {
+                    DbSet.Update(entity);
+                    Database.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.Message);
+                }
+            }
         }
 
         public void Remove(params object[] keys)

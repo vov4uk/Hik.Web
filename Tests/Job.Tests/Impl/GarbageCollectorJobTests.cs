@@ -59,7 +59,7 @@ namespace Job.Tests.Impl
             SetupCreateJobInstance();
             SetupSaveJobResultAsync();
             SetupUpdateDailyStatisticsAsync();
-            dbMock.Setup(x => x.DeleteObsoleteJobsAsync(It.IsAny<string[]>(), It.IsAny<DateTime>()))
+            dbMock.Setup(x => x.DeleteObsoleteJobsAsync(It.IsAny<int[]>(), It.IsAny<DateTime>()))
                 .Returns(Task.CompletedTask);
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\Junk"));
             filesProvider.Setup(x => x.Initialize(topFolders))

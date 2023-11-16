@@ -30,7 +30,7 @@ namespace Hik.Web.Pages
         {
             ResponseMsg = msg;
             Dto = await _mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
-            Triggers = Dto.Triggers.GroupBy(x => x.ClassName).ToDictionary(k => k.Key, v => v.ToList());
+            Triggers = Dto.Triggers.Where(x => !string.IsNullOrEmpty(x.ClassName)).GroupBy(x => x.ClassName).ToDictionary(k => k.Key, v => v.ToList());
             return Page();
         }
 

@@ -27,23 +27,20 @@ namespace Hik.Web.Queries
                 if (job != null)
                 {
                     var filesRepo = uow.GetRepository<MediaFile>();
-                    var downloadRepo = uow.GetRepository<DownloadHistory>();
 
-                    var totalItems = await downloadRepo.CountAsync(x => x.JobId == query.JobId);
+                    var totalItems = await filesRepo.CountAsync(x => x.JobId == query.JobId);
 
                     var files = await filesRepo.FindManyByDescAsync(
-                        x => (x.DownloadHistory == null ? 0 : x.DownloadHistory.JobId) == query.JobId,
+                        x => x.JobId == query.JobId,
                         x => x.Id,
                         Math.Max(0, query.CurrentPage - 1) * query.PageSize,
-                        query.PageSize,
-                        x => x.DownloadHistory,
-                        x => x.DownloadDuration);
+                        query.PageSize);
 
                     return new JobDetailsDto()
                     {
                         Job = HikDatabase.Mapper.Map<HikJob, HikJobDto>(job),
                         TotalItems = totalItems,
-                        Items = files.OrderBy(x => x.Date).ToList().ConvertAll(x => HikDatabase.Mapper.Map <MediaFile, MediaFileDto>(x)),
+                        Items = files.OrderBy(x => x.Date).ToList().ConvertAll(HikDatabase.Mapper.Map <MediaFile, MediaFileDto>),
                     };
                 }
 
