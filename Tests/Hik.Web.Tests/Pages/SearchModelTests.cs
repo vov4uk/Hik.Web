@@ -160,5 +160,4 @@ namespace Hik.Web.Tests.Pages
             Assert.NotNull(file.FileStream);
         }
     }
-
 }

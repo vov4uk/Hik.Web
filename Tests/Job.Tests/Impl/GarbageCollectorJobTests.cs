@@ -31,9 +31,8 @@ namespace Job.Tests.Impl
         {
             var topFolders = new[] { "C:\\Junk" };
 
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstance();
-            SetupSaveJobResultAsync();
+            SetupCreateJob();
+            SetupUpdateJobTrigger();
             SetupUpdateDailyStatisticsAsync();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\Junk"));
             filesProvider.Setup(x => x.Initialize(topFolders))
@@ -55,9 +54,8 @@ namespace Job.Tests.Impl
         {
             var topFolders = new[] { "C:\\Junk" };
 
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstance();
-            SetupSaveJobResultAsync();
+            SetupCreateJob();
+            SetupUpdateJobTrigger();
             SetupUpdateDailyStatisticsAsync();
             dbMock.Setup(x => x.DeleteObsoleteJobsAsync(It.IsAny<int[]>(), It.IsAny<DateTime>()))
                 .Returns(Task.CompletedTask);
@@ -87,13 +85,12 @@ namespace Job.Tests.Impl
         [Fact]
         public async Task RunAsync_PersentageDelete_GetFilesToDelete2Times()
         {
-            var topFolders = new[] { "C:\\FTP\\Floor0" };
+            var topFolders = new[] { "G:\\Cloud" };
 
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstance();
-            SetupSaveJobResultAsync();
+            SetupCreateJob();
+            SetupUpdateJobTrigger();
             SetupUpdateDailyStatisticsAsync();
-            directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\FTP\\Floor0"));
+            directoryHelper.Setup(x => x.DeleteEmptyDirs("G:\\Cloud"));
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
             filesHelper.Setup(x => x.FileSize(It.IsAny<string>()))
@@ -111,6 +108,8 @@ namespace Job.Tests.Impl
                 .Returns(new List<MediaFileDto>() { new MediaFileDto() { Date = new DateTime(2022, 01,01)} })
                 .Verifiable();
 
+            dbMock.Setup(x => x.GetJobTriggersAsync(It.IsAny<int[]>())).ReturnsAsync(new[] { new JobTrigger() {Config = GetConfig("HikVideoTests.json") } } );
+
             var job = CreateJob();
             await job.ExecuteAsync();
             filesProvider.VerifyAll();
@@ -122,12 +121,11 @@ namespace Job.Tests.Impl
         [Fact]
         public async Task RunAsync_PersentageDelete_NoFilesFound()
         {
-            var topFolders = new[] { "C:\\FTP\\Floor0" };
+            var topFolders = new[] { "G:\\Cloud" };
 
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstance();
-            SetupSaveJobResultAsync();
-            directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\FTP\\Floor0"));
+            SetupCreateJob();
+            SetupUpdateJobTrigger();
+            directoryHelper.Setup(x => x.DeleteEmptyDirs("G:\\Cloud"));
             filesProvider.Setup(x => x.Initialize(topFolders))
                 .Verifiable();
 
@@ -141,6 +139,8 @@ namespace Job.Tests.Impl
             filesProvider.Setup(x => x.GetNextBatch(It.IsAny<string>(), 100))
                 .Returns(new List<MediaFileDto>())
                 .Verifiable();
+
+            dbMock.Setup(x => x.GetJobTriggersAsync(It.IsAny<int[]>())).ReturnsAsync(new[] { new JobTrigger() { Config = GetConfig("HikVideoTests.json") } });
 
             var job = CreateJob();
             await job.ExecuteAsync();

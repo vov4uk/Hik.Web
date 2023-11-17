@@ -75,10 +75,9 @@ namespace Hik.Web.Commands.Cron
                         Log.Error($"Trigger {added.Group}.{added.Name} already exist");
                     }
                 }
-
-                //uow.SaveChanges();
             }
-              return updated?.Id ?? newEntity.Id;
+
+            return updated?.Id ?? newEntity.Id;
         }
     }
 }

@@ -1,9 +1,9 @@
 {
-  "DestinationFolder": "C:\\FTP\\Floor0",
+  "DestinationFolder": "G:\\Cloud",
   "FreeSpacePercentage": 3,
   "BatchSize": 200,
-  "TopFolders": [
-    "C:\\FTP\\Floor0"
+  "Triggers": [
+    1
   ],
   "FileExtention": "*.log"
 }

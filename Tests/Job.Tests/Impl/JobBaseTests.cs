@@ -59,20 +59,20 @@ namespace Job.Tests.Impl
             loggerMock = logger.Object;
         }
 
-        protected void SetupSaveJobResultAsync()
+        protected void SetupUpdateJobTrigger()
         {
             dbMock.Setup(x => x.UpdateJobTrigger(It.IsAny<JobTrigger>()));
         }
 
-        protected void SetupCreateJobInstance()
+        protected void SetupUpdateJob()
         {
-            dbMock.Setup(x => x.CreateJob(It.IsAny<HikJob>()));
+            dbMock.Setup(x => x.UpdateJob(It.IsAny<HikJob>()));
         }
 
-        protected void SetupGetOrCreateJobTriggerAsync()
+        protected void SetupCreateJob()
         {
-            dbMock.Setup(x => x.GetJobTriggerAsync(group, triggerKey))
-                .ReturnsAsync(new JobTrigger());
+            dbMock.Setup(x => x.CreateJob(It.IsAny<HikJob>()))
+                .Returns(new HikJob() { PeriodEnd = DateTime.MaxValue, PeriodStart = DateTime.MinValue });
         }
 
         protected void SetupUpdateDailyStatisticsAsync(List<MediaFileDto> files)

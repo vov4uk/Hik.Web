@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Linq;
 using FluentValidation;
 
@@ -25,7 +24,7 @@ namespace Hik.DTO.Config
         public GarbageCollectorConfigValidator()
         {
             RuleFor(x => x.FileExtention).NotEmpty();
-            RuleFor(x => x.DestinationFolder).Must(x => Directory.Exists(x));
+            RuleFor(x => x.DestinationFolder).NotEmpty();
             RuleFor(x => x).Custom((x, context) =>
             {
                 if (x.FreeSpacePercentage > 0 && x.RetentionPeriodDays > 0)

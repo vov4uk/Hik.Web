@@ -6,7 +6,6 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
 using Job.Email;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using System;

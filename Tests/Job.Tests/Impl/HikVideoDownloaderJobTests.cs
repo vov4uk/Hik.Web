@@ -20,17 +20,12 @@ namespace Job.Tests.Impl
         [Fact]
         public async Task ExecuteAsync_FileDownloaded_SaveFilesAsync()
         {
-            var lastSync = new DateTime(2021, 5, 31, 0, 0, 0);
-
-            dbMock.Setup(x => x.GetJobTriggerAsync(group, triggerKey))
-                .ReturnsAsync(new JobTrigger() { LastSync = lastSync });
             dbMock.Setup(x => x.UpdateJob(It.IsAny<HikJob>()));
-            SetupCreateJobInstance();
-            SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.SaveFiles(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .Returns(new List<MediaFile>());
+            SetupCreateJob();
+            SetupUpdateJobTrigger();
+            dbMock.Setup(x => x.SaveFile(It.IsAny<HikJob>(), It.IsAny<MediaFileDto>()));
 
-            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), lastSync.AddMinutes(-1), It.IsAny<DateTime>()))
+            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
                 .Callback(() =>
                 {
                     this.serviceMock.Raise(mock => mock.FileDownloaded += null,
@@ -52,9 +47,8 @@ namespace Job.Tests.Impl
         [Fact]
         public async Task ExecuteAsync_ExceptionFired_ExceptionHandled()
         {
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstance();
-            SetupSaveJobResultAsync();
+            SetupCreateJob();
+            SetupUpdateJobTrigger();
             SetupLogExceptionToAsync();
             emailMock.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Verifiable();
@@ -78,7 +72,7 @@ namespace Job.Tests.Impl
         private HikVideoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
         {
             var config = GetConfig(configFileName);
-            return new HikVideoDownloaderJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock );
+            return new HikVideoDownloaderJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config, SentEmailOnError = true }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock );
         }
 
     }

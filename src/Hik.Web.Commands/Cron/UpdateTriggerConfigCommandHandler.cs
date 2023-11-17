@@ -32,8 +32,6 @@ namespace Hik.Web.Commands.Cron
                     trigger.Config = request.JsonConfig;
                     triggerRepo.Update(trigger);
                 }
-
-                //uow.SaveChanges();
             }
         }
     }

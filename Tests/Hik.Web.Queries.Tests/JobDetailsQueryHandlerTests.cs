@@ -55,6 +55,8 @@ namespace Hik.Web.Queries.Test
                     new(){ Id = 15, JobTriggerId = 1, Date = new(2022, 01, 02), Name = "File5.mp4", Size = 10, Path = "C:\\"},
                     new(){ Id = 16, JobTriggerId = 1, Date = new(2022, 01, 03), Name = "File6.mp4", Size = 10, Path = "C:\\"},
                 });
+            filesRepoMock.Setup(x => x.CountAsync(It.IsAny<Expression<Func<MediaFile, bool>>>()))
+                .ReturnsAsync(100);
 
             var handler = new JobDetailsQueryHandler(uowFactoryMock.Object);
             var result = await handler.Handle(request, CancellationToken.None);

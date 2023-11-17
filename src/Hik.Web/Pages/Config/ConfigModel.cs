@@ -42,5 +42,4 @@ namespace Hik.Web.Pages.Config
             return RedirectToPage("/Scheduler", new { msg = "Changes saved. Take effect on next job run" });
         }
     }
-
 }

@@ -1,5 +1,4 @@
-﻿using Hik.Quartz.Contracts;
-using Hik.Quartz.Contracts.Options;
+﻿using Hik.Quartz.Contracts.Options;
 using Hik.Quartz.Contracts.Xml;
 using Hik.Quartz.Extensions;
 using Microsoft.Extensions.Configuration;
@@ -41,8 +40,11 @@ namespace Hik.Quartz
 
         public static void InitializeJobs(IConfiguration configuration, IReadOnlyCollection<Cron> triggers)
         {
-            var options = new QuartzOption(configuration);
-            GenerateQuartzXml(options.Plugin.JobInitializer.FileNames, triggers);
+            if (configuration != null)
+            {
+                var options = new QuartzOption(configuration);
+                GenerateQuartzXml(options.Plugin.JobInitializer.FileNames, triggers);
+            }
         }
 
         private static void GenerateQuartzXml(string xmlFilePath, IReadOnlyCollection<Cron> triggers)

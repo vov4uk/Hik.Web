@@ -1,5 +1,4 @@
-﻿using AutoFixture.Xunit2;
-using Hik.DataAccess.Abstractions;
+﻿using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.Web.Queries.QuartzTriggers;
 using Microsoft.EntityFrameworkCore;
@@ -64,11 +63,11 @@ namespace Hik.Web.Queries.Test
             var dto = (QuartzTriggersDto)result;
             Assert.NotEmpty(dto.Triggers);
         }
-        
+
         [Fact]
         public async Task HandleAsync_NotActiveOnlyIncludeLastJob_ReturnNull()
         {
-            QuartzTriggersQuery request = new QuartzTriggersQuery() { ActiveOnly = true, IncludeLastJob = true };
+            QuartzTriggersQuery request = new QuartzTriggersQuery() { ActiveOnly = false, IncludeLastJob = true };
 
             triggerRepoMock.Setup(x => x.GetAll(x => x.LastExecutedJob))
                 .Returns(new List<JobTrigger> { new JobTrigger() }.AsQueryable());
@@ -84,7 +83,7 @@ namespace Hik.Web.Queries.Test
         [Fact]
         public async Task HandleAsync_NotActiveOnlyNotIncludeLastJob_ReturnNull()
         {
-            QuartzTriggersQuery request = new QuartzTriggersQuery() { ActiveOnly = true, IncludeLastJob = false };
+            QuartzTriggersQuery request = new QuartzTriggersQuery() { ActiveOnly = false, IncludeLastJob = false };
 
             triggerRepoMock.Setup(x => x.GetAllAsync())
                 .ReturnsAsync(new List<JobTrigger> { new JobTrigger() });

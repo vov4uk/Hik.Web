@@ -7,5 +7,5 @@
   "AbnormalFilesCount": 500,
   "SentEmailOnError": false,
   "FileNamePattern": "{}",
-  "AllowedFileExtentions": [".ini"]
+  "AllowedFileExtentions": ".ini"
 }
