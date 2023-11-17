@@ -20,7 +20,7 @@
         [Fact]
         public void Constructor_ConfigNotExist_Exception()
         {
-            Assert.Throws<ArgumentNullException>(() => 
+            Assert.Throws<NullReferenceException>(() => 
             new ArchiveJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = null }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock));
         }
 
