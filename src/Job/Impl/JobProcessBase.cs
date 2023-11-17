@@ -30,7 +30,7 @@ namespace Job.Impl
             this.logger = logger;
             this.db = db;
             this.email = email;
-            Config = HikConfigExtensions.GetConfig<T>(trigger.Config) ?? throw new ArgumentNullException(nameof(trigger.Config));
+            Config = HikConfigExtensions.GetConfig<T>(trigger.Config);
             logger.Information("Config {config}", Config.ToString());
         }
 

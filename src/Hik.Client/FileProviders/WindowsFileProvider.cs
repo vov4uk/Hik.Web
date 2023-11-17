@@ -15,6 +15,7 @@ namespace Hik.Client.FileProviders
         protected readonly ILogger logger;
 
         private const string DatePattern = "\\d+\\-\\d+\\\\\\d+\\\\\\d+";
+        private static readonly string[] Extentions = new[] { ".*" };
         private readonly IFilesHelper filesHelper;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IVideoHelper videoHelper;
@@ -35,8 +36,6 @@ namespace Hik.Client.FileProviders
         }
 
         public bool IsInitialized => isInitialized;
-
-        private static readonly string[] extentions = new[] { ".*" };
 
         public void Initialize(string[] directories)
         {
@@ -100,7 +99,7 @@ namespace Hik.Client.FileProviders
             {
                 foreach (var dir in value)
                 {
-                    var localFiles = directoryHelper.EnumerateFiles(dir, extentions);
+                    var localFiles = directoryHelper.EnumerateFiles(dir, Extentions);
                     foreach (var file in localFiles)
                     {
                         var size = filesHelper.FileSize(file);

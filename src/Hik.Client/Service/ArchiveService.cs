@@ -17,11 +17,11 @@ namespace Hik.Client.Service
 {
     public class ArchiveService : RecurrentJobBase, IArchiveService
     {
+        private static readonly string[] Extentions = new[] { ".zip" };
         private readonly IFilesHelper filesHelper;
         private readonly IVideoHelper videoHelper;
         private readonly IImageHelper imageHelper;
         private Regex regex;
-        private static readonly string[] extentions = new[] { ".zip" };
 
         public ArchiveService(
             IDirectoryHelper directoryHelper,
@@ -47,7 +47,7 @@ namespace Hik.Client.Service
 
             if (aConfig.UnzipFiles)
             {
-                var allZips = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, extentions).SkipLast(aConfig.SkipLast);
+                var allZips = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, Extentions).SkipLast(aConfig.SkipLast);
                 foreach (var zip in allZips)
                 {
                     try
