@@ -36,7 +36,7 @@ namespace Hik.Web.Queries.Test
             var expected = new byte[2] { 0 ,1 };
             repoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>[]>()))
                             .ReturnsAsync(new MediaFile() { Name = "File", Id = 2, Path = "c:\\file.jpg", Duration = 100, Date = new(2022, 01, 01) });
-            imgMock.Setup(x => x.GetThumbnail(It.IsAny<string>(), 216, 122)).Returns([0, 1]);
+            imgMock.Setup(x => x.GetThumbnail(It.IsAny<string>(), 216, 122)).Returns(expected);
 
             var handler = new PhotoThumbnailQueryHandler(uowFactoryMock.Object, imgMock.Object);
             var result = await handler.Handle(request, CancellationToken.None);
