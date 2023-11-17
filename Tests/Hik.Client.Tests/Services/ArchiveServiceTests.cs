@@ -96,66 +96,65 @@ namespace Hik.Client.Tests.Services
             this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
         }
 
-        //[Theory]
-        //[InlineData("192.168.0.65_01_20210224210928654_MOTION_DETECTION.jpg", 60, "20210224210928654",
-        //    "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928_211028.jpg")]
-        //[InlineData("192.168.0.67_20210207230537_20210224_220227_0.mp4", 60, "20210224_220227",
-        //    "192.168.0.67_{1}_{2}_0", "yyyyMMdd_HHmmss", "C:\\2021-02\\24\\22\\20210224_220227_220327.mp4")]
-        //public async Task ExecuteAsync_FilesFound_ProperFilesStored(
-        //    string sourceFileName,
-        //    int duration,
-        //    string date,
-        //    string fileNamePattern,
-        //    string fileNameDateTimeFormat,
-        //    string targetFile)
-        //{
-        //    var config = new ArchiveConfig
-        //    {
-        //        DestinationFolder = "C:\\",
-        //        SourceFolder = "E:\\",
-        //        Alias = "test",
-        //        SkipLast = 0,
-        //        FileNameDateTimeFormat = fileNameDateTimeFormat,
-        //        FileNamePattern = fileNamePattern
-        //    };
+        [Theory]
+        [InlineData("192.168.0.65_01_20210224210928654_MOTION_DETECTION.jpg", 60, "20210224210928654",
+            "192.168.0.65_01_{1}_{2}", "yyyyMMddHHmmssfff", "C:\\2021-02\\24\\21\\20210224_210928_211028.jpg")]
+        [InlineData("192.168.0.67_20210207230537_20210224_220227_0.mp4", 60, "20210224_220227",
+            "192.168.0.67_{1}_{2}_0", "yyyyMMdd_HHmmss", "C:\\2021-02\\24\\22\\20210224_220227_220327.mp4")]
+        public async Task ExecuteAsync_FilesFound_ProperFilesStored(
+            string sourceFileName,
+            int duration,
+            string date,
+            string fileNamePattern,
+            string fileNameDateTimeFormat,
+            string targetFile)
+        {
+            var config = new ArchiveConfig
+            {
+                DestinationFolder = "C:\\",
+                SourceFolder = "E:\\",
+                SkipLast = 0,
+                FileNameDateTimeFormat = fileNameDateTimeFormat,
+                FileNamePattern = fileNamePattern
+            };
 
-        //    this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
-        //        .Returns(true);
-        //    this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder, It.IsAny<string[]>()))
-        //        .Returns(new List<string> { sourceFileName });
-        //    this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>()))
-        //        .Returns((string arg) => Path.GetFileNameWithoutExtension(arg));
-        //    this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>()))
-        //        .Returns((string arg) => Path.GetExtension(arg));
-        //    this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
-        //        .Returns((string[] arg) => Path.Combine(arg));
-        //    this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-        //    this.imageMock.Setup(x => x.SetDate(targetFile, It.IsAny<DateTime>()));
-        //    this.imageMock.Setup(x => x.GetDescriptionData(It.IsAny<string>())).Returns(string.Empty);
-        //    this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
-        //    this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
-        //    this.filesMock.Setup(x => x.FileSize(targetFile))
-        //        .Returns(1024);
-        //    this.filesMock.Setup(x => x.GetDirectoryName(targetFile))
-        //        .Returns(string.Empty);
-        //    this.filesMock.Setup(x => x.GetFileName(It.IsAny<string>()))
-        //        .Returns(string.Empty);
-        //    this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>()))
-        //        .ReturnsAsync(duration);
+            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
+                .Returns(true);
+            this.directoryMock.Setup(x => x.EnumerateFiles(config.SourceFolder, It.IsAny<string[]>()))
+                .Returns(new List<string> { sourceFileName });
+            this.filesMock.Setup(x => x.GetFileNameWithoutExtension(It.IsAny<string>()))
+                .Returns((string arg) => Path.GetFileNameWithoutExtension(arg));
+            this.filesMock.Setup(x => x.GetExtension(It.IsAny<string>()))
+                .Returns((string arg) => Path.GetExtension(arg));
+            this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
+                .Returns((string[] arg) => Path.Combine(arg));
+            this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
+            this.imageMock.Setup(x => x.SetDate(targetFile, It.IsAny<DateTime>()));
+            this.imageMock.Setup(x => x.GetDescriptionData(It.IsAny<string>())).Returns(string.Empty);
+            this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
+            this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
+            this.filesMock.Setup(x => x.FileSize(targetFile))
+                .Returns(1024);
+            this.filesMock.Setup(x => x.GetDirectoryName(targetFile))
+                .Returns(string.Empty);
+            this.filesMock.Setup(x => x.GetFileName(It.IsAny<string>()))
+                .Returns(string.Empty);
+            this.videoMock.Setup(x => x.GetDuration(It.IsAny<string>()))
+                .ReturnsAsync(duration);
 
-        //    var service = CreateArchiveService();
+            var service = CreateArchiveService();
 
-        //    var result = await service.ExecuteAsync(config, default(DateTime), default(DateTime));
-        //    this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
-        //    Assert.True(result.IsSuccess);
-        //    Assert.Single(result.Value);
-        //    var actual = result.Value.First();
-        //    Assert.Equal(duration, actual.Duration);
-        //    Assert.Equal(1024, actual.Size);
-        //    Assert.Equal(string.Empty, actual.Name);
-        //    Assert.Equal(targetFile, actual.Path);
-        //    Assert.Equal(DateTime.ParseExact(date, fileNameDateTimeFormat, null), actual.Date);
-        //}
+            var result = await service.ExecuteAsync(config, default(DateTime), default(DateTime));
+            this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
+            Assert.True(result.IsSuccess);
+            Assert.Single(result.Value);
+            var actual = result.Value.First();
+            Assert.Equal(duration, actual.Duration);
+            Assert.Equal(1024, actual.Size);
+            Assert.Equal(string.Empty, actual.Name);
+            Assert.Equal(targetFile, actual.Path);
+            Assert.Equal(DateTime.ParseExact(date, fileNameDateTimeFormat, null), actual.Date);
+        }
 
         [Theory]
         [InlineData("192.168.0.65_01_19700224210928654_MOTION_DETECTION.jpg", 60, "20210224210928654",
