@@ -129,6 +129,14 @@ namespace Hik.Client
             }
         }
 
+        protected static void ValidateDateParameters(DateTime start, DateTime end)
+        {
+            if (end <= start)
+            {
+                throw new ArgumentException("Start period grater than end");
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -166,14 +174,6 @@ namespace Hik.Client
         protected abstract string ToDirectoryNameString(MediaFileDto file);
 
         protected abstract string ToFileNameString(MediaFileDto file);
-
-        protected void ValidateDateParameters(DateTime start, DateTime end)
-        {
-            if (end <= start)
-            {
-                throw new ArgumentException("Start period grater than end");
-            }
-        }
 
         private string GetWorkingDirectory(MediaFileDto file)
         {

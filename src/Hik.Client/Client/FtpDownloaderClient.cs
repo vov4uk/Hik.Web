@@ -52,7 +52,7 @@ namespace Hik.Client
             if (size == remoteFile.Size)
             {
                 remoteFile.Path = localFilePath;
-                await ftp.DeleteFile(remoteFilePath);
+                await ftp.DeleteFile(remoteFilePath, token);
                 return true;
             }
 

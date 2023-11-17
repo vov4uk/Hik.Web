@@ -19,6 +19,7 @@ namespace Hik.DataAccess.Tests
         protected readonly Mock<IUnitOfWorkFactory> uowFactory;
         protected readonly Mock<IUnitOfWork> uow;
         protected readonly Mock<ILogger> logger;
+        private static readonly int[] triggers = new int[] { 1 };
 
         public HikDatabaseTests()
         {
@@ -266,7 +267,7 @@ namespace Hik.DataAccess.Tests
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
-            await db.DeleteObsoleteJobsAsync(new int[] {1}, DateTime.Now);
+            await db.DeleteObsoleteJobsAsync(triggers, DateTime.Now);
 
             fileRepo.Verify(x => x.RemoveRange(It.IsAny<IEnumerable<MediaFile>>()), Times.Never);
         }
@@ -296,7 +297,7 @@ namespace Hik.DataAccess.Tests
 
             var db = new HikDatabase(uowFactory.Object, logger.Object);
 
-            await db.DeleteObsoleteJobsAsync(new int[] { 1 }, DateTime.Now);
+            await db.DeleteObsoleteJobsAsync(triggers, DateTime.Now);
 
             fileRepo.Verify(x => x.RemoveRange(It.IsAny<IEnumerable<MediaFile>>()), Times.Once);
             hikJobRepo.Verify(x => x.RemoveRange(It.IsAny<IEnumerable<HikJob>>()), Times.Once);

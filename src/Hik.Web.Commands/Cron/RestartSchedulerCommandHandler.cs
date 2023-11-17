@@ -25,7 +25,7 @@ namespace Hik.Web.Commands.Cron
 
         public async Task Handle(RestartSchedulerCommand request, CancellationToken cancellationToken)
         {
-            List<JobTrigger> triggers = new List<JobTrigger>();
+            List<JobTrigger> triggers;
 
             using (var uow = unitOfWorkFactory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {

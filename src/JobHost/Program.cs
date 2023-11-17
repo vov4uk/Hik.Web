@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Serilog.Core;
 
 namespace JobHost
 {
@@ -17,8 +18,8 @@ namespace JobHost
     {
         private static async Task Main(string[] args)
         {
-            IEmailHelper email = null;
-            ILogger logger = null;
+            EmailHelper email = null;
+            Logger logger = null;
             try
             {
                 email = new EmailHelper();

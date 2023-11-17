@@ -17,7 +17,7 @@ namespace Hik.Web.Queries.QuartzTriggers
 
         protected override async Task<IHandlerResult> HandleAsync(QuartzTriggersQuery request, CancellationToken cancellationToken)
         {
-            List<JobTrigger> triggers = new ();
+            List<JobTrigger> triggers;
 
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {

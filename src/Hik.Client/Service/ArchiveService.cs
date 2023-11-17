@@ -21,6 +21,7 @@ namespace Hik.Client.Service
         private readonly IVideoHelper videoHelper;
         private readonly IImageHelper imageHelper;
         private Regex regex;
+        private static readonly string[] extentions = new[] { ".zip" };
 
         public ArchiveService(
             IDirectoryHelper directoryHelper,
@@ -46,7 +47,7 @@ namespace Hik.Client.Service
 
             if (aConfig.UnzipFiles)
             {
-                var allZips = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, new[] { ".zip" }).SkipLast(aConfig.SkipLast);
+                var allZips = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, extentions).SkipLast(aConfig.SkipLast);
                 foreach (var zip in allZips)
                 {
                     try
@@ -73,7 +74,7 @@ namespace Hik.Client.Service
                 }
             }
 
-            this.regex = this.GetRegex(aConfig.FileNamePattern);
+            this.regex = GetRegex(aConfig.FileNamePattern);
 
             var result = new List<MediaFileDto>();
             var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions.Split(";")).SkipLast(aConfig.UnzipFiles ? 0 : aConfig.SkipLast);
@@ -107,6 +108,14 @@ namespace Hik.Client.Service
             return result.AsReadOnly();
         }
 
+        private static Regex GetRegex(string template)
+        {
+            // Handels regex special characters.
+            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => @"\" + m.Value, RegexOptions.None, TimeSpan.FromMilliseconds(100));
+            string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)", RegexOptions.None, TimeSpan.FromMilliseconds(100)) + "$";
+            return new Regex(pattern, RegexOptions.None, TimeSpan.FromMilliseconds(100));
+        }
+
         private string MoveFile(string destinationFolder, string oldFilePath, DateTime date, string newFileName)
         {
             string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(destinationFolder, date));
@@ -121,7 +130,7 @@ namespace Hik.Client.Service
             List<string> nameParts = ReverseStringFormat(fileName);
             DateTime date = default;
             bool nameParsed = false;
-            if (nameParts != null && nameParts.Any())
+            if (nameParts != null && nameParts.Count != 0)
             {
                 foreach (var name in nameParts)
                 {
@@ -160,14 +169,6 @@ namespace Hik.Client.Service
         private List<string> ReverseStringFormat(string str)
         {
             return this.regex.Match(str).Groups.Values.Select(x => x.Value).ToList();
-        }
-
-        private Regex GetRegex(string template)
-        {
-            // Handels regex special characters.
-            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => @"\" + m.Value, RegexOptions.None, TimeSpan.FromMilliseconds(100));
-            string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)", RegexOptions.None, TimeSpan.FromMilliseconds(100)) + "$";
-            return new Regex(pattern, RegexOptions.None, TimeSpan.FromMilliseconds(100));
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Hik.Web.Queries.Search
                     x => x.JobTriggerId == request.JobTriggerId && x.Date <= request.DateTime,
                     top : 1);
 
-                if (latestFile.Any())
+                if (latestFile.Count > 0)
                 {
                     var file = latestFile[0];
                     var msg = (file.Date <= request.DateTime && request.DateTime <= file.Date.AddSeconds(file.Duration ?? 0)) ? "Match" : "Out of range";

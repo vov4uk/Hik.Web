@@ -77,7 +77,7 @@ namespace Hik.Web.Commands.Cron
                 }
             }
 
-            return updated?.Id ?? newEntity.Id;
+            return updated?.Id ?? newEntity?.Id ?? 0;
         }
     }
 }

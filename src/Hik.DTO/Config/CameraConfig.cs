@@ -34,9 +34,9 @@ namespace Hik.DTO.Config
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine();
-            sb.AppendLine(this.GetRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
-            sb.AppendLine(this.GetRow("User name", this.Camera.UserName));
+            sb.AppendLine(GetRow("Destination", this.DestinationFolder));
+            sb.AppendLine(GetRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
+            sb.AppendLine(GetRow("User name", this.Camera.UserName));
 
             return sb.ToString();
         }
@@ -44,9 +44,9 @@ namespace Hik.DTO.Config
         public override string ToHtmlTable()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(this.GetHtmlRow("Destination", this.DestinationFolder));
-            sb.AppendLine(this.GetHtmlRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
-            sb.AppendLine(this.GetHtmlRow("User name", this.Camera.UserName));
+            sb.AppendLine(GetHtmlRow("Destination", this.DestinationFolder));
+            sb.AppendLine(GetHtmlRow("IP Address", $"{this.Camera.IpAddress}:{this.Camera.PortNumber}"));
+            sb.AppendLine(GetHtmlRow("User name", this.Camera.UserName));
             return sb.ToString();
         }
     }

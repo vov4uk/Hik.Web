@@ -8,7 +8,7 @@ namespace Hik.DataAccess
     [ExcludeFromCodeCoverage]
     public class DataContext : DbContext
     {
-        IDbConfiguration Configuration;
+        private readonly IDbConfiguration Configuration;
         public DataContext(DbContextOptions<DataContext> options)
             : base(options) { }
 

@@ -69,7 +69,7 @@ namespace Job.Impl
 
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
 
-            if (JobInstance.PeriodEnd.HasValue && JobInstance.FilesCount > 0 && Config.Triggers?.Any() == true)
+            if (JobInstance.PeriodEnd.HasValue && JobInstance.FilesCount > 0 && Config.Triggers?.Length > 0)
             {
                 await db.DeleteObsoleteJobsAsync(Config.Triggers, JobInstance.PeriodEnd.Value);
             }
@@ -103,7 +103,7 @@ namespace Job.Impl
                 {
                     filesProvider.Initialize(topFolders);
                     var filesToDelete = filesProvider.GetNextBatch(gcConfig.FileExtention);
-                    if (!filesToDelete.Any())
+                    if (filesToDelete.Count == 0)
                     {
                         break;
                     }

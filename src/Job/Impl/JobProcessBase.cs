@@ -6,8 +6,6 @@ using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -32,7 +30,7 @@ namespace Job.Impl
             this.logger = logger;
             this.db = db;
             this.email = email;
-            Config = HikConfigExtensions.GetConfig<T>(trigger.Config) ?? throw new ArgumentNullException(nameof(Config));
+            Config = HikConfigExtensions.GetConfig<T>(trigger.Config) ?? throw new ArgumentNullException(nameof(trigger.Config));
             logger.Information("Config {config}", Config.ToString());
         }
 

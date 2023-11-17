@@ -36,6 +36,8 @@ namespace Hik.Client.FileProviders
 
         public bool IsInitialized => isInitialized;
 
+        private static readonly string[] extentions = new[] { ".*" };
+
         public void Initialize(string[] directories)
         {
             if (!isInitialized)
@@ -45,7 +47,7 @@ namespace Hik.Client.FileProviders
                 foreach (var topDirectory in directories)
                 {
                     List<string> subFolders = directoryHelper.EnumerateAllDirectories(topDirectory);
-                    foreach (var directory in subFolders.Where(x => Regex.IsMatch(x, DatePattern)))
+                    foreach (var directory in subFolders.Where(x => Regex.IsMatch(x, DatePattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(10))))
                     {
                         var trim = directory.Remove(0, Math.Max(0, directory.Length - 13))
                             .Replace("\\", "-")
@@ -77,7 +79,7 @@ namespace Hik.Client.FileProviders
 
             while (result.Count <= batchSize)
             {
-                if (dates.Any() && dates.TryPop(out var lastDate))
+                if (dates.Count > 0 && dates.TryPop(out var lastDate))
                 {
                     result.AddRange(GetFiles(fileExtention, lastDate));
                 }
@@ -94,11 +96,11 @@ namespace Hik.Client.FileProviders
         public async Task<IReadOnlyCollection<MediaFileDto>> GetOldestFilesBatch(bool readDuration = false)
         {
             var files = new List<MediaFileDto>();
-            if (isInitialized && dates.TryPop(out var last) && folders.ContainsKey(last))
+            if (isInitialized && dates.TryPop(out var last) && folders.TryGetValue(last, out IList<string> value))
             {
-                foreach (var dir in folders[last])
+                foreach (var dir in value)
                 {
-                    var localFiles = directoryHelper.EnumerateFiles(dir, new[] { ".*" });
+                    var localFiles = directoryHelper.EnumerateFiles(dir, extentions);
                     foreach (var file in localFiles)
                     {
                         var size = filesHelper.FileSize(file);
@@ -122,7 +124,7 @@ namespace Hik.Client.FileProviders
         public IReadOnlyCollection<MediaFileDto> GetFilesOlderThan(string fileExtention, DateTime date)
         {
             var result = new List<MediaFileDto>();
-            if (isInitialized && folders.Any())
+            if (isInitialized && folders.Count > 0)
             {
                 foreach (var fileDateTime in folders.Keys.Where(x => x <= date && folders.ContainsKey(x)))
                 {
@@ -135,10 +137,10 @@ namespace Hik.Client.FileProviders
 
         private List<MediaFileDto> GetFiles(string fileExtention, DateTime lastDate)
         {
-            List<string> files = new List<string>();
-            if (folders.ContainsKey(lastDate))
+            List<string> files = new ();
+            if (folders.TryGetValue(lastDate, out IList<string> value))
             {
-                foreach (var folder in folders[lastDate])
+                foreach (var folder in value)
                 {
                     if (!string.IsNullOrEmpty(fileExtention))
                     {

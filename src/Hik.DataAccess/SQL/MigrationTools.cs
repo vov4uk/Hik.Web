@@ -5,9 +5,11 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Hik.DataAccess.SQL
 {
+    [ExcludeFromCodeCoverage]
     public static class MigrationTools
     {
         public static async Task RunMigration(DbConfiguration connection)

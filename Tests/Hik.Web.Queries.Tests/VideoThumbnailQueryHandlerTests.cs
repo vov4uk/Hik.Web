@@ -13,14 +13,14 @@ using Xunit;
 
 namespace Hik.Web.Queries.Test
 {
-    public class PhotoThumbnailQueryHandlerTests
+    public class VideoThumbnailQueryHandlerTests
     {
         private readonly Mock<IUnitOfWorkFactory> uowFactoryMock = new(MockBehavior.Strict);
         private readonly Mock<IUnitOfWork> uowMock = new(MockBehavior.Strict);
         private readonly Mock<IBaseRepository<MediaFile>> repoMock = new(MockBehavior.Strict);
-        private readonly Mock<IImageHelper> imgMock = new(MockBehavior.Strict);
+        private readonly Mock<IVideoHelper> helperMock = new(MockBehavior.Strict);
 
-        public PhotoThumbnailQueryHandlerTests()
+        public VideoThumbnailQueryHandlerTests()
         {
             uowMock.Setup(uow => uow.Dispose());
             uowMock.Setup(uow => uow.GetRepository<MediaFile>())
@@ -31,34 +31,34 @@ namespace Hik.Web.Queries.Test
 
         [Theory]
         [AutoData]
-        public async Task HandleAsync_FoundFile_ReturnThumbnail(PhotoThumbnailQuery request)
+        public async Task HandleAsync_FoundFile_ReturnThumbnail(VideoThumbnailQuery request)
         {
-            var expected = new byte[2] { 0 ,1 };
+            var expected = "base64";
             repoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>[]>()))
                             .ReturnsAsync(new MediaFile() { Name = "File", Id = 2, Path = "c:\\file.jpg", Duration = 100, Date = new(2022, 01, 01) });
-            imgMock.Setup(x => x.GetThumbnail(It.IsAny<string>(), 216, 122)).Returns([0, 1]);
+            helperMock.Setup(x => x.GetThumbnailStringAsync(It.IsAny<string>(), 216, 122)).ReturnsAsync("base64");
 
-            var handler = new PhotoThumbnailQueryHandler(uowFactoryMock.Object, imgMock.Object);
+            var handler = new VideoThumbnailQueryHandler(uowFactoryMock.Object, helperMock.Object);
             var result = await handler.Handle(request, CancellationToken.None);
 
-            Assert.IsType<PhotoThumbnailDto>(result);
-            var dto = (PhotoThumbnailDto)result;
+            Assert.IsType<VideoThumbnailDto>(result);
+            var dto = (VideoThumbnailDto)result;
             Assert.Equal(expected, dto.Poster);
         }
 
         [Theory]
         [AutoData]
-        public async Task HandleAsync_NotFoundFile_ReturnNull(PhotoThumbnailQuery request)
+        public async Task HandleAsync_NotFoundFile_ReturnNull(VideoThumbnailQuery request)
         {
             repoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>[]>()))
                             .ReturnsAsync(default(MediaFile));
-            imgMock.Setup(x => x.GetThumbnail(null, 216, 122)).Returns(default(byte[]));
+            helperMock.Setup(x => x.GetThumbnailStringAsync(null, 216, 122)).ReturnsAsync(default(string));
 
-            var handler = new PhotoThumbnailQueryHandler(uowFactoryMock.Object, imgMock.Object);
+            var handler = new VideoThumbnailQueryHandler(uowFactoryMock.Object, helperMock.Object);
             var result = await handler.Handle(request, CancellationToken.None);
 
-            Assert.IsType<PhotoThumbnailDto>(result);
-            var dto = (PhotoThumbnailDto)result;
+            Assert.IsType<VideoThumbnailDto>(result);
+            var dto = (VideoThumbnailDto)result;
             Assert.Null(dto.Poster);
         }
     }

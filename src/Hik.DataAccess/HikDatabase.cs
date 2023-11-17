@@ -186,8 +186,6 @@ namespace Hik.DataAccess
                     day.TotalDuration += item.Duration;
                     repo.Update(day);
                 }
-
-                //unitOfWork.SaveChanges();
             }
         }
 

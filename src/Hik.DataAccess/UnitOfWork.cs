@@ -27,11 +27,12 @@ namespace Hik.DataAccess
             if (repositories == null) repositories = new ConcurrentDictionary<Type, object>();
 
             var type = typeof(TEntity);
-            if (!repositories.ContainsKey(type))
+            if (!repositories.TryGetValue(type, out object value))
             {
-                repositories[type] = new BaseRepository<TEntity>(Context);
+                value = new BaseRepository<TEntity>(Context);
+                repositories[type] = value;
             }
-            return (IBaseRepository<TEntity>)repositories[type];
+            return (IBaseRepository<TEntity>)value;
         }
 
         public TContext Context { get; }

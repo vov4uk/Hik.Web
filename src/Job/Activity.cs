@@ -52,7 +52,9 @@ namespace Job
                 if (RunningActivities.Add(this))
                 {
 #if DEBUG
-                        await RunAsTask();
+                    var job = await JobFactory.GetJobAsync(Parameters, this.dbConfig, Log.Logger);
+                    await job.ExecuteAsync();
+
 #else
                         await StartProcess();
 #endif
@@ -65,9 +67,12 @@ namespace Job
             }
             catch (Exception e)
             {
-                RunningActivities.Remove(this);
                 Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to start activity", e.ToStringDemystified());
                 new EmailHelper().Send(e.Message, Parameters.TriggerKey, null);
+            }
+            finally
+            {
+                RunningActivities.Remove(this);
             }
         }
 
@@ -85,7 +90,7 @@ namespace Job
             RunningActivities.Remove(this);
         }
 
-        private Task StartProcess()
+        private Task<object> StartProcess()
         {
             TaskCompletionSource<object> tcs = new ();
             hostProcess = new Process
@@ -119,23 +124,6 @@ namespace Job
             hostProcess.BeginErrorReadLine();
 
             return tcs.Task;
-        }
-
-        private async Task RunAsTask()
-        {
-            var job = await JobFactory.GetJobAsync(Parameters, this.dbConfig, Log.Logger);
-            try
-            {
-                await job.ExecuteAsync();
-            }
-            catch (Exception e)
-            {
-                Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to start task", e.ToStringDemystified());
-            }
-            finally
-            {
-                RunningActivities.Remove(this);
-            }
         }
 
         private void LogErrorData(object sender, DataReceivedEventArgs e)

@@ -13,7 +13,7 @@ namespace Hik.DTO.Config
         public double FreeSpacePercentage { get; set; }
 
         [Display(Name = "Job triggers to process")]
-        public int[] Triggers { get; set; } = new int[0];
+        public int[] Triggers { get; set; } = System.Array.Empty<int>();
 
         [Display(Name = "File extention (.jpg)")]
         public string FileExtention { get; set; }
@@ -32,7 +32,7 @@ namespace Hik.DTO.Config
                     context.AddFailure("Only one property allowed 'FreeSpacePercentage' or 'RetentionPeriodDays'");
                 }
 
-                if (x.FreeSpacePercentage > 0 && x.Triggers?.Any() == false)
+                if (x.FreeSpacePercentage > 0 && x.Triggers?.Length == 0)
                 {
                     context.AddFailure("Triggers reuired then FreeSpacePercentage defined");
                 }

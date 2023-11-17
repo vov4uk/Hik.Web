@@ -16,8 +16,8 @@ namespace Hik.DTO.Config
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.AppendLine(this.GetRow(nameof(DestinationFolder), this.DestinationFolder));
-            sb.AppendLine(this.GetRow(nameof(Timeout), this.Timeout.ToString()));
+            sb.AppendLine(GetRow(nameof(DestinationFolder), this.DestinationFolder));
+            sb.AppendLine(GetRow(nameof(Timeout), this.Timeout.ToString()));
 
             return sb.ToString();
         }
@@ -25,17 +25,17 @@ namespace Hik.DTO.Config
         public virtual string ToHtmlTable()
         {
             var sb = new StringBuilder();
-            sb.AppendLine(this.GetHtmlRow(nameof(DestinationFolder), this.DestinationFolder));
-            sb.AppendLine(this.GetHtmlRow(nameof(Timeout), this.Timeout.ToString()));
+            sb.AppendLine(GetHtmlRow(nameof(DestinationFolder), this.DestinationFolder));
+            sb.AppendLine(GetHtmlRow(nameof(Timeout), this.Timeout.ToString()));
             return sb.ToString();
         }
 
-        protected string GetRow(string field, string value)
+        protected static string GetRow(string field, string value)
         {
             return $"{field,-24}: {value}";
         }
 
-        protected string GetHtmlRow(string field, string value)
+        protected static string GetHtmlRow(string field, string value)
         {
             return $"<tr><td>{field}</td><td>{value}</td></tr>";
         }

@@ -18,18 +18,17 @@ using System.Threading.Tasks;
 namespace Job
 {
     [ExcludeFromCodeCoverage]
-    public class JobFactory
+    public static class JobFactory
     {
         public static async Task<IJobProcess> GetJobAsync(Parameters parameters, DbConfiguration connection, ILogger logger)
         {
             JobTrigger trigger;
 
             IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(connection);
-            IHikDatabase db = new HikDatabase(unitOfWorkFactory, logger);
+            HikDatabase db = new HikDatabase(unitOfWorkFactory, logger);
 
             trigger = await db.GetJobTriggerAsync(parameters.Group, parameters.TriggerKey);
 
-            string configJson = trigger.Config;
             string className = trigger.ClassName;
 
             IEmailHelper email = new EmailHelper();

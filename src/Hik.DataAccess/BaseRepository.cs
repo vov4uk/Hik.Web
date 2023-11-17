@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
 namespace Hik.DataAccess
@@ -59,7 +58,7 @@ namespace Hik.DataAccess
             {
                 result = result.Include(includeExpression);
             }
-            Log.Information($"GetAll : {result?.ToQueryString()}");
+            Log.Debug($"GetAll : {result?.ToQueryString()}");
             return result;
         }
 
@@ -73,8 +72,8 @@ namespace Hik.DataAccess
             var ids = await idsQuery.ToListAsync();
 
             var result = DbSet.Where(p => ids.Contains(p.Id));
-            Log.Information($"GetLatestGroupedBy - 1 Ids: {idsQuery?.ToQueryString()}");
-            Log.Information($"GetLatestGroupedBy - 1 Result: {result?.ToQueryString()}");
+            Log.Debug($"GetLatestGroupedBy - 1 Ids: {idsQuery?.ToQueryString()}");
+            Log.Debug($"GetLatestGroupedBy - 1 Result: {result?.ToQueryString()}");
             return await result?.ToListAsync();
         }
 
@@ -89,15 +88,15 @@ namespace Hik.DataAccess
             var ids = await idsQuery.ToListAsync();
 
             var result = DbSet.Where(p => ids.Contains(p.Id));
-            Log.Information($"GetLatestGroupedBy - 2 Ids : {idsQuery?.ToQueryString()}");
-            Log.Information($"GetLatestGroupedBy - 2 Result: {result?.ToQueryString()}");
+            Log.Debug($"GetLatestGroupedBy - 2 Ids : {idsQuery?.ToQueryString()}");
+            Log.Debug($"GetLatestGroupedBy - 2 Result: {result?.ToQueryString()}");
             return await result?.ToListAsync();
         }
 
         public virtual Task<List<TEntity>> LastAsync(int last)
         {
             var result = DbSet.OrderByDescending(x => x).Take(last);
-            Log.Information($"LastAsync : {result?.ToQueryString()}");
+            Log.Debug($"LastAsync : {result?.ToQueryString()}");
             return result?.ToListAsync();
         }
 
@@ -111,7 +110,7 @@ namespace Hik.DataAccess
                 result = result.Include(includeExpression);
             }
 
-            Log.Information($"FindByAsync : {result?.ToQueryString()}");
+            Log.Debug($"FindByAsync : {result?.ToQueryString()}");
 
             return result?.FirstOrDefaultAsync();
         }
@@ -120,7 +119,7 @@ namespace Hik.DataAccess
         {
             var query = DbSet.Where(predicate);
 
-            Log.Information($"FindByAsync : {query?.ToQueryString()}");
+            Log.Debug($"FindByAsync : {query?.ToQueryString()}");
 
             return query;
         }
@@ -135,7 +134,7 @@ namespace Hik.DataAccess
                 result = result.Include(includeExpression);
             }
 
-            Log.Information($"FindManyAsync : {result?.ToQueryString()}");
+            Log.Debug($"FindManyAsync : {result?.ToQueryString()}");
 
             return result?.ToListAsync();
         }
@@ -156,7 +155,7 @@ namespace Hik.DataAccess
 
             result = result.OrderByDescending(orderByDesc).Skip(skip).Take(take);
 
-            Log.Information($"FindManyByDescAsync : {result?.ToQueryString()}");
+            Log.Debug($"FindManyByDescAsync : {result?.ToQueryString()}");
 
             return result?.ToListAsync();
         }
@@ -174,7 +173,7 @@ namespace Hik.DataAccess
 
             result = result.OrderBy(orderByAsc).Skip(skip).Take(top);
 
-            Log.Information($"FindManyByAscAsync : {result?.ToQueryString()}");
+            Log.Debug($"FindManyByAscAsync : {result?.ToQueryString()}");
 
             return result?.ToListAsync();
         }
@@ -188,7 +187,7 @@ namespace Hik.DataAccess
             {
                 result = result.Include(includeExpression);
             }
-            Log.Information($"CountAsync : {result?.ToQueryString()}");
+            Log.Debug($"CountAsync : {result?.ToQueryString()}");
             return result?.CountAsync() ?? Task.FromResult(-1);
         }
 
