@@ -95,6 +95,7 @@
         public async Task ExecuteAsync_ExceptionFired_EmailWasSent()
         {
             SetupCreateJob();
+            SetupUpdateJob();
             SetupUpdateJobTrigger();
             SetupLogExceptionToAsync();
 
@@ -115,6 +116,7 @@
         public async Task ExecuteAsync_FailedToLogException_Handled()
         {
             SetupCreateJob();
+            SetupUpdateJobTrigger();
 
             dbMock.Setup(x => x.LogExceptionTo(It.IsAny<int>(), It.IsAny<string>()))
                 .Throws<Exception>();

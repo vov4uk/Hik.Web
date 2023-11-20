@@ -32,6 +32,7 @@ namespace Job.Tests.Impl
             var topFolders = new[] { "C:\\Junk" };
 
             SetupCreateJob();
+            SetupUpdateJob();
             SetupUpdateJobTrigger();
             SetupUpdateDailyStatisticsAsync();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("C:\\Junk"));
@@ -55,6 +56,7 @@ namespace Job.Tests.Impl
             var topFolders = new[] { "C:\\Junk" };
 
             SetupCreateJob();
+            SetupUpdateJob();
             SetupUpdateJobTrigger();
             SetupUpdateDailyStatisticsAsync();
             dbMock.Setup(x => x.DeleteObsoleteJobsAsync(It.IsAny<int[]>(), It.IsAny<DateTime>()))
@@ -88,6 +90,7 @@ namespace Job.Tests.Impl
             var topFolders = new[] { "G:\\Cloud" };
 
             SetupCreateJob();
+            SetupUpdateJob();
             SetupUpdateJobTrigger();
             SetupUpdateDailyStatisticsAsync();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("G:\\Cloud"));
@@ -109,6 +112,8 @@ namespace Job.Tests.Impl
                 .Verifiable();
 
             dbMock.Setup(x => x.GetJobTriggersAsync(It.IsAny<int[]>())).ReturnsAsync(new[] { new JobTrigger() {Config = GetConfig("HikVideoTests.json") } } );
+            dbMock.Setup(x => x.DeleteObsoleteJobsAsync(It.IsAny<int[]>(), It.IsAny<DateTime>()))
+                .Returns(Task.CompletedTask);
 
             var job = CreateJob();
             await job.ExecuteAsync();
@@ -124,6 +129,7 @@ namespace Job.Tests.Impl
             var topFolders = new[] { "G:\\Cloud" };
 
             SetupCreateJob();
+            SetupUpdateJob();
             SetupUpdateJobTrigger();
             directoryHelper.Setup(x => x.DeleteEmptyDirs("G:\\Cloud"));
             filesProvider.Setup(x => x.Initialize(topFolders))

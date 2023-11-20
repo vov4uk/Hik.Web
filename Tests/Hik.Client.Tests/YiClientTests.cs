@@ -57,7 +57,6 @@
         [Fact]
         public void Login_CallLogin_LoginSuccessfully()
         {
-            //this.ftpMock.Setup(x => x.Connect(default(CancellationToken))).Returns(Task.CompletedTask);
             this.ftpMock.Setup(x => x.AutoConnect(default(CancellationToken)))
                 .ReturnsAsync(new FtpProfile());
             this.ftpMock.Setup(x => x.Connect(It.IsAny<FtpProfile>(), default(CancellationToken)))

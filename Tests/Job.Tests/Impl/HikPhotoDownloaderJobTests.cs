@@ -43,6 +43,7 @@ namespace Job.Tests.Impl
         public async Task ExecuteAsync_ExceptionFired_ExceptionHandled()
         {
             SetupCreateJob();
+            SetupUpdateJob();
             SetupUpdateJobTrigger();
             SetupLogExceptionToAsync();
             emailMock.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
