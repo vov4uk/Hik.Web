@@ -30,17 +30,7 @@ namespace Hik.Client
 
         private bool IsDownloading => downloadId >= 0;
 
-        public override async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
-        {
-            ValidateDateParameters(periodStart, periodEnd);
-
-            logger.Information($"Get videos from {periodStart} to {periodEnd}");
-
-            IReadOnlyCollection<HikRemoteFile> remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
-            return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
-        }
-
-        protected override async Task<bool> DownloadFileInternalAsync(MediaFileDto remoteFile, CancellationToken token)
+        public override async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
         {
             string targetFilePath = GetPathSafety(remoteFile);
             string tempFile = filesHelper.GetTempFileName() + ".mp4";
@@ -64,14 +54,14 @@ namespace Hik.Client
             return false;
         }
 
-        protected override string ToFileNameString(MediaFileDto file)
+        public override async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
-            return file.ToVideoFileNameString();
-        }
+            ValidateDateParameters(periodStart, periodEnd);
 
-        protected override string ToDirectoryNameString(MediaFileDto file)
-        {
-            return config.SaveFilesToRootFolder ? string.Empty : file.Date.ToDirectoryName();
+            logger.Information($"Get videos from {periodStart} to {periodEnd}");
+
+            IReadOnlyCollection<HikRemoteFile> remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
+            return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
         }
 
         protected override void StopDownload()
@@ -85,6 +75,16 @@ namespace Hik.Client
             {
                 logger.Warning("File not downloading now");
             }
+        }
+
+        protected override string ToDirectoryNameString(MediaFileDto file)
+        {
+            return config.SaveFilesToRootFolder ? string.Empty : file.Date.ToDirectoryName();
+        }
+
+        protected override string ToFileNameString(MediaFileDto file)
+        {
+            return file.ToVideoFileNameString();
         }
 
         private bool StartVideoDownload(MediaFileDto file, string targetFilePath, string tempFile)
@@ -109,20 +109,6 @@ namespace Hik.Client
             return false;
         }
 
-        private void UpdateVideoProgress()
-        {
-            if (IsDownloading)
-            {
-                int downloadProgress = hikApi.VideoService.GetDownloadPosition(downloadId);
-
-                UpdateProgressInternal(downloadProgress);
-            }
-            else
-            {
-                logger.Warning("File not downloading now");
-            }
-        }
-
         private void UpdateProgressInternal(int progressValue)
         {
             if (progressValue == ProgressBarMaximum)
@@ -134,6 +120,20 @@ namespace Hik.Client
             {
                 StopDownload();
                 throw new InvalidOperationException($"UpdateDownloadProgress failed, progress value = {progressValue}");
+            }
+        }
+
+        private void UpdateVideoProgress()
+        {
+            if (IsDownloading)
+            {
+                int downloadProgress = hikApi.VideoService.GetDownloadPosition(downloadId);
+
+                UpdateProgressInternal(downloadProgress);
+            }
+            else
+            {
+                logger.Warning("File not downloading now");
             }
         }
     }

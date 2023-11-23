@@ -3,7 +3,6 @@ using Hik.DataAccess.Metadata;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Hik.DataAccess.Data
@@ -43,11 +42,6 @@ namespace Hik.DataAccess.Data
 
         public string GetPath()
         {
-            if (Debugger.IsAttached)
-            {
-                return this.Path?.Replace("E:\\Cloud\\", "W:\\");
-            }
-
             if (!string.IsNullOrEmpty(Path) && !System.IO.Path.HasExtension(this.Path))
             {
                 return System.IO.Path.Combine(this.Path, this.Name);

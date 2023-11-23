@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using FFmpeg.NET;
@@ -16,7 +17,7 @@ namespace Hik.Helpers
     {
         static VideoHelper()
         {
-            engine = new Engine(Path.Combine(Environment.CurrentDirectory, @"FFMpeg\ffmpeg.exe"));
+            engine = new Engine(Path.Combine(AssemblyDirectory, @"FFMpeg\ffmpeg.exe"));
             engine.Error += (s, e) => Log.Error($"FFmpeg Engine Error {e.Exception}"); ;
         }
 
@@ -31,7 +32,7 @@ namespace Hik.Helpers
                 try
                 {
                     var inputFile = new InputFile(path);
-                    var fullPath = Path.Combine(Environment.CurrentDirectory, Path.GetRandomFileName() + ".jpg");
+                    var fullPath = Path.Combine(AssemblyDirectory, Path.GetRandomFileName() + ".jpg");
                     var outputFile = new OutputFile(fullPath);
                     await engine.GetThumbnailAsync(inputFile, outputFile, CancellationToken.None);
 
@@ -89,6 +90,17 @@ namespace Hik.Helpers
         {
             ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
             return codecs.FirstOrDefault(c => c.FormatID == format.Guid);
+        }
+
+        internal static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().Location;
+                UriBuilder uri = new(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
         }
     }
 }

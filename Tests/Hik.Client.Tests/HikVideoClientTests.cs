@@ -306,8 +306,7 @@
             using (client = this.GetHikClient())
             {
                 client.Login();
-                var result = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
-                Assert.False(result);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None));
             }
 
             this.videoServiceMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);

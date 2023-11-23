@@ -38,7 +38,7 @@ namespace Hik.Web.Queries.Tests
             };
 
             mockRepository
-                .Setup(x => x.FindByAsync(It.IsAny<Expression<Func<JobTrigger, bool>>>()))
+                .Setup(x => x.FindByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(existingTrigger);
 
             // Act

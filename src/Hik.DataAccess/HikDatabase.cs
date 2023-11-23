@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Hik.DataAccess
@@ -41,7 +45,7 @@ namespace Hik.DataAccess
         public async Task<JobTrigger> GetJobTriggerAsync(string group, string key)
         {
             JobTrigger jobTrigger = null;
-            using (var unitOfWork = this.factory.CreateUnitOfWork())
+            using (var unitOfWork = this.factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var repo = unitOfWork.GetRepository<JobTrigger>();
                 jobTrigger = await repo.FindByAsync(x => x.TriggerKey == key && x.Group == group);
@@ -51,7 +55,7 @@ namespace Hik.DataAccess
 
         public async Task<JobTrigger[]> GetJobTriggersAsync(int[] triggerIds)
         {
-            using (var unitOfWork = this.factory.CreateUnitOfWork())
+            using (var unitOfWork = this.factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var repo = unitOfWork.GetRepository<JobTrigger>();
                 var jobTriggers = await repo.FindManyAsync(x => triggerIds.Contains(x.Id));
@@ -81,7 +85,7 @@ namespace Hik.DataAccess
 
         public void UpdateJob(HikJob job)
         {
-            using (var unitOfWork = factory.CreateUnitOfWork(Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking))
+            using (var unitOfWork = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var repo = unitOfWork.GetRepository<HikJob>();
                 repo.Update(job);
@@ -102,7 +106,7 @@ namespace Hik.DataAccess
                 mediaFiles.Add(file);
             }
 
-            using (var unitOfWork = factory.CreateUnitOfWork(Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking))
+            using (var unitOfWork = factory.CreateUnitOfWork())
             {
                 var repo = unitOfWork.GetRepository<MediaFile>();
                 repo.AddRange(mediaFiles);
@@ -117,7 +121,7 @@ namespace Hik.DataAccess
             file.JobTriggerId = job.JobTriggerId;
             file.JobId = job.Id;
 
-            using (var unitOfWork = factory.CreateUnitOfWork(Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking))
+            using (var unitOfWork = factory.CreateUnitOfWork())
             {
                 var repo = unitOfWork.GetRepository<MediaFile>();
                 repo.Add(file);
@@ -133,7 +137,7 @@ namespace Hik.DataAccess
 
             Dictionary<DateTime, DailyStatistic> dailyStat;
 
-            using (var unitOfWork = factory.CreateUnitOfWork(Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking))
+            using (var unitOfWork = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 IBaseRepository<DailyStatistic> repo = unitOfWork.GetRepository<DailyStatistic>();
 
@@ -163,7 +167,7 @@ namespace Hik.DataAccess
                 }
             }
 
-            using (var unitOfWork = factory.CreateUnitOfWork(Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking))
+            using (var unitOfWork = factory.CreateUnitOfWork())
             {
                 IBaseRepository<DailyStatistic> repo = unitOfWork.GetRepository<DailyStatistic>();
                 var daily = await repo.FindManyAsync(x => x.JobTriggerId == jobTriggerId && x.Period >= originalFrom && x.Period <= to);

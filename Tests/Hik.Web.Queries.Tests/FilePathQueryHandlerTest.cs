@@ -31,7 +31,7 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_FoundFile_ReturnPath(FilePathQuery request)
         {
-            repoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>[]>()))
+            repoMock.Setup(x => x.FindByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(new MediaFile() { Path = "c:\\file.jpg"});
 
             var handler = new FilePathQueryHandler(uowFactoryMock.Object);
@@ -47,7 +47,7 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_FoundNotFile_ReturnNullPath(FilePathQuery request)
         {
-            repoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>[]>()))
+            repoMock.Setup(x => x.FindByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(default(MediaFile));
 
             var handler = new FilePathQueryHandler(uowFactoryMock.Object);

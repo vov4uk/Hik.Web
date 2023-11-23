@@ -47,7 +47,8 @@ namespace JobHost
                        rollOnFileSizeLimit: true,
                        shared: true,
                        flushToDiskInterval: TimeSpan.FromSeconds(1))
-                    .WriteTo.Seq(loggerConfig.ServerUrl)
+                    .WriteTo.Seq(loggerConfig.ServerUrl,
+                                 period : TimeSpan.FromSeconds(1))
                     .CreateLogger();
 
 
@@ -61,6 +62,9 @@ namespace JobHost
                 email?.Send(ex.Message);
                 Environment.ExitCode = -1;
             }
+
+            await logger.DisposeAsync();
+            await Task.Delay(2000); // to write logs
         }
     }
 }

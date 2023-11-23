@@ -35,11 +35,10 @@ namespace Hik.Web.Queries.Search
                         x => x.JobTriggerId == request.JobTriggerId && x.Id < file.Id);
 
                     var files = await filesRepo.FindManyByAscAsync(
-                        x => x.JobTriggerId == request.JobTriggerId && x.Id > file.Id,
-                        x => x.Date,
+                        predicate: x => x.JobTriggerId == request.JobTriggerId && x.Id > file.Id,
+                        orderByAsc: x => x.Date,
                         skip: 0,
-                        top: 5,
-                        includes: x => x.DownloadDuration);
+                        top: 5);
                     var afterFiles = files.ConvertAll(HikDatabase.Mapper.Map<MediaFile, MediaFileDto>);
 
                     return new SearchDto
@@ -68,10 +67,9 @@ namespace Hik.Web.Queries.Search
         {
             var files = await filesRepo.FindManyByDescAsync(
                         predicate,
-                        x => x.Date,
+                        orderByDesc: x => x.Date,
                         skip: 0,
-                        take: top,
-                        includes : x => x.DownloadDuration);
+                        take: top);
             return files.ConvertAll(HikDatabase.Mapper.Map<MediaFile, MediaFileDto>);
         }
     }

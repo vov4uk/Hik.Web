@@ -2,7 +2,7 @@
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.Helpers.Abstraction;
-using Hik.Web.Queries.Photo;
+using Hik.Web.Queries.Thumbnail;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System;
@@ -34,7 +34,7 @@ namespace Hik.Web.Queries.Test
         public async Task HandleAsync_FoundFile_ReturnThumbnail(VideoThumbnailQuery request)
         {
             var expected = "base64";
-            repoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>[]>()))
+            repoMock.Setup(x => x.FindByIdAsync(It.IsAny<int>()))
                             .ReturnsAsync(new MediaFile() { Name = "File", Id = 2, Path = "c:\\file.jpg", Duration = 100, Date = new(2022, 01, 01) });
             helperMock.Setup(x => x.GetThumbnailStringAsync(It.IsAny<string>(), 216, 122)).ReturnsAsync("base64");
 
@@ -50,7 +50,7 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_NotFoundFile_ReturnNull(VideoThumbnailQuery request)
         {
-            repoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>[]>()))
+            repoMock.Setup(x => x.FindByIdAsync(It.IsAny<int>()))
                             .ReturnsAsync(default(MediaFile));
             helperMock.Setup(x => x.GetThumbnailStringAsync(null, 216, 122)).ReturnsAsync(default(string));
 

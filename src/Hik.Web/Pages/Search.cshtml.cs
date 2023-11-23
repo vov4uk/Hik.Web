@@ -1,7 +1,7 @@
 ﻿using Hik.Helpers.Abstraction;
 using Hik.Web.Queries.FilePath;
-using Hik.Web.Queries.Photo;
 using Hik.Web.Queries.Search;
+using Hik.Web.Queries.Thumbnail;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

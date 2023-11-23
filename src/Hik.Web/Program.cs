@@ -61,7 +61,8 @@ namespace Hik.Web
                    rollOnFileSizeLimit: true,
                    shared: true,
                    flushToDiskInterval: TimeSpan.FromSeconds(1))
-                .WriteTo.Seq(loggerConfig.ServerUrl)
+                   .WriteTo.Seq(loggerConfig.ServerUrl,
+                                 period: TimeSpan.FromSeconds(1))
                 .CreateLogger();
 
             DBConfig = config.GetSection("DBConfiguration").Get<DbConfiguration>();

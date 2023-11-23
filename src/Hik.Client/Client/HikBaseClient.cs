@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using Hik.Api;
 using Hik.Api.Abstraction;
 using Hik.Api.Data;
 using Hik.Client.Abstraction;
@@ -51,25 +49,6 @@ namespace Hik.Client
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        public async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
-        {
-            try
-            {
-                return await DownloadFileInternalAsync(remoteFile, token);
-            }
-            catch (HikException e)
-            {
-                var msg = $"Failed to download {remoteFile.Name} : {remoteFile.Path}. Code : {e.ErrorCode}; {e.ErrorMessage}";
-                this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", msg, e.ToStringDemystified());
-            }
-            catch (Exception e)
-            {
-                this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Failed to download {remoteFile.Name} : {remoteFile.Path}", e.ToStringDemystified());
-            }
-
-            return false;
         }
 
         public void ForceExit()
@@ -129,6 +108,8 @@ namespace Hik.Client
             }
         }
 
+        public abstract Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token);
+
         protected static void ValidateDateParameters(DateTime start, DateTime end)
         {
             if (end <= start)
@@ -153,8 +134,6 @@ namespace Hik.Client
                 disposedValue = true;
             }
         }
-
-        protected abstract Task<bool> DownloadFileInternalAsync(MediaFileDto remoteFile, CancellationToken token);
 
         protected string GetPathSafety(MediaFileDto remoteFile)
         {

@@ -19,9 +19,12 @@ namespace Hik.Web.Queries.FilePath
             {
                 IBaseRepository<MediaFile> filesRepo = uow.GetRepository<MediaFile>();
 
-                var file = await filesRepo.FindByAsync(x => x.Id == request.FileId);
+                var file = await filesRepo.FindByIdAsync(request.FileId);
                 string path = null;
-                if (file != null) { path = file.GetPath(); }
+                if (file != null)
+                {
+                    path = file.GetPath();
+                }
 
                 return new FilePathDto
                 {

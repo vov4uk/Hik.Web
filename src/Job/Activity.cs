@@ -54,9 +54,8 @@ namespace Job
 #if DEBUG
                     var job = await JobFactory.GetJobAsync(Parameters, this.dbConfig, Log.Logger);
                     await job.ExecuteAsync();
-
 #else
-                        await StartProcess();
+                    await StartProcess();
 #endif
                 }
                 else
@@ -72,7 +71,14 @@ namespace Job
             }
             finally
             {
-                RunningActivities.Remove(this);
+                if (!RunningActivities.Remove(this))
+                {
+                    Log.Information("Cannot remove {ActivityId} from ActivityBag ", $"{Parameters.TriggerKey}_{Parameters.ActivityId}");
+                }
+                else
+                {
+                    Log.Information("{ActivityId} finallized", $"{Parameters.TriggerKey}_{Parameters.ActivityId}");
+                }
             }
         }
 
@@ -112,10 +118,6 @@ namespace Job
             hostProcess.Exited += (object sender, EventArgs e) =>
             {
                 tcs.SetResult(null);
-                if (!RunningActivities.Remove(this))
-                {
-                    Log.Information("Cannot remove activity from ActivityBag");
-                }
             };
 
             hostProcess.Start();
@@ -130,7 +132,7 @@ namespace Job
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                Log.Error("{trigger} - {activityId} - {data}", Parameters.TriggerKey, Parameters.ActivityId, e.Data);
+                Log.Error("{ActivityId} - {data}", $"{Parameters.TriggerKey}_{Parameters.ActivityId}", e.Data);
             }
         }
     }

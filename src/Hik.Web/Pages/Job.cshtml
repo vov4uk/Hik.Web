@@ -34,8 +34,14 @@
             <td><span title="@item.Finished">@relativeFinishedDate</span></td>
             <td>@Html.DisplayFor(m => item.PeriodStart)</td>
             <td>@Html.DisplayFor(m => item.PeriodEnd)</td>
-            <td>@Html.DisplayFor(m => item.FilesCount)</td>
-            <td><a asp-page="./JobDetails" asp-route-id="@item.Id">Details</a></td>
+            <td>@Html.DisplayFor(m => item.FilesCount)</td> 
+            @if (item.FilesCount > 0)
+            {
+                <td><a asp-page="./JobDetails" asp-route-id="@item.Id">Details</a></td>
+            }else
+            {
+                <td></td>
+            }
         </tr>
         }
     </tbody>

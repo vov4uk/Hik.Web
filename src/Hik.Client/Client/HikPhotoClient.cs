@@ -40,7 +40,7 @@ namespace Hik.Client
             return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
         }
 
-        protected override Task<bool> DownloadFileInternalAsync(MediaFileDto remoteFile, CancellationToken token)
+        public override Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
         {
             string targetFilePath = GetPathSafety(remoteFile);
 

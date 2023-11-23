@@ -4,27 +4,29 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Hik.DataAccess
 {
     [ExcludeFromCodeCoverage]
     public class BaseRepository<TEntity> : IBaseRepository<TEntity>
-        where TEntity : class, IEntity
+        where TEntity : class, IEntity, new()
     {
-        protected DbContext Database { get; }
-
-        protected DbSet<TEntity> DbSet { get; }
-
         public BaseRepository(DbContext context)
         {
             this.Database = context;
             this.DbSet = this.Database.Set<TEntity>();
         }
 
+        protected DbContext Database { get; }
+
+        protected DbSet<TEntity> DbSet { get; }
         public virtual TEntity Add(TEntity entity)
         {
             EntityEntry<TEntity> ent = null;
@@ -45,9 +47,150 @@ namespace Hik.DataAccess
             return ent?.Entity;
         }
 
-        public virtual Task<List<TEntity>> GetAllAsync()
+        public void AddRange(IEnumerable<TEntity> entities)
         {
-            return DbSet.ToListAsync();
+            this.DbSet.AddRange(entities);
+        }
+
+        public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+            Log.Debug($"CountAsync : {result?.ToQueryString()}");
+            return result?.CountAsync() ?? Task.FromResult(-1);
+        }
+
+        public async Task<List<TEntity>> ExecuteQueryAsync(string query)
+        {
+            using (var command = Database.Database.GetDbConnection().CreateCommand())
+            {
+                Log.Information(query);
+                command.CommandText = query;
+                command.CommandType = CommandType.Text;
+
+                await Database.Database.OpenConnectionAsync();
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    var lst = new List<TEntity>();
+                    while (await reader.ReadAsync())
+                    {
+                        var newObject = new TEntity();
+                        foreach (PropertyInfo property in newObject.GetType().GetProperties())
+                        {
+                            ColumnAttribute customAttribute = Attribute.GetCustomAttribute(property, typeof(ColumnAttribute)) as ColumnAttribute;
+                            if (customAttribute != null)
+                            {
+                                int ordinal = reader.GetOrdinal(customAttribute.Name);
+                                object obj = ordinal != -1 ?
+                                    reader.GetValue(ordinal) :
+                                    throw new Exception(string.Format("Class [{0}] have attribute of field [{1}] which not exist in reader", this.GetType(), customAttribute.Name));
+
+                                if (obj != DBNull.Value)
+                                {
+                                    property.SetValue(newObject, Unbox(obj, property.PropertyType), null);
+                                }
+                            }
+                        }
+                        lst.Add(newObject);
+                    }
+
+                    return lst;
+                }
+            }
+        }
+
+        public virtual IQueryable<TEntity> FindBy(Expression<Func<TEntity, bool>> predicate)
+        {
+            var query = DbSet.Where(predicate);
+
+            Log.Debug($"FindByAsync : {query?.ToQueryString()}");
+
+            return query;
+        }
+
+        public virtual Task<TEntity> FindByAsync(Expression<Func<TEntity, bool>> predicate,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+
+            Log.Debug($"FindByAsync : {result?.ToQueryString()}");
+
+            return result?.FirstOrDefaultAsync();
+        }
+
+        public TEntity FindById(int id)
+        {
+            return DbSet.First(x => x.Id == id);
+        }
+
+        public Task<TEntity> FindByIdAsync(int id)
+        {
+            return DbSet.FirstAsync(x => x.Id == id);
+        }
+
+        public virtual Task<List<TEntity>> FindManyAsync(Expression<Func<TEntity, bool>> predicate,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+
+            Log.Debug($"FindManyAsync : {result?.ToQueryString()}");
+
+            return result?.ToListAsync();
+        }
+
+        public virtual Task<List<TEntity>> FindManyByAscAsync(Expression<Func<TEntity, bool>> predicate,
+            Expression<Func<TEntity, object>> orderByAsc, int skip, int top,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+
+            result = result.OrderBy(orderByAsc).Skip(skip).Take(top);
+
+            Log.Debug($"FindManyByAscAsync : {result?.ToQueryString()}");
+
+            return result?.ToListAsync();
+        }
+
+        public virtual Task<List<TEntity>> FindManyByDescAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            Expression<Func<TEntity, object>> orderByDesc,
+            int skip,
+            int take,
+            params Expression<Func<TEntity, object>>[] includes)
+        {
+            var result = DbSet.Where(predicate);
+
+            foreach (var includeExpression in includes)
+            {
+                result = result.Include(includeExpression);
+            }
+
+            result = result.OrderByDescending(orderByDesc).Skip(skip).Take(take);
+
+            Log.Debug($"FindManyByDescAsync : {result?.ToQueryString()}");
+
+            return result?.ToListAsync();
         }
 
         public virtual IQueryable<TEntity> GetAll(params Expression<Func<TEntity, object>>[] includes)
@@ -62,6 +205,10 @@ namespace Hik.DataAccess
             return result;
         }
 
+        public virtual Task<List<TEntity>> GetAllAsync()
+        {
+            return DbSet.ToListAsync();
+        }
         public async Task<List<TEntity>> GetLatestGroupedBy(
             Expression<Func<TEntity, object>> groupBy)
         {
@@ -99,115 +246,6 @@ namespace Hik.DataAccess
             Log.Debug($"LastAsync : {result?.ToQueryString()}");
             return result?.ToListAsync();
         }
-
-        public virtual Task<TEntity> FindByAsync(Expression<Func<TEntity, bool>> predicate,
-            params Expression<Func<TEntity, object>>[] includes)
-        {
-            var result = DbSet.Where(predicate);
-
-            foreach (var includeExpression in includes)
-            {
-                result = result.Include(includeExpression);
-            }
-
-            Log.Debug($"FindByAsync : {result?.ToQueryString()}");
-
-            return result?.FirstOrDefaultAsync();
-        }
-
-        public virtual IQueryable<TEntity> FindBy(Expression<Func<TEntity, bool>> predicate)
-        {
-            var query = DbSet.Where(predicate);
-
-            Log.Debug($"FindByAsync : {query?.ToQueryString()}");
-
-            return query;
-        }
-
-        public virtual Task<List<TEntity>> FindManyAsync(Expression<Func<TEntity, bool>> predicate,
-            params Expression<Func<TEntity, object>>[] includes)
-        {
-            var result = DbSet.Where(predicate);
-
-            foreach (var includeExpression in includes)
-            {
-                result = result.Include(includeExpression);
-            }
-
-            Log.Debug($"FindManyAsync : {result?.ToQueryString()}");
-
-            return result?.ToListAsync();
-        }
-
-        public virtual Task<List<TEntity>> FindManyByDescAsync(
-            Expression<Func<TEntity, bool>> predicate,
-            Expression<Func<TEntity, object>> orderByDesc,
-            int skip,
-            int take,
-            params Expression<Func<TEntity, object>>[] includes)
-        {
-            var result = DbSet.Where(predicate);
-
-            foreach (var includeExpression in includes)
-            {
-                result = result.Include(includeExpression);
-            }
-
-            result = result.OrderByDescending(orderByDesc).Skip(skip).Take(take);
-
-            Log.Debug($"FindManyByDescAsync : {result?.ToQueryString()}");
-
-            return result?.ToListAsync();
-        }
-
-        public virtual Task<List<TEntity>> FindManyByAscAsync(Expression<Func<TEntity, bool>> predicate,
-            Expression<Func<TEntity, object>> orderByAsc, int skip, int top,
-            params Expression<Func<TEntity, object>>[] includes)
-        {
-            var result = DbSet.Where(predicate);
-
-            foreach (var includeExpression in includes)
-            {
-                result = result.Include(includeExpression);
-            }
-
-            result = result.OrderBy(orderByAsc).Skip(skip).Take(top);
-
-            Log.Debug($"FindManyByAscAsync : {result?.ToQueryString()}");
-
-            return result?.ToListAsync();
-        }
-
-        public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate,
-            params Expression<Func<TEntity, object>>[] includes)
-        {
-            var result = DbSet.Where(predicate);
-
-            foreach (var includeExpression in includes)
-            {
-                result = result.Include(includeExpression);
-            }
-            Log.Debug($"CountAsync : {result?.ToQueryString()}");
-            return result?.CountAsync() ?? Task.FromResult(-1);
-        }
-
-        public void Update(TEntity entity)
-        {
-            using (var transaction = Database.Database.BeginTransaction())
-            {
-                try
-                {
-                    DbSet.Update(entity);
-                    Database.SaveChanges();
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex.Message);
-                }
-            }
-        }
-
         public void Remove(params object[] keys)
         {
             TEntity entity = this.DbSet.Find(keys);
@@ -234,9 +272,30 @@ namespace Hik.DataAccess
             this.DbSet.RemoveRange(entities);
         }
 
-        public void AddRange(IEnumerable<TEntity> entities)
+        public void Update(TEntity entity)
         {
-            this.DbSet.AddRange(entities);
+            using (var transaction = Database.Database.BeginTransaction())
+            {
+                try
+                {
+                    DbSet.Update(entity);
+                    Database.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.Message);
+                }
+            }
+        }
+        static object Unbox(object x, Type t)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(t);
+            if (Nullable.GetUnderlyingType(t) != null)
+            {
+                return Convert.ChangeType(x, underlyingType);
+            }
+            return Convert.ChangeType(x, t);
         }
     }
 }

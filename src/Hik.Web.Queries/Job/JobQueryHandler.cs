@@ -20,7 +20,7 @@ namespace Hik.Web.Queries.Job
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var triggerRepo = uow.GetRepository<JobTrigger>();
-                var trigger = await triggerRepo.FindByAsync(x => x.Id == request.JobTriggerId);
+                var trigger = await triggerRepo.FindByIdAsync(request.JobTriggerId);
 
                 if (trigger != null)
                 {
@@ -28,10 +28,11 @@ namespace Hik.Web.Queries.Job
 
                     var totalItems = await jobsRepo.CountAsync(x => x.JobTriggerId == request.JobTriggerId);
 
-                    var jobs = await jobsRepo.FindManyByDescAsync(x => x.JobTriggerId == request.JobTriggerId,
-                        x => x.Id,
-                        Math.Max(0, request.CurrentPage - 1) * request.PageSize,
-                        request.PageSize);
+                    var jobs = await jobsRepo.FindManyByDescAsync(
+                        predicate: x => x.JobTriggerId == request.JobTriggerId,
+                        orderByDesc : x => x.Id,
+                        skip: Math.Max(0, request.CurrentPage - 1) * request.PageSize,
+                        take: request.PageSize);
 
                     return new JobDto()
                     {

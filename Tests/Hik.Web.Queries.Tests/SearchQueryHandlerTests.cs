@@ -61,14 +61,14 @@ namespace Hik.Web.Queries.Test
             SetupGetMediaFilesDescAsync(new List<MediaFile>() { file }, 1);
 
             repoMock.Setup(x => x.FindManyByDescAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(),
-                It.IsAny<Expression<Func<MediaFile, object>>>(), 0, 5, x => x.DownloadDuration))
+                It.IsAny<Expression<Func<MediaFile, object>>>(), 0, 5))
                 .ReturnsAsync(new List<MediaFile>()
             {
                 new(){Id = 5, Date = new(2022,02,02), Path = "C:\\", Name = "File5.jpg"},
                 new(){Id = 4, Date = new(2022,02,01), Path = "C:\\", Name = "File4.jpg"},
             });
             repoMock.Setup(x => x.FindManyByAscAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(),
-                It.IsAny<Expression<Func<MediaFile, object>>>(), 0, 5, x => x.DownloadDuration))
+                It.IsAny<Expression<Func<MediaFile, object>>>(), 0, 5))
                 .ReturnsAsync(new List<MediaFile>()
             {
                 new(){Id = 7, Date = new(2022,02,02), Path = "C:\\", Name = "File7.jpg"},
@@ -115,13 +115,13 @@ namespace Hik.Web.Queries.Test
 
         private void SetupGetMediaFilesDescAsync(List<MediaFile> list, int top = 5)
         {
-            repoMock.Setup(x => x.FindManyByDescAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>>(), 0, top, x => x.DownloadDuration))
+            repoMock.Setup(x => x.FindManyByDescAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>>(), 0, top))
                 .ReturnsAsync(list);
         }
 
         private void SetupGetMediaFilesAscAsync(List<MediaFile> list, int top = 5)
         {
-            repoMock.Setup(x => x.FindManyByAscAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>>(), 0, top, x => x.DownloadDuration))
+            repoMock.Setup(x => x.FindManyByAscAsync(It.IsAny<Expression<Func<MediaFile, bool>>>(), It.IsAny<Expression<Func<MediaFile, object>>>(), 0, top))
                 .ReturnsAsync(list);
         }
     }

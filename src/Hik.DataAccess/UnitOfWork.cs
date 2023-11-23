@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading.Tasks;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
@@ -22,9 +21,9 @@ namespace Hik.DataAccess
         }
 
         public IBaseRepository<TEntity> GetRepository<TEntity>()
-            where TEntity : class, IEntity
+            where TEntity : class, IEntity, new()
         {
-            if (repositories == null) repositories = new ConcurrentDictionary<Type, object>();
+            repositories ??= new ConcurrentDictionary<Type, object>();
 
             var type = typeof(TEntity);
             if (!repositories.TryGetValue(type, out object value))

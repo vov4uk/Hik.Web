@@ -25,7 +25,7 @@ namespace Hik.Web.Queries.QuartzTrigger
                 var triggerRepo = uow.GetRepository<JobTrigger>();
 
                 timer.Restart();
-                var trigger = await triggerRepo.FindByAsync(x => x.Id == request.Id);
+                var trigger = await triggerRepo.FindByIdAsync(request.Id);
                 timer.Stop();
                 Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "trigger", timer.ElapsedMilliseconds);
 

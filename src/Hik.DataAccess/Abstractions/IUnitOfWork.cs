@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Hik.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +7,7 @@ namespace Hik.DataAccess.Abstractions
     public interface IUnitOfWork : IDisposable
     {
         IBaseRepository<TEntity> GetRepository<TEntity>()
-            where TEntity : class, IEntity;
+            where TEntity : class, IEntity, new();
 
         void SaveChanges();
         void SaveChanges(HikJob job);
