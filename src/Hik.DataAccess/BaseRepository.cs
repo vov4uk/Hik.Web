@@ -61,7 +61,9 @@ namespace Hik.DataAccess
             {
                 result = result.Include(includeExpression);
             }
-            Log.Debug($"CountAsync : {result?.ToQueryString()}");
+
+            LogQuery(nameof(CountAsync), result);
+
             return result?.CountAsync() ?? Task.FromResult(-1);
         }
 
@@ -89,7 +91,7 @@ namespace Hik.DataAccess
                                 int ordinal = reader.GetOrdinal(customAttribute.Name);
                                 object obj = ordinal != -1 ?
                                     reader.GetValue(ordinal) :
-                                    throw new Exception(string.Format("Class [{0}] have attribute of field [{1}] which not exist in reader", this.GetType(), customAttribute.Name));
+                                    throw new NullReferenceException(string.Format("Class [{0}] have attribute of field [{1}] which not exist in reader", this.GetType(), customAttribute.Name));
 
                                 if (obj != DBNull.Value)
                                 {
@@ -109,8 +111,7 @@ namespace Hik.DataAccess
         {
             var query = DbSet.Where(predicate);
 
-            Log.Debug($"FindByAsync : {query?.ToQueryString()}");
-
+            LogQuery(nameof(FindBy), query);
             return query;
         }
 
@@ -123,8 +124,7 @@ namespace Hik.DataAccess
             {
                 result = result.Include(includeExpression);
             }
-
-            Log.Debug($"FindByAsync : {result?.ToQueryString()}");
+            LogQuery(nameof(FindByAsync), result);
 
             return result?.FirstOrDefaultAsync();
         }
@@ -149,7 +149,7 @@ namespace Hik.DataAccess
                 result = result.Include(includeExpression);
             }
 
-            Log.Debug($"FindManyAsync : {result?.ToQueryString()}");
+            LogQuery(nameof(FindManyAsync), result);
 
             return result?.ToListAsync();
         }
@@ -167,7 +167,7 @@ namespace Hik.DataAccess
 
             result = result.OrderBy(orderByAsc).Skip(skip).Take(top);
 
-            Log.Debug($"FindManyByAscAsync : {result?.ToQueryString()}");
+            LogQuery(nameof(FindManyByAscAsync), result);
 
             return result?.ToListAsync();
         }
@@ -188,7 +188,7 @@ namespace Hik.DataAccess
 
             result = result.OrderByDescending(orderByDesc).Skip(skip).Take(take);
 
-            Log.Debug($"FindManyByDescAsync : {result?.ToQueryString()}");
+            LogQuery(nameof(FindManyByDescAsync), result);
 
             return result?.ToListAsync();
         }
@@ -201,7 +201,7 @@ namespace Hik.DataAccess
             {
                 result = result.Include(includeExpression);
             }
-            Log.Debug($"GetAll : {result?.ToQueryString()}");
+            LogQuery(nameof(GetAll), result);
             return result;
         }
 
@@ -219,8 +219,8 @@ namespace Hik.DataAccess
             var ids = await idsQuery.ToListAsync();
 
             var result = DbSet.Where(p => ids.Contains(p.Id));
-            Log.Debug($"GetLatestGroupedBy - 1 Ids: {idsQuery?.ToQueryString()}");
-            Log.Debug($"GetLatestGroupedBy - 1 Result: {result?.ToQueryString()}");
+            LogQuery(nameof(idsQuery), idsQuery);
+            LogQuery(nameof(GetLatestGroupedBy), result);
             return await result?.ToListAsync();
         }
 
@@ -235,15 +235,15 @@ namespace Hik.DataAccess
             var ids = await idsQuery.ToListAsync();
 
             var result = DbSet.Where(p => ids.Contains(p.Id));
-            Log.Debug($"GetLatestGroupedBy - 2 Ids : {idsQuery?.ToQueryString()}");
-            Log.Debug($"GetLatestGroupedBy - 2 Result: {result?.ToQueryString()}");
+            LogQuery(nameof(idsQuery), idsQuery);
+            LogQuery(nameof(GetLatestGroupedBy), result);
             return await result?.ToListAsync();
         }
 
         public virtual Task<List<TEntity>> LastAsync(int last)
         {
             var result = DbSet.OrderByDescending(x => x).Take(last);
-            Log.Debug($"LastAsync : {result?.ToQueryString()}");
+            LogQuery(nameof(LastAsync), result);
             return result?.ToListAsync();
         }
         public void Remove(params object[] keys)
@@ -296,6 +296,13 @@ namespace Hik.DataAccess
                 return Convert.ChangeType(x, underlyingType);
             }
             return Convert.ChangeType(x, t);
+        }
+
+        static void LogQuery<T>(string method, IQueryable<T> result)
+        {
+#if DEBUG
+            Log.Information($"{method} : {result?.ToQueryString()}");
+#endif
         }
     }
 }
