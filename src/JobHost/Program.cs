@@ -63,7 +63,7 @@ namespace JobHost
                 Environment.ExitCode = -1;
             }
 
-            await logger.DisposeAsync();
+            logger?.Dispose();
             await Task.Delay(2000); // to write logs
         }
     }
