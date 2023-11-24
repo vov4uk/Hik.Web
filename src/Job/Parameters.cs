@@ -1,5 +1,4 @@
-﻿using Job.Extensions;
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Job
@@ -7,31 +6,23 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class Parameters
     {
-        public string ClassName { get; private set; }
-
-        public Guid ActivityId { get; set; }
+        public Guid ActivityId { get; private set; }
 
         public string TriggerKey { get; set; }
 
         public string Group { get; set; }
 
-        public string ConfigFilePath { get; set; }
-
-        public string ConnectionString { get; set; }
-
-        public bool RunAsTask { get; set; } = true;
+        public string Environment { get; set; }
 
         public override string ToString()
-            => $"\"{ClassName}\" \"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{ConfigFilePath}\" \"{ConnectionString}\" \"{RunAsTask}\"";
+            => $"\"{Group}\" \"{TriggerKey}\" \"{ActivityId}\" \"{Environment}\"";
 
-        public Parameters(string className, string group, string triggerKey, string configFilePath, string connectionString, bool runAsTask = false)
+        public Parameters(string group, string triggerKey, string environment)
         {
             TriggerKey = triggerKey;
-            ClassName = className;
             Group = group;
-            ConfigFilePath = HikConfigExtensions.GetConfigPath(configFilePath);
-            ConnectionString = connectionString;
-            RunAsTask = runAsTask;
+            Environment = environment;
+            ActivityId = Guid.NewGuid();
         }
 
         private Parameters()
@@ -39,15 +30,12 @@ namespace Job
         }
 
         public static Parameters Parse(string[] args)
-            => new Parameters
+            => new()
             {
-                ClassName = args[0],
-                Group = args[1],
-                TriggerKey = args[2],
-                ActivityId = Guid.Parse(args[3]),
-                ConfigFilePath = args[4],
-                ConnectionString = args[5],
-                RunAsTask = args[6] == "true"
+                Group = args[0],
+                TriggerKey = args[1],
+                ActivityId = Guid.Parse(args[2]),
+                Environment = args[3]
             };
     }
 }

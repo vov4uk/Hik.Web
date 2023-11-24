@@ -20,7 +20,7 @@ namespace Hik.Web.Queries.Test
         private readonly Mock<IUnitOfWork> uowMock = new(MockBehavior.Strict);
         private readonly Mock<IBaseRepository<HikJob>> jobsRepoMock = new(MockBehavior.Strict);
         private readonly Mock<IBaseRepository<MediaFile>> filesRepoMock = new(MockBehavior.Strict);
-        private readonly Mock<IBaseRepository<DownloadHistory>> downloadRepoMock = new(MockBehavior.Strict);
+
 
         public JobDetailsQueryHandlerTests()
         {
@@ -29,8 +29,6 @@ namespace Hik.Web.Queries.Test
                 .Returns(jobsRepoMock.Object);
             uowMock.Setup(uow => uow.GetRepository<MediaFile>())
                 .Returns(filesRepoMock.Object);
-            uowMock.Setup(uow => uow.GetRepository<DownloadHistory>())
-                .Returns(downloadRepoMock.Object);
             uowFactoryMock.Setup(x => x.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
                 .Returns(uowMock.Object);
         }
@@ -42,8 +40,6 @@ namespace Hik.Web.Queries.Test
             var job = new HikJob() { JobTriggerId = 1, JobTrigger = new JobTrigger { TriggerKey = "TriggerKey" } };
             jobsRepoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<HikJob, bool>>>(), It.IsAny<Expression<Func<HikJob, object>>[]>()))
                 .ReturnsAsync(job);
-            downloadRepoMock.Setup(x => x.CountAsync(It.IsAny<Expression<Func<DownloadHistory, bool>>>()))
-                .ReturnsAsync(100);
             filesRepoMock.Setup(x => x.FindManyByDescAsync(
                 It.IsAny<Expression<Func<MediaFile, bool>>>(),
                 It.IsAny<Expression<Func<MediaFile, object>>>(),
@@ -59,13 +55,15 @@ namespace Hik.Web.Queries.Test
                     new(){ Id = 15, JobTriggerId = 1, Date = new(2022, 01, 02), Name = "File5.mp4", Size = 10, Path = "C:\\"},
                     new(){ Id = 16, JobTriggerId = 1, Date = new(2022, 01, 03), Name = "File6.mp4", Size = 10, Path = "C:\\"},
                 });
+            filesRepoMock.Setup(x => x.CountAsync(It.IsAny<Expression<Func<MediaFile, bool>>>()))
+                .ReturnsAsync(100);
 
             var handler = new JobDetailsQueryHandler(uowFactoryMock.Object);
             var result = await handler.Handle(request, CancellationToken.None);
 
             Assert.IsType<JobDetailsDto>(result);
             var dto = (JobDetailsDto)result;
-            Assert.Equal("TriggerKey", dto.Job.JobTrigger);
+            Assert.Equal(".TriggerKey", dto.Job.JobTrigger);
             Assert.Equal(100, dto.TotalItems);
 
             Assert.NotEmpty(dto.Items);

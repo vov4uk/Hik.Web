@@ -16,7 +16,7 @@
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Hik.Helpers.Abstraction;
-    using Microsoft.Extensions.Logging;
+    using Serilog;
     using Moq;
     using Xunit;
     using DeviceConfig = DTO.Config.DeviceConfig;
@@ -86,10 +86,10 @@
         [InlineData(2020, 12, 31, "20201231_000000.jpg", "C:\\2020-12\\31\\00\\")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, string localFileName, string localFolder)
         {
-            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test", Camera = new DeviceConfig() };
+            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Camera = new DeviceConfig() };
 
             SetupLoginAndHddStatusCheck();
-            MediaFileDto remoteFile = new () { Date = new DateTime(y, m, d)};
+            MediaFileDto remoteFile = new() { Date = new DateTime(y, m, d) };
 
             var targetName = localFolder + localFileName;
 
@@ -98,10 +98,10 @@
             dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
             filesMock.Setup(x => x.FileSize(targetName))
                 .Returns(1);
-            filesMock.Setup(x => x.DeleteFile(localFileName));
+            filesMock.Setup(x => x.RenameFile(localFileName, targetName));
             filesMock.Setup(x => x.FileExists(targetName))
                 .Returns(false);
-            imageMock.Setup(x => x.SetDate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()));
+            imageMock.Setup(x => x.SetDate(It.IsAny<string>(), It.IsAny<DateTime>()));
 
             photoServiceMock.Setup(x => x.DownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()));
 
@@ -158,7 +158,7 @@
             var status = new HdInfo { HdStatus = 0 };
             sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(result);
-            sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
+            sdkMock.Setup(x => x.GetHddStatus(DefaultUserId, It.IsAny<int>()))
                 .Returns(status);
             return result;
         }

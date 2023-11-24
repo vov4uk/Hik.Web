@@ -21,47 +21,73 @@
                 <form method="POST">
                     <input type="submit" class="btn btn-primary" asp-page-handler="Restart" value="Restart" />
                 </form>
-                <a class="btn btn-primary" role="button" href="@Url.Page("CronEdit", "AddNew")">New</a>
+                <a class="btn btn-primary" role="button" href="@Url.Page("Trigger", "AddNew")">New</a>
             </div>
         </div>
     </div>
 </div>
 
-@if (Model.Dto != null && Model.Dto.Items.Any())
-{
-    <table class="table table-bordered table-sm" aria-label="Jobs">
-        <thead>
-            <tr>
-                <th>Cron</th>
-                <th>Group</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Class</th>
-                <th>Config</th>
-                <th>As Task</th>
-                <th></th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var cron in Model.Dto.Items)
-            {
-            <tr>
-                <td><span title="@cron.ExpressionString">@cron.Expression</span></td>
-                <td>@cron.Group</td>
-                <td>@cron.Name</td>
-                <td>@cron.Description</td>
-                <td>@cron.ClassName</td>
-                <td><a asp-page="./ConfigEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">@cron.ConfigPath</a></td>
-                <td>@cron.RunAsTask</td>
-                <td><a asp-page="./CronEdit" asp-route-name="@cron.Name" asp-route-group="@cron.Group">Edit</a></td>
-                <td>
-                    <form method="POST">
-                        <input type="submit" class="btn btn-primary" asp-page="/Index" asp-page-handler="Run" asp-route-group="@cron.Group" asp-route-name="@cron.Name" value="Start" />
-                     </form>
-                </td>
-            </tr>
-            }
-        </tbody>
-    </table>
-}
+<div class="container">
+    @if (Model.Triggers != null && Model.Triggers.Any())
+    {
+        @foreach (var key in Model.Triggers.Keys.OrderBy(x => x))
+        {
+            var jobTrigger = Model.Triggers[key];
+            <div class="row">
+                <div class="card-body text-center">
+                    <h4 class="card-title">@Html.DisplayFor(x => key)</h4>
+                </div>
+            </div>
+            <div class="row">
+                <table class="table table-striped table-bordered" aria-label="Triggers">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Cron</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Search</th>
+                            <th>Email</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cron in jobTrigger)
+                        {
+                            var status = @cron.IsEnabled ? "" : "failed";
+                            string configType = "";
+                            switch (cron.ClassName)
+                            {
+                                case "GarbageCollectorJob": configType = "GC"; break;
+                                case "ArchiveJob": configType = "Archive"; break;
+                                default: configType = "Camera"; break;
+                            }
+
+                            <tr data-status="@status" class="failed">
+                                <td>@cron.Id</td>
+                                <td><span title="@cron.ExpressionString">@cron.CronExpression</span></td>
+                                <td>@cron.Name</td>
+                                <td>@cron.Description</td>
+                                <td>
+                                    <span data-value="@cron.ShowInSearch" class="checkmark"></span>
+                                 </td>
+                                 <td>
+                                    <span data-value="@cron.SentEmailOnError" class="checkmark"></span>
+                                 </td>
+                                <td><a class="btn btn-primary" asp-page="./Trigger" asp-route-id="@cron.Id">Edit</a></td>
+                                <td><a class="btn btn-primary" asp-page="./Config/@configType" asp-route-id="@cron.Id">Config</a></td>
+                                <td>
+                                    <form method="POST">
+                                        <input type="submit" class="btn btn-primary" asp-page="/Index" asp-page-handler="Run" asp-route-id="@cron.Id" value="Start" />
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>

@@ -1,11 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 using Hik.Client.FileProviders;
 using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
 using Job.Email;
-using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,15 +21,14 @@ namespace Job.Impl
         protected readonly IFilesHelper filesHelper;
         protected readonly IFileProvider filesProvider;
 
-        public GarbageCollectorJob(string trigger,
-            GarbageCollectorConfig config,
+        public GarbageCollectorJob(JobTrigger trigger,
             IDirectoryHelper directory,
             IFilesHelper files,
             IFileProvider provider,
             IHikDatabase db,
             IEmailHelper email,
             ILogger logger)
-            : base(trigger,config, db, email, logger)
+            : base(trigger, db, email, logger)
         {
 
             this.directoryHelper = directory;
@@ -36,7 +37,7 @@ namespace Job.Impl
             this.configValidator = new GarbageCollectorConfigValidator();
         }
 
-        protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
+        protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
             IReadOnlyCollection<MediaFileDto> deleteFilesResult;
 
@@ -51,11 +52,13 @@ namespace Job.Impl
             }
             else
             {
-                deleteFilesResult = PersentageDelete(Config);
+                var triggers = await db.GetJobTriggersAsync(Config.Triggers);
+                var topFolders = triggers.Select(x => JObject.Parse(x.Config).Value<string>("DestinationFolder")).ToArray();
+                deleteFilesResult = PersentageDelete(Config, topFolders);
             }
 
             directoryHelper.DeleteEmptyDirs(Config.DestinationFolder);
-            return Task.FromResult(Result.Success(deleteFilesResult));
+            return Result.Success(deleteFilesResult);
         }
 
         protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
@@ -66,7 +69,7 @@ namespace Job.Impl
 
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
 
-            if (JobInstance.PeriodEnd.HasValue && JobInstance.FilesCount > 0 && Config.Triggers?.Any() == true)
+            if (JobInstance.PeriodEnd.HasValue && JobInstance.FilesCount > 0 && Config.Triggers?.Length > 0)
             {
                 await db.DeleteObsoleteJobsAsync(Config.Triggers, JobInstance.PeriodEnd.Value);
             }
@@ -76,14 +79,14 @@ namespace Job.Impl
         {
             foreach (var file in filesToDelete)
             {
-                this.logger.LogDebug("Deleting: {path}", file.Path);
+                this.logger.Debug("Deleting: {path}", file.Path);
 #if RELEASE
                 file.Size = filesHelper.FileSize(file.Path);
                 this.filesHelper.DeleteFile(file.Path);
 #endif
             }
         }
-        private List<MediaFileDto> PersentageDelete(GarbageCollectorConfig gcConfig)
+        private List<MediaFileDto> PersentageDelete(GarbageCollectorConfig gcConfig, string[] topFolders)
         {
             List<MediaFileDto> deletedFiles = new();
             var destination = gcConfig.DestinationFolder;
@@ -94,13 +97,13 @@ namespace Job.Impl
 
                 var freePercentage = 100 * freeSpace / totalSpace;
                 string freePercentageString = $"Destination: {destination} Free Percentage: {freePercentage,2} %";
-                this.logger.LogInformation("{freePercentage}", freePercentageString);
+                this.logger.Information("{freePercentage}", freePercentageString);
 
                 if (freePercentage < gcConfig.FreeSpacePercentage)
                 {
-                    filesProvider.Initialize(gcConfig.TopFolders);
+                    filesProvider.Initialize(topFolders);
                     var filesToDelete = filesProvider.GetNextBatch(gcConfig.FileExtention);
-                    if (!filesToDelete.Any())
+                    if (filesToDelete.Count == 0)
                     {
                         break;
                     }

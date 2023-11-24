@@ -2,49 +2,89 @@ using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Hik.DataAccess.SQL;
+using System.Threading.Tasks;
+using Serilog.Events;
+using Hik.DataAccess;
+using Hik.DTO.Config;
 
 namespace Hik.Web
 {
     public static class Program
     {
         private const string ConsoleParameter = "--console";
-        public static string Version { get; set; }
-        public static string ConnectionString { get; set; }
+        private const string AppSettings = "appsettings.json";
 
-        public static void Main(string[] args)
+        internal static string Version { get; set; }
+
+        internal static string Environment { get; set; }
+
+        internal static DbConfiguration DBConfig { get; set; }
+
+        public static async Task Main(string[] args)
         {
+            Console.WriteLine($"AssemblyDirectory : {AssemblyDirectory}");
+
             var isService = !(Debugger.IsAttached || args.Contains(ConsoleParameter));
-            var builder = CreateHostBuilder(isService, args.Where(arg => arg != ConsoleParameter).ToArray());
+            Environment = isService ? "Production" : "Development";
+
+            string envSettings = $"appsettings.{Environment}.json";
+
+            Console.WriteLine($"Environment : {Environment}");
+            Console.WriteLine($"appsettings.json : {File.Exists(Path.Combine(AssemblyDirectory, AppSettings))}");
+            Console.WriteLine($"{envSettings} : {File.Exists(Path.Combine(AssemblyDirectory, envSettings))}");
+
+            IConfigurationRoot config = new ConfigurationBuilder()
+                .SetBasePath(AssemblyDirectory)
+                .AddJsonFile(AppSettings, optional: true, reloadOnChange: true)
+                .AddJsonFile(envSettings, optional: true, reloadOnChange: true)
+                .Build();
+
+            var loggerConfig = config.GetSection("Serilog").Get<LoggerConfig>();
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.File(
+                   Path.Combine(loggerConfig.DefaultLogsPath,"hikweb_.txt"),
+                   rollingInterval: RollingInterval.Day,
+                   fileSizeLimitBytes: 10 * 1024 * 1024,
+                   retainedFileCountLimit: 2,
+                   rollOnFileSizeLimit: true,
+                   shared: true,
+                   flushToDiskInterval: TimeSpan.FromSeconds(1))
+                   .WriteTo.Seq(loggerConfig.ServerUrl,
+                                 period: TimeSpan.FromSeconds(1))
+                .CreateLogger();
+
+            DBConfig = config.GetSection("DBConfiguration").Get<DbConfiguration>();
+
+            await MigrationTools.RunMigration(DBConfig);
+
+            var builder = CreateHostBuilder(isService, config);
 
             var host = builder.Build();
 
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            Log.Information($"App started - version {Version}");
             host.Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(bool isService, string[] args)
+        public static IHostBuilder CreateHostBuilder(bool isService, IConfigurationRoot config)
         {
-            Directory.SetCurrentDirectory(AssemblyDirectory);
-
-            var env = isService ? "Production" : "Development";
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Environment.CurrentDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
-                .AddCommandLine(args)
-                .Build();
-
             var port = config.GetSection("Hosting:Port").Value;
 
-            ConnectionString = config.GetSection("DBConfiguration").GetSection("ConnectionString").Value;
-
-            var host = Host.CreateDefaultBuilder(args)
+            var host = Host.CreateDefaultBuilder()
+                .UseSerilog()
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
@@ -61,15 +101,7 @@ namespace Hik.Web
 #else
                     .UseUrls($"http://+:{port}")
 #endif
-
                     .UseStartup<Startup>();
-                })
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.SetMinimumLevel(LogLevel.Trace);
-                    logging.AddConsole();
-                    logging.AddFile("Logs\\hikweb-{Date}.txt");
                 });
 
             if (isService)
@@ -80,7 +112,7 @@ namespace Hik.Web
             return host;
         }
 
-        private static string AssemblyDirectory
+        internal static string AssemblyDirectory
         {
             get
             {

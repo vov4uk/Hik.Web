@@ -7,7 +7,7 @@ using AutoFixture;
 using Hik.Client.Service;
 using Hik.DTO.Config;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Moq;
 using Xunit;
 
@@ -113,7 +113,6 @@ namespace Hik.Client.Tests.Services
             {
                 DestinationFolder = "C:\\",
                 SourceFolder = "E:\\",
-                Alias = "test",
                 SkipLast = 0,
                 FileNameDateTimeFormat = fileNameDateTimeFormat,
                 FileNamePattern = fileNamePattern
@@ -130,7 +129,7 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
                 .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
+            this.imageMock.Setup(x => x.SetDate(targetFile, It.IsAny<DateTime>()));
             this.imageMock.Setup(x => x.GetDescriptionData(It.IsAny<string>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
@@ -193,7 +192,7 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
                 .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.imageMock.Setup(x => x.SetDate(sourceFileName, targetFile, It.IsAny<DateTime>()));
+            this.imageMock.Setup(x => x.SetDate(targetFile, It.IsAny<DateTime>()));
             this.imageMock.Setup(x => x.GetDescriptionData(It.IsAny<string>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.FileSize(targetFile))

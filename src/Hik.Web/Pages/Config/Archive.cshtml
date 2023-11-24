@@ -1,0 +1,68 @@
+﻿@page
+@using Hik.Web.Pages.Config;
+@model ArchiveModel
+<div>
+    <a asp-page="/Scheduler">Back to List</a>
+</div>
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+           <h2>Archive</h2>
+            <div class="form-group">
+                @Html.HiddenFor(x => x.Id)
+            </div>
+            @Html.ValidationDiv()
+
+           <div class="form-group">
+               <label asp-for="@Model.Config.Timeout" class="control-label"></label>
+               <input asp-for="@Model.Config.Timeout" class="form-control" />
+           </div>
+           <div class="form-group">
+               <label asp-for="@Model.Config.DestinationFolder" class="control-label"></label>
+               <input asp-for="@Model.Config.DestinationFolder" class="form-control" />
+           </div>
+
+           <div class="form-group">
+               <label asp-for="@Model.Config.UnzipFiles" class="control-label"></label>
+               @Html.CheckBoxFor(m => m.Config.UnzipFiles)
+           </div>
+           <div class="form-group">
+               <label asp-for="@Model.Config.SourceFolder" class="control-label"></label>
+               <input asp-for="@Model.Config.SourceFolder" class="form-control" />
+           </div>
+           <div class="form-group">
+               <label asp-for="@Model.Config.FileNamePattern" class="control-label"></label>
+               <input asp-for="@Model.Config.FileNamePattern" class="form-control" />
+           </div>
+           <div class="form-group">
+               <label asp-for="@Model.Config.FileNameDateTimeFormat" class="control-label"></label>
+               <input asp-for="@Model.Config.FileNameDateTimeFormat" class="form-control" />
+           </div>
+           <div class="form-group">
+               <label asp-for="@Model.Config.SkipLast" class="control-label"></label>
+               <input asp-for="@Model.Config.SkipLast" class="form-control" />
+           </div>
+           <div class="form-group">
+               <label asp-for="@Model.Config.AbnormalFilesCount" class="control-label"></label>
+               <input asp-for="@Model.Config.AbnormalFilesCount" class="form-control" />
+           </div>
+           <div class="form-group">
+               <label asp-for="@Model.Config.AllowedFileExtentions" class="control-label"></label>
+               <input asp-for="@Model.Config.AllowedFileExtentions" class="form-control" />
+           </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

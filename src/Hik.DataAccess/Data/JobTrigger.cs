@@ -21,13 +21,30 @@ namespace Hik.DataAccess.Data
 
         public bool ShowInSearch { get; set; }
 
-        public List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
+        public string ClassName { get; set; }
 
-        public List<HikJob> Jobs { get; set; } = new List<HikJob>();
+        public string Config {  get; set; }
+
+        public string Description { get; set; }
+
+        public string CronExpression { get; set; }
+
+        public bool IsEnabled { get; set; }
+
+        public bool SentEmailOnError { get; set; }
 
         public DateTime? LastSync { get; set; }
 
+        public int? LastExecutedJobId { get; set; }
+
+        [ForeignKey("LastExecutedJobId")]
+        public virtual HikJob LastExecutedJob { get; set; }
+
         public virtual List<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
+
+        public virtual List<DailyStatistic> DailyStatistics { get; set; } = new List<DailyStatistic>();
+
+        public virtual List<HikJob> Jobs { get; set; } = new List<HikJob>();
 
         public override string ToString()
         {

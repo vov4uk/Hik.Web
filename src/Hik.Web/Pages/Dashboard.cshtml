@@ -23,7 +23,7 @@
                  </div>
              </div>
              <div class="row">
-                 <table class="table table-bordered table-sm" aria-label="Dashboard">
+                <table class="table table-striped" aria-label="Dashboard">
                      <thead>
                          <tr>
                              <th>@Html.DisplayNameFor(model => jobTriggers.FirstOrDefault().Name)</th>
@@ -38,7 +38,7 @@
                      <tbody>
                          @foreach (var jobTrigger in jobTriggers)
                          {
-                            var stat = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId);
+                            var stat = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id);
                             long statSize = stat?.FilesSize ?? 0;
                             int statDuration = stat?.TotalDuration ?? 0;
                             string size = statSize.FormatBytes();
@@ -46,9 +46,9 @@
                             string triggerString = jobTrigger.ToString();
 
                             var latestFile = new DateTime();
-                            @if(Model.Dto.Files.ContainsKey(jobTrigger.JobTriggerId))
+                            @if(Model.Dto.Files.ContainsKey(jobTrigger.Id))
                             {
-                                latestFile = Model.Dto.Files[jobTrigger.JobTriggerId];
+                                latestFile = Model.Dto.Files[jobTrigger.Id];
                             }
 
                             var now = DateTime.Now;
@@ -58,11 +58,11 @@
                                        || (className.Contains("GarbageCollector") && lastSyncDelta.TotalHours < 24);
                             var status = success ? "" : "failed";
                             <tr data-status="@status" class="failed">
-                                <td><a asp-page="./DashboardDetails" asp-route-triggerId="@jobTrigger.JobTriggerId">@triggerString</a></td>
+                                <td><a asp-page="./DashboardDetails" asp-route-triggerId="@jobTrigger.Id">@triggerString</a></td>
                                 <td><span title="@jobTrigger.LastSync?.GetRelativeTime()">@jobTrigger.LastSync?.GetString()</span></td>
                                 <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
                                 <td>@lastFileDelta.GetRelativeTime()</td>
-                                <td>@Html.DisplayFor(modelItem => Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.JobTriggerId).FilesCount)</td>
+                                <td>@Html.DisplayFor(modelItem => Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id).FilesCount)</td>
                                 <td>@size</td>
                                 <td>@duration</td>
                             </tr>

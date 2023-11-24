@@ -17,7 +17,6 @@ namespace Hik.DataAccess
         public IUnitOfWork CreateUnitOfWork(QueryTrackingBehavior trackingBehavior = QueryTrackingBehavior.TrackAll)
         {
             var db = new DataContext(this.connection);
-            db.Database.EnsureCreated();
             db.ChangeTracker.QueryTrackingBehavior = trackingBehavior;
             return new UnitOfWork<DataContext>(db);
         }

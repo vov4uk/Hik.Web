@@ -1,9 +1,12 @@
+using Hik.DTO.Contracts;
 using Hik.Web.Commands.Cron;
 using Hik.Web.Queries.QuartzTriggers;
 using Job;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
@@ -11,6 +14,9 @@ namespace Hik.Web.Pages
     public class SchedulerModel : PageModel
     {
         public QuartzTriggersDto Dto { get; set; }
+
+        public Dictionary<string, List<TriggerDto>> Triggers;
+
         public string ResponseMsg { get; private set; }
 
         private readonly IMediator _mediator;
@@ -24,6 +30,7 @@ namespace Hik.Web.Pages
         {
             ResponseMsg = msg;
             Dto = await _mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
+            Triggers = Dto.Triggers.Where(x => !string.IsNullOrEmpty(x.ClassName)).GroupBy(x => x.ClassName).ToDictionary(k => k.Key, v => v.ToList());
             return Page();
         }
 
@@ -36,8 +43,7 @@ namespace Hik.Web.Pages
 
         public IActionResult OnPostKillAll()
         {
-            RunningActivities activities = new();
-            foreach (var item in activities)
+            foreach (var item in RunningActivities.GetEnumerator())
             {
                 item?.Kill();
             }

@@ -3,20 +3,22 @@ using Hik.DataAccess.Metadata;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Hik.DataAccess.Data
 {
     [ExcludeFromCodeCoverage, Table(Tables.MediaFile)]
-    public class MediaFile : IEntity
+    public class MediaFile : IEntity, IAuditable
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey("JobTrigger")]
+        [ForeignKey("FK_MediaFile_JobTrigger_JobTriggerId")]
         public int JobTriggerId { get; set; }
+
+        [ForeignKey("FK_MediaFile_Job_JobId")]
+        public int JobId { get; set; }
 
         public string Name { get; set; }
 
@@ -28,21 +30,18 @@ namespace Hik.DataAccess.Data
 
         public int? Duration { get; set; }
 
+        public DateTime DownloadStarted { get; set; }
+
+        public int? DownloadDuration { get; set; }
+
         public long Size { get; set; }
 
         public JobTrigger JobTrigger { get; set; }
 
-        public virtual DownloadDuration DownloadDuration { get; set; }
-
-        public virtual DownloadHistory DownloadHistory { get; set; }
+        public HikJob Job { get; set; }
 
         public string GetPath()
         {
-            if (Debugger.IsAttached)
-            {
-                return this.Path?.Replace("E:\\Cloud\\", "W:\\");
-            }
-
             if (!string.IsNullOrEmpty(Path) && !System.IO.Path.HasExtension(this.Path))
             {
                 return System.IO.Path.Combine(this.Path, this.Name);

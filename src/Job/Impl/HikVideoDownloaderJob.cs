@@ -1,12 +1,15 @@
 ﻿using CSharpFunctionalExtensions;
 using Hik.Client.Abstraction.Services;
 using Hik.DataAccess.Abstractions;
+using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
 using Job.Extensions;
-using Microsoft.Extensions.Logging;
+using Serilog;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Job.Impl
@@ -16,13 +19,12 @@ namespace Job.Impl
         private readonly IHikVideoDownloaderService downloader;
 
         public HikVideoDownloaderJob(
-            string trigger,
-            CameraConfig config,
+            JobTrigger trigger,
             IHikVideoDownloaderService service,
             IHikDatabase db,
             IEmailHelper email,
             ILogger logger)
-            : base(trigger, config, db, email, logger)
+            : base(trigger, db, email, logger)
         {
             this.downloader = service;
             this.configValidator = new CameraConfigValidator();
@@ -31,35 +33,43 @@ namespace Job.Impl
         protected override async Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()
         {
             downloader.FileDownloaded += this.Downloader_VideoDownloaded;
-
-            var period = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
-            logger.LogInformation("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, period.PeriodStart, period.PeriodEnd);
-            JobInstance.PeriodStart = period.PeriodStart;
-            JobInstance.PeriodEnd = period.PeriodEnd;
-            JobInstance.LatestFileEndDate = jobTrigger.LastSync;
-            await db.UpdateJobAsync(JobInstance);
-
-            var files = await downloader.ExecuteAsync(Config, this.JobInstance.PeriodStart.Value, this.JobInstance.PeriodEnd.Value);
+            var files = await downloader.ExecuteAsync(Config, JobInstance.PeriodStart.Value, JobInstance.PeriodEnd.Value);
 
             downloader.FileDownloaded -= this.Downloader_VideoDownloaded;
             return files;
         }
 
-        protected override Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
+        protected override HikJob GetHikJob()
         {
-            return Task.CompletedTask;
+            var job = base.GetHikJob();
+            (DateTime PeriodStart, DateTime PeriodEnd) = HikConfigExtensions.CalculateProcessingPeriod(Config, jobTrigger.LastSync);
+            logger.Information("Last sync - {LastSync}, Period - {PeriodStart} - {PeriodEnd}", jobTrigger.LastSync, PeriodStart, PeriodEnd);
+            job.PeriodStart = PeriodStart;
+            job.PeriodEnd = PeriodEnd;
+            job.LatestFileEndDate = jobTrigger.LastSync;
+            return job;
         }
 
-        private async void Downloader_VideoDownloaded(object sender, Hik.Client.Events.FileDownloadedEventArgs e)
+        protected override async Task SaveResultsAsync(IReadOnlyCollection<MediaFileDto> files)
         {
-            JobInstance.FilesCount++;
-            JobInstance.LatestFileEndDate = e.File.Date.AddSeconds(e.File.Duration ?? 0);
-            var files = new[] { e.File };
-            var mediaFiles = await db.SaveFilesAsync(JobInstance, files);
-
             await db.UpdateDailyStatisticsAsync(jobTrigger.Id, files);
-            await db.SaveDownloadHistoryFilesAsync(JobInstance, mediaFiles);
-            await db.UpdateJobAsync(JobInstance);
+        }
+
+        private void Downloader_VideoDownloaded(object sender, Hik.Client.Events.FileDownloadedEventArgs e)
+        {
+            try
+            {
+                JobInstance.FilesCount++;
+                JobInstance.LatestFileEndDate = e.File.Date.AddSeconds(e.File.Duration ?? 0);
+                db.UpdateJob(JobInstance);
+
+                db.SaveFile(JobInstance, e.File);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Downloader_VideoDownloaded: {errorMsg}; Trace: {trace}", GetFullMessage(ex), ex.ToStringDemystified());
+                HandleError(ex);
+            }
         }
     }
 }

@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Hik.Api;
 using Hik.Client.Abstraction;
 using Hik.Client.Events;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client.Service
 {
     public abstract class HikDownloaderServiceBase : RecurrentJobBase
     {
-        protected const int JobTimeout = 30;
         private readonly IClientFactory clientFactory;
         private CancellationTokenSource cancelTokenSource;
 
@@ -38,11 +36,11 @@ namespace Hik.Client.Service
                 && cancelTokenSource.Token.CanBeCanceled)
             {
                 cancelTokenSource.Cancel();
-                logger.LogWarning("Cancel signal was sent");
+                logger.Warning("Cancel signal was sent");
             }
             else
             {
-                logger.LogWarning("Nothing to Cancel");
+                logger.Warning("Nothing to Cancel");
             }
         }
 
@@ -101,9 +99,9 @@ namespace Hik.Client.Service
         private async Task<IReadOnlyCollection<MediaFileDto>> InternalDownload(CameraConfig config, DateTime from, DateTime to)
         {
             var result = await ProcessCameraAsync(config, from, to);
-            if (result?.Any() != true)
+            if (result?.Count == 0)
             {
-                logger.LogWarning($"{from} - {to} : No files downloaded");
+                logger.Warning("{from} - {to} : No files downloaded", from, to);
             }
 
             return result;
@@ -112,7 +110,7 @@ namespace Hik.Client.Service
         private async Task<IReadOnlyCollection<MediaFileDto>> ProcessCameraAsync(CameraConfig config, DateTime periodStart, DateTime periodEnd)
         {
             var result = new List<MediaFileDto>();
-            using (Client = clientFactory.Create(config))
+            using (Client = clientFactory.Create(config, logger))
             {
                 Client.InitializeClient();
                 ThrowIfCancellationRequested();
@@ -127,6 +125,7 @@ namespace Hik.Client.Service
                     ThrowIfCancellationRequested();
 
                     var remoteFiles = await GetRemoteFilesList(periodStart, periodEnd);
+                    logger.Information($"Found {remoteFiles.Count} files");
                     var downloadedFiles = await DownloadFilesFromClientAsync(remoteFiles, cancelTokenSource?.Token ?? CancellationToken.None);
                     result.AddRange(downloadedFiles);
                 }

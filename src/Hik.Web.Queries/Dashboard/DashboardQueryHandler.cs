@@ -1,8 +1,10 @@
-﻿using Hik.DataAccess;
+﻿using System.Diagnostics;
+using Hik.DataAccess;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Hik.Web.Queries.Dashboard
 {
@@ -17,6 +19,7 @@ namespace Hik.Web.Queries.Dashboard
 
         protected override async Task<IHandlerResult> HandleAsync(DashboardQuery request, CancellationToken cancellationToken)
         {
+            var timer = new Stopwatch();
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var triggerRepo = uow.GetRepository<JobTrigger>();
@@ -24,17 +27,30 @@ namespace Hik.Web.Queries.Dashboard
                 var statRepo = uow.GetRepository<DailyStatistic>();
                 var jobRepo = uow.GetRepository<HikJob>();
 
+                timer.Restart();
                 List<JobTrigger> jobTriggers = await triggerRepo.GetAllAsync();
+                timer.Stop();
+                Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "jobTriggers", timer.ElapsedMilliseconds);
 
+
+                timer.Restart();
                 var statistics = await statRepo.GetLatestGroupedBy(p => p.JobTriggerId);
+                timer.Stop();
+                Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "statistics", timer.ElapsedMilliseconds);
 
+                timer.Restart();
                 var latestFiles = await filesRepo.GetLatestGroupedBy(p => p.JobTriggerId);
+                timer.Stop();
+                Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "latestFiles", timer.ElapsedMilliseconds);
 
-                var dict = latestFiles.ToDictionary(p => p.JobTriggerId, p => p.Date);
+                var dict = latestFiles.ToDictionary(p => p.JobTriggerId, p => p.Date.AddSeconds(p.Duration ?? 0));
 
+                timer.Restart();
                 var latestFinishedJobs = await jobRepo.GetLatestGroupedBy(
                     y => y.PeriodEnd != null,
                     x => x.JobTriggerId);
+                timer.Stop();
+                Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "latestFinishedJobs", timer.ElapsedMilliseconds);
 
                 foreach (var job in latestFinishedJobs)
                 {
@@ -47,8 +63,8 @@ namespace Hik.Web.Queries.Dashboard
                 return new DashboardDto
                 {
                     Files = dict,
-                    Triggers = jobTriggers.ConvertAll(x => HikDatabase.Mapper.Map<JobTrigger, TriggerDto>(x)),
-                    DailyStatistics = statistics.Where(x => x != null).ToList().ConvertAll(x => HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>(x))
+                    Triggers = jobTriggers.ConvertAll(HikDatabase.Mapper.Map<JobTrigger, TriggerDto>),
+                    DailyStatistics = statistics.Where(x => x != null).ToList().ConvertAll(HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>)
                 };
             }
         }

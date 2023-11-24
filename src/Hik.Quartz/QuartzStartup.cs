@@ -1,15 +1,14 @@
-﻿using Hik.Quartz.Contracts;
-using Hik.Quartz.Contracts.Options;
+﻿using Hik.Quartz.Contracts.Options;
 using Hik.Quartz.Contracts.Xml;
 using Hik.Quartz.Extensions;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Serialization;
 
 namespace Hik.Quartz
@@ -29,44 +28,31 @@ namespace Hik.Quartz
             {
                 throw new InvalidOperationException("Already started.");
             }
-
-
-            LogProvider.SetCurrentLogProvider(new ConsoleLogProvider());
+            var logsPath = configuration.GetSection("Serilog:DefaultLogsPath").Value;
+            LogProvider.SetCurrentLogProvider(new ConsoleLogProvider(logsPath));
 
             var options = new QuartzOption(configuration);
-
-            InitializeJobs(options.Plugin.JobInitializer.FileNames);
 
             var schedulerFactory = new StdSchedulerFactory(options.ToProperties);
             scheduler = schedulerFactory.GetScheduler().GetAwaiter().GetResult();
             scheduler.Start().Wait();
         }
 
-        public static void InitializeJobs(string xmlFilePath)
+        public static void InitializeJobs(IConfiguration configuration, IReadOnlyCollection<Cron> triggers)
         {
-            string jsonPath = xmlFilePath + ".json";
-            //jsonPath = "C:\\quartz_jobs.json";
-            var dict = JsonConvert.DeserializeObject<Dictionary<string, List<CronDto>>>(File.ReadAllText(jsonPath));
-            GenerateQuartzXml(xmlFilePath, dict);
+            if (configuration != null)
+            {
+                var options = new QuartzOption(configuration);
+                GenerateQuartzXml(options.Plugin.JobInitializer.FileNames, triggers);
+            }
         }
 
-        public static void InitializeJobs(string xmlFilePath, Dictionary<string, List<CronDto>> jobTypes)
-        {
-            GenerateQuartzXml(xmlFilePath, jobTypes);
-        }
-
-        private static void GenerateQuartzXml(string xmlFilePath, Dictionary<string, List<CronDto>> jobTypes)
+        private static void GenerateQuartzXml(string xmlFilePath, IReadOnlyCollection<Cron> triggers)
         {
             var serializer = new XmlSerializer(typeof(JobSchedulingData));
             var data = new JobSchedulingData();
-            foreach (var jobType in jobTypes)
-            {
-                foreach (var cronTrigger in jobType.Value)
-                {
-                    cronTrigger.ClassName = jobType.Key;
-                    data.Schedule.Trigger.Add(new Trigger { Cron = cronTrigger.ToCron() });
-                }
-            }
+
+            data.Schedule.Trigger.AddRange(triggers.Select(x => new Trigger { Cron = x }));
 
             using (StringWriter writer = new StringWriter())
             {

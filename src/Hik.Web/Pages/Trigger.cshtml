@@ -1,0 +1,118 @@
+﻿@page
+@model Hik.Web.Pages.TriggerModel
+@{
+
+    @if (!string.IsNullOrEmpty(Model.Dto.Name))
+    {
+        ViewData["Title"] = $"Edit {Model.Dto.Name}";
+    }
+    else
+    {
+        ViewData["Title"] = "New trigger";
+    }
+}
+
+@if (!string.IsNullOrEmpty(Model.Dto.Name))
+{
+    var title = $"{Model.Dto.ClassName} : {@Model.Dto.Group}.{@Model.Dto.Name}";
+    <div class="row">
+        <div class="card-body text-center">
+            <h2 class="card-title">@title</h2>
+        </div>
+    </div>
+}
+<div>
+    <a asp-page="./Scheduler">Back to List</a>
+</div>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            @Html.ValidationDiv()
+
+            @if (!string.IsNullOrEmpty(Model.Dto.Name))
+            {
+                <input type="hidden" asp-for="Dto.Name" />
+                <input type="hidden" asp-for="Dto.Group" />
+                <input type="hidden" asp-for="Dto.Id" />
+                <input type="hidden" asp-for="Dto.ClassName" />
+            }
+            else
+            {
+                <div class="form-group">
+                    <label asp-for="Dto.ClassName" class="control-label"></label>
+                    @Html.DropDownListFor(x => Model.Dto.ClassName, TriggerModel.JobTypesList, "", new { @class = "form-control", @id = "classNameDropDown"})
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Dto.Group)
+                    <input asp-for="Dto.Group" class="form-control" />
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Dto.Name)
+                    <input asp-for="Dto.Name" class="form-control" />
+                </div>
+            }
+
+            <div class="form-group">
+                <label asp-for="Dto.CronExpression" class="control-label"></label>
+                <input asp-for="Dto.CronExpression" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Dto.Description" class="control-label"></label>
+                <input asp-for="Dto.Description" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Dto.IsEnabled" class="control-label"></label>
+                @Html.CheckBoxFor(m => m.Dto.IsEnabled)
+            </div>
+            <div class="form-group">
+                <label asp-for="Dto.ShowInSearch" class="control-label"></label>
+                @Html.CheckBoxFor(m => m.Dto.ShowInSearch)
+            </div>
+            <div class="form-group">
+                <label asp-for="Dto.SentEmailOnError" class="control-label"></label>
+                @Html.CheckBoxFor(m => m.Dto.SentEmailOnError)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Dto.Config)
+                @Html.TextAreaFor(model => model.Dto.Config, new { @class = "form-control", @rows = 20, @id = "configEditor" })
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script type="text/javascript">
+
+
+        $("body").on("change", "#classNameDropDown", function () {
+            var t = $(this).find("option:selected").text();
+            var url = "/Trigger?classid=" + $(this).val() + "&handler=ConfigJson";
+
+            $.ajax({
+                url: url,
+                method: "GET",
+                contentType: "application/json; charset=utf-8",
+                headers: {
+                    RequestVerificationToken:
+                        $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                success: function (result) {
+                    $("#configEditor").html(result);
+                },
+                error: function () {
+                    alert("Failed.");
+                }
+            });
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

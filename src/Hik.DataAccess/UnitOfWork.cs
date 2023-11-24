@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading.Tasks;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
@@ -19,38 +18,32 @@ namespace Hik.DataAccess
         public UnitOfWork(TContext context)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            Context.Database.EnsureCreated();
         }
 
         public IBaseRepository<TEntity> GetRepository<TEntity>()
-            where TEntity : class, IEntity
+            where TEntity : class, IEntity, new()
         {
-            if (repositories == null) repositories = new ConcurrentDictionary<Type, object>();
+            repositories ??= new ConcurrentDictionary<Type, object>();
 
             var type = typeof(TEntity);
-            if (!repositories.ContainsKey(type))
+            if (!repositories.TryGetValue(type, out object value))
             {
-                repositories[type] = new BaseRepository<TEntity>(Context);
+                value = new BaseRepository<TEntity>(Context);
+                repositories[type] = value;
             }
-            return (IBaseRepository<TEntity>)repositories[type];
+            return (IBaseRepository<TEntity>)value;
         }
 
         public TContext Context { get; }
 
-        public Task<int> SaveChangesAsync()
-        {
-            return Context.SaveChangesAsync();
-        }
-        
-        public async Task<int> SaveChangesAsync(HikJob job)
-        {
-            this.ProcessAuditItems(job);
-            var res = await this.SaveChangesAsync();
-            return res;
-        }
-
         public void SaveChanges()
         {
+            Context.SaveChanges();
+        }
+
+        public void SaveChanges(HikJob job)
+        {
+            this.ProcessAuditItems(job);
             Context.SaveChanges();
         }
 

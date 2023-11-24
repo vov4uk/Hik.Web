@@ -36,13 +36,12 @@
               </div>
           </div>
           <div class="row">
-              <table class="table table-bordered table-sm" aria-label="Triggers">
+                <table class="table table-striped table-bordered" aria-label="Triggers">
                   <thead>
                       <tr>
                           <th>Cron</th>
                           <th>Title</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.First().Cron.NextRun)</th>
-                          <th>@Html.DisplayNameFor(m => jobTrigger.First().Cron.ConfigPath)</th>
+                          <th>@Html.DisplayNameFor(m => jobTrigger.First().NextRun)</th>
                           <th>@Html.DisplayNameFor(m => jobTrigger.First().LastSync)</th>
                           <th>@Html.DisplayNameFor(m => jobTrigger.First().LastJob.PeriodStart)</th>
                           <th>@Html.DisplayNameFor(m => jobTrigger.First().LastJob.PeriodEnd)</th>
@@ -53,7 +52,7 @@
                       </tr>
                   </thead>
                   <tbody>
-                      @foreach (var job in jobTrigger)
+                      @foreach (var job in jobTrigger.Where(x => x.LastJob != null))
                       {
                           string started = job.LastJob.Started.GetRelativeTime();
                           string finished = job.LastJob.Finished?.GetRelativeTime() ?? "N/A";
@@ -63,10 +62,9 @@
                           string status = job.LastJob.Success && job.ProcessId == null ? "" : job.ProcessId == null ? "failed" : "running";
 
                           <tr data-status="@status" class="failed">
-                              <td><span title="@job.Cron.ExpressionString">@job.Cron.Expression</span></td>
-                              <td><a asp-page="./Job" asp-route-jobTriggerId="@job.JobTriggerId">@job.Name</a></td>
-                              <td>@Html.DisplayFor(x => job.Cron.NextRun)</td>
-                              <td><a asp-page="./ConfigEdit" asp-route-name="@job.Name" asp-route-group="@job.Group">@Html.DisplayFor(x => job.Cron.ConfigPath)</a></td>
+                              <td><span title="@job.ExpressionString">@job.CronExpression</span></td>
+                              <td><a asp-page="./Job" asp-route-jobTriggerId="@job.Id">@job.Name</a></td>
+                              <td>@Html.DisplayFor(x => job.NextRun)</td>
                               <td><span title="@lastSyncTooltip">@job.LastSync.GetString()</span></td>
                               <td><span title="@fromTooltip">@Html.DisplayFor(x => job.LastJob.PeriodStart)</span></td>
                               <td><span title="@toTooltip">@Html.DisplayFor(x => job.LastJob.PeriodEnd)</span></td>
@@ -77,7 +75,7 @@
                                   @if (job.ProcessId == null)
                                   {
                                       <form method="POST">
-                                          <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@job.Group" asp-route-name="@job.Name" value="Start" />
+                                          <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-id="@job.Id" value="Start" />
                                       </form>
                                   }
                                   else
@@ -92,24 +90,23 @@
                   </tbody>
               </table>
 
-              @foreach (var job in jobTrigger)
+              @foreach (var job in jobTrigger.Where(x => x.LastJob != null))
               {
                   string started = job.LastJob.Started.GetRelativeTime();
                   string finished = job.LastJob.Finished.GetRelativeTime();
                   string lastSyncTooltip = job.LastSync.GetRelativeTime();
                   string fromTooltip = job.LastJob.PeriodStart.GetRelativeTime();
                   string toTooltip = job.LastJob.PeriodEnd.GetRelativeTime();
-                  string statusColor = job.LastJob.Success && job.ProcessId == null ? "text-white tri-success" : job.ProcessId == null ? "text-white tri-error" : "text-black tri-info";
+                  string statusColor = job.LastJob.Success && job.ProcessId == null ? "text-white tri-success card" : job.ProcessId == null ? "text-white tri-error card" : "text-black tri-info card";
 
                   <div class="col-sm-12 col-md-6 col-lg-3 col-xl-3">
-                      <div class="card @statusColor" style="margin-bottom: 10px;">
+                      <div class="@statusColor" style="margin-bottom: 10px;">
                           <div class="card-body text-center">
-                              <h4 class="card-title"><a asp-page="./Job" asp-route-jobTriggerId="@job.JobTriggerId">@job.Name</a></h4>
+                              <h4 class="card-title"><a asp-page="./Job" asp-route-jobTriggerId="@job.Id">@job.Name</a></h4>
                           </div>
                           <ul class=" ">
-                              <li><span title="@job.Cron.ExpressionString">@job.Cron.Expression</span></li>
-                              <li>Next - @Html.DisplayFor(x => job.Cron.NextRun)</li>
-                              <li><a asp-page="./ConfigEdit" asp-route-name="@job.Name" asp-route-group="@job.Group">@Html.DisplayFor(x => job.Cron.ConfigPath)</a></li>
+                              <li><span title="@job.ExpressionString">@job.CronExpression</span></li>
+                              <li>Next - @Html.DisplayFor(x => job.NextRun)</li>
                               <li><span title="@lastSyncTooltip">Sync -  @Html.DisplayFor(x => job.LastSync)</span></li>
                               <li><span title="@fromTooltip">From -  @Html.DisplayFor(x => job.LastJob.PeriodStart)</span></li>
                               <li><span title="@toTooltip">To -    @Html.DisplayFor(x => job.LastJob.PeriodEnd)</span></li>

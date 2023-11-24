@@ -37,7 +37,7 @@ namespace Hik.Web.Queries.Test
         public async Task HandleAsync_FoundTrigger_ReturnStatistics(DashboardDetailsQuery request)
         {
             var trigger = new JobTrigger() { TriggerKey = "TriggerKey" };
-            triggerRepoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<JobTrigger, bool>>>(), It.IsAny<Expression<Func<JobTrigger, object>>[]>()))
+            triggerRepoMock.Setup(x => x.FindByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(trigger);
             statsRepoMock.Setup(x => x.CountAsync(It.IsAny<Expression<Func<DailyStatistic, bool>>>()))
                 .ReturnsAsync(100);
@@ -71,7 +71,7 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_NoTriggerFound_ReturnNullPath(DashboardDetailsQuery request)
         {
-            triggerRepoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<JobTrigger, bool>>>(), It.IsAny<Expression<Func<JobTrigger, object>>[]>()))
+            triggerRepoMock.Setup(x => x.FindByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(default(JobTrigger));
 
             var handler = new DashboardDetailsQueryHandler(uowFactoryMock.Object);

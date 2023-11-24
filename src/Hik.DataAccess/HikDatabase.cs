@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Hik.DataAccess
 {
@@ -22,117 +26,161 @@ namespace Hik.DataAccess
             this.logger = logger;
         }
 
-        public async Task<HikJob> CreateJobInstanceAsync(HikJob job)
+        public void LogExceptionTo(int jobId, string message)
         {
-            using var unitOfWork = this.factory.CreateUnitOfWork();
-            var jobRepo = unitOfWork.GetRepository<HikJob>();
-            var newJob = await jobRepo.AddAsync(job);
-            await unitOfWork.SaveChangesAsync();
-            return newJob;
+            using (var unitOfWork = this.factory.CreateUnitOfWork())
+            {
+                var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
+
+                jobRepo.Add(new ExceptionLog
+                {
+                    JobId = jobId,
+                    Message = message,
+                    Created = DateTime.Now
+                });
+                unitOfWork.SaveChanges();
+            }
         }
 
-        public async Task LogExceptionToAsync(int jobId, string message)
+        public async Task<JobTrigger> GetJobTriggerAsync(string group, string key)
         {
-            using var unitOfWork = this.factory.CreateUnitOfWork();
-            var jobRepo = unitOfWork.GetRepository<ExceptionLog>();
-
-            await jobRepo.AddAsync(new ExceptionLog
+            JobTrigger jobTrigger = null;
+            using (var unitOfWork = this.factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
-                JobId = jobId,
-                Message = message,
-            });
-            await unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task<JobTrigger> GetOrCreateJobTriggerAsync(string triggerKey)
-        {
-            var jobNameParts = triggerKey.Split(".");
-            var group = jobNameParts[0];
-            var key = jobNameParts[1];
-
-            using var unitOfWork = this.factory.CreateUnitOfWork();
-            var repo = unitOfWork.GetRepository<JobTrigger>();
-            var jobTrigger = await repo.FindByAsync(x => x.TriggerKey == key && x.Group == group);
-            if (jobTrigger == null)
-            {
-                jobTrigger = await repo.AddAsync(new JobTrigger { TriggerKey = key, Group = group });
-                await unitOfWork.SaveChangesAsync();
+                var repo = unitOfWork.GetRepository<JobTrigger>();
+                jobTrigger = await repo.FindByAsync(x => x.TriggerKey == key && x.Group == group);
             }
             return jobTrigger;
         }
 
-        public async Task SaveJobResultAsync(HikJob job)
+        public async Task<JobTrigger[]> GetJobTriggersAsync(int[] triggerIds)
         {
-            using (var unitOfWork = factory.CreateUnitOfWork())
+            using (var unitOfWork = this.factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
-                var jobRepo = unitOfWork.GetRepository<HikJob>();
-                job.Finished = DateTime.Now;
-                jobRepo.Update(job);
-
-                if (job.Success)
-                {
-                    var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
-                    var trigger = await triggerRepo.FindByAsync(x => x.Id == job.JobTriggerId);
-                    trigger.LastSync = job.LatestFileEndDate ?? job.Started;
-                    triggerRepo.Update(trigger);
-                }
-
-                await unitOfWork.SaveChangesAsync();
+                var repo = unitOfWork.GetRepository<JobTrigger>();
+                var jobTriggers = await repo.FindManyAsync(x => triggerIds.Contains(x.Id));
+                return jobTriggers.ToArray();
             }
         }
 
-        public async Task UpdateJobAsync(HikJob job)
+        public HikJob CreateJob(HikJob job)
         {
-            using (var unitOfWork = factory.CreateUnitOfWork())
+            using (var uow = factory.CreateUnitOfWork())
             {
-                var jobRepo = unitOfWork.GetRepository<HikJob>();
-                jobRepo.Update(job);
-                await unitOfWork.SaveChangesAsync();
+                var jobRepo = uow.GetRepository<HikJob>();
+                var jobInstance = jobRepo.Add(job);
+                uow.SaveChanges();
+                return jobInstance;
             }
         }
 
-        public async Task<List<MediaFile>> SaveFilesAsync(HikJob job, IReadOnlyCollection<MediaFileDto> files)
+        public void UpdateJobTrigger(JobTrigger trigger)
         {
-            using var unitOfWork = factory.CreateUnitOfWork();
+            using (var unitOfWork = factory.CreateUnitOfWork())
+            {
+                var triggerRepo = unitOfWork.GetRepository<JobTrigger>();
+                triggerRepo.Update(trigger);
+            }
+        }
 
+        public void UpdateJob(HikJob job)
+        {
+            using (var unitOfWork = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
+            {
+                var repo = unitOfWork.GetRepository<HikJob>();
+                repo.Update(job);
+            }
+        }
+
+
+        public List<MediaFile> SaveFiles(HikJob job, IReadOnlyCollection<MediaFileDto> files)
+        {
             var mediaFiles = new List<MediaFile>();
-            var mediaFileDuration = new List<DownloadDuration>();
+
             foreach (var item in files)
             {
                 MediaFile file = Mapper.Map<MediaFile>(item);
                 file.JobTriggerId = job.JobTriggerId;
-                if (item.DownloadDuration != null)
-                {
-                    DownloadDuration duration = new()
-                    {
-                        MediaFile = file,
-                        Duration = item.DownloadDuration,
-                        Started = item.DownloadStarted,
-                    };
-                    mediaFileDuration.Add(duration);
-                }
+                file.JobId = job.Id;
+
                 mediaFiles.Add(file);
             }
 
-            await AddEntities(mediaFiles, unitOfWork);
-            await AddEntities(mediaFileDuration, unitOfWork);
-            await unitOfWork.SaveChangesAsync(job);
+            using (var unitOfWork = factory.CreateUnitOfWork())
+            {
+                var repo = unitOfWork.GetRepository<MediaFile>();
+                repo.AddRange(mediaFiles);
+                unitOfWork.SaveChanges();
+            }
             return mediaFiles;
+        }
+
+        public void SaveFile(HikJob job, MediaFileDto item)
+        {
+            MediaFile file = Mapper.Map<MediaFile>(item);
+            file.JobTriggerId = job.JobTriggerId;
+            file.JobId = job.Id;
+
+            using (var unitOfWork = factory.CreateUnitOfWork())
+            {
+                var repo = unitOfWork.GetRepository<MediaFile>();
+                repo.Add(file);
+                unitOfWork.SaveChanges();
+            }
         }
 
         public async Task UpdateDailyStatisticsAsync(int jobTriggerId, IReadOnlyCollection<MediaFileDto> files)
         {
-            using (var unitOfWork = factory.CreateUnitOfWork())
+            DateTime originalFrom = files.Min(x => x.Date).Date;
+            DateTime from = originalFrom;
+            var to = files.Max(x => x.Date).Date;
+
+            Dictionary<DateTime, DailyStatistic> dailyStat;
+
+            using (var unitOfWork = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 IBaseRepository<DailyStatistic> repo = unitOfWork.GetRepository<DailyStatistic>();
 
-                var from = files.Min(x => x.Date).Date;
-                var to = files.Max(x => x.Date).Date;
+                var daily = await repo.FindManyAsync(x => x.JobTriggerId == jobTriggerId && x.Period >= originalFrom && x.Period <= to);
 
-                Dictionary<DateTime, DailyStatistic> dailyStat = await GetDailyStatisticSafe(jobTriggerId, from, to, repo);
+                var newItems = new List<DailyStatistic>();
+                do
+                {
+                    if (!daily.Exists(d => d.Period == from))
+                    {
+                        newItems.Add(new DailyStatistic
+                        {
+                            JobTriggerId = jobTriggerId,
+                            Period = from,
+                            FilesCount = 0,
+                            FilesSize = 0,
+                            TotalDuration = 0
+                        });
+                    }
+                    from = from.AddDays(1);
+                } while (from <= to);
+
+                if (newItems.Count > 0)
+                {
+                    repo.AddRange(newItems);
+                    unitOfWork.SaveChanges();
+                }
+            }
+
+            using (var unitOfWork = factory.CreateUnitOfWork())
+            {
+                IBaseRepository<DailyStatistic> repo = unitOfWork.GetRepository<DailyStatistic>();
+                var daily = await repo.FindManyAsync(x => x.JobTriggerId == jobTriggerId && x.Period >= originalFrom && x.Period <= to);
+                dailyStat = daily.ToDictionary(k => k.Period, v => v);
 
                 var group = files.GroupBy(x => x.Date.Date)
-                    .Select(x => new { Date = x.Key, Count = x.Count(), Size = x.Sum(p => p.Size), Duration = x.Sum(p => p.Duration) });
+                    .Select(x => new
+                    {
+                        Date = x.Key,
+                        Count = x.Count(),
+                        Size = x.Sum(p => p.Size),
+                        Duration = x.Sum(p => p.Duration)
+                    });
 
                 foreach (var item in group)
                 {
@@ -140,22 +188,12 @@ namespace Hik.DataAccess
                     day.FilesCount += item.Count;
                     day.FilesSize += item.Size;
                     day.TotalDuration += item.Duration;
+                    repo.Update(day);
                 }
-
-                await unitOfWork.SaveChangesAsync();
             }
         }
 
-        public async Task SaveDownloadHistoryFilesAsync(HikJob job, IReadOnlyCollection<MediaFile> files)
-        {
-            using var unitOfWork = factory.CreateUnitOfWork();
-            var entities = files.Select(x => new DownloadHistory { MediaFileId = x.Id }).ToList();
-
-            await AddEntities(entities, unitOfWork);
-            await unitOfWork.SaveChangesAsync(job);
-        }
-
-        public async Task DeleteObsoleteJobsAsync(string[] triggers, DateTime to)
+        public async Task DeleteObsoleteJobsAsync(int[] triggers, DateTime to)
         {
             using (var unitOfWork = factory.CreateUnitOfWork())
             {
@@ -165,64 +203,26 @@ namespace Hik.DataAccess
 
                 foreach (var trigger in triggers)
                 {
-                    var parts = trigger.Split(".");
-                    logger.LogInformation("Try cleanup {trigger}", trigger);
-                    var jobTrigger = await triggerRepo.FindByAsync(x => x.Group == parts[0] && x.TriggerKey == parts[1]);
+                    logger.Information("Try cleanup {trigger}", trigger);
+                    var jobTrigger = await triggerRepo.FindByAsync(x => x.Id == trigger);
                     if (jobTrigger != null)
                     {
-                       logger.LogInformation("{trigger} found, Id = {Id}, To = {to}", trigger, jobTrigger.Id, to);
+                       logger.Information("{trigger} found, Id = {Id}, To = {to}", trigger, jobTrigger.Id, to);
 
-                       var files = await filesRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Date <= to,
-                            x => x.DownloadDuration,
-                            x => x.DownloadHistory);
+                       var files = await filesRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Date <= to);
                         filesRepo.RemoveRange(files);
-                        await unitOfWork.SaveChangesAsync();
-                        logger.LogInformation("{trigger} files cleared", trigger);
+                        unitOfWork.SaveChanges();
+                        logger.Information("{trigger} files cleared", trigger);
 
                         var jobs = await jobRepo.FindManyAsync(x => x.JobTriggerId == jobTrigger.Id && x.Finished <= to, x => x.DownloadedFiles);
                         jobRepo.RemoveRange(jobs);
-                        await unitOfWork.SaveChangesAsync();
-                        logger.LogInformation("{trigger} jobs cleared", trigger);
+                        unitOfWork.SaveChanges();
+                        logger.Information("{trigger} jobs cleared", trigger);
                     }
                 }
 
-                logger.LogInformation("Cleanup done");
-            }
-        }
-
-        private static async Task<Dictionary<DateTime, DailyStatistic>> GetDailyStatisticSafe(int triggerId, DateTime from, DateTime to, IBaseRepository<DailyStatistic> repo)
-        {
-            var daily = await repo.FindManyAsync(x => x.JobTriggerId == triggerId && x.Period >= from && x.Period <= to);
-
-            var newItems = new List<DailyStatistic>();
-            do
-            {
-                if (!daily.Any(d => d.Period == from))
-                {
-                    newItems.Add(new DailyStatistic
-                        {
-                            JobTriggerId = triggerId,
-                            Period = from,
-                            FilesCount = 0,
-                            FilesSize = 0,
-                            TotalDuration = 0
-                        });
-                }
-                from = from.AddDays(1);
-            } while (from <= to);
-
-            await repo.AddRangeAsync(newItems);
-            daily.AddRange(newItems);
-            return daily.ToDictionary(k => k.Period, v => v);
-        }
-
-        private static async Task AddEntities<TEntity>(List<TEntity> entities, IUnitOfWork unitOfWork)
-            where TEntity : class, IEntity
-        {
-            if (entities != null && entities.Any())
-            {
-                var repo = unitOfWork.GetRepository<TEntity>();
-                await repo.AddRangeAsync(entities);
+                unitOfWork.SaveChanges();
+                logger.Information("Cleanup done");
             }
         }
 

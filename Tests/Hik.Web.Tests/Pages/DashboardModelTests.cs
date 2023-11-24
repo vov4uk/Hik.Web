@@ -1,11 +1,9 @@
 ﻿using Hik.DTO.Contracts;
-using Hik.Quartz.Contracts;
 using Hik.Web.Pages;
 using Hik.Web.Queries.Dashboard;
 using Hik.Web.Queries.QuartzTriggers;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moq;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -38,7 +36,7 @@ namespace Hik.Web.Tests.Pages
             this._mediator.Setup(x => x.Send(It.IsAny<QuartzTriggersQuery>(), default(CancellationToken)))
                 .ReturnsAsync(new QuartzTriggersDto
                 {
-                    Items = new CronDto[]
+                    Triggers = new TriggerDto[]
                     {
                         new(){ Group = group, Name = "Floor0_Video", ClassName = videoJob },
                         new(){ Group = group, Name = name, ClassName = videoJob },
@@ -54,11 +52,10 @@ namespace Hik.Web.Tests.Pages
             Assert.IsType<PageResult>(result);
             Assert.NotNull(sut.Dto);
             Assert.NotEmpty(sut.JobTriggers);
-            Assert.True(sut.JobTriggers.Values.SelectMany(x => x).All(x => x.Cron == null));
             Assert.True(sut.JobTriggers.ContainsKey(archiveJob));
             Assert.Equal(2, sut.JobTriggers[videoJob].Count);
             Assert.Equal(2, sut.JobTriggers[photoJob].Count);
-            Assert.Equal(1, sut.JobTriggers[archiveJob].Count);
+            Assert.Single(sut.JobTriggers[archiveJob]);
         }
     }
 }

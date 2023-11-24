@@ -16,7 +16,7 @@
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Hik.Helpers.Abstraction;
-    using Microsoft.Extensions.Logging;
+    using Serilog;
     using Moq;
     using Xunit;
 
@@ -85,14 +85,14 @@
 
         #region Login
         [Fact]
-        public void Login_CallLogin_LoginSucessfully()
+        public void Login_CallLogin_LoginSuccessfully()
         {
             this.SetupLoginAndHddStatusCheck();
             var client = this.GetHikClient();
             bool loginResult = client.Login();
 
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>(), It.IsAny<int>()), Times.Once);
             Assert.True(loginResult);
         }
 
@@ -102,14 +102,14 @@
             DeviceInfo outDevice = this.fixture.Create<DeviceInfo>();
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new Session(DefaultUserId, outDevice.DefaultIpChannel, new List<IpChannel>()));
-            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
+            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId, It.IsAny<int>()))
                 .Returns(new HdInfo { HdStatus = 2 });
 
             var client = this.GetHikClient();
 
             Assert.Throws<InvalidOperationException>(() => { client.Login(); });
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>(), It.IsAny<int>()), Times.Once());
         }
 
         [Fact]
@@ -118,14 +118,14 @@
             DeviceInfo outDevice = this.fixture.Create<DeviceInfo>();
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new Session(DefaultUserId, outDevice.DefaultIpChannel, new List<IpChannel>()));
-            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
+            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId, It.IsAny<int>()))
                 .Returns(default(HdInfo));
 
             var clientLoggedIn = this.GetHikClient().Login();
 
             Assert.True(clientLoggedIn);
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>(), It.IsAny<int>()), Times.Once);
         }
 
         [Fact]
@@ -140,7 +140,7 @@
             Assert.True(first);
             Assert.False(second);
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
+            this.sdkMock.Verify(x => x.GetHddStatus(It.IsAny<int>(), It.IsAny<int>()), Times.Once);
         }
 
         #endregion Login
@@ -225,11 +225,11 @@
         [InlineData(2020, 12, 31, 3600, "ch000000001", "C:\\2020-12\\31\\00\\20201231_000000_010000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, int duration, string name, string fileName)
         {
-            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Alias = "test", Camera = new DTO.Config.DeviceConfig() };
+            var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Camera = new DTO.Config.DeviceConfig() };
 
             int downloadHandler = 1;
             this.SetupLoginAndHddStatusCheck();
-            MediaFileDto remoteFile = new MediaFileDto { Date = new DateTime(y,m,d), Duration = duration, Name = name};
+            MediaFileDto remoteFile = new MediaFileDto { Date = new DateTime(y, m, d), Duration = duration, Name = name };
 
             var tempName = fileName + ".tmp";
             var targetName = fileName;
@@ -306,8 +306,7 @@
             using (client = this.GetHikClient())
             {
                 client.Login();
-                var result = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
-                Assert.False(result);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None));
             }
 
             this.videoServiceMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
@@ -373,7 +372,7 @@
             var status = new HdInfo { HdStatus = 0 };
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(result);
-            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId))
+            this.sdkMock.Setup(x => x.GetHddStatus(DefaultUserId, It.IsAny<int>()))
                 .Returns(status);
             return result;
         }

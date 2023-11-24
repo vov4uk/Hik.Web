@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hik.DTO.Contracts;
 using Hik.Helpers;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client.FileProviders
 {
     public class WindowsFileProvider : IFileProvider
     {
         protected readonly ILogger logger;
+
+        private const string DatePattern = "\\d+\\-\\d+\\\\\\d+\\\\\\d+";
+        private static readonly string[] Extentions = new[] { ".*" };
         private readonly IFilesHelper filesHelper;
         private readonly IDirectoryHelper directoryHelper;
         private readonly IVideoHelper videoHelper;
@@ -37,26 +41,27 @@ namespace Hik.Client.FileProviders
         {
             if (!isInitialized)
             {
-                logger.LogInformation("Initialize!");
+                logger.Information("Initialize!");
                 folders = new Dictionary<DateTime, IList<string>>();
                 foreach (var topDirectory in directories)
                 {
                     List<string> subFolders = directoryHelper.EnumerateAllDirectories(topDirectory);
-                    foreach (var directory in subFolders)
+                    foreach (var directory in subFolders.Where(x => Regex.IsMatch(x, DatePattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(10))))
                     {
-                        var trim = directory.Remove(0, Math.Max(0, directory.Length - 13)).Replace("\\", "-").Split("-");
+                        var trim = directory.Remove(0, Math.Max(0, directory.Length - 13))
+                            .Replace("\\", "-")
+                            .Split("-")
+                            .Select(int.Parse)
+                            .ToArray();
 
-                        if (trim.Length == 4 && DateTime.TryParse($"{trim[0]}-{trim[1]}-{trim[2]} {trim[3]}:00:00", out var dt))
-                        {
-                            folders.SafeAdd(dt, directory);
-                        }
+                        folders.SafeAdd(new DateTime(trim[0], trim[1], trim[2], trim[3], 0, 0, DateTimeKind.Local), directory);
                     }
 
                     folders.SafeAdd(DateTime.Today, topDirectory);
                 }
 
                 dates = new Stack<DateTime>(folders.Keys.OrderByDescending(x => x).ToList());
-                logger.LogInformation($"{dates.Count} dates found");
+                logger.Information($"{dates.Count} dates found");
             }
 
             isInitialized = true;
@@ -67,13 +72,13 @@ namespace Hik.Client.FileProviders
             var result = new List<MediaFileDto>();
             if (!isInitialized)
             {
-                logger.LogInformation("GetNextBatch !isInitialized");
+                logger.Information("GetNextBatch !isInitialized");
                 return result;
             }
 
             while (result.Count <= batchSize)
             {
-                if (dates.Any() && dates.TryPop(out var lastDate))
+                if (dates.Count > 0 && dates.TryPop(out var lastDate))
                 {
                     result.AddRange(GetFiles(fileExtention, lastDate));
                 }
@@ -83,23 +88,31 @@ namespace Hik.Client.FileProviders
                 }
             }
 
-            logger.LogInformation($"GetNextBatch result {result.Count}");
+            logger.Information($"GetNextBatch result {result.Count}");
             return result;
         }
 
         public async Task<IReadOnlyCollection<MediaFileDto>> GetOldestFilesBatch(bool readDuration = false)
         {
             var files = new List<MediaFileDto>();
-            if (isInitialized && dates.TryPop(out var last) && folders.ContainsKey(last))
+            if (isInitialized && dates.TryPop(out var last) && folders.TryGetValue(last, out IList<string> value))
             {
-                foreach (var dir in folders[last])
+                foreach (var dir in value)
                 {
-                    var localFiles = directoryHelper.EnumerateFiles(dir, new[] { ".*" });
+                    var localFiles = directoryHelper.EnumerateFiles(dir, Extentions);
                     foreach (var file in localFiles)
                     {
                         var size = filesHelper.FileSize(file);
                         var duration = readDuration ? await videoHelper.GetDuration(file) : 0;
-                        files.Add(new MediaFileDto { Date = last, Name = filesHelper.GetFileName(file), Path = file, Size = size, Duration = duration });
+                        files.Add(
+                            new MediaFileDto
+                            {
+                                Date = last,
+                                Name = filesHelper.GetFileName(file),
+                                Path = file,
+                                Size = size,
+                                Duration = duration,
+                            });
                     }
                 }
             }
@@ -110,7 +123,7 @@ namespace Hik.Client.FileProviders
         public IReadOnlyCollection<MediaFileDto> GetFilesOlderThan(string fileExtention, DateTime date)
         {
             var result = new List<MediaFileDto>();
-            if (isInitialized && folders.Any())
+            if (isInitialized && folders.Count > 0)
             {
                 foreach (var fileDateTime in folders.Keys.Where(x => x <= date && folders.ContainsKey(x)))
                 {
@@ -123,10 +136,10 @@ namespace Hik.Client.FileProviders
 
         private List<MediaFileDto> GetFiles(string fileExtention, DateTime lastDate)
         {
-            List<string> files = new List<string>();
-            if (folders.ContainsKey(lastDate))
+            List<string> files = new ();
+            if (folders.TryGetValue(lastDate, out IList<string> value))
             {
-                foreach (var folder in folders[lastDate])
+                foreach (var folder in value)
                 {
                     if (!string.IsNullOrEmpty(fileExtention))
                     {

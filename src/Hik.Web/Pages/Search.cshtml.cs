@@ -1,7 +1,7 @@
 ﻿using Hik.Helpers.Abstraction;
 using Hik.Web.Queries.FilePath;
-using Hik.Web.Queries.Photo;
 using Hik.Web.Queries.Search;
+using Hik.Web.Queries.Thumbnail;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -96,6 +96,12 @@ namespace Hik.Web.Pages
         {
             var thumbnail = await mediator.Send(new PhotoThumbnailQuery() { FileId = fileId }) as PhotoThumbnailDto;
             return File(thumbnail.Poster, "image/jpg");
+        }
+
+        public async Task<IActionResult> OnGetVideoThumbnail(int fileId)
+        {
+            var thumbnail = await mediator.Send(new VideoThumbnailQuery() { FileId = fileId }) as VideoThumbnailDto;
+            return File(Convert.FromBase64String(thumbnail.Poster.Replace("data:image/jpg;base64,","")), "image/jpg");
         }
 
         private async Task<string> GetFilePath(int fileId)

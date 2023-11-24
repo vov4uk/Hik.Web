@@ -5,7 +5,7 @@ using Hik.Api.Abstraction;
 using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client.Helpers
 {
@@ -17,37 +17,34 @@ namespace Hik.Client.Helpers
         private readonly IDirectoryHelper directoryHelper;
         private readonly IImageHelper imageHelper;
         private readonly IMapper mapper;
-        private readonly ILogger logger;
 
         public ClientFactory(
             IHikApi hikApi,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
             IMapper mapper,
-            IImageHelper imageHelper,
-            ILogger logger)
+            IImageHelper imageHelper)
         {
             this.hikApi = hikApi;
             this.filesHelper = filesHelper;
             this.directoryHelper = directoryHelper;
             this.mapper = mapper;
             this.imageHelper = imageHelper;
-            this.logger = logger;
         }
 
-        public IDownloaderClient Create(CameraConfig camera)
+        public IDownloaderClient Create(CameraConfig camera, ILogger logger)
         {
             switch (camera.ClientType)
             {
                 case ClientType.HikVisionVideo:
-                    return new HikVideoClient(camera, this.hikApi, this.filesHelper, this.directoryHelper, this.mapper, this.logger);
+                    return new HikVideoClient(camera, this.hikApi, this.filesHelper, this.directoryHelper, this.mapper, logger);
                 case ClientType.HikVisionPhoto:
-                    return new HikPhotoClient(camera, this.hikApi, this.filesHelper, this.directoryHelper, this.mapper, this.imageHelper, this.logger);
+                    return new HikPhotoClient(camera, this.hikApi, this.filesHelper, this.directoryHelper, this.mapper, this.imageHelper, logger);
                 case ClientType.Yi:
                 case ClientType.Yi720p:
-                    return new YiClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.AsyncFtpClient(), this.logger);
+                    return new YiClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.AsyncFtpClient(), logger);
                 case ClientType.FTPDownload:
-                    return new FtpDownloaderClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.AsyncFtpClient(), this.logger);
+                    return new FtpDownloaderClient(camera, this.filesHelper, this.directoryHelper, new FluentFTP.AsyncFtpClient(), logger);
                 default:
                     throw new NotSupportedException();
             }

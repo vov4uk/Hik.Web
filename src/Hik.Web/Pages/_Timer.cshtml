@@ -1,13 +1,13 @@
 ﻿
 <script type="text/javascript">
-    let countDown = 15;
+    let countDown = 30;
     const timer = setInterval(function () {
     document.getElementById("timer").innerHTML = countDown + " seconds.";
     countDown = countDown - 1;
 
     if (countDown < 0)
     {
-        countDown = 15;
+        countDown = 30;
         document.location.reload();
     }
     }, 1000);

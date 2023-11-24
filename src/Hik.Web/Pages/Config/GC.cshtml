@@ -1,0 +1,57 @@
+﻿@page
+@model Hik.Web.Pages.Config.GCModel
+@using Hik.DTO.Config;
+
+<div>
+    <a asp-page="/Scheduler">Back to List</a>
+</div>
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <h2>Garbage Collector Config</h2>
+            <div class="form-group">
+                @Html.HiddenFor(x => x.Id)
+            </div>
+            @Html.ValidationDiv()
+
+           <div class="form-group">
+               <label asp-for="@Model.Config.Timeout" class="control-label"></label>
+               <input asp-for="@Model.Config.Timeout" class="form-control" />
+           </div>
+           <div class="form-group">
+               <label asp-for="@Model.Config.DestinationFolder" class="control-label"></label>
+               <input asp-for="@Model.Config.DestinationFolder" class="form-control" />
+           </div>
+            <div class="form-group">
+                <label asp-for="@Model.Config.RetentionPeriodDays" class="control-label"></label>
+                <input asp-for="@Model.Config.RetentionPeriodDays" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Config.FreeSpacePercentage" class="control-label"></label>
+                <input asp-for="@Model.Config.FreeSpacePercentage" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Config.Triggers" class="control-label"></label>
+                <select multiple="multiple" class="multi-select form-control" asp-for="@Model.Config.Triggers" asp-items="@Model.Triggers"></select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="@Model.Config.FileExtention" class="control-label"></label>
+                <input asp-for="@Model.Config.FileExtention" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

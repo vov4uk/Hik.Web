@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
@@ -9,8 +10,7 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
-using Polly;
+using Serilog;
 
 namespace Hik.Client.Client
 {
@@ -44,7 +44,7 @@ namespace Hik.Client.Client
             }
             else
             {
-                logger.LogDebug($"{remoteFile.Name} - exist");
+                logger.Information($"{remoteFile.Name} - exist");
                 return false;
             }
         }
@@ -57,22 +57,26 @@ namespace Hik.Client.Client
 
             if (remoteFileExist)
             {
-                logger.LogDebug($"{remoteFile.Name} - downloading");
-                var tempFile = filesHelper.GetTempFileName();
+                try
+                {
+                    logger.Debug($"{remoteFile.Name} - downloading");
+                    var tempFile = filesHelper.GetTempFileName();
 
-                await Policy
-                    .Handle<FtpException>()
-                    .Or<TimeoutException>()
-                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(3))
-                    .ExecuteAsync(() => ftp.DownloadFile(tempFile, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, token));
+                    await ftp.DownloadFile(tempFile, remoteFilePath, FtpLocalExists.Skip, FtpVerify.None, null, token);
 
-                filesHelper.RenameFile(tempFile, localFilePath);
+                    filesHelper.RenameFile(tempFile, localFilePath);
 
-                return await PostDownloadFileProcessAsync(remoteFile, localFilePath, remoteFilePath, token);
+                    return await PostDownloadFileProcessAsync(remoteFile, localFilePath, remoteFilePath, token);
+                }
+                catch (FtpException ex)
+                {
+                    this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", ex.InnerException?.Message, ex.InnerException?.ToStringDemystified());
+                    return false;
+                }
             }
             else
             {
-                logger.LogWarning($"File not found {remoteFilePath}");
+                logger.Warning($"File not found {remoteFilePath}");
                 return false;
             }
         }
@@ -85,7 +89,7 @@ namespace Hik.Client.Client
 
         protected string GetWorkingDirectory(MediaFileDto file)
         {
-            return filesHelper.CombinePath(config.DestinationFolder, file.ToVideoDirectoryNameString());
+            return filesHelper.CombinePath(config.DestinationFolder, file.Date.ToDirectoryName());
         }
     }
 }

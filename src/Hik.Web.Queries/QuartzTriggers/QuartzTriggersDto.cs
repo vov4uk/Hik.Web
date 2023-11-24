@@ -1,9 +1,9 @@
-﻿using Hik.Quartz.Contracts;
+﻿using Hik.DTO.Contracts;
 
 namespace Hik.Web.Queries.QuartzTriggers
 {
     public class QuartzTriggersDto : IHandlerResult
     {
-        public IReadOnlyCollection<CronDto> Items { get; set; }
+        public IReadOnlyCollection<TriggerDto> Triggers { get; set; }
     }
 }

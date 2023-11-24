@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
 using Hik.Api.Abstraction;
 using Hik.Api.Data;
@@ -6,18 +9,19 @@ using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client
 {
-    public abstract class HikBaseClient : IClientBase
+    public abstract class HikBaseClient : IDownloaderClient
     {
         protected const int ProgressBarMaximum = 100;
         protected const int ProgressBarMinimum = 0;
+
         protected readonly CameraConfig config;
-        protected readonly IHikApi hikApi;
-        protected readonly IFilesHelper filesHelper;
         protected readonly IDirectoryHelper dirHelper;
+        protected readonly IFilesHelper filesHelper;
+        protected readonly IHikApi hikApi;
         protected readonly ILogger logger;
         protected int downloadId = -1;
         protected Session session;
@@ -41,13 +45,28 @@ namespace Hik.Client
 
         protected IMapper Mapper { get; private set; }
 
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void ForceExit()
+        {
+            logger.Warning("Force Exit");
+            StopDownload();
+            Dispose(true);
+        }
+
+        public abstract Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd);
+
         public void InitializeClient()
         {
-            string sdkLogsPath = filesHelper.CombinePath(Environment.CurrentDirectory, "logs", config.Alias + "_SdkLog");
+            string sdkLogsPath = filesHelper.CombinePath(Environment.CurrentDirectory, "logs", config.Camera.IpAddress + "_SdkLog");
             dirHelper.CreateDirIfNotExist(sdkLogsPath);
             dirHelper.CreateDirIfNotExist(config.DestinationFolder);
 
-            logger.LogInformation("SDK Logs : {sdkLogsPath}", sdkLogsPath);
+            logger.Information("SDK Logs : {sdkLogsPath}", sdkLogsPath);
             hikApi.Initialize();
             hikApi.SetupLogs(3, sdkLogsPath, false);
             hikApi.SetConnectTime(3000, 3);
@@ -59,10 +78,10 @@ namespace Hik.Client
             if (session == null)
             {
                 session = hikApi.Login(config.Camera.IpAddress, config.Camera.PortNumber, config.Camera.UserName, config.Camera.Password);
-                logger.LogInformation("Sucessfull login to {config}", config);
+                logger.Information("Successfully logged to {IpAddress}", config.Camera.IpAddress);
                 var status = hikApi.GetHddStatus(session.UserId);
 
-                logger.LogInformation(status?.ToString());
+                logger.Information(status?.ToString());
 
                 if (status is { IsErrorStatus: true })
                 {
@@ -73,44 +92,37 @@ namespace Hik.Client
             }
             else
             {
-                logger.LogWarning("Already logged in");
+                logger.Warning("Already logged in");
                 return false;
             }
         }
 
         public void SyncTime()
         {
-            if (config.SyncTime)
+            var cameraTime = hikApi.GetTime(session.UserId);
+            var currentTime = DateTime.Now;
+            if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
             {
-                var cameraTime = hikApi.GetTime(session.UserId);
-                logger.LogInformation("Camera time :{cameraTime}", cameraTime);
-                var currentTime = DateTime.Now;
-                if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
-                {
-                    hikApi.SetTime(currentTime, session.UserId);
-                    logger.LogWarning("Camera time updated :{currentTime}", currentTime);
-                }
+                hikApi.SetTime(currentTime, session.UserId);
+                logger.Warning("Camera time updated :from {cameraTime} to {currentTime}", cameraTime, currentTime);
             }
         }
 
-        public void ForceExit()
-        {
-            logger.LogWarning("Force Exit");
-            StopDownload();
-            Dispose(true);
-        }
+        public abstract Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token);
 
-        public void Dispose()
+        protected static void ValidateDateParameters(DateTime start, DateTime end)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (end <= start)
+            {
+                throw new ArgumentException("Start period grater than end");
+            }
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
-                logger.LogInformation("Logout the device");
+                logger.Information("Logout the device");
                 if (session != null)
                 {
                     hikApi.Logout(session.UserId);
@@ -120,20 +132,6 @@ namespace Hik.Client
 
                 hikApi.Cleanup();
                 disposedValue = true;
-            }
-        }
-
-        protected abstract string ToFileNameString(MediaFileDto file);
-
-        protected abstract string ToDirectoryNameString(MediaFileDto file);
-
-        protected abstract void StopDownload();
-
-        protected void ValidateDateParameters(DateTime start, DateTime end)
-        {
-            if (end <= start)
-            {
-                throw new ArgumentException("Start period grater than end");
             }
         }
 
@@ -149,6 +147,12 @@ namespace Hik.Client
         {
             downloadId = -1;
         }
+
+        protected abstract void StopDownload();
+
+        protected abstract string ToDirectoryNameString(MediaFileDto file);
+
+        protected abstract string ToFileNameString(MediaFileDto file);
 
         private string GetWorkingDirectory(MediaFileDto file)
         {

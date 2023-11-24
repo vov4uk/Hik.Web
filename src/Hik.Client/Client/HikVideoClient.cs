@@ -4,16 +4,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hik.Api.Abstraction;
-using Hik.Client.Abstraction;
+using Hik.Api.Data;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client
 {
-    public sealed class HikVideoClient : HikBaseClient, IDownloaderClient
+    public sealed class HikVideoClient : HikBaseClient
     {
         private const int ProgressCheckPeriodMilliseconds = 5000;
 
@@ -30,59 +30,38 @@ namespace Hik.Client
 
         private bool IsDownloading => downloadId >= 0;
 
-        public async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
+        public override async Task<bool> DownloadFileAsync(MediaFileDto remoteFile, CancellationToken token)
         {
-            try
+            string targetFilePath = GetPathSafety(remoteFile);
+            string tempFile = filesHelper.GetTempFileName() + ".mp4";
+            if (this.StartVideoDownload(remoteFile, targetFilePath, tempFile))
             {
-                string targetFilePath = GetPathSafety(remoteFile);
-                string tempFile = filesHelper.GetTempFileName() + ".mp4";
-                if (this.StartVideoDownload(remoteFile, targetFilePath, tempFile))
+                do
                 {
-                    do
-                    {
-                        await Task.Delay(ProgressCheckPeriodMilliseconds, token);
-                        token.ThrowIfCancellationRequested();
-                        this.UpdateVideoProgress();
-                    }
-                    while (this.IsDownloading);
-
-                    filesHelper.RenameFile(tempFile, targetFilePath);
-                    remoteFile.Size = filesHelper.FileSize(targetFilePath);
-                    remoteFile.Path = targetFilePath;
-
-                    return true;
+                    await Task.Delay(ProgressCheckPeriodMilliseconds, token);
+                    token.ThrowIfCancellationRequested();
+                    this.UpdateVideoProgress();
                 }
-                else
-                {
-                    logger.LogWarning("DownloadFileAsync failed to start");
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "DownloadFileAsync failed");
+                while (this.IsDownloading);
+
+                filesHelper.RenameFile(tempFile, targetFilePath);
+                remoteFile.Size = filesHelper.FileSize(targetFilePath);
+                remoteFile.Path = targetFilePath;
+
+                return true;
             }
 
             return false;
         }
 
-        public async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
+        public override async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
             ValidateDateParameters(periodStart, periodEnd);
 
-            logger.LogInformation($"Get videos from {periodStart} to {periodEnd}");
+            logger.Information($"Get videos from {periodStart} to {periodEnd}");
 
-            var remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
+            IReadOnlyCollection<HikRemoteFile> remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
             return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
-        }
-
-        protected override string ToFileNameString(MediaFileDto file)
-        {
-            return file.ToVideoFileNameString();
-        }
-
-        protected override string ToDirectoryNameString(MediaFileDto file)
-        {
-            return config.SaveFilesToRootFolder ? string.Empty : file.ToVideoDirectoryNameString();
         }
 
         protected override void StopDownload()
@@ -94,8 +73,18 @@ namespace Hik.Client
             }
             else
             {
-                logger.LogWarning("File not downloading now");
+                logger.Warning("File not downloading now");
             }
+        }
+
+        protected override string ToDirectoryNameString(MediaFileDto file)
+        {
+            return config.SaveFilesToRootFolder ? string.Empty : file.Date.ToDirectoryName();
+        }
+
+        protected override string ToFileNameString(MediaFileDto file)
+        {
+            return file.ToVideoFileNameString();
         }
 
         private bool StartVideoDownload(MediaFileDto file, string targetFilePath, string tempFile)
@@ -104,20 +93,33 @@ namespace Hik.Client
             {
                 if (!filesHelper.FileExists(targetFilePath))
                 {
-                    logger.LogInformation($"{targetFilePath} - before download");
                     downloadId = hikApi.VideoService.StartDownloadFile(session.UserId, file.Name, tempFile);
 
-                    logger.LogInformation($"{file.ToVideoUserFriendlyString()} - downloading");
+                    logger.Information($"{file.ToVideoUserFriendlyString()} - downloading");
                     return true;
                 }
 
-                logger.LogInformation($"{file.ToVideoUserFriendlyString()} - exist");
-                return false;
+                logger.Warning($"{file.ToVideoUserFriendlyString()} - exist");
             }
             else
             {
-                logger.LogWarning("Downloading, please stop firstly!");
-                return false;
+                logger.Warning("Downloading, please stop firstly!");
+            }
+
+            return false;
+        }
+
+        private void UpdateProgressInternal(int progressValue)
+        {
+            if (progressValue == ProgressBarMaximum)
+            {
+                StopDownload();
+                logger.Debug("Downloaded");
+            }
+            else if (progressValue < ProgressBarMinimum || progressValue > ProgressBarMaximum)
+            {
+                StopDownload();
+                throw new InvalidOperationException($"UpdateDownloadProgress failed, progress value = {progressValue}");
             }
         }
 
@@ -131,21 +133,7 @@ namespace Hik.Client
             }
             else
             {
-                logger.LogWarning("File not downloading now");
-            }
-        }
-
-        private void UpdateProgressInternal(int progressValue)
-        {
-            if (progressValue == ProgressBarMaximum)
-            {
-                StopDownload();
-                logger.LogDebug("Downloaded");
-            }
-            else if (progressValue < ProgressBarMinimum || progressValue > ProgressBarMaximum)
-            {
-                StopDownload();
-                throw new InvalidOperationException($"UpdateDownloadProgress failed, progress value = {progressValue}");
+                logger.Warning("File not downloading now");
             }
         }
     }

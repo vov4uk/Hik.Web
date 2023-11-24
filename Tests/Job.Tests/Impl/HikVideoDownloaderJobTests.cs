@@ -20,18 +20,12 @@ namespace Job.Tests.Impl
         [Fact]
         public async Task ExecuteAsync_FileDownloaded_SaveFilesAsync()
         {
-            var lastSync = new DateTime(2021, 5, 31, 0, 0, 0);
+            dbMock.Setup(x => x.UpdateJob(It.IsAny<HikJob>()));
+            SetupCreateJob();
+            SetupUpdateJobTrigger();
+            dbMock.Setup(x => x.SaveFile(It.IsAny<HikJob>(), It.IsAny<MediaFileDto>()));
 
-            dbMock.Setup(x => x.GetOrCreateJobTriggerAsync($"{group}.{triggerKey}"))
-                .ReturnsAsync(new JobTrigger() { LastSync = lastSync });
-            dbMock.Setup(x => x.UpdateJobAsync(It.IsAny<HikJob>()))
-                .Returns(Task.CompletedTask);
-            SetupCreateJobInstanceAsync();
-            SetupSaveJobResultAsync();
-            dbMock.Setup(x => x.SaveFilesAsync(It.IsAny<HikJob>(), It.IsAny<IReadOnlyCollection<MediaFileDto>>()))
-                .ReturnsAsync(new List<MediaFile>());
-
-            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), lastSync.AddMinutes(-1), It.IsAny<DateTime>()))
+            serviceMock.Setup(x => x.ExecuteAsync(It.IsAny<BaseConfig>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
                 .Callback(() =>
                 {
                     this.serviceMock.Raise(mock => mock.FileDownloaded += null,
@@ -53,9 +47,8 @@ namespace Job.Tests.Impl
         [Fact]
         public async Task ExecuteAsync_ExceptionFired_ExceptionHandled()
         {
-            SetupGetOrCreateJobTriggerAsync();
-            SetupCreateJobInstanceAsync();
-            SetupSaveJobResultAsync();
+            SetupCreateJob();
+            SetupUpdateJobTrigger();
             SetupLogExceptionToAsync();
             emailMock.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Verifiable();
@@ -78,8 +71,8 @@ namespace Job.Tests.Impl
 
         private HikVideoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
         {
-            var config = GetConfig<CameraConfig>(configFileName);
-            return new HikVideoDownloaderJob($"{group}.{triggerKey}", config, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock );
+            var config = GetConfig(configFileName);
+            return new HikVideoDownloaderJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config, SentEmailOnError = true }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock );
         }
 
     }

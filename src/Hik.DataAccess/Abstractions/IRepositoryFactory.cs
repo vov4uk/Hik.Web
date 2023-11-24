@@ -3,6 +3,6 @@
     internal interface IRepositoryFactory
     {
         IBaseRepository<T> GetRepository<T>()
-            where T : class, IEntity;
+            where T : class, IEntity, new();
     }
 }

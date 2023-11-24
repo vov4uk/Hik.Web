@@ -12,7 +12,7 @@
 @if(Model.Dto != null && Model.Dto.Items.Any())
 {
     bool showDuration = Model.Dto.Items.Any(x => x.TotalDuration > 0);
-    <table class="table table-bordered table-sm" aria-label="Statistic">
+    <table class="table table-striped" aria-label="Statistic">
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(model => model.Dto.Items.First().Period)</th>

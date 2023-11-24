@@ -2,7 +2,7 @@
   "DestinationFolder": "C:\\Junk",
   "RetentionPeriodDays": 10,
   "Triggers": [
-    "JobHost.Entrance"
+    1
   ],
   "FileExtention":  ".ini"
 }

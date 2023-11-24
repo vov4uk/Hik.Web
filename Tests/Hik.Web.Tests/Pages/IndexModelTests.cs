@@ -1,9 +1,8 @@
 using AutoFixture.Xunit2;
 using Hik.DTO.Contracts;
-using Hik.Quartz.Contracts;
 using Hik.Web.Commands.Cron;
 using Hik.Web.Pages;
-using Hik.Web.Queries.JobTriggers;
+using Hik.Web.Queries.QuartzTrigger;
 using Hik.Web.Queries.QuartzTriggers;
 using Hik.Web.Tests.Pages;
 using Job;
@@ -20,18 +19,24 @@ namespace Hik.Web.Tests
     {
         [Theory]
         [AutoData]
-        public void OnPostRun_StartActivity_RedirectToHomePage(string group, string name)
+        public async Task OnPostRun_StartActivity_RedirectToHomePage(string group, string name)
         {
+            this._mediator.Setup(x => x.Send(It.IsAny<QuartzTriggerQuery>(), default(CancellationToken)))
+                .ReturnsAsync(new QuartzTriggerDto
+                {
+                    Trigger = new(){ Group = group, Name = name, ClassName = videoJob }
+                });
+
             this._mediator.Setup(x => x.Send(It.Is<StartActivityCommand>(y => y.Group == group && y.Name == name), default(CancellationToken)))
-                .ReturnsAsync(-1);
+                .Returns(Task.CompletedTask);
 
             var sut = new IndexModel(this._mediator.Object);
-            var result = sut.OnPostRun(group, name);
+            var result = await sut.OnPostRun(1);
 
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
             Assert.Equal("./Index", page.PageName);
-            Assert.Equal($"Activity { group}.{ name} started", page.RouteValues.Values.First());
+            Assert.Equal($"Activity {group}.{name} started", page.RouteValues.Values.First());
         }
 
         [Theory]
@@ -51,7 +56,7 @@ namespace Hik.Web.Tests
         [AutoData]
         public void OnPostKill_ActivityFound(string group, string name)
         {
-            RunningActivities.Add(new Activity(new Parameters("", group, name, "", "", true)));
+            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null));
 
             var sut = new IndexModel(this._mediator.Object);
             var result = sut.OnPostKill($"{group}.{name}");
@@ -66,24 +71,11 @@ namespace Hik.Web.Tests
         [AutoData]
         public async Task OnGet_ReturnJobs(string msg)
         {
-            RunningActivities.Add(new Activity(new Parameters("", group, name, "", "", true)));
-            this._mediator.Setup(x => x.Send(It.IsAny<JobTriggersQuery>(), default(CancellationToken)))
-                .ReturnsAsync(new JobTriggersDto
-                {
-                    Items = new TriggerDto[]
-                    {
-                        new(){ Group = group, Name = "Floor0_Video", LastSync = new(2022,02,24), LastJob = new(){ Success = false } },
-                        new(){ Group = group, Name = name, LastSync = new(2022,02,24), LastJob = new()},
-                        new(){ Group = group, Name = "NeverRun", LastSync = new(2022,02,24) },
-                        new(){ Group = group, Name = "Floor0_Photo", LastSync = new(2022,02,24), LastJob = new()},
-                        new(){ Group = group, Name = "Floor1_Photo", LastSync = new(2022,02,24), LastJob = new()},
-                        new(){ Group = group, Name = "Obsolete", LastSync = new(2022,02,24), LastJob = new()},
-                    }
-                });
+            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null));
             this._mediator.Setup(x => x.Send(It.IsAny<QuartzTriggersQuery>(), default(CancellationToken)))
                 .ReturnsAsync(new QuartzTriggersDto
                 {
-                    Items = new CronDto[]
+                    Triggers = new TriggerDto[]
                     {
                         new(){ Group = group, Name = "Floor0_Video", ClassName = videoJob },
                         new(){ Group = group, Name = name, ClassName = videoJob },
@@ -99,8 +91,7 @@ namespace Hik.Web.Tests
             Assert.Equal(msg, sut.ResponseMsg);
             Assert.NotEmpty(sut.TriggersDtos);
             Assert.Single(sut.TriggersDtos.Values.SelectMany(x => x).Where(x => x.ProcessId != null));
-            Assert.True(sut.TriggersDtos.Values.SelectMany(x => x).All(x => x.Cron != null));
-            Assert.False(sut.TriggersDtos.ContainsKey(archiveJob));
+            Assert.True(sut.TriggersDtos.ContainsKey(archiveJob));
             Assert.Equal(2, sut.TriggersDtos[videoJob].Count);
             Assert.Equal(2, sut.TriggersDtos[photoJob].Count);
         }

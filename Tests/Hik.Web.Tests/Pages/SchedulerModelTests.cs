@@ -1,4 +1,5 @@
 ﻿using AutoFixture.Xunit2;
+using Hik.DTO.Contracts;
 using Hik.Web.Commands.Cron;
 using Hik.Web.Pages;
 using Hik.Web.Queries.QuartzTriggers;
@@ -6,6 +7,7 @@ using Job;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moq;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +21,7 @@ namespace Hik.Web.Tests.Pages
         public async Task OnGet_ReturnDto()
         {
             this._mediator.Setup(x => x.Send(It.IsAny<QuartzTriggersQuery>(), default(CancellationToken)))
-                .ReturnsAsync(new QuartzTriggersDto());
+                .ReturnsAsync(new QuartzTriggersDto() { Triggers = new List<TriggerDto>() });
 
             var sut = new SchedulerModel(this._mediator.Object);
             var result = await sut.OnGetAsync("msg");
@@ -48,9 +50,9 @@ namespace Hik.Web.Tests.Pages
         [AutoData]
         public void OnPostKill_Redirect(string group, string name)
         {
-            RunningActivities.Add(new Activity(new Parameters("", group, name, "", "", true)));
-            RunningActivities activities = new();
-            Assert.NotEmpty(activities);
+            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null));
+
+            Assert.NotEmpty(RunningActivities.GetEnumerator());
 
             var sut = new SchedulerModel(this._mediator.Object);
             var result = sut.OnPostKillAll();
@@ -59,7 +61,7 @@ namespace Hik.Web.Tests.Pages
             var page = (RedirectToPageResult)result;
             Assert.Equal("./Scheduler", page.PageName);
             Assert.Equal("Jobs stoped", page.RouteValues.Values.First());
-            Assert.Empty(activities);
+            Assert.Empty(RunningActivities.GetEnumerator());
         }
     }
 }

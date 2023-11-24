@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Hik.DTO.Config
@@ -6,22 +7,17 @@ namespace Hik.DTO.Config
     public abstract class BaseConfig
     {
         [JsonProperty("JobTimeoutMinutes")]
+        [Display(Name = "Job timeout")]
         public int Timeout { get; set; } = 29;
 
-        public string Alias { get; set; }
-
+        [Display(Name = "Destination folder")]
         public string DestinationFolder { get; set; }
-
-        public bool SentEmailOnError { get; set; } = true;
-
-        public bool ShowInSearch { get; set; } = false;
 
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.AppendLine(this.GetRow(nameof(Alias), this.Alias));
-            sb.AppendLine(this.GetRow(nameof(DestinationFolder), this.DestinationFolder));
-            sb.AppendLine(this.GetRow(nameof(Timeout), this.Timeout.ToString()));
+            sb.AppendLine(GetRow(nameof(DestinationFolder), this.DestinationFolder));
+            sb.AppendLine(GetRow(nameof(Timeout), this.Timeout.ToString()));
 
             return sb.ToString();
         }
@@ -29,18 +25,17 @@ namespace Hik.DTO.Config
         public virtual string ToHtmlTable()
         {
             var sb = new StringBuilder();
-            sb.AppendLine(this.GetHtmlRow(nameof(Alias), this.Alias));
-            sb.AppendLine(this.GetHtmlRow(nameof(DestinationFolder), this.DestinationFolder));
-            sb.AppendLine(this.GetHtmlRow(nameof(Timeout), this.Timeout.ToString()));
+            sb.AppendLine(GetHtmlRow(nameof(DestinationFolder), this.DestinationFolder));
+            sb.AppendLine(GetHtmlRow(nameof(Timeout), this.Timeout.ToString()));
             return sb.ToString();
         }
 
-        protected string GetRow(string field, string value)
+        protected static string GetRow(string field, string value)
         {
             return $"{field,-24}: {value}";
         }
 
-        protected string GetHtmlRow(string field, string value)
+        protected static string GetHtmlRow(string field, string value)
         {
             return $"<tr><td>{field}</td><td>{value}</td></tr>";
         }

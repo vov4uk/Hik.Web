@@ -90,7 +90,6 @@ body {
 }
 
 .footer {
-    position: absolute;
     bottom: 0;
     width: 100%;
     white-space: nowrap;
@@ -101,12 +100,31 @@ body {
 }
 
 .failed[data-status="running"] {
-    background-color: #E6E9ED
+    background-color: #A0D468
 }
 
 .failed td {
     vertical-align: middle;
     border-top: 1px solid #dee2e6;
+}
+
+.checkmark[data-value="False"]:after {
+    color: red;
+    content: '\00D7';
+}
+
+.checkmark[data-value="True"]:after {
+    color: green;
+    content: '\2713';
+}
+
+.checkmark {
+    vertical-align: middle;
+    display: block;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 aside {
@@ -233,15 +251,16 @@ div[role="main"] aside p {
     }
 }
 
-.tri-success {
+.tri-success, .tri-success.card
+{
     background-color: #A0D468;
 }
 
-.tri-error {
+.tri-error, .tri-error.card {
     background-color: #FC6E51;
 }
 
-.tri-info {
+.tri-info, .tri-info.card {
     background-color: #E6E9ED;
 }
 
@@ -291,23 +310,23 @@ ul.thumbnails li span {
     display: block;
 }
 
-    ul.thumbnails li span.image-overlay {
-        display: none;
-        width: 200px;
-        padding: 5px;
-        background-color: #fff;
-        color: #343434;
-        /*CSS3 properties*/
-        border-radius: 7px 7px 0 0;
-        -moz-border-radius: 7px 7px 0 0;
-        -webkit-border-radius: 7px 7px 0 0;
-        background-color: rgba(255, 255, 255, 0.75);
-        word-wrap: break-word;
-    }
+ul.thumbnails li span.image-overlay {
+    display: none;
+    width: 228px;
+    padding: 20px;
+    background-color: #fff;
+    color: #343434;
+    /*CSS3 properties*/
+    border-radius: 7px 7px 0 0;
+    -moz-border-radius: 7px 7px 0 0;
+    -webkit-border-radius: 7px 7px 0 0;
+    background-color: rgba(255, 255, 255, 0.75);
+    word-wrap: break-word;
+}
 
-    ul.thumbnails li span.below-image {
-        line-height: normal;
-    }
+ul.thumbnails li span.below-image {
+    line-height: normal;
+}
 
 ul.thumbnails li img {
     margin: auto;
@@ -337,13 +356,13 @@ ul.thumbnails li:hover {
     -webkit-box-shadow: 0px 0px 10px #d0d0d0;
 }
 
-    ul.thumbnails li:hover span.image-overlay {
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        line-height: normal;
-    }
+ul.thumbnails li:hover span.image-overlay {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: normal;
+}
 
 /*  Single Photo Layout
 --------------------------------------------------*/
@@ -418,10 +437,10 @@ li.item span.image-overlay {
     opacity: 0;
 }
 
-    .popup.active {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-    }
+.popup.active {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
 
         .popup.active .close-btn,
         .popup.active .image-name,
@@ -498,9 +517,9 @@ li.item span.image-overlay {
 }
 
 .large-image {
-    margin-top: 5%;
+    margin-top: 3%;
     width: 100%;
-    height: 95%;
+    height: 90%;
     object-fit: contain;
     opacity: 0;
 }

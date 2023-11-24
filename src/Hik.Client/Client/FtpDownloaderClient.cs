@@ -4,12 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
-using FluentFTP.Exceptions;
 using Hik.Client.Client;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Hik.Client
 {
@@ -27,9 +26,7 @@ namespace Hik.Client
 
         public override async Task<IReadOnlyCollection<MediaFileDto>> GetFilesListAsync(DateTime periodStart, DateTime periodEnd)
         {
-            string path = !string.IsNullOrEmpty(config.RemotePath) ? config.RemotePath : $"/{config.Alias.Split(".")[1]}";
-
-            FtpListItem[] filesFromFtp = await ftp.GetListing(path);
+            FtpListItem[] filesFromFtp = await ftp.GetListing(config.RemotePath);
 
             var files = filesFromFtp.Select(item => new MediaFileDto
             {
@@ -55,16 +52,7 @@ namespace Hik.Client
             if (size == remoteFile.Size)
             {
                 remoteFile.Path = localFilePath;
-                try
-                {
-                    await ftp.DeleteFile(remoteFilePath);
-                }
-                catch (FtpException ex)
-                {
-                    logger.LogError(ex, "Failed to delete remote file");
-                    return false;
-                }
-
+                await ftp.DeleteFile(remoteFilePath, token);
                 return true;
             }
 

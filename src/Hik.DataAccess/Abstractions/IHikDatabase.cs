@@ -8,22 +8,24 @@ namespace Hik.DataAccess.Abstractions
 {
     public interface IHikDatabase
     {
-        Task<HikJob> CreateJobInstanceAsync(HikJob job);
+        void UpdateJobTrigger(JobTrigger trigger);
 
-        Task SaveJobResultAsync(HikJob job);
+        HikJob CreateJob(HikJob job);
 
-        Task UpdateJobAsync(HikJob job);
+        void UpdateJob(HikJob job);
 
-        Task LogExceptionToAsync(int jobId, string message);
+        void LogExceptionTo(int jobId, string message);
 
-        Task<JobTrigger> GetOrCreateJobTriggerAsync(string triggerKey);
+        Task<JobTrigger> GetJobTriggerAsync(string group, string key);
 
-        Task<List<MediaFile>> SaveFilesAsync(HikJob job, IReadOnlyCollection<MediaFileDto> files);
+        Task<JobTrigger[]> GetJobTriggersAsync(int[] triggerIds);
+
+        List<MediaFile> SaveFiles(HikJob job, IReadOnlyCollection<MediaFileDto> files);
+
+        void SaveFile(HikJob job, MediaFileDto item);
 
         Task UpdateDailyStatisticsAsync(int jobTriggerId, IReadOnlyCollection<MediaFileDto> files);
 
-        Task SaveDownloadHistoryFilesAsync(HikJob job, IReadOnlyCollection<MediaFile> files);
-
-        Task DeleteObsoleteJobsAsync(string[] triggers, DateTime to);
+        Task DeleteObsoleteJobsAsync(int[] triggers, DateTime to);
     }
 }

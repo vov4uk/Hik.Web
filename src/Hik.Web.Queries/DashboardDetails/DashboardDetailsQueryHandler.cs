@@ -22,7 +22,7 @@ namespace Hik.Web.Queries.DashboardDetails
                 var statRepo = uow.GetRepository<DailyStatistic>();
                 var jobTriggerRepo = uow.GetRepository<JobTrigger>();
 
-                var trigger = await jobTriggerRepo.FindByAsync(x => x.Id == query.JobTriggerId);
+                var trigger = await jobTriggerRepo.FindByIdAsync(query.JobTriggerId);
 
                 if (trigger != null)
                 {
@@ -39,7 +39,7 @@ namespace Hik.Web.Queries.DashboardDetails
                         JobTriggerId = query.JobTriggerId,
                         JobTriggerName = trigger.TriggerKey,
                         TotalItems = totalItems,
-                        Items = files.ConvertAll(x => HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>(x)),
+                        Items = files.ConvertAll(HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>),
                     };
                 }
                 return default(DashboardDetailsDto);

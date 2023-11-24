@@ -26,21 +26,20 @@ namespace Hik.Web.Queries.Search
                     x => x.JobTriggerId == request.JobTriggerId && x.Date <= request.DateTime,
                     top : 1);
 
-                if (latestFile.Any())
+                if (latestFile.Count > 0)
                 {
-                    var file = latestFile.First();
+                    var file = latestFile[0];
                     var msg = (file.Date <= request.DateTime && request.DateTime <= file.Date.AddSeconds(file.Duration ?? 0)) ? "Match" : "Out of range";
 
                     var beforeFiles = await GetMediaFilesAsync(filesRepo,
                         x => x.JobTriggerId == request.JobTriggerId && x.Id < file.Id);
 
                     var files = await filesRepo.FindManyByAscAsync(
-                        x => x.JobTriggerId == request.JobTriggerId && x.Id > file.Id,
-                        x => x.Date,
+                        predicate: x => x.JobTriggerId == request.JobTriggerId && x.Id > file.Id,
+                        orderByAsc: x => x.Date,
                         skip: 0,
-                        top: 5,
-                        includes: x => x.DownloadDuration);
-                    var afterFiles = files.ConvertAll(y => HikDatabase.Mapper.Map<MediaFile, MediaFileDto>(y));
+                        top: 5);
+                    var afterFiles = files.ConvertAll(HikDatabase.Mapper.Map<MediaFile, MediaFileDto>);
 
                     return new SearchDto
                     {
@@ -68,11 +67,10 @@ namespace Hik.Web.Queries.Search
         {
             var files = await filesRepo.FindManyByDescAsync(
                         predicate,
-                        x => x.Date,
+                        orderByDesc: x => x.Date,
                         skip: 0,
-                        top: top,
-                        includes : x => x.DownloadDuration);
-            return files.ConvertAll(y => HikDatabase.Mapper.Map<MediaFile, MediaFileDto>(y));
+                        take: top);
+            return files.ConvertAll(HikDatabase.Mapper.Map<MediaFile, MediaFileDto>);
         }
     }
 }

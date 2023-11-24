@@ -3,9 +3,10 @@
 @using Hik.DTO.Contracts
 @model List<MediaFileDto>
 
-<table class="table table-bordered table-sm" aria-label="Videos">
+<table class="table table-striped table-bordered" aria-label="Videos">
     <thead>
         <tr>
+            <th></th>
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Name)</th>
             <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Date)</th>
             <th>End</th>
@@ -24,7 +25,11 @@
             string downloaded = (item.DownloadDuration).FormatSeconds();
             string end = item.Date.AddSeconds(item.Duration ?? 0).ToString(Consts.DisplayDateTimeStringFormat);
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.Path)</td>
+                <td>
+                    <img src="@Url.Content($"/Search?fileId={@item?.Id}&handler=VideoThumbnail")"
+                         class="thumbnail-border" />
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>
                 <td>@end</td>
                 <td>@duration</td>

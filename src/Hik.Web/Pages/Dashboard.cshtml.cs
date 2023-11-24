@@ -28,7 +28,7 @@ namespace Hik.Web.Pages
             this.Dto = await mediator.Send(new DashboardQuery()) as DashboardDto;
 
             var cronTriggers = await mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
-            foreach (var item in cronTriggers.Items)
+            foreach (var item in cronTriggers.Triggers)
             {
                 var tri = Dto.Triggers.FirstOrDefault(x => x.Name == item.Name && x.Group == item.Group);
                 JobTriggers.SafeAdd(item.ClassName, tri);

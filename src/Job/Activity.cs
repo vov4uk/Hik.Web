@@ -1,5 +1,6 @@
-﻿using Job.Email;
-using Microsoft.Extensions.Logging;
+﻿using Hik.DataAccess;
+using Job.Email;
+using Serilog;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -10,10 +11,9 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public class Activity
     {
-        private const string JobHost = "JobHost.exe";
-        protected readonly ILogger Logger;
-        private static readonly EmailHelper email = new EmailHelper();
-        private DateTime started = default;
+        private readonly DbConfiguration dbConfig;
+        private readonly string WorkingDirectory;
+
         public Parameters Parameters { get; private set; }
         public int ProcessId
         {
@@ -36,21 +36,13 @@ namespace Job
 
         public string Id => $"{Parameters.Group}.{Parameters.TriggerKey}";
 
-        public DateTime StartTime => hostProcess?.StartTime ?? started;
-
         private Process hostProcess = default;
 
-        public Activity(Parameters parameters)
+        public Activity(Parameters parameters, DbConfiguration dbConfig, string workingDirectory)
         {
-            parameters.ActivityId = Guid.NewGuid();
-            Parameters = parameters;
-
-            Logger = new LoggerFactory()
-                .AddFile($"logs\\{parameters.TriggerKey}.txt")
-                .AddSeq()
-                .CreateLogger(parameters.TriggerKey);
-
-            Logger.LogInformation("Created with parameters {parameters}.", parameters);
+            this.Parameters = parameters;
+            this.dbConfig = dbConfig;
+            this.WorkingDirectory = workingDirectory;
         }
 
         public async Task Start()
@@ -59,29 +51,34 @@ namespace Job
             {
                 if (RunningActivities.Add(this))
                 {
-                    if (Parameters.RunAsTask)
-                    {
-                        await RunAsTask();
-                    }
-                    else
-                    {
-                        await StartProcess();
-                    }
+#if DEBUG
+                    var job = await JobFactory.GetJobAsync(Parameters, this.dbConfig, Log.Logger);
+                    await job.ExecuteAsync();
+#else
+                    await StartProcess();
+#endif
                 }
                 else
                 {
-                    Logger.LogInformation("Cannot start, {triggerKey} is already running.", Parameters.TriggerKey);
+                    Log.Warning("Cannot start, {triggerKey} is already running.", Parameters.TriggerKey);
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Logger.LogError(ex, "Failed to start activity");
-                email.Send(ex.Message);
+                Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to start activity", e.ToStringDemystified());
+                new EmailHelper().Send(e.Message, Parameters.TriggerKey, null);
             }
             finally
             {
-                Logger.LogInformation("StartProcess. Done.");
+                if (!RunningActivities.Remove(this))
+                {
+                    Log.Information("Cannot remove {ActivityId} from ActivityBag ", $"{Parameters.TriggerKey}_{Parameters.ActivityId}");
+                }
+                else
+                {
+                    Log.Information("{ActivityId} finallized", $"{Parameters.TriggerKey}_{Parameters.ActivityId}");
+                }
             }
         }
 
@@ -89,43 +86,38 @@ namespace Job
         {
             if (hostProcess != null && !hostProcess.HasExited)
             {
-                Logger.LogInformation("Killing process manual");
+                Log.Information("Killing process manual");
                 hostProcess.Kill();
             }
             else
             {
-                Logger.LogInformation("No process found");
+                Log.Information("No process found");
             }
             RunningActivities.Remove(this);
         }
 
-        private Task StartProcess()
+        private Task<object> StartProcess()
         {
             TaskCompletionSource<object> tcs = new ();
             hostProcess = new Process
             {
                 StartInfo =
                 {
-                    FileName = JobHost,
+                    FileName = $"{Parameters.Group}\\JobHost.exe",
                     Arguments = Parameters.ToString(),
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
+                    WorkingDirectory = this.WorkingDirectory,
                 },
                 EnableRaisingEvents = true,
             };
 
-            hostProcess.OutputDataReceived += new DataReceivedEventHandler(LogData);
             hostProcess.ErrorDataReceived += new DataReceivedEventHandler(LogErrorData);
             hostProcess.Exited += (object sender, EventArgs e) =>
             {
                 tcs.SetResult(null);
-                Logger.LogInformation("Process exit with code: {exitCode}", hostProcess.ExitCode);
-                if (!RunningActivities.Remove(this))
-                {
-                    Logger.LogInformation("Cannot remove activity from ActivityBag");
-                }
             };
 
             hostProcess.Start();
@@ -136,38 +128,11 @@ namespace Job
             return tcs.Task;
         }
 
-        private async Task RunAsTask()
-        {
-            IJobProcess job = JobFactory.GetJob(Parameters, Logger, email);
-            started = DateTime.Now;
-
-            try
-            {
-                await job.ExecuteAsync();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Failed to start task");
-            }
-            finally
-            {
-                RunningActivities.Remove(this);
-            }
-        }
-
         private void LogErrorData(object sender, DataReceivedEventArgs e)
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                Logger.LogInformation("HasExited : {hasExited} - {data} - {sender}", (sender as Process)?.HasExited, e.Data, sender );
-            }
-        }
-
-        private void LogData(object sender, DataReceivedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                Logger.LogInformation("{data}", e.Data);
+                Log.Error("{ActivityId} - {data}", $"{Parameters.TriggerKey}_{Parameters.ActivityId}", e.Data);
             }
         }
     }

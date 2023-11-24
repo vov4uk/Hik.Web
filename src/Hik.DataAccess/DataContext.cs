@@ -1,61 +1,41 @@
 ﻿using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
-using Hik.DataAccess.Mappings;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 
 namespace Hik.DataAccess
 {
     [ExcludeFromCodeCoverage]
     public class DataContext : DbContext
     {
-        private readonly string ConnectionString;
+        private readonly IDbConfiguration Configuration;
         public DataContext(DbContextOptions<DataContext> options)
             : base(options) { }
 
         public DataContext(IDbConfiguration configuration)
             : base()
         {
-            ConnectionString = configuration.ConnectionString;
+            this.Configuration = configuration;
         }
 
+        public DbSet<JobTrigger> JobTriggers { get; set; }
         public DbSet<HikJob> Jobs { get; set; }
         public DbSet<MediaFile> MediaFiles { get; set; }
-        public DbSet<DownloadHistory> DownloadHistory { get; set; }
-        public DbSet<DownloadDuration> DownloadDuration { get; set; }
         public DbSet<DailyStatistic> DailyStatistics { get; set; }
         public DbSet<ExceptionLog> Exceptions { get; set; }
-        public DbSet<JobTrigger> JobTriggers { get; set; }
+        public DbSet<MigrationHistory> MigrationHistory { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            if (!string.IsNullOrEmpty(ConnectionString))
+            if (!string.IsNullOrEmpty(this.Configuration.ConnectionString))
             {
-                optionsBuilder.UseSqlite(ConnectionString, options =>
+                optionsBuilder.UseSqlite(this.Configuration.ConnectionString, options =>
                 {
-                    options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
-                    options.CommandTimeout(30);
+                    options.CommandTimeout(this.Configuration.CommandTimeout);
                 });
-#if DEBUG
                 optionsBuilder.EnableSensitiveDataLogging();
-#endif
             }
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder
-                .ApplyConfiguration(new HikJobMapping())
-                .ApplyConfiguration(new JobTriggerMapping())
-                .ApplyConfiguration(new MediaFileMapping())
-                .ApplyConfiguration(new ExceptionLogMapping())
-                .ApplyConfiguration(new DailyStatisticMapping())
-                .ApplyConfiguration(new DownloadHistoryMapping())
-                .ApplyConfiguration(new DownloadDurationMapping());
-
-            base.OnModelCreating(modelBuilder);
         }
     }
 }

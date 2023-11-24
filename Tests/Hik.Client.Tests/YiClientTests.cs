@@ -10,7 +10,7 @@
     using DTO.Contracts;
     using FluentFTP;
     using Hik.Helpers.Abstraction;
-    using Microsoft.Extensions.Logging;
+    using Serilog;
     using Moq;
     using Xunit;
 
@@ -55,13 +55,16 @@
 
         #region Login
         [Fact]
-        public void Login_CallLogin_LoginSucessfully()
+        public void Login_CallLogin_LoginSuccessfully()
         {
-            this.ftpMock.Setup(x => x.Connect(default(CancellationToken))).Returns(Task.CompletedTask);
+            this.ftpMock.Setup(x => x.AutoConnect(default(CancellationToken)))
+                .ReturnsAsync(new FtpProfile());
+            this.ftpMock.Setup(x => x.Connect(It.IsAny<FtpProfile>(), default(CancellationToken)))
+                .Returns(Task.CompletedTask);
             var client = this.GetClient();
             bool loginResult = client.Login();
 
-            this.ftpMock.Verify(x => x.Connect(default(CancellationToken)), Times.Once);
+            this.ftpMock.Verify(x => x.Connect(It.IsAny<FtpProfile>(), default(CancellationToken)), Times.Once);
 
             Assert.True(loginResult);
         }
@@ -156,13 +159,13 @@
 
         #region DownloadFileAsync
         [Theory]
-        [InlineData(1991, 05, 31, ClientType.Yi,     "/tmp/sd/record/1991Y05M31D00H/00M00S.mp4",   "C:\\1991-05\\31\\00\\19910531_000000.mp4")]
+        [InlineData(1991, 05, 31, ClientType.Yi, "/tmp/sd/record/1991Y05M31D00H/00M00S.mp4", "C:\\1991-05\\31\\00\\19910531_000000.mp4")]
         [InlineData(1991, 05, 31, ClientType.Yi720p, "/tmp/sd/record/1991Y05M31D00H/00M00S60.mp4", "C:\\1991-05\\31\\00\\19910531_000000.mp4")]
-        [InlineData(2020, 12, 31, ClientType.Yi,     "/tmp/sd/record/2020Y12M31D00H/00M00S.mp4",   "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
+        [InlineData(2020, 12, 31, ClientType.Yi, "/tmp/sd/record/2020Y12M31D00H/00M00S.mp4", "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
         [InlineData(2020, 12, 31, ClientType.Yi720p, "/tmp/sd/record/2020Y12M31D00H/00M00S60.mp4", "C:\\2020-12\\31\\00\\20201231_000000.mp4")]
         public async Task DownloadFileAsync_CallDownload_ProperFilesStored(int y, int m, int d, ClientType clientType, string remoteFilePath, string localFilePath)
         {
-            var cameraConfig = new CameraConfig { ClientType = clientType, DestinationFolder = "C:\\", Alias = "test", Camera = new () };
+            var cameraConfig = new CameraConfig { ClientType = clientType, DestinationFolder = "C:\\", Camera = new() };
 
             MediaFileDto remoteFile = new() { Date = new DateTimeOffset(y, m, d, 0, 0, 0, new TimeSpan(0, 0, 0)).UtcDateTime, Duration = 60, Name = "00M00S" };
 
@@ -181,7 +184,7 @@
                 .Returns(false);
             this.ftpMock.Setup(x => x.FileExists(remoteFilePath, CancellationToken.None))
                 .ReturnsAsync(true);
-            this.ftpMock.Setup(x => x.DownloadFile(tempName, remoteFilePath, FtpLocalExists.Overwrite, FtpVerify.None, null, CancellationToken.None))
+            this.ftpMock.Setup(x => x.DownloadFile(tempName, remoteFilePath, FtpLocalExists.Skip, FtpVerify.None, null, CancellationToken.None))
                 .ReturnsAsync(FtpStatus.Success);
 
             var client = new YiClient(cameraConfig, this.filesMock.Object, this.dirMock.Object, ftpMock.Object, loggerMock.Object);

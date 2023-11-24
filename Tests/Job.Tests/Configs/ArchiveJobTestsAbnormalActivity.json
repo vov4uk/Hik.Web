@@ -6,5 +6,5 @@
   "FileNameDateTimeFormat": "yyyyMMdd_HHmmss",
   "AbnormalFilesCount": 1,
   "FileNamePattern": "{0}",
-  "AllowedFileExtentions": [".ini"]
+  "AllowedFileExtentions": ".ini"
 }

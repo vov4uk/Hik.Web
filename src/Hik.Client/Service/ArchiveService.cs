@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -9,13 +10,14 @@ using Hik.Client.Helpers;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace Hik.Client.Service
 {
     public class ArchiveService : RecurrentJobBase, IArchiveService
     {
+        private static readonly string[] Extentions = new[] { ".zip" };
         private readonly IFilesHelper filesHelper;
         private readonly IVideoHelper videoHelper;
         private readonly IImageHelper imageHelper;
@@ -45,7 +47,7 @@ namespace Hik.Client.Service
 
             if (aConfig.UnzipFiles)
             {
-                var allZips = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, new[] { ".zip" }).SkipLast(aConfig.SkipLast);
+                var allZips = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, Extentions).SkipLast(aConfig.SkipLast);
                 foreach (var zip in allZips)
                 {
                     try
@@ -54,11 +56,11 @@ namespace Hik.Client.Service
                     }
                     catch (IOException e)
                     {
-                        logger.LogError(e, $"Failed to unzip file - {zip}");
+                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Failed to unzip file - {zip}", e.ToStringDemystified());
                     }
                     catch (InvalidDataException e)
                     {
-                        logger.LogError(e, $"Invalid zip file - {zip}");
+                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Invalid zip file - {zip}", e.ToStringDemystified());
                     }
 
                     try
@@ -67,15 +69,15 @@ namespace Hik.Client.Service
                     }
                     catch (IOException e)
                     {
-                        logger.LogError(e, $"Failed to delete file - {zip}");
+                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Failed to delete file - {zip}", e.ToStringDemystified());
                     }
                 }
             }
 
-            this.regex = this.GetRegex(aConfig.FileNamePattern);
+            this.regex = GetRegex(aConfig.FileNamePattern);
 
             var result = new List<MediaFileDto>();
-            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions).SkipLast(aConfig.UnzipFiles ? 0 : aConfig.SkipLast);
+            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions.Split(";")).SkipLast(aConfig.UnzipFiles ? 0 : aConfig.SkipLast);
 
             foreach (var filePath in allFiles)
             {
@@ -100,25 +102,25 @@ namespace Hik.Client.Service
                 };
                 result.Add(dto);
 
-                logger.LogInformation($"{filePath} -> {JsonConvert.SerializeObject(dto)}");
+                logger.Debug($"{filePath} -> {JsonConvert.SerializeObject(dto)}");
             }
 
             return result.AsReadOnly();
         }
 
+        private static Regex GetRegex(string template)
+        {
+            // Handels regex special characters.
+            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => @"\" + m.Value, RegexOptions.None, TimeSpan.FromMilliseconds(100));
+            string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)", RegexOptions.None, TimeSpan.FromMilliseconds(100)) + "$";
+            return new Regex(pattern, RegexOptions.None, TimeSpan.FromMilliseconds(100));
+        }
+
         private string MoveFile(string destinationFolder, string oldFilePath, DateTime date, string newFileName)
         {
             string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(destinationFolder, date));
-            if (IsPicture(oldFilePath))
-            {
-                this.imageHelper.SetDate(oldFilePath, newFilePath, date);
-                this.filesHelper.DeleteFile(oldFilePath);
-            }
-            else
-            {
-                this.filesHelper.RenameFile(oldFilePath, newFilePath);
-            }
-
+            this.filesHelper.RenameFile(oldFilePath, newFilePath);
+            this.imageHelper.SetDate(newFilePath, date);
             return newFilePath;
         }
 
@@ -128,7 +130,7 @@ namespace Hik.Client.Service
             List<string> nameParts = ReverseStringFormat(fileName);
             DateTime date = default;
             bool nameParsed = false;
-            if (nameParts != null && nameParts.Any())
+            if (nameParts != null && nameParts.Count != 0)
             {
                 foreach (var name in nameParts)
                 {
@@ -155,7 +157,7 @@ namespace Hik.Client.Service
 
         private string GetWorkingDirectory(string destinationFolder, DateTime date)
         {
-            return filesHelper.CombinePath(destinationFolder, date.ToPhotoDirectoryNameString());
+            return filesHelper.CombinePath(destinationFolder, date.ToDirectoryName());
         }
 
         private string GetPathSafety(string file, string directory)
@@ -166,20 +168,7 @@ namespace Hik.Client.Service
 
         private List<string> ReverseStringFormat(string str)
         {
-            return this.regex.Match(str).Groups.Select(x => x.Value).ToList();
-        }
-
-        private Regex GetRegex(string template)
-        {
-            // Handels regex special characters.
-            template = Regex.Replace(template, @"[\\\^\$\.\|\?\*\+\(\)]", m => @"\" + m.Value, RegexOptions.None, TimeSpan.FromMilliseconds(100));
-            string pattern = "^" + Regex.Replace(template, @"\{[0-9]+\}", "(.*?)", RegexOptions.None, TimeSpan.FromMilliseconds(100)) + "$";
-            return new Regex(pattern, RegexOptions.None, TimeSpan.FromMilliseconds(100));
-        }
-
-        private bool IsPicture(string filePath)
-        {
-            return filesHelper.GetExtension(filePath) == ".jpg";
+            return this.regex.Match(str).Groups.Values.Select(x => x.Value).ToList();
         }
     }
 }

@@ -1,46 +1,57 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Serilog;
 using Quartz.Logging;
 using System;
 using LogLevel = Quartz.Logging.LogLevel;
+using System.IO;
 
 namespace Hik.Quartz.Extensions
 {
     public class ConsoleLogProvider : ILogProvider
     {
+
+        private readonly string LogsPath;
+        public ConsoleLogProvider() { }
+
+        public ConsoleLogProvider(string logsPath)
+        {
+            LogsPath = logsPath;
+        }
+
         public Logger GetLogger(string name)
         {
-            var logger = new LoggerFactory()
-                .AddFile($"logs\\Quartz.txt")
-                .CreateLogger("Quartz");
+            var logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .Enrich.FromLogContext() 
+                .WriteTo.Console()
+                .WriteTo.File(Path.Combine(LogsPath, "Quartz_.txt"),
+                rollingInterval: RollingInterval.Day,
+                   fileSizeLimitBytes: 10 * 1024 * 1024,
+                   retainedFileCountLimit: 2,
+                   rollOnFileSizeLimit: true,
+                   shared: true,
+                   flushToDiskInterval: TimeSpan.FromSeconds(10))
+                .CreateLogger();
 
             return (level, func, exception, parameters) =>
             {
                 if (level >= LogLevel.Trace && func != null)
                 {
-                    logger.Log(GetMicrosoftLogLevel(level), func(), parameters);
+                    logger.Write(GetMicrosoftLogLevel(level), func(), parameters);
                 }
                 return true;
             };
         }
 
-        private Microsoft.Extensions.Logging.LogLevel GetMicrosoftLogLevel(LogLevel logLevel)
+        private Serilog.Events.LogEventLevel GetMicrosoftLogLevel(LogLevel s)
         {
-            switch (logLevel)
+            return s switch
             {
-                case LogLevel.Trace:
-                    return Microsoft.Extensions.Logging.LogLevel.Trace;
-                case LogLevel.Debug:
-                    return Microsoft.Extensions.Logging.LogLevel.Debug;
-                case LogLevel.Info:
-                    return Microsoft.Extensions.Logging.LogLevel.Information;
-                case LogLevel.Warn:
-                    return Microsoft.Extensions.Logging.LogLevel.Warning;
-                case LogLevel.Error:
-                    return Microsoft.Extensions.Logging.LogLevel.Error;
-                case LogLevel.Fatal:
-                default:
-                    return Microsoft.Extensions.Logging.LogLevel.Critical;
-            }
+                LogLevel.Debug => Serilog.Events.LogEventLevel.Verbose,
+                LogLevel.Info => Serilog.Events.LogEventLevel.Information,
+                LogLevel.Warn => Serilog.Events.LogEventLevel.Warning,
+                LogLevel.Error => Serilog.Events.LogEventLevel.Error,
+                _ => Serilog.Events.LogEventLevel.Information,
+            };
         }
 
         public IDisposable OpenNestedContext(string message)
