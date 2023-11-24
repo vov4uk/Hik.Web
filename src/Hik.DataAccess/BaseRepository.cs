@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace Hik.DataAccess
@@ -40,7 +41,7 @@ namespace Hik.DataAccess
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.Message);
+                    Log.Error(ex.ToString());
                 }
             }
 
@@ -55,7 +56,7 @@ namespace Hik.DataAccess
         public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate,
             params Expression<Func<TEntity, object>>[] includes)
         {
-            var result = DbSet.Where(predicate);
+            IQueryable<TEntity> result = DbSet.Where(predicate);
 
             foreach (var includeExpression in includes)
             {
@@ -91,7 +92,7 @@ namespace Hik.DataAccess
                                 int ordinal = reader.GetOrdinal(customAttribute.Name);
                                 object obj = ordinal != -1 ?
                                     reader.GetValue(ordinal) :
-                                    throw new NullReferenceException(string.Format("Class [{0}] have attribute of field [{1}] which not exist in reader", this.GetType(), customAttribute.Name));
+                                    throw new InvalidDataContractException(string.Format("Class [{0}] have attribute of field [{1}] which not exist in reader", this.GetType(), customAttribute.Name));
 
                                 if (obj != DBNull.Value)
                                 {
@@ -109,7 +110,7 @@ namespace Hik.DataAccess
 
         public virtual IQueryable<TEntity> FindBy(Expression<Func<TEntity, bool>> predicate)
         {
-            var query = DbSet.Where(predicate);
+            IQueryable<TEntity> query = DbSet.Where(predicate);
 
             LogQuery(nameof(FindBy), query);
             return query;
@@ -118,7 +119,7 @@ namespace Hik.DataAccess
         public virtual Task<TEntity> FindByAsync(Expression<Func<TEntity, bool>> predicate,
             params Expression<Func<TEntity, object>>[] includes)
         {
-            var result = DbSet.Where(predicate);
+            IQueryable<TEntity> result = DbSet.Where(predicate);
 
             foreach (var includeExpression in includes)
             {
@@ -126,7 +127,7 @@ namespace Hik.DataAccess
             }
             LogQuery(nameof(FindByAsync), result);
 
-            return result?.FirstOrDefaultAsync();
+            return result.FirstOrDefaultAsync();
         }
 
         public TEntity FindById(int id)
@@ -142,7 +143,7 @@ namespace Hik.DataAccess
         public virtual Task<List<TEntity>> FindManyAsync(Expression<Func<TEntity, bool>> predicate,
             params Expression<Func<TEntity, object>>[] includes)
         {
-            var result = DbSet.Where(predicate);
+            IQueryable<TEntity> result = DbSet.Where(predicate);
 
             foreach (var includeExpression in includes)
             {
@@ -151,14 +152,14 @@ namespace Hik.DataAccess
 
             LogQuery(nameof(FindManyAsync), result);
 
-            return result?.ToListAsync();
+            return result.ToListAsync();
         }
 
         public virtual Task<List<TEntity>> FindManyByAscAsync(Expression<Func<TEntity, bool>> predicate,
             Expression<Func<TEntity, object>> orderByAsc, int skip, int top,
             params Expression<Func<TEntity, object>>[] includes)
         {
-            var result = DbSet.Where(predicate);
+            IQueryable<TEntity> result = DbSet.Where(predicate);
 
             foreach (var includeExpression in includes)
             {
@@ -169,7 +170,7 @@ namespace Hik.DataAccess
 
             LogQuery(nameof(FindManyByAscAsync), result);
 
-            return result?.ToListAsync();
+            return result.ToListAsync();
         }
 
         public virtual Task<List<TEntity>> FindManyByDescAsync(
@@ -179,7 +180,7 @@ namespace Hik.DataAccess
             int take,
             params Expression<Func<TEntity, object>>[] includes)
         {
-            var result = DbSet.Where(predicate);
+            IQueryable<TEntity> result = DbSet.Where(predicate);
 
             foreach (var includeExpression in includes)
             {
@@ -190,12 +191,12 @@ namespace Hik.DataAccess
 
             LogQuery(nameof(FindManyByDescAsync), result);
 
-            return result?.ToListAsync();
+            return result.ToListAsync();
         }
 
         public virtual IQueryable<TEntity> GetAll(params Expression<Func<TEntity, object>>[] includes)
         {
-            var result = DbSet.Where(i => true);
+            IQueryable<TEntity> result = DbSet.Where(i => true);
 
             foreach (var includeExpression in includes)
             {
@@ -221,7 +222,7 @@ namespace Hik.DataAccess
             var result = DbSet.Where(p => ids.Contains(p.Id));
             LogQuery(nameof(idsQuery), idsQuery);
             LogQuery(nameof(GetLatestGroupedBy), result);
-            return await result?.ToListAsync();
+            return await result.ToListAsync();
         }
 
         public async Task<List<TEntity>> GetLatestGroupedBy(
@@ -237,14 +238,14 @@ namespace Hik.DataAccess
             var result = DbSet.Where(p => ids.Contains(p.Id));
             LogQuery(nameof(idsQuery), idsQuery);
             LogQuery(nameof(GetLatestGroupedBy), result);
-            return await result?.ToListAsync();
+            return await result.ToListAsync();
         }
 
         public virtual Task<List<TEntity>> LastAsync(int last)
         {
-            var result = DbSet.OrderByDescending(x => x).Take(last);
+            IQueryable<TEntity> result = DbSet.OrderByDescending(x => x).Take(last);
             LogQuery(nameof(LastAsync), result);
-            return result?.ToListAsync();
+            return result.ToListAsync();
         }
         public void Remove(params object[] keys)
         {
@@ -284,7 +285,7 @@ namespace Hik.DataAccess
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.Message);
+                    Log.Error(ex.ToString());
                 }
             }
         }
