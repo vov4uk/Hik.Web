@@ -8,21 +8,21 @@
     using System.Threading.Tasks;
     using AutoFixture;
     using AutoMapper;
-    using Hik.Api.Abstraction;
-    using Hik.Api.Data;
-    using Hik.Client;
-    using Hik.Client.Infrastructure;
+     using Hik.Client.Infrastructure;
     using Hik.DTO.Config;
     using Hik.DTO.Contracts;
     using Hik.Helpers.Abstraction;
     using Serilog;
     using Moq;
     using Xunit;
+    using Dahua.Api.Abstractions;
+    using Hik.Client.Client;
+    using Dahua.Api.Data;
 
-    public class HikVideoClientTests
+    public class DahuaVideoClientTests
     {
-        private readonly Mock<IHikSDK> sdkMock;
-        private readonly Mock<IHikApi> apiMock;
+        private readonly Mock<IDahuaSDK> sdkMock;
+        private readonly Mock<IDahuaApi> apiMock;
         private readonly Mock<IVideoService> videoServiceMock;
         private readonly Mock<IConfigService> configServiceMock;
         private readonly Mock<IFilesHelper> filesMock;
@@ -31,7 +31,7 @@
         private readonly Fixture fixture;
         private readonly IMapper mapper;
 
-        public HikVideoClientTests()
+        public DahuaVideoClientTests()
         {
             this.videoServiceMock = new (MockBehavior.Strict);
             this.configServiceMock = new (MockBehavior.Strict);
@@ -58,7 +58,7 @@
         [Fact]
         public void Constructor_PutEmptyConfig_ThrowsException()
         {
-            Assert.Throws<ArgumentNullException>(() => new HikVideoClient(null, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper, this.loggerMock.Object));
+            Assert.Throws<ArgumentNullException>(() => new DahuaVideoClient(null, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper, this.loggerMock.Object));
         }
 
         #region InitializeClient
@@ -68,11 +68,11 @@
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
                 .Returns(string.Empty);
             this.dirMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.sdkMock.Setup(x => x.Initialize(3, It.IsAny<string>(), true, 2000, 1, 10000, true));
+            this.sdkMock.Setup(x => x.Initialize());
 
-            this.GetHikClient().InitializeClient();
+            this.GetClient().InitializeClient();
 
-            this.sdkMock.Verify(x => x.Initialize(3, It.IsAny<string>(), true, 2000, 1, 10000, true), Times.Once);
+            this.sdkMock.Verify(x => x.Initialize(), Times.Once);
         }
 
         #endregion InitializeClient
@@ -81,58 +81,28 @@
         [Fact]
         public void Login_CallLogin_LoginSuccessfully()
         {
-            this.SetupLoginAndHddStatusCheck();
-            var client = this.GetHikClient();
+            this.SetupLogin();
+            var client = this.GetClient();
             bool loginResult = client.Login();
 
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.configServiceMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
             Assert.True(loginResult);
         }
 
-        [Fact]
-        public void Login_HardDriveStatusError_ThrowsException()
-        {
-            this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(apiMock.Object);
-            this.configServiceMock.Setup(x => x.GetHddStatus(It.IsAny<int>()))
-                .Returns(new HdInfo { HdStatus = 2 });
 
-            var client = this.GetHikClient();
-
-            Assert.Throws<InvalidOperationException>(() => { client.Login(); });
-            this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.configServiceMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once());
-        }
-
-        [Fact]
-        public void Login_HardDriveStatusNull_ReturnTrue()
-        {
-            this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(apiMock.Object);
-            this.configServiceMock.Setup(x => x.GetHddStatus(It.IsAny<int>()))
-                .Returns(default(HdInfo));
-
-            var clientLoggedIn = this.GetHikClient().Login();
-
-            Assert.True(clientLoggedIn);
-            this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.configServiceMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
-        }
 
         [Fact]
         public void Login_CallLoginTwice_LoginOnce()
         {
-            this.SetupLoginAndHddStatusCheck();
+            this.SetupLogin();
 
-            var client = this.GetHikClient();
+            var client = this.GetClient();
             var first = client.Login();
             var second = client.Login();
 
             Assert.True(first);
             Assert.False(second);
             this.sdkMock.Verify(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            this.configServiceMock.Verify(x => x.GetHddStatus(It.IsAny<int>()), Times.Once);
         }
 
         #endregion Login
@@ -141,13 +111,13 @@
         [Fact]
         public void Dispose_CallLogin_LogoutSuccess()
         {
-            this.SetupLoginAndHddStatusCheck();
+            this.SetupLogin();
 
             this.apiMock.Setup(x => x.Logout());
             this.sdkMock.Setup(x => x.Cleanup());
 
             bool loginResult = false;
-            using (var client = this.GetHikClient())
+            using (var client = this.GetClient())
             {
                 loginResult = client.Login();
             }
@@ -162,7 +132,7 @@
         public void Dispose_DoNotLogin_LogoutNotCall()
         {
             this.sdkMock.Setup(x => x.Cleanup()).Verifiable();
-            using (var client = this.GetHikClient())
+            using (var client = this.GetClient())
             {
                 // Do nothing
             }
@@ -179,17 +149,17 @@
         {
             DateTime start = default(DateTime);
             DateTime end = start.AddSeconds(1);
-            var remoteFile = fixture.Create<HikRemoteFile>();
+            var remoteFile = fixture.Create<RemoteFile>();
 
-            this.SetupLoginAndHddStatusCheck();
-            this.videoServiceMock.Setup(x => x.FindFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-                .ReturnsAsync(new List<HikRemoteFile>() { remoteFile });
+            this.SetupLogin();
+            this.videoServiceMock.Setup(x => x.FindFiles(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .Returns(new List<RemoteFile>() { remoteFile });
 
-            var client = this.GetHikClient();
+            var client = this.GetClient();
             client.Login();
             var mediaFiles = await client.GetFilesListAsync(start, end);
 
-            this.videoServiceMock.Verify(x => x.FindFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
+            this.videoServiceMock.Verify(x => x.FindFiles(It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
             Assert.Single(mediaFiles);
             var firstFile = mediaFiles.First();
             Assert.Equal(remoteFile.Name, firstFile.Name);
@@ -201,7 +171,7 @@
         [Fact]
         public async Task GetFilesListAsync_CallWithInvalidParameters_ThrowsException()
         {
-            var client = this.GetHikClient();
+            var client = this.GetClient();
 
             await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
@@ -221,8 +191,8 @@
         {
             var cameraConfig = new CameraConfig { ClientType = ClientType.HikVisionVideo, DestinationFolder = "C:\\", Camera = new DTO.Config.DeviceConfig() };
 
-            int downloadHandler = 1;
-            this.SetupLoginAndHddStatusCheck();
+            long downloadHandler = 1;
+            this.SetupLogin();
             MediaFileDto remoteFile = new MediaFileDto { Date = new DateTime(y, m, d), Duration = duration, Name = name };
 
             var tempName = fileName + ".tmp";
@@ -239,13 +209,14 @@
             this.filesMock.Setup(x => x.GetTempFileName())
                 .Returns(tempName);
 
-            this.videoServiceMock.Setup(x => x.StartDownloadFile(remoteFile.Name, tempName + ".mp4"))
+            this.videoServiceMock.Setup(x => x.StartDownloadFile(It.IsAny<IRemoteFile>(), tempName + ".mp4"))
                 .Returns(downloadHandler);
-            this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<int>()))
-                .Returns(100);
-            this.videoServiceMock.Setup(x => x.StopDownloadFile(It.IsAny<int>()));
+            this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<long>()))
+                .Returns((false,1,1));
+            this.videoServiceMock.Setup(x => x.StopDownloadFile(It.IsAny<long>()))
+                .Returns(true);
 
-            var client = new HikVideoClient(cameraConfig, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper, loggerMock.Object);
+            var client = new DahuaVideoClient(cameraConfig, this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper, loggerMock.Object);
             client.Login();
             var isDownloaded = await client.DownloadFileAsync(remoteFile, CancellationToken.None);
 
@@ -255,7 +226,7 @@
             this.filesMock.Verify(x => x.FileExists(targetName), Times.Once);
             this.filesMock.Verify(x => x.GetTempFileName(), Times.Once);
             this.filesMock.Verify(x => x.RenameFile(tempName + ".mp4", targetName), Times.Once);
-            this.videoServiceMock.Verify(x => x.StartDownloadFile(remoteFile.Name, tempName + ".mp4"), Times.Once);
+            this.videoServiceMock.Verify(x => x.StartDownloadFile(It.IsAny<IRemoteFile>(), tempName + ".mp4"), Times.Once);
         }
 
         [Fact]
@@ -269,7 +240,7 @@
             this.filesMock.Setup(x => x.GetTempFileName())
                 .Returns(string.Empty);
 
-            var client = this.GetHikClient();
+            var client = this.GetClient();
             var isDownloaded = await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
 
             Assert.False(isDownloaded);
@@ -278,8 +249,8 @@
         [Fact]
         public async Task DownloadFileAsync_AbnormalProgress_StopDownloadFile()
         {
-            int downloadHandler = 1;
-            this.SetupLoginAndHddStatusCheck();
+            long downloadHandler = 1;
+            this.SetupLogin();
 
             this.SetupFilesMockForDownload();
 
@@ -288,19 +259,20 @@
             this.filesMock.Setup(x => x.GetTempFileName())
                 .Returns(string.Empty);
             this.videoServiceMock
-                .Setup(x => x.StartDownloadFile(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.StartDownloadFile(It.IsAny<IRemoteFile>(), It.IsAny<string>()))
                 .Returns(downloadHandler);
-            this.videoServiceMock.Setup(x => x.StopDownloadFile(downloadHandler));
-            this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<int>()))
-                .Returns(200);
+            this.videoServiceMock.Setup(x => x.StopDownloadFile(downloadHandler))
+                .Returns(true);
+            this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<long>()))
+                .Returns((false,0,0));
             this.apiMock.Setup(x => x.Logout());
             this.sdkMock.Setup(x => x.Cleanup());
 
-            HikVideoClient client = null;
-            using (client = this.GetHikClient())
+            DahuaVideoClient client = null;
+            using (client = this.GetClient())
             {
                 client.Login();
-                await Assert.ThrowsAsync<InvalidOperationException>(() => client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None));
+                await client.DownloadFileAsync(this.fixture.Create<MediaFileDto>(), CancellationToken.None);
             }
 
             this.videoServiceMock.Verify(x => x.StopDownloadFile(downloadHandler), Times.Once);
@@ -314,12 +286,12 @@
         [Fact]
         public void ForceExit_FilesNotDownloading_DoNotDeleteFile()
         {
-            this.SetupLoginAndHddStatusCheck();
+            this.SetupLogin();
 
             this.apiMock.Setup(x => x.Logout());
             this.sdkMock.Setup(x => x.Cleanup());
 
-            var client = this.GetHikClient();
+            var client = this.GetClient();
             client.Login();
             client.ForceExit();
 
@@ -330,17 +302,19 @@
         [Fact]
         public async Task ForceExit_FileIsDownloading_DoStop()
         {
-            int downloadHandler = 1;
-            var client = this.GetHikClient();
-            this.SetupLoginAndHddStatusCheck();
+            long downloadHandler = 1;
+            var client = this.GetClient();
+            this.SetupLogin();
             this.SetupFilesMockForDownload();
 
             this.videoServiceMock
-                .Setup(x => x.StartDownloadFile(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.StartDownloadFile(It.IsAny<IRemoteFile>(), It.IsAny<string>()))
                 .Returns(downloadHandler);
-            this.videoServiceMock.Setup(x => x.StopDownloadFile(downloadHandler));
-            this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<int>())).Callback(client.ForceExit)
-                .Returns(10);
+            this.videoServiceMock.Setup(x => x.StopDownloadFile(downloadHandler))
+                .Returns(true);
+            this.videoServiceMock.Setup(x => x.GetDownloadPosition(It.IsAny<long>()))
+                .Callback(client.ForceExit)
+                .Returns((true, 1, 10));
             this.apiMock.Setup(x => x.Logout());
             this.sdkMock.Setup(x => x.Cleanup());
             this.filesMock.Setup(x => x.GetTempFileName())
@@ -359,13 +333,10 @@
 
         #endregion ForceExit
 
-        private void SetupLoginAndHddStatusCheck()
+        private void SetupLogin()
         {
-            var status = new HdInfo { HdStatus = 0 };
             this.sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(apiMock.Object);
-            this.configServiceMock.Setup(x => x.GetHddStatus(It.IsAny<int>()))
-                .Returns(status);
         }
 
         private void SetupFilesMockForDownload()
@@ -380,7 +351,7 @@
                 .Returns(false);
         }
 
-        private HikVideoClient GetHikClient() =>
-            new HikVideoClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper, loggerMock.Object);
+        private DahuaVideoClient GetClient() =>
+            new DahuaVideoClient(this.fixture.Create<CameraConfig>(), this.sdkMock.Object, this.filesMock.Object, this.dirMock.Object, this.mapper, loggerMock.Object);
      }
 }

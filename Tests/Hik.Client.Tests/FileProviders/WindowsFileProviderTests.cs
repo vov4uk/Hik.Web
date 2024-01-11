@@ -110,7 +110,7 @@ namespace Hik.Client.Tests.FileProviders
         }
 
         [Fact]
-        public void GetNextBatch_NoExtention_ReturnsAllFiles()
+        public void GetNextBatch_NoExtension_ReturnsAllFiles()
         {
             dirMock.Setup(x => x.EnumerateAllDirectories(folder1))
                 .Returns(new List<string>() { subFolder1 })

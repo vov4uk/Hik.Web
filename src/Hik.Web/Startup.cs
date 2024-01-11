@@ -41,7 +41,9 @@ namespace Hik.Web
         {
             Assembly assembly = typeof(Startup).Assembly;
             Assembly[] projectsAssemblies = assembly.GetReferencedAssemblies()
-                .Where(assemblyName => assemblyName.FullName.StartsWith("Hik.", StringComparison.InvariantCulture))
+                .Where(assemblyName => 
+                 assemblyName.FullName.StartsWith("Hik.", StringComparison.InvariantCultureIgnoreCase) ||
+                 assemblyName.FullName.StartsWith("Dahua.Api", StringComparison.InvariantCultureIgnoreCase))
                 .Select(Assembly.Load)
                 .Union(new[] { assembly })
                 .ToArray();

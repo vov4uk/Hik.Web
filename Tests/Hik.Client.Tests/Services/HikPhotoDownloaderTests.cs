@@ -96,7 +96,7 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteAsync_CancelationOnClintItitialize_ClientDisposed()
+        public async Task ExecuteAsync_CancelationOnClientInitialize_ClientDisposed()
         {
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
@@ -119,7 +119,7 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteAsync_CancelationOnDownload_ExceptionFiredAfterFirtstFileDownloaded()
+        public async Task ExecuteAsync_CancelationOnDownload_ExceptionFiredAfterFirstFileDownloaded()
         {
             int filesCount = 5;
 

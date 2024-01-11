@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hik.Api.Abstraction;
-using Hik.Api.Data;
 using Hik.Client.Abstraction;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
@@ -21,22 +20,22 @@ namespace Hik.Client
         protected readonly CameraConfig config;
         protected readonly IDirectoryHelper dirHelper;
         protected readonly IFilesHelper filesHelper;
-        protected readonly IHikApi hikApi;
         protected readonly ILogger logger;
+        protected IHikApi hikApi;
+        protected IHikSDK hikSDK;
         protected int downloadId = -1;
-        protected Session session;
         private bool disposedValue = false;
 
         protected HikBaseClient(
             CameraConfig config,
-            IHikApi hikApi,
+            IHikSDK hikSDK,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
             IMapper mapper,
             ILogger logger)
         {
             this.config = config ?? throw new ArgumentNullException(nameof(config));
-            this.hikApi = hikApi;
+            this.hikSDK = hikSDK;
             this.filesHelper = filesHelper;
             this.dirHelper = directoryHelper;
             this.Mapper = mapper;
@@ -67,19 +66,16 @@ namespace Hik.Client
             dirHelper.CreateDirIfNotExist(config.DestinationFolder);
 
             logger.Information("SDK Logs : {sdkLogsPath}", sdkLogsPath);
-            hikApi.Initialize();
-            hikApi.SetupLogs(3, sdkLogsPath, false);
-            hikApi.SetConnectTime(3000, 3);
-            hikApi.SetReconnect(10000, 1);
+            hikSDK.Initialize(logDirectory: sdkLogsPath);
         }
 
         public bool Login()
         {
-            if (session == null)
+            if (hikApi == null)
             {
-                session = hikApi.Login(config.Camera.IpAddress, config.Camera.PortNumber, config.Camera.UserName, config.Camera.Password);
+                hikApi = hikSDK.Login(config.Camera.IpAddress, config.Camera.PortNumber, config.Camera.UserName, config.Camera.Password);
                 logger.Information("Successfully logged to {IpAddress}", config.Camera.IpAddress);
-                var status = hikApi.GetHddStatus(session.UserId);
+                var status = hikApi.ConfigService.GetHddStatus();
 
                 logger.Information(status?.ToString());
 
@@ -99,11 +95,11 @@ namespace Hik.Client
 
         public void SyncTime()
         {
-            var cameraTime = hikApi.GetTime(session.UserId);
+            var cameraTime = hikApi.ConfigService.GetTime();
             var currentTime = DateTime.Now;
             if (Math.Abs((currentTime - cameraTime).TotalSeconds) > config.SyncTimeDeltaSeconds)
             {
-                hikApi.SetTime(currentTime, session.UserId);
+                hikApi.ConfigService.SetTime(currentTime);
                 logger.Warning("Camera time updated :from {cameraTime} to {currentTime}", cameraTime, currentTime);
             }
         }
@@ -123,14 +119,11 @@ namespace Hik.Client
             if (!disposedValue)
             {
                 logger.Information("Logout the device");
-                if (session != null)
-                {
-                    hikApi.Logout(session.UserId);
-                }
+                hikApi?.Logout();
 
-                session = null;
+                hikApi = null;
 
-                hikApi.Cleanup();
+                hikSDK.Cleanup();
                 disposedValue = true;
             }
         }

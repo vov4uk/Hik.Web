@@ -10,7 +10,6 @@
     using AutoMapper;
     using Hik.Api.Abstraction;
     using Hik.Api.Data;
-    using Hik.Api.Services;
     using Hik.Client;
     using Hik.Client.Infrastructure;
     using Hik.DTO.Config;
@@ -23,9 +22,10 @@
 
     public class HikPhotoClientTests
     {
-        private const int DefaultUserId = 1;
-        private readonly Mock<IHikApi> sdkMock;
-        private readonly Mock<HikPhotoService> photoServiceMock;
+        private readonly Mock<IHikSDK> sdkMock;
+        private readonly Mock<IHikApi> apiMock;
+        private readonly Mock<IPhotoService> photoServiceMock;
+        private readonly Mock<IConfigService> configServiceMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IDirectoryHelper> dirMock;
         private readonly Mock<IImageHelper> imageMock;
@@ -36,10 +36,14 @@
         public HikPhotoClientTests()
         {
             photoServiceMock = new (MockBehavior.Strict);
+            configServiceMock = new (MockBehavior.Strict);
 
             sdkMock = new(MockBehavior.Strict);
-            sdkMock.SetupGet(x => x.PhotoService)
+            apiMock = new(MockBehavior.Strict);
+            apiMock.SetupGet(x => x.PhotoService)
                 .Returns(photoServiceMock.Object);
+            apiMock.SetupGet(x => x.ConfigService)
+                .Returns(configServiceMock.Object);
             loggerMock = new();
             filesMock = new(MockBehavior.Strict);
             dirMock = new(MockBehavior.Strict);
@@ -56,19 +60,21 @@
 
         #region GetFilesListAsync
         [Fact]
-        public async Task GetFilesListAsync_CallWithValidParameters_ReturnMapppedFiles()
+        public async Task GetFilesListAsync_CallWithValidParameters_ReturnMappedFiles()
         {
             DateTime start = default;
             DateTime end = start.AddSeconds(1);
             var remoteFile = fixture.Create<HikRemoteFile>();
 
-            photoServiceMock.Setup(x => x.FindFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Session>()))
+            SetupLoginAndHddStatusCheck();
+            photoServiceMock.Setup(x => x.FindFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
                 .ReturnsAsync(new List<HikRemoteFile>() { remoteFile });
 
             var client = GetHikClient();
+            client.Login();
             var mediaFiles = await client.GetFilesListAsync(start, end);
 
-            photoServiceMock.Verify(x => x.FindFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Session>()), Times.Once);
+            photoServiceMock.Verify(x => x.FindFilesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
             Assert.Single(mediaFiles);
             var firstFile = mediaFiles.First();
             Assert.Equal(remoteFile.Name, firstFile.Name);
@@ -103,7 +109,7 @@
                 .Returns(false);
             imageMock.Setup(x => x.SetDate(It.IsAny<string>(), It.IsAny<DateTime>()));
 
-            photoServiceMock.Setup(x => x.DownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()));
+            photoServiceMock.Setup(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()));
 
             var client = new HikPhotoClient(cameraConfig, sdkMock.Object, filesMock.Object, dirMock.Object, mapper, this.imageMock.Object, loggerMock.Object);
             client.Login();
@@ -113,7 +119,7 @@
             filesMock.Verify(x => x.CombinePath(It.IsAny<string[]>()), Times.Exactly(2));
             dirMock.Verify(x => x.CreateDirIfNotExist(It.IsAny<string>()), Times.Once);
             filesMock.Verify(x => x.FileExists(targetName), Times.Once);
-            photoServiceMock.Verify(x => x.DownloadFile(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()), Times.Once);
+            photoServiceMock.Verify(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -139,28 +145,25 @@
         {
             this.SetupLoginAndHddStatusCheck();
 
-            this.sdkMock.Setup(x => x.Logout(DefaultUserId));
+            this.apiMock.Setup(x => x.Logout());
             this.sdkMock.Setup(x => x.Cleanup());
 
             var client = this.GetHikClient();
             client.Login();
             client.ForceExit();
 
-            this.sdkMock.Verify(x => x.Logout(DefaultUserId), Times.Once);
+            this.apiMock.Verify(x => x.Logout(), Times.Once);
             this.sdkMock.Verify(x => x.Cleanup(), Times.Once);
         }
         #endregion ForceExit
 
-        private Session SetupLoginAndHddStatusCheck()
+        private void SetupLoginAndHddStatusCheck()
         {
-            DeviceInfo outDevice = fixture.Create<DeviceInfo>();
-            var result = new Session(DefaultUserId, outDevice.DefaultIpChannel, new List<IpChannel>());
             var status = new HdInfo { HdStatus = 0 };
             sdkMock.Setup(x => x.Login(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(result);
-            sdkMock.Setup(x => x.GetHddStatus(DefaultUserId, It.IsAny<int>()))
+                .Returns(apiMock.Object);
+            configServiceMock.Setup(x => x.GetHddStatus(It.IsAny<int>()))
                 .Returns(status);
-            return result;
         }
 
         private HikPhotoClient GetHikClient() =>

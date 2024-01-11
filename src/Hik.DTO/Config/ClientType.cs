@@ -8,5 +8,6 @@
         Yi,
         Yi720p,
         FTPDownload,
+        DahuaVideo
     }
 }
