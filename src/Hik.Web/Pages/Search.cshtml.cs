@@ -3,6 +3,7 @@ using Hik.Web.Queries.FilePath;
 using Hik.Web.Queries.Search;
 using Hik.Web.Queries.Thumbnail;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
+    [Authorize(Roles = "Admin,Reader")]
     public class SearchModel : PageModel
     {
         private readonly IMediator mediator;
@@ -40,6 +42,11 @@ namespace Hik.Web.Pages
 
         public async Task<IActionResult> OnGetAsync(int? jobTriggerId, DateTime? dateTime)
         {
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToPage("./Error");
+            }
+
             if (dateTime == null)
             {
                 dateTime = DateTime.Now;
@@ -56,6 +63,10 @@ namespace Hik.Web.Pages
 
         public async Task<IActionResult> OnGetDownloadFile(int fileId)
         {
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToPage("./Error");
+            }
             var filePath = await GetFilePath(fileId);
 
             if (string.IsNullOrEmpty(filePath))
@@ -69,6 +80,10 @@ namespace Hik.Web.Pages
 
         public async Task<IActionResult> OnGetStreamFile(int fileId)
         {
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToPage("./Error");
+            }
             var filePath = await GetFilePath(fileId);
 
             if (string.IsNullOrEmpty(filePath))

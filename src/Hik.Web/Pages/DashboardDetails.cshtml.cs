@@ -1,12 +1,14 @@
 using Hik.Web.Pages.Shared;
 using Hik.Web.Queries.DashboardDetails;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
+    [Authorize(Roles = "Admin")]
     public class DashboardDetailsModel : PageModel
     {
         private readonly IMediator mediator;

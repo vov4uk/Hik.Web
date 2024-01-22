@@ -9,27 +9,27 @@
             @if (Model.CurrentPage > 1)
             {
                 <li class="page-item">
-                    <a class="page-link" href="@Model.FormatedUrl">First</a>
+                    <a class="page-link" href="@Model.FormattedUrl">First</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="@Model.FormatedUrl&p=@(Model.CurrentPage - 1)">Previous</a>
+                    <a class="page-link" href="@Model.FormattedUrl&p=@(Model.CurrentPage - 1)">Previous</a>
                 </li>
             }
 
             @foreach (var p in Model.Pages)
             {
                 <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
-                    <a class="page-link" href="@Model.FormatedUrl&p=@p">@p</a>
+                    <a class="page-link" href="@Model.FormattedUrl&p=@p">@p</a>
                 </li>
             }
 
             @if (Model.CurrentPage < Model.TotalPages)
             {
                 <li class="page-item">
-                    <a class="page-link" href="@Model.FormatedUrl&p=@(Model.CurrentPage + 1)">Next</a>
+                    <a class="page-link" href="@Model.FormattedUrl&p=@(Model.CurrentPage + 1)">Next</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="@Model.FormatedUrl&p=@(Model.TotalPages)">Last</a>
+                    <a class="page-link" href="@Model.FormattedUrl&p=@(Model.TotalPages)">Last</a>
                 </li>
             }
         </ul>

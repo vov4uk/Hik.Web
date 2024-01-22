@@ -3,6 +3,7 @@ using Hik.Web.Commands.Cron;
 using Hik.Web.Queries.QuartzTriggers;
 using Job;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace Hik.Web.Pages
 {
+    [Authorize(Roles = "Admin")]
     public class SchedulerModel : PageModel
     {
         public QuartzTriggersDto Dto { get; set; }
@@ -47,7 +49,7 @@ namespace Hik.Web.Pages
             {
                 item?.Kill();
             }
-            return RedirectToPage("./Scheduler", new { msg = "Jobs stoped" });
+            return RedirectToPage("./Scheduler", new { msg = "Jobs stopped" });
         }
     }
 }

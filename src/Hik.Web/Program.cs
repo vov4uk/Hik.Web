@@ -1,3 +1,4 @@
+#define USE_AUTHORIZATION
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
