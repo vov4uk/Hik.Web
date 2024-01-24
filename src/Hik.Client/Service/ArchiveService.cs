@@ -15,7 +15,7 @@ using Serilog;
 
 namespace Hik.Client.Service
 {
-    public class ArchiveService : RecurrentJobBase, IArchiveService
+    public class ArchiveService : RecurrentJobBase
     {
         private static readonly string[] Extentions = new[] { ".zip" };
         private readonly IFilesHelper filesHelper;

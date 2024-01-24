@@ -3,11 +3,12 @@
     "Hik.Web": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:4001",
+      "launchUrl": "http://localhost:5001",
+      "externalUrlConfiguration": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:4001"
+      "applicationUrl": "http://localhost:5001"
     }
   }
 }

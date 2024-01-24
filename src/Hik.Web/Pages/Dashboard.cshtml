@@ -33,9 +33,17 @@
                              <th>Files</th>
                              <th>Size</th>
                              <th>Duration</th>
+                             <th>Processing</th>
                          </tr>
                      </thead>
                      <tbody>
+
+                         @{
+                            long todayProcessDuration = 0;
+                            long todayTotalDuration = 0;
+                            long todaySize = 0;
+                            long todayFiles = 0;
+
                          @foreach (var jobTrigger in jobTriggers)
                          {
                             var stat = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id);
@@ -43,7 +51,12 @@
                             int statDuration = stat?.TotalDuration ?? 0;
                             string size = statSize.FormatBytes();
                             string duration = ((double)statDuration).FormatSeconds();
+                            string processing = stat?.ProcessDuration.FormatMilliseconds();
                             string triggerString = jobTrigger.ToString();
+                            todayTotalDuration += statDuration;
+                            todayProcessDuration += (stat?.ProcessDuration ?? 0);
+                            todaySize += statSize;
+                            todayFiles += stat?.FilesCount ?? 0;
 
                             var latestFile = new DateTime();
                             @if(Model.Dto.Files.ContainsKey(jobTrigger.Id))
@@ -62,9 +75,21 @@
                                 <td><span title="@jobTrigger.LastSync?.GetRelativeTime()">@jobTrigger.LastSync?.GetString()</span></td>
                                 <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
                                 <td>@lastFileDelta.GetRelativeTime()</td>
-                                <td>@Html.DisplayFor(modelItem => Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id).FilesCount)</td>
+                                <td>@stat?.FilesCount</td>
                                 <td>@size</td>
                                 <td>@duration</td>
+                                <td>@processing</td>
+                            </tr>
+                         }
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>Total</td>
+                                <td>@todayFiles</td>
+                                <td>@todaySize.FormatBytes()</td>
+                                <td>@todayTotalDuration.FormatSeconds()</td>
+                                <td>@todayProcessDuration.FormatMilliseconds()</td>
                             </tr>
                          }
                      </tbody>

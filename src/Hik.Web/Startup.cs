@@ -1,4 +1,4 @@
-#define USE_AUTHORIZATION
+//#define USE_AUTHORIZATION
 using Autofac;
 using Autofac.Features.Variance;
 using Hik.DataAccess;
@@ -22,12 +22,10 @@ using System.Collections.Generic;
 using Hik.Quartz.Contracts.Xml;
 using FluentValidation.AspNetCore;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
-using System.Net;
-using Quartz.Logging;
-
 
 #if USE_AUTHORIZATION
+using Microsoft.AspNetCore.Http;
+using System.Net;
 using idunno.Authentication.Basic;
 using System.Security.Claims;
 #endif
@@ -105,6 +103,11 @@ namespace Hik.Web
             });
 
             services.AddAuthorization();
+
+#endif
+
+#if RELEASE && USE_AUTHORIZATION
+            services.AddLettuceEncrypt();
 #endif
             services.AddRazorPages();
             services.AddFluentValidationAutoValidation();

@@ -64,7 +64,7 @@ namespace Hik.Web.Tests
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
             Assert.Equal("./Index", page.PageName);
-            Assert.Equal($"Activity { group}.{ name} stoped", page.RouteValues.Values.First());
+            Assert.Equal($"Activity { group}.{ name} stopped", page.RouteValues.Values.First());
         }
 
         [Theory]

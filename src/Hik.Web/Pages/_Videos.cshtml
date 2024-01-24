@@ -22,7 +22,7 @@
         {
             string size = item.Size.FormatBytes();
             string duration = item.Duration.FormatSeconds();
-            string downloaded = (item.DownloadDuration).FormatSeconds();
+            string downloaded = item.DownloadDuration.FormatMilliseconds();
             string end = item.Date.AddSeconds(item.Duration ?? 0).ToString(Consts.DisplayDateTimeStringFormat);
             <tr>
                 <td>

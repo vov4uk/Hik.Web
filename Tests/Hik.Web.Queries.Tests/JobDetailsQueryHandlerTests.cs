@@ -40,7 +40,7 @@ namespace Hik.Web.Queries.Test
             var job = new HikJob() { JobTriggerId = 1, JobTrigger = new JobTrigger { TriggerKey = "TriggerKey" } };
             jobsRepoMock.Setup(x => x.FindByAsync(It.IsAny<Expression<Func<HikJob, bool>>>(), It.IsAny<Expression<Func<HikJob, object>>[]>()))
                 .ReturnsAsync(job);
-            filesRepoMock.Setup(x => x.FindManyByDescAsync(
+            filesRepoMock.Setup(x => x.FindManyByAscAsync(
                 It.IsAny<Expression<Func<MediaFile, bool>>>(),
                 It.IsAny<Expression<Func<MediaFile, object>>>(),
                 It.IsAny<int>(),

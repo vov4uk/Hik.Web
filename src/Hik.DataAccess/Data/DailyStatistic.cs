@@ -24,6 +24,8 @@ namespace Hik.DataAccess.Data
 
         public int? TotalDuration { get; set; }
 
+        public int? ProcessDuration { get; set; }
+
         public virtual JobTrigger JobTrigger { get; set; }
     }
 }

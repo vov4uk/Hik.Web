@@ -4,7 +4,7 @@ namespace Hik.Web.Queries
 {
     public abstract class RequestBase : IRequest<IHandlerResult>
     {
-        public int PageSize { get; set; } = 50;
+        public int PageSize { get; set; } = 48;
 
         public int MaxPages { get; set; } = 10;
 

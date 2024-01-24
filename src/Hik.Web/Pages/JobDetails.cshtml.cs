@@ -1,17 +1,21 @@
-﻿using Hik.DataAccess.Data;
-using Hik.Web.Pages.Shared;
+﻿using Hik.Web.Pages.Shared;
 using Hik.Web.Queries.JobDetails;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Threading.Tasks;
+
+#if USE_AUTHORIZATION
+using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
+#endif
 
 namespace Hik.Web.Pages
 {
+#if USE_AUTHORIZATION
     [Authorize(Roles = "Admin,Reader")]
+#endif
     public class JobDetailsModel : PageModel
     {
         private readonly IMediator mediator;
@@ -32,7 +36,7 @@ namespace Hik.Web.Pages
             Dto = await mediator.Send(new JobDetailsQuery { JobId = id.Value, CurrentPage = p }) as JobDetailsDto;
 
             if (Dto == null) { return NotFound(); }
-
+#if USE_AUTHORIZATION
             string allowedTriggers = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.UserData)?.Value;
 
             if (!string.IsNullOrEmpty(allowedTriggers))
@@ -43,7 +47,7 @@ namespace Hik.Web.Pages
                     return RedirectToPage("./Error");
                 }
             }
-
+#endif
             Pager = new (id.Value, "?id=", Dto.TotalItems, currentPage: p);
 
             return Page();

@@ -9,7 +9,7 @@ namespace Hik.Web.Pages.Shared
 
         public string FormattedUrl => $"{Url}{Id}";
 
-        public PagerControl(int id, string url, int totalItems, int currentPage = 1, int pageSize = 50, int maxPages = 10)
+        public PagerControl(int id, string url, int totalItems, int currentPage = 1, int pageSize = 48, int maxPages = 10)
             : base(totalItems, currentPage, pageSize, maxPages)
         {
             Id = id;
