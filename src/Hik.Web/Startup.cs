@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using Hik.Quartz.Contracts.Xml;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 #if USE_AUTHORIZATION
 using Microsoft.AspNetCore.Http;
@@ -103,16 +104,18 @@ namespace Hik.Web
             });
 
             services.AddAuthorization();
-
-#endif
-
-#if RELEASE && USE_AUTHORIZATION
             services.AddLettuceEncrypt();
 #endif
             services.AddRazorPages();
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
             services.AddValidatorsFromAssemblyContaining<Startup>();
+
+            services.AddMvc()
+                .AddViewOptions(options =>
+                {
+                    options.HtmlHelperOptions.FormInputRenderMode = FormInputRenderMode.AlwaysUseCurrentCulture;
+                });
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
             services.AddHttpLogging(options =>

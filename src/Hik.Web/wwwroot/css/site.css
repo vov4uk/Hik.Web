@@ -523,3 +523,19 @@ li.item span.image-overlay {
     object-fit: contain;
     opacity: 0;
 }
+
+.card-style {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.input-date {
+    width: 200px;
+}
+
+.date-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}

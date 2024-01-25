@@ -66,6 +66,9 @@ namespace Hik.Web
                                  period: TimeSpan.FromSeconds(1))
                 .CreateLogger();
 
+#if USE_AUTHORIZATION
+            Log.Information("USE_AUTHORIZATION");
+#endif
             DBConfig = config.GetSection("DBConfiguration").Get<DbConfiguration>();
 
             await MigrationTools.RunMigration(DBConfig);
@@ -74,7 +77,12 @@ namespace Hik.Web
 
             var host = builder.Build();
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+
+            var buildDate = new DateTime(2000, 1, 1)
+               .AddDays(version.Build).AddSeconds(version.Revision * 2);
+
+            Version = $"{version} ({buildDate})";
 
             Log.Information($"App started - version {Version}");
             host.Run();
