@@ -3,6 +3,7 @@ using Hik.Web.Queries.DashboardDetails;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System;
 using System.Threading.Tasks;
 
 #if USE_AUTHORIZATION

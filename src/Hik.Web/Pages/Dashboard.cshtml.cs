@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 #if USE_AUTHORIZATION
 using Microsoft.AspNetCore.Authorization;
 #endif
@@ -27,11 +28,14 @@ namespace Hik.Web.Pages
             JobTriggers = new();
         }
 
+        public DateTime Day { get; set; }
+
         public DashboardDto Dto { get; private set; }
         public Dictionary<string, IList<TriggerDto>> JobTriggers { get; }
-        public async Task<IActionResult> OnGet()
+        public async Task<IActionResult> OnGet(DateTime? day = null)
         {
-            this.Dto = await mediator.Send(new DashboardQuery()) as DashboardDto;
+            Day = day ?? DateTime.Today;
+            this.Dto = await mediator.Send(new DashboardQuery() { Day = this.Day }) as DashboardDto;
 
             var cronTriggers = await mediator.Send(new QuartzTriggersQuery()) as QuartzTriggersDto;
             foreach (var item in cronTriggers.Triggers)

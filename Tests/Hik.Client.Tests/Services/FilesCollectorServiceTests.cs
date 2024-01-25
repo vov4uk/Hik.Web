@@ -13,21 +13,19 @@ using Xunit;
 
 namespace Hik.Client.Tests.Services
 {
-    public class ArchiveServiceTests
+    public class FilesCollectorServiceTests
     {
         private readonly Mock<IDirectoryHelper> directoryMock;
         private readonly Mock<IFilesHelper> filesMock;
         private readonly Mock<IVideoHelper> videoMock;
-        private readonly Mock<IImageHelper> imageMock;
         private readonly Mock<ILogger> loggerMock;
         private readonly Fixture fixture;
 
-        public ArchiveServiceTests()
+        public FilesCollectorServiceTests()
         {
             this.directoryMock = new (MockBehavior.Strict);
             this.filesMock = new (MockBehavior.Strict);
             this.videoMock = new (MockBehavior.Strict);
-            this.imageMock = new (MockBehavior.Strict);
             this.fixture = new ();
             this.loggerMock = new ();
         }
@@ -46,26 +44,6 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteAsync_ExceptionHappened_ExceptionHandled()
-        {
-            this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
-                .Returns(true);
-            this.directoryMock.Setup(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()))
-                .Returns(new List<string> { "Hello World!" });
-            this.filesMock.Setup(x => x.UnZipFile(It.IsAny<string>()))
-                .Throws<OperationCanceledException>();
-
-            var config = fixture.Build<ArchiveConfig>()
-                .With(x => x.SkipLast, 0)
-                .Create();
-            var service = CreateArchiveService();
-
-            var result = await service.ExecuteAsync(config, default(DateTime), default(DateTime));
-            Assert.True(result.IsFailure);
-            Assert.Equal("The operation was canceled.", result.Error);
-        }
-
-        [Fact]
         public async Task ExecuteAsync_NoFilesFound_NothingToDo()
         {
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
@@ -74,7 +52,7 @@ namespace Hik.Client.Tests.Services
                 .Returns(new List<string>());
 
             var service = CreateArchiveService();
-            await service.ExecuteAsync(fixture.Create<ArchiveConfig>(), default(DateTime), default(DateTime));
+            await service.ExecuteAsync(fixture.Create<FilesCollectorConfig>(), default(DateTime), default(DateTime));
             this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.AtLeastOnce);
         }
 
@@ -88,9 +66,8 @@ namespace Hik.Client.Tests.Services
                 .Returns(new List<string> { "File" });
 
             var service = CreateArchiveService();
-            var config = fixture.Build<ArchiveConfig>()
+            var config = fixture.Build<FilesCollectorConfig>()
                 .With(x => x.SkipLast, 1)
-                .With(x => x.UnzipFiles, false)
                 .Create();
             await service.ExecuteAsync(config, default(DateTime), default(DateTime));
             this.directoryMock.Verify(x => x.EnumerateFiles(It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
@@ -109,7 +86,7 @@ namespace Hik.Client.Tests.Services
             string fileNameDateTimeFormat,
             string targetFile)
         {
-            var config = new ArchiveConfig
+            var config = new FilesCollectorConfig
             {
                 DestinationFolder = "C:\\",
                 SourceFolder = "E:\\",
@@ -129,8 +106,6 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
                 .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.imageMock.Setup(x => x.SetDate(targetFile, It.IsAny<DateTime>()));
-            this.imageMock.Setup(x => x.GetDescriptionData(It.IsAny<string>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.DeleteFile(sourceFileName));
             this.filesMock.Setup(x => x.FileSize(targetFile))
@@ -172,7 +147,7 @@ namespace Hik.Client.Tests.Services
             string targetFile)
         {
             var dateTime = DateTime.ParseExact(date, fileNameDateTimeFormat, null);
-            var config = new ArchiveConfig
+            var config = new FilesCollectorConfig
             {
                 DestinationFolder = "C:\\",
                 SourceFolder = "E:\\",
@@ -192,8 +167,6 @@ namespace Hik.Client.Tests.Services
             this.filesMock.Setup(x => x.CombinePath(It.IsAny<string[]>()))
                 .Returns((string[] arg) => Path.Combine(arg));
             this.directoryMock.Setup(x => x.CreateDirIfNotExist(It.IsAny<string>()));
-            this.imageMock.Setup(x => x.SetDate(targetFile, It.IsAny<DateTime>()));
-            this.imageMock.Setup(x => x.GetDescriptionData(It.IsAny<string>())).Returns(string.Empty);
             this.filesMock.Setup(x => x.RenameFile(sourceFileName, targetFile));
             this.filesMock.Setup(x => x.FileSize(targetFile))
                 .Returns(1024);
@@ -221,9 +194,9 @@ namespace Hik.Client.Tests.Services
             Assert.Equal(DateTime.ParseExact(date, fileNameDateTimeFormat, null), actual.Date);
         }
 
-        private ArchiveService CreateArchiveService()
+        private FilesCollectorService CreateArchiveService()
         {
-            return new ArchiveService(this.directoryMock.Object, this.filesMock.Object, this.videoMock.Object, this.imageMock.Object, loggerMock.Object);
+            return new FilesCollectorService(this.directoryMock.Object, this.filesMock.Object, this.videoMock.Object, loggerMock.Object);
         }
     }
 }

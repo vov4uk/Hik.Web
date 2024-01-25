@@ -5,7 +5,15 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<h2>Dashboard</h2>
+<div class="row">
+    <div class="card-body card-style">
+        <h2>Dashboard</h2>
+        <form class="date-form">
+            <input asp-for="Day" type="date" class="form-control input-date" />
+            <input type="submit" value="Filter" />
+        </form>
+    </div>
+</div>
 
 @* @await Html.PartialAsync("_Timer.cshtml") *@
 
@@ -38,49 +46,61 @@
                      </thead>
                      <tbody>
 
-                         @{
+                        @{
                             long todayProcessDuration = 0;
                             long todayTotalDuration = 0;
                             long todaySize = 0;
                             long todayFiles = 0;
 
-                         @foreach (var jobTrigger in jobTriggers)
-                         {
-                            var stat = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id);
-                            long statSize = stat?.FilesSize ?? 0;
-                            int statDuration = stat?.TotalDuration ?? 0;
-                            string size = statSize.FormatBytes();
-                            string duration = ((double)statDuration).FormatSeconds();
-                            string processing = stat?.ProcessDuration.FormatMilliseconds();
-                            string triggerString = jobTrigger.ToString();
-                            todayTotalDuration += statDuration;
-                            todayProcessDuration += (stat?.ProcessDuration ?? 0);
-                            todaySize += statSize;
-                            todayFiles += stat?.FilesCount ?? 0;
-
-                            var latestFile = new DateTime();
-                            @if(Model.Dto.Files.ContainsKey(jobTrigger.Id))
+                            @foreach (var jobTrigger in jobTriggers)
                             {
-                                latestFile = Model.Dto.Files[jobTrigger.Id];
-                            }
+                                var stat = Model.Dto.DailyStatistics.FirstOrDefault(x => x.JobTriggerId == jobTrigger.Id);
+                                long statSize = stat?.FilesSize ?? 0;
+                                int statDuration = stat?.TotalDuration ?? 0;
+                                string size = statSize !=0 ? statSize.FormatBytes() : "0";
+                                string duration = ((double)statDuration).FormatSeconds();
+                                string processing = stat?.ProcessDuration.FormatMilliseconds();
+                                string triggerString = jobTrigger.ToString();
+                                todayTotalDuration += statDuration;
+                                todayProcessDuration += (stat?.ProcessDuration ?? 0);
+                                todaySize += statSize;
+                                todayFiles += stat?.FilesCount ?? 0;
 
-                            var now = DateTime.Now;
-                            var lastFileDelta = (jobTrigger.LastSync ?? now) - latestFile;
-                            var lastSyncDelta = now - (jobTrigger.LastSync ?? new DateTime());
-                            var success = (lastFileDelta.TotalHours < 2 && lastSyncDelta.TotalHours < 2)
-                                       || (className.Contains("GarbageCollector") && lastSyncDelta.TotalHours < 24);
-                            var status = success ? "" : "failed";
-                            <tr data-status="@status" class="failed">
-                                <td><a asp-page="./DashboardDetails" asp-route-triggerId="@jobTrigger.Id">@triggerString</a></td>
-                                <td><span title="@jobTrigger.LastSync?.GetRelativeTime()">@jobTrigger.LastSync?.GetString()</span></td>
-                                <td><span title="@latestFile.GetRelativeTime()">@latestFile.GetString()</span></td>
-                                <td>@lastFileDelta.GetRelativeTime()</td>
-                                <td>@stat?.FilesCount</td>
-                                <td>@size</td>
-                                <td>@duration</td>
-                                <td>@processing</td>
-                            </tr>
-                         }
+                                string lastFileDeltaString = "N/A";
+                                string latestFileString = "N/A";
+                                string latestFileRelativeString = "N/A";
+                                string status = "";
+                                string lastSyncString = jobTrigger.LastSync?.GetString() ?? "N/A";
+                                int filesCount = stat?.FilesCount ?? 0;
+
+                                @if (Model.Dto.Files.ContainsKey(jobTrigger.Id))
+                                {
+                                    DateTime latestFile = Model.Dto.Files[jobTrigger.Id];
+
+                                    var now = Model.Day.Date == DateTime.Today ? DateTime.Now : Model.Day.AddDays(1);
+                                    var lastFileDelta = (jobTrigger.LastSync ?? now) - latestFile;
+                                    var lastSyncDelta = now - (jobTrigger.LastSync ?? new DateTime());
+                                    var success = (lastFileDelta.TotalHours < 2 && lastSyncDelta.TotalHours < 2)
+                                    || (className.Contains("GarbageCollector") && lastSyncDelta.TotalHours < 24);
+                                    status = success ? "" : "failed";
+
+                                    latestFileString = @latestFile.GetString();
+                                    latestFileRelativeString = @latestFile.GetRelativeTime();
+                                    lastFileDeltaString = @lastFileDelta.GetRelativeTime();
+                                }
+
+
+                                <tr data-status="@status" class="failed">
+                                    <td><a asp-page="./DashboardDetails" asp-route-triggerId="@jobTrigger.Id">@triggerString</a></td>
+                                    <td><span title="@jobTrigger.LastSync?.GetRelativeTime()">@lastSyncString</span></td>
+                                    <td><span title="@latestFileRelativeString">@latestFileString</span></td>
+                                    <td>@lastFileDeltaString</td>
+                                    <td>@filesCount</td>
+                                    <td>@size</td>
+                                    <td>@duration</td>
+                                    <td>@processing</td>
+                                </tr>
+                            }
                             <tr>
                                 <td></td>
                                 <td></td>

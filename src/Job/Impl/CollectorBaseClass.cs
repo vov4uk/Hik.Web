@@ -5,29 +5,29 @@ using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Job.Email;
-using Serilog;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using System;
+using Serilog;
+using System.Linq;
 
 namespace Job.Impl
 {
-    public class ArchiveJob : JobProcessBase<ArchiveConfig>
+    public abstract class CollectorBaseClass<T> : JobProcessBase<T>
+        where T : ImagesCollectorConfig
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
         private const string TimeFormat = "HH':'mm':'ss";
-        private readonly IArchiveService worker;
+        private readonly IRecurrentJob worker;
 
-        public ArchiveJob(JobTrigger trigger,
-            IArchiveService worker,
+        public CollectorBaseClass(JobTrigger trigger,
+            IRecurrentJob worker,
             IHikDatabase db,
             IEmailHelper email,
             ILogger logger)
             : base(trigger, db, email, logger)
         {
             this.worker = worker;
-            this.configValidator = new ArchiveConfigValidator();
         }
 
         protected override Task<Result<IReadOnlyCollection<MediaFileDto>>> RunAsync()

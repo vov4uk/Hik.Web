@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Hik.Client.Tests.Services
 {
-    public class HikPhotoDownloaderTests
+    public class PhotoDownloaderServiceTests
     {
         private readonly Mock<IDirectoryHelper> directoryMock;
         private readonly Fixture fixture;
@@ -22,7 +22,7 @@ namespace Hik.Client.Tests.Services
         private readonly Mock<IClientFactory> clientFactoryMock;
         private readonly Mock<ILogger> loggerMock;
 
-        public HikPhotoDownloaderTests()
+        public PhotoDownloaderServiceTests()
         {
             this.directoryMock = new (MockBehavior.Strict);
             this.clientMock = new (MockBehavior.Strict);

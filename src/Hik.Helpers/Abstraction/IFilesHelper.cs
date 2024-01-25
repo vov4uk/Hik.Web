@@ -8,8 +8,6 @@ namespace Hik.Helpers.Abstraction
     {
         string CombinePath(params string[] args);
 
-        bool FileExists(string path, long size);
-
         bool FileExists(string path);
 
         public long FileSize(string path);
@@ -18,13 +16,9 @@ namespace Hik.Helpers.Abstraction
 
         void RenameFile(string oldFileName, string newFileName);
 
-        Task<string> ReadAllText(string path);
-
         Task<byte[]> ReadAllBytesAsync(string path);
 
         Task<MemoryStream> ReadAsMemoryStreamAsync(string path);
-
-        void WriteAllText(string path, string contents);
 
         DateTime GetCreationDate(string path);
 
@@ -38,8 +32,5 @@ namespace Hik.Helpers.Abstraction
 
         string GetDirectoryName(string path);
 
-        string ZipFile(string path);
-
-        void UnZipFile(string path);
     }
 }

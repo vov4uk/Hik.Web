@@ -51,6 +51,7 @@
                             <th></th>
                             <th></th>
                             <th></th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -61,7 +62,8 @@
                             switch (cron.ClassName)
                             {
                                 case "GarbageCollectorJob": configType = "GC"; break;
-                                case "ArchiveJob": configType = "Archive"; break;
+                                case "ImagesCollectroJob": configType = "ImagesCollector"; break;
+                                case "FilesCollectroJob": configType = "FilesCollector"; break;
                                 default: configType = "Camera"; break;
                             }
 
@@ -81,6 +83,11 @@
                                 <td>
                                     <form method="POST">
                                         <input type="submit" class="btn btn-primary" asp-page="/Index" asp-page-handler="Run" asp-route-id="@cron.Id" value="Start" />
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="POST">
+                                        <input type="submit" class="btn btn-primary" asp-page-handler="Remove" asp-route-triggerId="@cron.Id" value="Remove" />
                                     </form>
                                 </td>
                             </tr>

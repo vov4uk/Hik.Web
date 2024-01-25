@@ -12,10 +12,10 @@ using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public class HikPhotoDownloaderJob : JobProcessBase<CameraConfig>
+    public class PhotoDownloaderJob : JobProcessBase<CameraConfig>
     {
         private readonly IHikPhotoDownloaderService service;
-        public HikPhotoDownloaderJob(
+        public PhotoDownloaderJob(
             JobTrigger trigger,
             IHikPhotoDownloaderService service,
             IHikDatabase db,

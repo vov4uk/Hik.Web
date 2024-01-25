@@ -15,7 +15,7 @@ namespace Hik.Web.Tests.Pages.Config
         {
             // Arrange
             var mockMediator = new Mock<IMediator>();
-            var model = new ArchiveModel(mockMediator.Object);
+            var model = new FilesCollectorModel(mockMediator.Object);
             var triggerId = 1; // Set the ID of an existing trigger
 
             var quartzTriggerDto = new QuartzTriggerDto
@@ -41,7 +41,7 @@ namespace Hik.Web.Tests.Pages.Config
         {
             // Arrange
             var mockMediator = new Mock<IMediator>();
-            var model = new ArchiveModel(mockMediator.Object);
+            var model = new FilesCollectorModel(mockMediator.Object);
             var nonExistentTriggerId = 999; // Set an ID that doesn't exist
 
             mockMediator.Setup(x => x.Send(It.IsAny<QuartzTriggerQuery>(), default)).ReturnsAsync((QuartzTriggerDto)null);

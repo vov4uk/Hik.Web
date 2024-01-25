@@ -40,7 +40,7 @@ namespace Hik.Web.Tests.Pages
                     {
                         new(){ Group = group, Name = "Floor0_Video", ClassName = videoJob },
                         new(){ Group = group, Name = name, ClassName = videoJob },
-                        new(){ Group = group, Name = "NeverRun", ClassName = archiveJob },
+                        new(){ Group = group, Name = "NeverRun", ClassName = filesCollectorJob },
                         new(){ Group = group, Name = "Floor0_Photo", ClassName = photoJob },
                         new(){ Group = group, Name = "Floor1_Photo", ClassName = photoJob },
                     }
@@ -52,10 +52,10 @@ namespace Hik.Web.Tests.Pages
             Assert.IsType<PageResult>(result);
             Assert.NotNull(sut.Dto);
             Assert.NotEmpty(sut.JobTriggers);
-            Assert.True(sut.JobTriggers.ContainsKey(archiveJob));
+            Assert.True(sut.JobTriggers.ContainsKey(filesCollectorJob));
             Assert.Equal(2, sut.JobTriggers[videoJob].Count);
             Assert.Equal(2, sut.JobTriggers[photoJob].Count);
-            Assert.Single(sut.JobTriggers[archiveJob]);
+            Assert.Single(sut.JobTriggers[filesCollectorJob]);
         }
     }
 }

@@ -92,9 +92,10 @@ namespace Hik.Web.Tests.Pages
 
         [Theory]
         [InlineData("GarbageCollectorJob", "GC")]
-        [InlineData("ArchiveJob", "Archive")]
-        [InlineData("HikVideoDownloaderJob", "Camera")]
-        [InlineData("HikPhotoDownloaderJob", "Camera")]
+        [InlineData("ImagesCollectorJob", "ImagesCollector")]
+        [InlineData("FilesCollectorJob", "FilesCollector")]
+        [InlineData("VideoDownloaderJob", "Camera")]
+        [InlineData("PhotoDownloaderJob", "Camera")]
         public async Task OnPostAsync_CreateNewTrigger_RedirectToConfigPage(string className, string path)
         {
             // Arrange
@@ -117,9 +118,10 @@ namespace Hik.Web.Tests.Pages
 
         [Theory]
         [InlineData("GarbageCollectorJob", "{\r\n  \"RetentionPeriodDays\": -1,\r\n  \"FreeSpacePercentage\": 0.0,\r\n  \"Triggers\": [],\r\n  \"FileExtention\": null,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
-        [InlineData("ArchiveJob", "{\r\n  \"UnzipFiles\": false,\r\n  \"SourceFolder\": null,\r\n  \"FileNamePattern\": null,\r\n  \"FileNameDateTimeFormat\": null,\r\n  \"SkipLast\": 0,\r\n  \"AbnormalFilesCount\": 0,\r\n  \"AllowedFileExtentions\": \"*.*;\",\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
-        [InlineData("HikVideoDownloaderJob", "{\r\n  \"ProcessingPeriodHours\": 0,\r\n  \"Camera\": null,\r\n  \"ClientType\": 0,\r\n  \"SyncTime\": true,\r\n  \"SyncTimeDeltaSeconds\": 5,\r\n  \"RemotePath\": null,\r\n  \"SaveFilesToRootFolder\": false,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
-        [InlineData("HikPhotoDownloaderJob", "{\r\n  \"ProcessingPeriodHours\": 0,\r\n  \"Camera\": null,\r\n  \"ClientType\": 0,\r\n  \"SyncTime\": true,\r\n  \"SyncTimeDeltaSeconds\": 5,\r\n  \"RemotePath\": null,\r\n  \"SaveFilesToRootFolder\": false,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
+        [InlineData("FilesCollectorJob", "{\r\n  \"FileNamePattern\": null,\r\n  \"FileNameDateTimeFormat\": null,\r\n  \"SkipLast\": 0,\r\n  \"AllowedFileExtentions\": \"*.*;\",\r\n  \"SourceFolder\": null,\r\n  \"AbnormalFilesCount\": 0,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
+        [InlineData("ImagesCollectorJob", "{\r\n  \"SourceFolder\": null,\r\n  \"AbnormalFilesCount\": 0,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
+        [InlineData("VideoDownloaderJob", "{\r\n  \"ProcessingPeriodHours\": 0,\r\n  \"Camera\": null,\r\n  \"ClientType\": 0,\r\n  \"SyncTime\": true,\r\n  \"SyncTimeDeltaSeconds\": 5,\r\n  \"RemotePath\": null,\r\n  \"SaveFilesToRootFolder\": false,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
+        [InlineData("PhotoDownloaderJob", "{\r\n  \"ProcessingPeriodHours\": 0,\r\n  \"Camera\": null,\r\n  \"ClientType\": 0,\r\n  \"SyncTime\": true,\r\n  \"SyncTimeDeltaSeconds\": 5,\r\n  \"RemotePath\": null,\r\n  \"SaveFilesToRootFolder\": false,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
         public void OnGetConfigJson_ClassNameExist_ReturnConfig(string className, string expexted)
         {
             // Arrange
@@ -155,8 +157,8 @@ namespace Hik.Web.Tests.Pages
         [Fact]
         public void Constructor_ClassNameNotExist_Exception()
         {
-            Assert.Equal(4, TriggerModel.JobTypesList.Count);
-            Assert.Equal(4, TriggerModel.ConfigTypes.Count);
+            Assert.Equal(5, TriggerModel.JobTypesList.Count);
+            Assert.Equal(5, TriggerModel.ConfigTypes.Count);
         }
     }
 }

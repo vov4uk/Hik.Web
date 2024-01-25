@@ -13,15 +13,15 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class ArchiveJobTests : ServiceJobBaseTests<IArchiveService>
+    public class FilesCollectorJobTests : ServiceJobBaseTests<IFilesCollectorService>
     {
-        public ArchiveJobTests(ITestOutputHelper output) : base(output) { }
+        public FilesCollectorJobTests(ITestOutputHelper output) : base(output) { }
 
         [Fact]
         public void Constructor_ConfigNotExist_Exception()
         {
             Assert.Throws<NullReferenceException>(() => 
-            new ArchiveJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = null }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock));
+            new FilesCollectorJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = null }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock));
         }
 
         [Fact]
@@ -34,7 +34,7 @@
         public void Constructor_ValidConfig_ValidConfigType()
         {
             var job = CreateJob();
-            Assert.IsType<ArchiveConfig>(job.Config);
+            Assert.IsType<FilesCollectorConfig>(job.Config);
         }
 
         [Fact]
@@ -172,10 +172,10 @@
             dbMock.VerifyAll();
         }
 
-        private ArchiveJob CreateJob(string configFileName = "ArchiveJobTests.json")
+        private FilesCollectorJob CreateJob(string configFileName = "ArchiveJobTests.json")
         {
             var config = GetConfig(configFileName);
-            return new ArchiveJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config, SentEmailOnError = true }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
+            return new FilesCollectorJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config, SentEmailOnError = true }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
         }
     }
 }

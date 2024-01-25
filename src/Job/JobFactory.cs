@@ -39,10 +39,15 @@ namespace Job
 
             switch (className)
             {
-                case "ArchiveJob":
+                case "FilesCollectorJob":
                     {
-                        var worker = AppBootstrapper.Container.Resolve<IArchiveService>(loggerParameter);
-                        return new ArchiveJob(trigger, worker, db, email, logger);
+                        var worker = AppBootstrapper.Container.Resolve<IFilesCollectorService>(loggerParameter);
+                        return new FilesCollectorJob(trigger, worker, db, email, logger);
+                    }
+                case "ImagesCollectorJob":
+                    {
+                        var worker = AppBootstrapper.Container.Resolve<IImagesCollectorService>(loggerParameter);
+                        return new ImagesCollectorJob(trigger, worker, db, email, logger);
                     }
                 case "GarbageCollectorJob":
                     {
@@ -59,23 +64,23 @@ namespace Job
                             email,
                             logger);
                     }
-                case "HikVideoDownloaderJob":
+                case "VideoDownloaderJob":
                     {
                         var factory = AppBootstrapper.Container.Resolve<IClientFactory>();
                         var factoryParameter = new ResolvedParameter(
                             (pi, ctx) => pi.ParameterType == typeof(IClientFactory) && pi.Name == "clientFactory",
                             (pi, ctx) => factory);
                         var service = AppBootstrapper.Container.Resolve<IHikVideoDownloaderService>(factoryParameter, loggerParameter);
-                        return new HikVideoDownloaderJob(trigger, service, db, email, logger);
+                        return new VideoDownloaderJob(trigger, service, db, email, logger);
                     }
-                case "HikPhotoDownloaderJob":
+                case "PhotoDownloaderJob":
                     {
                         var factory = AppBootstrapper.Container.Resolve<IClientFactory>();
                         var factoryParameter = new ResolvedParameter(
                             (pi, ctx) => pi.ParameterType == typeof(IClientFactory) && pi.Name == "clientFactory",
                             (pi, ctx) => factory);
                         var service = AppBootstrapper.Container.Resolve<IHikPhotoDownloaderService>(factoryParameter, loggerParameter);
-                        return new HikPhotoDownloaderJob(trigger, service, db, email, logger);
+                        return new PhotoDownloaderJob(trigger, service, db, email, logger);
                     }
                 default:
                     throw new ArgumentException($"No such type exist '{className}'");

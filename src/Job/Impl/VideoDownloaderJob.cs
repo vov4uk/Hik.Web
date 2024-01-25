@@ -14,11 +14,11 @@ using System.Threading.Tasks;
 
 namespace Job.Impl
 {
-    public class HikVideoDownloaderJob : JobProcessBase<CameraConfig>
+    public class VideoDownloaderJob : JobProcessBase<CameraConfig>
     {
         private readonly IHikVideoDownloaderService downloader;
 
-        public HikVideoDownloaderJob(
+        public VideoDownloaderJob(
             JobTrigger trigger,
             IHikVideoDownloaderService service,
             IHikDatabase db,

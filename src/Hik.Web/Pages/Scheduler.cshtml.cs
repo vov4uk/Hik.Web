@@ -47,6 +47,13 @@ namespace Hik.Web.Pages
             return RedirectToPage("./Scheduler", new { msg = "Scheduler restarted" });
         }
 
+        public async Task<IActionResult> OnPostRemoveAsync(int triggerId)
+        {
+            await _mediator.Send(new RemoveTriggerCommand() {TriggerId = triggerId });
+
+            return RedirectToPage("./Scheduler", new { msg = $"Trigger with id {triggerId} removed" });
+        }
+
         public IActionResult OnPostKillAll()
         {
             foreach (var item in RunningActivities.GetEnumerator())

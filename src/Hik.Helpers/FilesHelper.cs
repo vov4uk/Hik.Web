@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Compression;
 using System.Threading.Tasks;
 using Hik.Helpers.Abstraction;
 
@@ -15,11 +14,6 @@ namespace Hik.Helpers
         public string CombinePath(params string[] args)
         {
             return Path.Combine(args);
-        }
-
-        public bool FileExists(string path, long size)
-        {
-            return this.FileSize(path) == size;
         }
 
         public bool FileExists(string path)
@@ -50,11 +44,6 @@ namespace Hik.Helpers
             }
         }
 
-        public Task<string> ReadAllText(string path)
-        {
-            return File.ReadAllTextAsync(path);
-        }
-
         public Task<byte[]> ReadAllBytesAsync(string path)
         {
             return File.ReadAllBytesAsync(path);
@@ -69,11 +58,6 @@ namespace Hik.Helpers
             }
             memory.Position = 0;
             return memory;
-        }
-
-        public void WriteAllText(string path, string contents)
-        {
-            File.WriteAllText(path, contents);
         }
 
         public void RenameFile(string oldFileName, string newFileName)
@@ -127,24 +111,6 @@ namespace Hik.Helpers
             }
 
             return Path.GetDirectoryName(path);
-        }
-
-        public string ZipFile(string path)
-        {
-            string newPath = Path.ChangeExtension(path, ".zip");
-            using (ZipArchive archive = System.IO.Compression.ZipFile.Open(newPath, ZipArchiveMode.Create))
-            {
-                archive.CreateEntryFromFile(path, Path.GetFileName(path), CompressionLevel.Optimal);
-            }
-            return newPath;
-        }
-
-        public void UnZipFile(string path)
-        {
-            using (ZipArchive archive = System.IO.Compression.ZipFile.Open(path, ZipArchiveMode.Read))
-            {
-                archive.ExtractToDirectory(Path.GetDirectoryName(path), overwriteFiles: true);
-            }
         }
     }
 }
