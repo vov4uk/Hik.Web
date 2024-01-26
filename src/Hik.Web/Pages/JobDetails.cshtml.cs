@@ -29,11 +29,11 @@ namespace Hik.Web.Pages
 
         public JobDetailsDto Dto { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id, int p = 1)
+        public async Task<IActionResult> OnGetAsync(int? id, int p = 1, int pageSize = 48)
         {
             if (id == null) { return NotFound(); }
 
-            Dto = await mediator.Send(new JobDetailsQuery { JobId = id.Value, CurrentPage = p }) as JobDetailsDto;
+            Dto = await mediator.Send(new JobDetailsQuery { JobId = id.Value, CurrentPage = p, PageSize = pageSize }) as JobDetailsDto;
 
             if (Dto == null) { return NotFound(); }
 #if USE_AUTHORIZATION
@@ -48,7 +48,7 @@ namespace Hik.Web.Pages
                 }
             }
 #endif
-            Pager = new (id.Value, "?id=", Dto.TotalItems, currentPage: p);
+            Pager = new (id.Value, "?id=", Dto.TotalItems, currentPage: p, pageSize: pageSize);
 
             return Page();
         }

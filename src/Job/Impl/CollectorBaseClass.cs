@@ -20,7 +20,7 @@ namespace Job.Impl
         private const string TimeFormat = "HH':'mm':'ss";
         private readonly IRecurrentJob worker;
 
-        public CollectorBaseClass(JobTrigger trigger,
+        protected CollectorBaseClass(JobTrigger trigger,
             IRecurrentJob worker,
             IHikDatabase db,
             IEmailHelper email,

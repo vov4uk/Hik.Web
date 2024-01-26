@@ -50,8 +50,9 @@ namespace Hik.Client.Service
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.None);
 
-                int elapsedMilliseconds = imgParts.Length > 1 ? int.Parse(imgParts[1]) : 0;
-                string label = imgParts.Length > 2 ? imgParts[2] : null;
+                string eventId = imgParts.Length > 1 ? imgParts[1] : null;
+                int elapsedMilliseconds = imgParts.Length > 2 ? int.Parse(imgParts[2]) : 0;
+                string label = imgParts.Length > 3 ? imgParts[3] : null;
 
                 string newFilePath = MoveFile(iConfig.DestinationFolder, filePath, dateTaken);
 
@@ -60,9 +61,11 @@ namespace Hik.Client.Service
                     Date = dateTaken,
                     Name = dateTaken.ToString(OutFileName),
                     Path = newFilePath,
+                    DownloadStarted = DateTime.Now,
                     DownloadDuration = elapsedMilliseconds,
                     Size = filesHelper.FileSize(newFilePath),
                     Objects = label,
+                    EventId = eventId,
                 };
                 result.Add(dto);
 

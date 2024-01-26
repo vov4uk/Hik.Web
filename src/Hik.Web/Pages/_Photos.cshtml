@@ -23,16 +23,25 @@
   <h1 class="index">01</h1>
 </div>
 
-<ul class="thumbnails">
-  @foreach (var photo in Model)
+
+  @foreach (var eventId in Model.GroupBy(x => x.EventId ?? ""))
   {
-      <li class="item">
-              <img
-                alt="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")"
-                name="@photo.Name (@photo.Objects)"
-                src="@Url.Content($"/Search?fileId={@photo?.Id}&handler=ImageThumbnail")"
-                class="thumbnail-border" />
-              <span class="image-overlay">@photo.Name</span>
-       </li>
+    <div class="row">
+        <div class="card-body text-center">
+            <h4 title="@eventId.Key" class="card-title">@MediaFileDto.EventDate(eventId.Key)</h4>
+        </div>
+    </div>
+    <ul class="thumbnails">
+        @foreach (var photo in eventId)
+        {
+            <li class="item">
+                <img alt="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")"
+                     name="@Html.DisplayFor(x=> photo.Date) (@photo.Objects)"
+                     src="@Url.Content($"/Search?fileId={@photo?.Id}&handler=ImageThumbnail")"
+                     class="thumbnail-border" />
+                <span class="image-overlay">@Html.DisplayFor(x => photo.Date)</span>
+            </li>
+        }
+    </ul>
   }
-</ul>
+

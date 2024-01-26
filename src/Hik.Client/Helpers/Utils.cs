@@ -65,19 +65,19 @@ namespace Hik.Client.Helpers
 
         public static string FormatSeconds(this long seconds)
         {
-            var sec = (double)(seconds);
+            var sec = (double)seconds;
             return sec.FormatSeconds();
         }
 
         public static string FormatMilliseconds(this int? milliseconds)
         {
-            var sec = (double)(milliseconds / 1000.0 ?? -1);
+            double sec = milliseconds / 1000.0 ?? -1;
             return sec.FormatSeconds();
         }
 
         public static string FormatMilliseconds(this long milliseconds)
         {
-            var sec = (double)(milliseconds / 1000.0);
+            double sec = milliseconds / 1000.0;
             return sec.FormatSeconds();
         }
 

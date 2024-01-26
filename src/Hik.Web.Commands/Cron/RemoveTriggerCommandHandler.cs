@@ -17,7 +17,6 @@ namespace Hik.Web.Commands.Cron
 
         public async Task Handle(RemoveTriggerCommand request, CancellationToken cancellationToken)
         {
-            var timer = new Stopwatch();
             using (var uow = factory.CreateUnitOfWork(QueryTrackingBehavior.NoTracking))
             {
                 var triggerRepo = uow.GetRepository<JobTrigger>();

@@ -1,0 +1,1 @@
+﻿ALTER TABLE MediaFile ADD COLUMN EventId                 TEXT default '';

@@ -21,8 +21,8 @@ namespace Hik.Client.Client
         private readonly IDirectoryHelper dirHelper;
         private readonly IFilesHelper filesHelper;
         private readonly ILogger logger;
+        private readonly IDahuaSDK dahuaSDK;
         private IDahuaApi dahuaApi;
-        private IDahuaSDK dahuaSDK;
         private bool disposedValue = false;
         private long downloadId = -1;
 
@@ -126,6 +126,19 @@ namespace Hik.Client.Client
             }
         }
 
+        private static string ToFileNameString(MediaFileDto file)
+        {
+            return file.ToVideoFileNameString();
+        }
+
+        private static void ValidateDateParameters(DateTime start, DateTime end)
+        {
+            if (end <= start)
+            {
+                throw new ArgumentException("Start period grater than end");
+            }
+        }
+
         private bool StartVideoDownload(MediaFileDto file, string targetFilePath, string tempFile)
         {
             if (!IsDownloading)
@@ -184,11 +197,6 @@ namespace Hik.Client.Client
             return config.SaveFilesToRootFolder ? string.Empty : file.Date.ToDirectoryName();
         }
 
-        private string ToFileNameString(MediaFileDto file)
-        {
-            return file.ToVideoFileNameString();
-        }
-
         private void UpdateVideoProgress()
         {
             if (IsDownloading)
@@ -204,14 +212,6 @@ namespace Hik.Client.Client
             else
             {
                 logger.Warning("File not downloading now");
-            }
-        }
-
-        private static void ValidateDateParameters(DateTime start, DateTime end)
-        {
-            if (end <= start)
-            {
-                throw new ArgumentException("Start period grater than end");
             }
         }
     }

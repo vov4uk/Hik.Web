@@ -312,7 +312,7 @@ ul.thumbnails li span {
 
 ul.thumbnails li span.image-overlay {
     display: none;
-    width: 290px;
+    width: 100%;
     padding: 20px;
     background-color: #fff;
     color: #343434;

@@ -1,23 +1,23 @@
 ﻿namespace Hik.Client.Tests
 {
+    using AutoFixture;
+    using AutoMapper;
+    using Dahua.Api.Abstractions;
+    using Dahua.Api.Data;
+    using Hik.Client.Client;
+    using Hik.Client.Infrastructure;
+    using Hik.DTO.Config;
+    using Hik.DTO.Contracts;
+    using Hik.Helpers.Abstraction;
+    using Moq;
+    using Serilog;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using AutoFixture;
-    using AutoMapper;
-     using Hik.Client.Infrastructure;
-    using Hik.DTO.Config;
-    using Hik.DTO.Contracts;
-    using Hik.Helpers.Abstraction;
-    using Serilog;
-    using Moq;
     using Xunit;
-    using Dahua.Api.Abstractions;
-    using Hik.Client.Client;
-    using Dahua.Api.Data;
 
     public class DahuaVideoClientTests
     {

@@ -38,6 +38,7 @@ namespace Hik.Web.Queries.Job
                     {
                         JobTriggerId = request.JobTriggerId,
                         JobTriggerName = trigger.TriggerKey,
+                        ClassName = trigger.ClassName,
                         TotalItems = totalItems,
                         Items = jobs.ConvertAll(HikDatabase.Mapper.Map<HikJob, HikJobDto>),
                     };

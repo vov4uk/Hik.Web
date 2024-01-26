@@ -63,7 +63,8 @@ namespace Hik.Web
                    shared: true,
                    flushToDiskInterval: TimeSpan.FromSeconds(1))
                    .WriteTo.Seq(loggerConfig.ServerUrl,
-                                 period: TimeSpan.FromSeconds(1))
+                                 period: TimeSpan.FromSeconds(1),
+                                 apiKey: loggerConfig.ApiKey)
                 .CreateLogger();
 
 #if USE_AUTHORIZATION

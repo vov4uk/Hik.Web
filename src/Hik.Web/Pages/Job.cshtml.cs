@@ -28,7 +28,7 @@ namespace Hik.Web.Pages
 
         public JobDto Dto { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? jobTriggerId = default, int p = 1)
+        public async Task<IActionResult> OnGetAsync(int? jobTriggerId = default, int p = 1, int pageSize = 48)
         {
             if (jobTriggerId == null) { return NotFound(); }
 #if USE_AUTHORIZATION
@@ -43,10 +43,10 @@ namespace Hik.Web.Pages
                 }
             }
 #endif
-            Dto = await mediator.Send(new JobQuery { JobTriggerId = jobTriggerId.Value, CurrentPage = p }) as JobDto;
+            Dto = await mediator.Send(new JobQuery { JobTriggerId = jobTriggerId.Value, CurrentPage = p, PageSize = pageSize }) as JobDto;
 
             if (Dto == null) { return NotFound(); }
-            Pager = new (jobTriggerId.Value, "./Job?jobTriggerId=", Dto.TotalItems, p);
+            Pager = new (jobTriggerId.Value, "./Job?jobTriggerId=", Dto.TotalItems, p, pageSize);
 
             return Page();
         }

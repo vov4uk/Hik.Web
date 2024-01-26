@@ -69,7 +69,7 @@ namespace Hik.Web.Queries.Dashboard
 
                 foreach (var trigger in jobTriggers.Where(x => x.ClassName?.Contains("GarbageCollectorJob") == false))
                 {
-                    trigger.LastSync = latestFinishedJobs.FirstOrDefault(x => x.JobTriggerId == trigger.Id)?.PeriodEnd;
+                    trigger.LastSync = latestFinishedJobs.Find(x => x.JobTriggerId == trigger.Id)?.PeriodEnd;
                 }
 
 
