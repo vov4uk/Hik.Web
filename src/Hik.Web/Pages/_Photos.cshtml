@@ -24,24 +24,24 @@
 </div>
 
 
-  @foreach (var eventId in Model.GroupBy(x => x.EventId ?? ""))
-  {
-    <div class="row">
-        <div class="card-body text-center">
-            <h4 title="@eventId.Key" class="card-title">@MediaFileDto.EventDate(eventId.Key)</h4>
-        </div>
-    </div>
-    <ul class="thumbnails">
-        @foreach (var photo in eventId)
-        {
-            <li class="item">
-                <img alt="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")"
-                     name="@Html.DisplayFor(x=> photo.Date) (@photo.Objects)"
-                     src="@Url.Content($"/Search?fileId={@photo?.Id}&handler=ImageThumbnail")"
-                     class="thumbnail-border" />
-                <span class="image-overlay">@Html.DisplayFor(x => photo.Date)</span>
-            </li>
-        }
-    </ul>
-  }
+@foreach (var eventId in Model.GroupBy(x => x.EventId))
+{
+  <div class="row">
+      <div class="card-body text-center">
+          <h4 title="@eventId.Key" class="card-title">@MediaFileDto.EventDate(eventId.Key)</h4>
+      </div>
+  </div>
+  <ul class="thumbnails">
+      @foreach (var photo in eventId)
+      {
+          <li class="item">
+              <img alt="@Url.Content($"/Search?fileId={@photo?.Id}&handler=Image")"
+                   name="@Html.DisplayFor(x=> photo.Date) (@photo.Objects)"
+                   src="@Url.Content($"/Search?fileId={@photo?.Id}&handler=ImageThumbnail")"
+                   class="thumbnail-border" />
+              <span class="image-overlay">@Html.DisplayFor(x => photo.Date)</span>
+          </li>
+      }
+  </ul>
+}
 

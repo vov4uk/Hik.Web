@@ -91,7 +91,7 @@ namespace Hik.DataAccess.SQL {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ALTER TABLE MediaFile ADD COLUMN EventId                 TEXT default &apos;&apos;;.
+        ///   Looks up a localized string similar to ALTER TABLE MediaFile ADD COLUMN EventId                 INTEGER;.
         /// </summary>
         internal static string _20240125000000_update_mediafile {
             get {

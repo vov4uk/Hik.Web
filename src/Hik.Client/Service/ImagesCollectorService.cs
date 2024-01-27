@@ -56,14 +56,20 @@ namespace Hik.Client.Service
                     dateTaken = filesHelper.GetCreationDate(filePath);
                 }
 
-                string eventId = imgParts.Length > 1 ? imgParts[1] : null;
+                int? eventId = null;
                 int elapsedMilliseconds = 0;
-                if (imgParts.Length > 2)
-                {
-                    int.TryParse(imgParts[2], out elapsedMilliseconds);
-                }
+                string label = string.Empty;
 
-                string label = imgParts.Length > 3 ? imgParts[3] : null;
+                try
+                {
+                    int.TryParse(imgParts[1], out int eventIntId);
+                    eventId = eventIntId;
+                    int.TryParse(imgParts[2], out elapsedMilliseconds);
+                    label = imgParts[3];
+                }
+                catch (IndexOutOfRangeException)
+                {
+                }
 
                 string newFilePath = MoveFile(iConfig.DestinationFolder, filePath, dateTaken);
 

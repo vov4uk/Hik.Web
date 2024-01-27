@@ -70,14 +70,14 @@ namespace Hik.Client.Tests.Services
         }
 
         [Theory]
-        [InlineData("20240127133226000_2648737_02957_собака=1;людина=2.jpg", "собака=1;людина=2", "20240127_133226000", 2957, "2648737", @"C:\2024-01\27\13\20240127_133226000.jpg")]
-        [InlineData("20240127134138000_2649287_02472_.jpg", "", "20240127_134138000", 2472, "2649287", "C:\\2024-01\\27\\13\\20240127_134138000.jpg")]
+        [InlineData("20240127133226000_2648737_02957_собака=1;людина=2.jpg", "собака=1;людина=2", "20240127_133226000", 2957, 2648737, @"C:\2024-01\27\13\20240127_133226000.jpg")]
+        [InlineData("20240127134138000_2649287_02472_.jpg", "", "20240127_134138000", 2472, 2649287, "C:\\2024-01\\27\\13\\20240127_134138000.jpg")]
         public async Task ExecuteAsync_FilesFound_ProperFilesStored(
             string sourceFileName,
             string objects,
             string newName,
             int downloadDuration,
-            string eventName,
+            int eventName,
             string targetFile)
         {
             var config = new ImagesCollectorConfig
@@ -159,7 +159,7 @@ namespace Hik.Client.Tests.Services
             Assert.Equal(1024, actual.Size);
             Assert.Equal(targetFileName, actual.Name);
             Assert.Equal(targetFile, actual.Path);
-
+            Assert.NotNull(actual.EventId);
         }
 
         private ImagesCollectorService CreateArchiveService()

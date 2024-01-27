@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace Hik.DTO.Contracts
 {
@@ -16,7 +15,7 @@ namespace Hik.DTO.Contracts
 
         public string Objects { get; set; }
 
-        public string EventId { get; set; }
+        public int? EventId { get; set; }
 
         public long Size { get; set; }
 
@@ -36,12 +35,12 @@ namespace Hik.DTO.Contracts
             return Name;
         }
 
-        public static DateTime? EventDate(string eventId)
+        public static DateTime? EventDate(int? eventId)
         {
-            if (int.TryParse(eventId, out int eventIntId))
+            if (eventId.HasValue)
             {
-                int days = eventIntId / 100000;
-                int seconds = eventIntId - days * 100000;
+                int days = eventId.Value / 100000;
+                int seconds = eventId.Value - days * 100000;
                 var date = StartOfAges.AddDays(days).AddSeconds(seconds);
                 return date;
             }

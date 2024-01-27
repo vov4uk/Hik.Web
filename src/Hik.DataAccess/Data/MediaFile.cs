@@ -26,7 +26,7 @@ namespace Hik.DataAccess.Data
 
         public string Objects { get; set; }
 
-        public string EventId { get; set; }
+        public int? EventId { get; set; }
 
         public DateTime Date { get; set; }
 
