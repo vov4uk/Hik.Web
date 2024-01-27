@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FluentFTP.Helpers;
 using Hik.Client.Abstraction.Services;
 using Hik.Client.Helpers;
 using Hik.DTO.Config;
@@ -44,14 +45,24 @@ namespace Hik.Client.Service
 
                 string[] imgParts = fileName.Split("_");
 
-                DateTime dateTaken = DateTime.ParseExact(
+                DateTime dateTaken;
+                if (!DateTime.TryParseExact(
                     imgParts[0],
                     "yyyyMMddHHmmssfff",
                     System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.None);
+                    System.Globalization.DateTimeStyles.None,
+                    out dateTaken))
+                {
+                    dateTaken = filesHelper.GetCreationDate(filePath);
+                }
 
                 string eventId = imgParts.Length > 1 ? imgParts[1] : null;
-                int elapsedMilliseconds = imgParts.Length > 2 ? int.Parse(imgParts[2]) : 0;
+                int elapsedMilliseconds = 0;
+                if (imgParts.Length > 2)
+                {
+                    int.TryParse(imgParts[2], out elapsedMilliseconds);
+                }
+
                 string label = imgParts.Length > 3 ? imgParts[3] : null;
 
                 string newFilePath = MoveFile(iConfig.DestinationFolder, filePath, dateTaken);
