@@ -117,7 +117,7 @@ namespace Hik.Web.Tests.Pages
 
         [Theory]
         [InlineData("GarbageCollectorJob", "{\r\n  \"RetentionPeriodDays\": -1,\r\n  \"FreeSpacePercentage\": 0.0,\r\n  \"Triggers\": [],\r\n  \"FileExtention\": null,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
-        [InlineData("FilesCollectorJob", "{\r\n  \"FileNamePattern\": null,\r\n  \"FileNameDateTimeFormat\": null,\r\n  \"SkipLast\": 0,\r\n  \"AllowedFileExtentions\": \"*.*;\",\r\n  \"SourceFolder\": null,\r\n  \"AbnormalFilesCount\": 0,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
+        [InlineData("FilesCollectorJob", "{\r\n  \"SourceFolder\": null,\r\n  \"AbnormalFilesCount\": 0,\r\n  \"FileNamePattern\": null,\r\n  \"FileNameDateTimeFormat\": null,\r\n  \"SkipLast\": 0,\r\n  \"AllowedFileExtentions\": \"*.*;\",\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
         [InlineData("VideoDownloaderJob", "{\r\n  \"ProcessingPeriodHours\": 0,\r\n  \"Camera\": null,\r\n  \"ClientType\": 0,\r\n  \"SyncTime\": true,\r\n  \"SyncTimeDeltaSeconds\": 5,\r\n  \"RemotePath\": null,\r\n  \"SaveFilesToRootFolder\": false,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
         [InlineData("PhotoDownloaderJob", "{\r\n  \"ProcessingPeriodHours\": 0,\r\n  \"Camera\": null,\r\n  \"ClientType\": 0,\r\n  \"SyncTime\": true,\r\n  \"SyncTimeDeltaSeconds\": 5,\r\n  \"RemotePath\": null,\r\n  \"SaveFilesToRootFolder\": false,\r\n  \"JobTimeoutMinutes\": 29,\r\n  \"DestinationFolder\": null\r\n}")]
         public void OnGetConfigJson_ClassNameExist_ReturnConfig(string className, string expexted)
@@ -155,8 +155,8 @@ namespace Hik.Web.Tests.Pages
         [Fact]
         public void Constructor_ClassNameNotExist_Exception()
         {
-            Assert.Equal(5, TriggerModel.JobTypesList.Count);
-            Assert.Equal(5, TriggerModel.ConfigTypes.Count);
+            Assert.Equal(4, TriggerModel.JobTypesList.Count);
+            Assert.Equal(4, TriggerModel.ConfigTypes.Count);
         }
     }
 }
