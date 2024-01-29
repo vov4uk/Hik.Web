@@ -5,8 +5,6 @@ namespace Hik.DTO.Contracts
 {
     public class MediaFileDto
     {
-        private static readonly DateTime StartOfAges = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Local);
-
         public int Id { get; set; }
 
         public string Name { get; set; }
