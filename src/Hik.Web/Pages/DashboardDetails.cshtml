@@ -22,7 +22,6 @@
             {
                 <th>@Html.DisplayNameFor(model => model.Dto.Items.First().TotalDuration)</th>
             }
-            <th>@Html.DisplayNameFor(model => model.Dto.Items.First().ProcessDuration)</th>
         </tr>
     </thead>
     <tbody>
@@ -30,12 +29,11 @@
         {
             string status = "";
             string durationString = "";
-            string processingDurationString = Hik.Client.Helpers.Utils.FormatMilliseconds(item.ProcessDuration);
 
             string size = Hik.Client.Helpers.Utils.FormatBytes(item.FilesSize);
             if (showDuration)
             {
-                int totalDuration = item.TotalDuration ?? 0; 
+                int totalDuration = item.TotalDuration ?? 0;
                 durationString = Hik.Client.Helpers.Utils.FormatSeconds((double)totalDuration);
 
                 double seccondsInDay = 86400;
@@ -58,7 +56,6 @@
             {
                 <td>@durationString</td>
             }
-            <td>@processingDurationString</td>
         </tr>
         }
     </tbody>

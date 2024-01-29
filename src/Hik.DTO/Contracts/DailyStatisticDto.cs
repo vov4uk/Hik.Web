@@ -18,8 +18,5 @@ namespace Hik.DTO.Contracts
 
         [Display(Name = "Duration")]
         public int? TotalDuration { get; set; }
-
-        [Display(Name = "Processing time")]
-        public int? ProcessDuration { get; set; }
     }
 }

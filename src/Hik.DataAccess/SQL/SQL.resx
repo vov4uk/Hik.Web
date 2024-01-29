@@ -121,10 +121,4 @@
   <data name="_20230331000000_init" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>20230331000000_init.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="_20240122000000_update_dailystatistic" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>20240122000000_update_dailystatistic.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="_20240125000000_update_mediafile" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>20240125000000_update_mediafile.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
 </root>

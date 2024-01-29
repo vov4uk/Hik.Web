@@ -44,11 +44,6 @@ namespace Job
                         var worker = AppBootstrapper.Container.Resolve<IFilesCollectorService>(loggerParameter);
                         return new FilesCollectorJob(trigger, worker, db, email, logger);
                     }
-                case "ImagesCollectorJob":
-                    {
-                        var worker = AppBootstrapper.Container.Resolve<IImagesCollectorService>(loggerParameter);
-                        return new ImagesCollectorJob(trigger, worker, db, email, logger);
-                    }
                 case "GarbageCollectorJob":
                     {
                         var directory = AppBootstrapper.Container.Resolve<IDirectoryHelper>();

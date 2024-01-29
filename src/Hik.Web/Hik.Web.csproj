@@ -9,12 +9,6 @@
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <Platforms>x64</Platforms>
   </PropertyGroup>
-
-	<PropertyGroup>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<Deterministic>false</Deterministic>
-	</PropertyGroup>
-	
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />

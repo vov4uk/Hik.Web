@@ -76,7 +76,6 @@ namespace Hik.Web.Pages
                 {
                     case "GarbageCollectorJob": configType = "GC"; break;
                     case "FilesCollectorJob":  configType = "FilesCollector"; break;
-                    case "ImagesCollectorJob": configType = "ImagesCollector"; break;
                     case "VideoDownloaderJob": configType = "Camera"; break;
                     case "PhotoDownloaderJob": configType = "Camera"; break;
                     default: return RedirectToPage("./Scheduler", new { msg = "Invalid className" });

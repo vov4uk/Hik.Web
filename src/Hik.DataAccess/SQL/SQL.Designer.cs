@@ -79,24 +79,5 @@ namespace Hik.DataAccess.SQL {
                 return ResourceManager.GetString("_20230331000000_init", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ALTER TABLE DailyStatistics ADD COLUMN ProcessDuration INTEGER default 0;
-        ///.
-        /// </summary>
-        internal static string _20240122000000_update_dailystatistic {
-            get {
-                return ResourceManager.GetString("_20240122000000_update_dailystatistic", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ALTER TABLE MediaFile ADD COLUMN EventId                 INTEGER;.
-        /// </summary>
-        internal static string _20240125000000_update_mediafile {
-            get {
-                return ResourceManager.GetString("_20240125000000_update_mediafile", resourceCulture);
-            }
-        }
     }
 }

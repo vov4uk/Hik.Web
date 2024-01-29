@@ -78,12 +78,7 @@ namespace Hik.Web
 
             var host = builder.Build();
 
-            var version = Assembly.GetExecutingAssembly().GetName().Version;
-
-            var buildDate = new DateTime(2000, 1, 1)
-               .AddDays(version.Build).AddSeconds(version.Revision * 2);
-
-            Version = $"{version} ({buildDate})";
+            Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
             Log.Information($"App started - version {Version}");
             host.Run();

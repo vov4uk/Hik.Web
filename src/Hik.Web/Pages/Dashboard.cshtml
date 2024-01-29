@@ -41,13 +41,11 @@
                              <th>Files</th>
                              <th>Size</th>
                              <th>Duration</th>
-                             <th>Processing</th>
                          </tr>
                      </thead>
                      <tbody>
 
                         @{
-                            long todayProcessDuration = 0;
                             long todayTotalDuration = 0;
                             long todaySize = 0;
                             long todayFiles = 0;
@@ -59,10 +57,8 @@
                                 int statDuration = stat?.TotalDuration ?? 0;
                                 string size = statSize !=0 ? statSize.FormatBytes() : "0";
                                 string duration = ((double)statDuration).FormatSeconds();
-                                string processing = stat?.ProcessDuration.FormatMilliseconds();
                                 string triggerString = jobTrigger.ToString();
                                 todayTotalDuration += statDuration;
-                                todayProcessDuration += (stat?.ProcessDuration ?? 0);
                                 todaySize += statSize;
                                 todayFiles += stat?.FilesCount ?? 0;
 
@@ -89,7 +85,6 @@
                                     lastFileDeltaString = @lastFileDelta.GetRelativeTime();
                                 }
 
-
                                 <tr data-status="@status" class="failed">
                                     <td><a asp-page="./DashboardDetails" asp-route-triggerId="@jobTrigger.Id">@triggerString</a></td>
                                     <td><span title="@jobTrigger.LastSync?.GetRelativeTime()">@lastSyncString</span></td>
@@ -98,7 +93,6 @@
                                     <td>@filesCount</td>
                                     <td>@size</td>
                                     <td>@duration</td>
-                                    <td>@processing</td>
                                 </tr>
                             }
                             <tr>
@@ -109,7 +103,6 @@
                                 <td>@todayFiles</td>
                                 <td>@todaySize.FormatBytes()</td>
                                 <td>@todayTotalDuration.FormatSeconds()</td>
-                                <td>@todayProcessDuration.FormatMilliseconds()</td>
                             </tr>
                          }
                      </tbody>

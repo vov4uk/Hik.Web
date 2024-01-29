@@ -155,7 +155,6 @@ namespace Hik.DataAccess
                             FilesCount = 0,
                             FilesSize = 0,
                             TotalDuration = 0,
-                            ProcessDuration = 0,
                         });
                     }
                     from = from.AddDays(1);
@@ -190,7 +189,6 @@ namespace Hik.DataAccess
                     day.FilesCount += item.Count;
                     day.FilesSize += item.Size;
                     day.TotalDuration += item.Duration;
-                    day.ProcessDuration += item.DownloadDuration;
                     repo.Update(day);
                 }
             }

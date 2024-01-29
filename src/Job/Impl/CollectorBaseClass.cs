@@ -14,7 +14,7 @@ using System.Linq;
 namespace Job.Impl
 {
     public abstract class CollectorBaseClass<T> : JobProcessBase<T>
-        where T : ImagesCollectorConfig
+        where T : FilesCollectorConfig
     {
         private const string DateTimeFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss";
         private const string TimeFormat = "HH':'mm':'ss";

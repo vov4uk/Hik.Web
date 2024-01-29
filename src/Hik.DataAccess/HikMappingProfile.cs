@@ -20,8 +20,7 @@ namespace Hik.DataAccess
 
             this.CreateMap<ExceptionLog, ExceptionLogDto>(MemberList.None);
 
-            this.CreateMap<DailyStatistic, DailyStatisticDto>(MemberList.None)
-                .ForMember(x =>x.ProcessDuration, opt => opt.MapFrom(y => y.ProcessDuration));
+            this.CreateMap<DailyStatistic, DailyStatisticDto>(MemberList.None);
 
             this.CreateMap<HikJob, HikJobDto>(MemberList.None)
                 .ForMember(x => x.Error, opt => opt.MapFrom(y => y.ExceptionLog))

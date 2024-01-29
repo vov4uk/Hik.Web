@@ -1,1 +1,0 @@
-﻿ALTER TABLE MediaFile ADD COLUMN EventId                 INTEGER;

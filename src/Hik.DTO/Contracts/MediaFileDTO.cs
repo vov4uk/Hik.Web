@@ -15,8 +15,6 @@ namespace Hik.DTO.Contracts
 
         public string Objects { get; set; }
 
-        public int? EventId { get; set; }
-
         public long Size { get; set; }
 
         [Display(Name = "Started"), DisplayFormat(DataFormatString = Consts.DisplayDateTimeFormat), DataType(DataType.DateTime)]
@@ -33,18 +31,6 @@ namespace Hik.DTO.Contracts
         public override string ToString()
         {
             return Name;
-        }
-
-        public static DateTime? EventDate(int? eventId)
-        {
-            if (eventId.HasValue)
-            {
-                int days = eventId.Value / 100000;
-                int seconds = eventId.Value - days * 100000;
-                var date = StartOfAges.AddDays(days).AddSeconds(seconds);
-                return date;
-            }
-            return null;
         }
     }
 }

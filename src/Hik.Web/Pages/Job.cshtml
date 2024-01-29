@@ -37,13 +37,7 @@
             <td>@Html.DisplayFor(m => item.FilesCount)</td> 
             @if (item.FilesCount > 0 || !item.Success)
             {
-                if (Model.Dto.ClassName == "ImagesCollectorJob")
-                {
-                    <td><a asp-page="./JobDetails" asp-route-id="@item.Id" asp-route-pageSize="200">Details</a></td>
-                }else
-                {
-                    <td><a asp-page="./JobDetails" asp-route-id="@item.Id">Details</a></td>
-                }
+                <td><a asp-page="./JobDetails" asp-route-id="@item.Id">Details</a></td>
             }
             else
             {
