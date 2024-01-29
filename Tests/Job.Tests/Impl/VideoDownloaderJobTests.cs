@@ -13,9 +13,9 @@ using Xunit.Abstractions;
 
 namespace Job.Tests.Impl
 {
-    public class HikVideoDownloaderJobTests : ServiceJobBaseTests<IHikVideoDownloaderService>
+    public class VideoDownloaderJobTests : ServiceJobBaseTests<IHikVideoDownloaderService>
     {
-        public HikVideoDownloaderJobTests(ITestOutputHelper output) : base(output) { }
+        public VideoDownloaderJobTests(ITestOutputHelper output) : base(output) { }
 
         [Fact]
         public async Task ExecuteAsync_FileDownloaded_SaveFilesAsync()
@@ -69,10 +69,10 @@ namespace Job.Tests.Impl
             Assert.IsType<CameraConfig>(job.Config);
         }
 
-        private HikVideoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
+        private VideoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
         {
             var config = GetConfig(configFileName);
-            return new HikVideoDownloaderJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config, SentEmailOnError = true }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock );
+            return new VideoDownloaderJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config, SentEmailOnError = true }, serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock );
         }
 
     }

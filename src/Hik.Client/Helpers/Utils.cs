@@ -63,6 +63,24 @@ namespace Hik.Client.Helpers
             return sec.FormatSeconds();
         }
 
+        public static string FormatSeconds(this long seconds)
+        {
+            var sec = (double)seconds;
+            return sec.FormatSeconds();
+        }
+
+        public static string FormatMilliseconds(this int? milliseconds)
+        {
+            double sec = milliseconds / 1000.0 ?? -1;
+            return sec.FormatSeconds();
+        }
+
+        public static string FormatMilliseconds(this long milliseconds)
+        {
+            double sec = milliseconds / 1000.0;
+            return sec.FormatSeconds();
+        }
+
         public static string GetString(this DateTime? yourDate)
         {
             return !yourDate.HasValue ? NA : GetString(yourDate.Value);

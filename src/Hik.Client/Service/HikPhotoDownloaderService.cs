@@ -36,7 +36,7 @@ namespace Hik.Client.Service
                 if (isDownloaded)
                 {
                     photo.DownloadStarted = start;
-                    photo.DownloadDuration = (int)(finish - start).TotalSeconds;
+                    photo.DownloadDuration = (int)(finish - start).TotalMilliseconds;
                     downloadedList.Add(photo);
                     this.OnFileDownloaded(new FileDownloadedEventArgs(photo));
                 }

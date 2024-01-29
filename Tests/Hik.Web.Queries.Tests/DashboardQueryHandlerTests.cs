@@ -42,8 +42,8 @@ namespace Hik.Web.Queries.Test
         [AutoData]
         public async Task HandleAsync_GetStatistics_Return(DashboardQuery request)
         {
-            var trigger1 = new JobTrigger() { Id = 1, Group = "group", TriggerKey = "Trigger1" };
-            var trigger2 = new JobTrigger() { Id = 2, Group = "group", TriggerKey = "Trigger2" };
+            var trigger1 = new JobTrigger() { Id = 1, Group = "group", TriggerKey = "Trigger1", IsEnabled = true };
+            var trigger2 = new JobTrigger() { Id = 2, Group = "group", TriggerKey = "Trigger2", IsEnabled = true };
             var trigger3 = new JobTrigger() { Id = 3, Group = "group", TriggerKey = "Trigger3" };
             var triggers = new List<JobTrigger> { trigger1, trigger2, trigger3 };
             var files = new List<MediaFile>
@@ -60,9 +60,11 @@ namespace Hik.Web.Queries.Test
 
             triggerRepoMock.Setup(x => x.GetAllAsync())
                 .ReturnsAsync(triggers);
-            dayRepoMock.Setup(x => x.GetLatestGroupedBy(x => x.JobTriggerId))
+            dayRepoMock.Setup(x => x.GetLatestGroupedBy(x => x.Period == request.Day,
+                    p => p.JobTriggerId))
                 .ReturnsAsync(days);
-            fileRepoMock.Setup(x => x.GetLatestGroupedBy(x => x.JobTriggerId))
+            fileRepoMock.Setup(x => x.GetLatestGroupedBy(x => x.Date.Date == request.Day,
+                     p => p.JobTriggerId))
                 .ReturnsAsync(files);
 
             var jobs = new List<HikJob>()
@@ -86,7 +88,7 @@ namespace Hik.Web.Queries.Test
             Assert.NotEmpty(dto.DailyStatistics);
             Assert.Equal(3, dto.DailyStatistics.Count);
             Assert.NotEmpty(dto.Triggers);
-            Assert.Equal(3, dto.Triggers.Count());
+            Assert.Equal(2, dto.Triggers.Count());
         }
     }
 }

@@ -4,15 +4,19 @@
 @{ViewData["Title"] = "Search";}
 
 @{
-      <form>
-         <p>
+    <div class="row">
+      <div class="card-body card-style">
+        <form class="date-form">
+
             <select asp-for="JobTriggerId" asp-items="Model.JobTriggersList">
                <option value="">All</option>
             </select>
-            @Html.TextBoxFor(m => m.DateTime, "{0:yyyy-MM-dd HH:mm}", new { @class = "datepicker", placeholder = "Enter From date here...", Value = Model.DateTime })
+            <input asp-for="DateTime" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" class="form-control input-date" />
             <input type="submit" value="Filter" />
-         </p>
-      </form>
+
+         </form>
+        </div>
+    </div>
 
       @if(Model.Dto != null && Model.Dto.BeforeRange != null && Model.Dto.BeforeRange.Any())
       {

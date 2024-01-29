@@ -33,9 +33,8 @@ namespace Hik.Client.Service
             }
             catch (HikException ex)
             {
-                var msg = $"Code : {ex.ErrorCode}; {ex.ErrorMessage}";
-                Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", msg, ex.ToStringDemystified());
-                return Failure<IReadOnlyCollection<MediaFileDto>>(msg);
+                Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", ex.ErrorMessage, ex.ToStringDemystified());
+                return Failure<IReadOnlyCollection<MediaFileDto>>(ex.ErrorMessage);
             }
             catch (Exception e)
             {

@@ -6,6 +6,8 @@ namespace Hik.Web.Queries.Job
     {
         public string JobTriggerName { get; set; }
 
+        public string ClassName { get; set; }
+
         public int JobTriggerId { get; set; }
     }
 }

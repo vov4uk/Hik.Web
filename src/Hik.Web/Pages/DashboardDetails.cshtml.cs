@@ -5,8 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 
+#if USE_AUTHORIZATION
+using Microsoft.AspNetCore.Authorization;
+#endif
+
 namespace Hik.Web.Pages
 {
+#if USE_AUTHORIZATION
+    [Authorize(Roles = "Admin")]
+#endif
     public class DashboardDetailsModel : PageModel
     {
         private readonly IMediator mediator;
@@ -18,12 +25,12 @@ namespace Hik.Web.Pages
 
         public DashboardDetailsDto Dto { get; set; }
         public PagerControl Pager { get; set; }
-        public async Task<IActionResult> OnGetAsync(int triggerId, int p = 1)
+        public async Task<IActionResult> OnGetAsync(int triggerId, int p = 1, int pageSize = 48)
         {
             if (triggerId <= 0) { return NotFound(); }
-            Dto = await mediator.Send(new DashboardDetailsQuery { JobTriggerId = triggerId, CurrentPage = p}) as DashboardDetailsDto;
+            Dto = await mediator.Send(new DashboardDetailsQuery { JobTriggerId = triggerId, CurrentPage = p, PageSize = pageSize}) as DashboardDetailsDto;
 
-            Pager = new(triggerId, "?triggerId=", Dto.TotalItems, p);
+            Pager = new(triggerId, "?triggerId=", Dto.TotalItems, p, pageSize);
             return Page();
         }
     }

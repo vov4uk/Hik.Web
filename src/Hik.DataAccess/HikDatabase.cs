@@ -154,7 +154,7 @@ namespace Hik.DataAccess
                             Period = from,
                             FilesCount = 0,
                             FilesSize = 0,
-                            TotalDuration = 0
+                            TotalDuration = 0,
                         });
                     }
                     from = from.AddDays(1);
@@ -179,7 +179,8 @@ namespace Hik.DataAccess
                         Date = x.Key,
                         Count = x.Count(),
                         Size = x.Sum(p => p.Size),
-                        Duration = x.Sum(p => p.Duration)
+                        Duration = x.Sum(p => p.Duration),
+                        DownloadDuration = x.Sum(p => p.DownloadDuration)
                     });
 
                 foreach (var item in group)

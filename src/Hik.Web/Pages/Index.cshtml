@@ -70,6 +70,7 @@
                               <td><span title="@toTooltip">@Html.DisplayFor(x => job.LastJob.PeriodEnd)</span></td>
                               <td>@Html.DisplayFor(x => job.LastJob.FilesCount)</td>
                               <td><a asp-page="./JobDetails" asp-route-id="@job.LastJob.Id">@started</a></td>
+
                               <td>@finished</td>
                               <td>
                                   @if (job.ProcessId == null)
@@ -112,22 +113,23 @@
                               <li><span title="@toTooltip">To -    @Html.DisplayFor(x => job.LastJob.PeriodEnd)</span></li>
                               <li>Files - @Html.DisplayFor(x => job.LastJob.FilesCount)</li>
                               <li><a asp-page="./JobDetails" asp-route-id="@job.LastJob.Id">Started - @started</a></li>
+
                               <li>Finished - @finished</li>
                           </ul>
                           <div class="card-body text-center">
                               <div>
-                                  @if (job.ProcessId == null)
-                                  {
-                                      <form method="POST">
-                                          <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-group="@job.Group" asp-route-name="@job.Name" value="Start" />
-                                      </form>
-                                  }
-                                  else
-                                  {
-                                      <form method="POST">
-                                          <input type="submit" class="btn btn-primary-red" asp-page-handler="Kill" asp-route-activityId="@job.ToString()" value="@job.ProcessId" />
-                                      </form>
-                                  }
+                                    @if (job.ProcessId == null)
+                                    {
+                                        <form method="POST">
+                                            <input type="submit" class="btn btn-primary" asp-page-handler="Run" asp-route-id="@job.Id" value="Start" />
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form method="POST">
+                                            <input type="submit" class="btn btn-primary-red" asp-page-handler="Kill" asp-route-activityId="@job.ToString()" value="@job.ProcessId" />
+                                        </form>
+                                    }
                               </div>
                           </div>
                       </div>

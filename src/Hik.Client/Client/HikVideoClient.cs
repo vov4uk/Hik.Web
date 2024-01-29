@@ -19,12 +19,12 @@ namespace Hik.Client
 
         public HikVideoClient(
             CameraConfig config,
-            IHikApi hikApi,
+            IHikSDK hikSDK,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
             IMapper mapper,
             ILogger logger)
-            : base(config, hikApi, filesHelper, directoryHelper, mapper, logger)
+            : base(config, hikSDK, filesHelper, directoryHelper, mapper, logger)
         {
         }
 
@@ -60,7 +60,7 @@ namespace Hik.Client
 
             logger.Information($"Get videos from {periodStart} to {periodEnd}");
 
-            IReadOnlyCollection<HikRemoteFile> remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd, session);
+            IReadOnlyCollection<HikRemoteFile> remoteFiles = await hikApi.VideoService.FindFilesAsync(periodStart, periodEnd);
             return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
         }
 
@@ -93,7 +93,7 @@ namespace Hik.Client
             {
                 if (!filesHelper.FileExists(targetFilePath))
                 {
-                    downloadId = hikApi.VideoService.StartDownloadFile(session.UserId, file.Name, tempFile);
+                    downloadId = hikApi.VideoService.StartDownloadFile(file.Name, tempFile);
 
                     logger.Information($"{file.ToVideoUserFriendlyString()} - downloading");
                     return true;

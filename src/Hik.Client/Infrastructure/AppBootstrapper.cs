@@ -20,7 +20,9 @@ namespace Hik.Client.Infrastructure
 
             var referencedAssembliesNames = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
             List<Assembly> hikAssemblies = referencedAssembliesNames
-                .Where(assembly => assembly.FullName.StartsWith("Hik."))
+                .Where(assembly =>
+                  assembly.FullName.StartsWith("Hik.") ||
+                  assembly.FullName.StartsWith("Dahua."))
                 .Select(Assembly.Load)
                 .ToList();
 

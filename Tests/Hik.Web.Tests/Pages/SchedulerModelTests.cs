@@ -60,7 +60,7 @@ namespace Hik.Web.Tests.Pages
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
             Assert.Equal("./Scheduler", page.PageName);
-            Assert.Equal("Jobs stoped", page.RouteValues.Values.First());
+            Assert.Equal("Jobs stopped", page.RouteValues.Values.First());
             Assert.Empty(RunningActivities.GetEnumerator());
         }
     }

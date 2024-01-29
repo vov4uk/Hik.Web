@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Hik.Client.Tests.Services
 {
-    public class HikVideoDownloaderTests
+    public class VideoDownloaderServiceTests
     {
         private readonly Mock<IDirectoryHelper> directoryMock;
         private readonly Fixture fixture;
@@ -23,7 +23,7 @@ namespace Hik.Client.Tests.Services
         private readonly Mock<IClientFactory> clientFactoryMock;
         private readonly Mock<ILogger> loggerMock;
 
-        public HikVideoDownloaderTests()
+        public VideoDownloaderServiceTests()
         {
             this.directoryMock = new (MockBehavior.Strict);
             this.clientMock = new (MockBehavior.Strict);
@@ -40,7 +40,7 @@ namespace Hik.Client.Tests.Services
 
             this.SetupClientInitialize();
             this.clientMock.Setup(x => x.ForceExit());
-            this.clientMock.Setup(x => x.Login()).Throws(new HikException("Login", 7));
+            this.clientMock.Setup(x => x.Login()).Throws(new HikException("Login", "Error"));
             this.clientMock.Setup(x => x.Dispose());
             this.directoryMock.Setup(x => x.DirExist(It.IsAny<string>()))
                 .Returns(true);

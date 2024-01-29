@@ -65,10 +65,10 @@ namespace Job.Tests.Impl
             Assert.IsType<CameraConfig>(job.Config);
         }
 
-        private HikPhotoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
+        private PhotoDownloaderJob CreateJob(string configFileName = "HikVideoTests.json")
         {
             var config = GetConfig(configFileName);
-            return new HikPhotoDownloaderJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config, SentEmailOnError = true } , serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
+            return new PhotoDownloaderJob(new JobTrigger { Group = group, TriggerKey = triggerKey, Config = config, SentEmailOnError = true } , serviceMock.Object, dbMock.Object, this.emailMock.Object, this.loggerMock);
         }
     }
 }

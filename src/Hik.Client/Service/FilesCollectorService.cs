@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -15,81 +13,47 @@ using Serilog;
 
 namespace Hik.Client.Service
 {
-    public class ArchiveService : RecurrentJobBase, IArchiveService
+    public class FilesCollectorService : RecurrentJobBase, IFilesCollectorService
     {
-        private static readonly string[] Extentions = new[] { ".zip" };
         private readonly IFilesHelper filesHelper;
         private readonly IVideoHelper videoHelper;
-        private readonly IImageHelper imageHelper;
         private Regex regex;
 
-        public ArchiveService(
+        public FilesCollectorService(
             IDirectoryHelper directoryHelper,
             IFilesHelper filesHelper,
             IVideoHelper videoHelper,
-            IImageHelper imageHelper,
             ILogger logger)
             : base(directoryHelper, logger)
         {
             this.filesHelper = filesHelper;
             this.videoHelper = videoHelper;
-            this.imageHelper = imageHelper;
         }
 
         protected override async Task<IReadOnlyCollection<MediaFileDto>> RunAsync(BaseConfig config, DateTime from, DateTime to)
         {
-            var aConfig = config as ArchiveConfig;
+            var fConfig = config as FilesCollectorConfig;
 
-            if (aConfig == null)
+            if (fConfig == null)
             {
                 throw new ArgumentException("Invalid config");
             }
 
-            if (aConfig.UnzipFiles)
-            {
-                var allZips = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, Extentions).SkipLast(aConfig.SkipLast);
-                foreach (var zip in allZips)
-                {
-                    try
-                    {
-                        this.filesHelper.UnZipFile(zip);
-                    }
-                    catch (IOException e)
-                    {
-                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Failed to unzip file - {zip}", e.ToStringDemystified());
-                    }
-                    catch (InvalidDataException e)
-                    {
-                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Invalid zip file - {zip}", e.ToStringDemystified());
-                    }
-
-                    try
-                    {
-                        this.filesHelper.DeleteFile(zip);
-                    }
-                    catch (IOException e)
-                    {
-                        this.logger.Error("ErrorMsg: {errorMsg}; Trace: {trace}", $"Failed to delete file - {zip}", e.ToStringDemystified());
-                    }
-                }
-            }
-
-            this.regex = GetRegex(aConfig.FileNamePattern);
+            this.regex = GetRegex(fConfig.FileNamePattern);
 
             var result = new List<MediaFileDto>();
-            var allFiles = this.directoryHelper.EnumerateFiles(aConfig.SourceFolder, aConfig.AllowedFileExtentions.Split(";")).SkipLast(aConfig.UnzipFiles ? 0 : aConfig.SkipLast);
+            var allFiles = this.directoryHelper.EnumerateFiles(fConfig.SourceFolder, fConfig.AllowedFileExtentions.Split(";"))
+                .SkipLast(fConfig.SkipLast);
 
             foreach (var filePath in allFiles)
             {
-                DateTime date = GetCreationDate(aConfig.FileNameDateTimeFormat, filePath);
+                DateTime date = GetCreationDate(fConfig.FileNameDateTimeFormat, filePath);
                 int duration = await this.videoHelper.GetDuration(filePath);
 
                 string fileExt = filesHelper.GetExtension(filePath);
                 string newFileName = date.ToArchiveFileString(duration, fileExt);
 
-                string desciption = imageHelper.GetDescriptionData(filePath);
-
-                string newFilePath = MoveFile(aConfig.DestinationFolder, filePath, date, newFileName);
+                string newFilePath = MoveFile(fConfig.DestinationFolder, filePath, date, newFileName);
 
                 var dto = new MediaFileDto
                 {
@@ -98,7 +62,6 @@ namespace Hik.Client.Service
                     Path = newFilePath,
                     Duration = duration,
                     Size = filesHelper.FileSize(newFilePath),
-                    Objects = desciption,
                 };
                 result.Add(dto);
 
@@ -120,7 +83,6 @@ namespace Hik.Client.Service
         {
             string newFilePath = GetPathSafety(newFileName, GetWorkingDirectory(destinationFolder, date));
             this.filesHelper.RenameFile(oldFilePath, newFilePath);
-            this.imageHelper.SetDate(newFilePath, date);
             return newFilePath;
         }
 

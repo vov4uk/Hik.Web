@@ -20,7 +20,7 @@
         {
             string size = item.Size.FormatBytes();
             string duration = item.Duration.FormatSeconds();
-            string downloaded = item.DownloadDuration.FormatSeconds();
+            string downloaded = item.DownloadDuration.FormatMilliseconds();
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>

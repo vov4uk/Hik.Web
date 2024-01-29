@@ -34,12 +34,16 @@ namespace Hik.Web.Queries.Dashboard
 
 
                 timer.Restart();
-                var statistics = await statRepo.GetLatestGroupedBy(p => p.JobTriggerId);
+                var statistics = await statRepo.GetLatestGroupedBy(
+                    predicate: x => x.Period == request.Day,
+                    groupBy: p => p.JobTriggerId);
                 timer.Stop();
                 Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "statistics", timer.ElapsedMilliseconds);
 
                 timer.Restart();
-                var latestFiles = await filesRepo.GetLatestGroupedBy(p => p.JobTriggerId);
+                var latestFiles = await filesRepo.GetLatestGroupedBy(
+                    predicate: x => x.Date.Date == request.Day,
+                    groupBy: p => p.JobTriggerId);
                 timer.Stop();
                 Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "latestFiles", timer.ElapsedMilliseconds);
 
@@ -47,7 +51,10 @@ namespace Hik.Web.Queries.Dashboard
 
                 timer.Restart();
                 var latestFinishedJobs = await jobRepo.GetLatestGroupedBy(
-                    y => y.PeriodEnd != null,
+                    x =>
+                    x.PeriodStart != null
+                    && x.PeriodStart.Value.Date == request.Day
+                    && x.PeriodEnd != null,
                     x => x.JobTriggerId);
                 timer.Stop();
                 Log.Information("Query: {type}; Method {method} Duration: {duration}ms;", this.GetType().Name, "latestFinishedJobs", timer.ElapsedMilliseconds);
@@ -60,10 +67,16 @@ namespace Hik.Web.Queries.Dashboard
                     }
                 }
 
+                foreach (var trigger in jobTriggers.Where(x => x.ClassName?.Contains("GarbageCollectorJob") == false))
+                {
+                    trigger.LastSync = latestFinishedJobs.Find(x => x.JobTriggerId == trigger.Id)?.PeriodEnd;
+                }
+
+
                 return new DashboardDto
                 {
                     Files = dict,
-                    Triggers = jobTriggers.ConvertAll(HikDatabase.Mapper.Map<JobTrigger, TriggerDto>),
+                    Triggers = jobTriggers.Where(x => x.IsEnabled).ToList().ConvertAll(HikDatabase.Mapper.Map<JobTrigger, TriggerDto>),
                     DailyStatistics = statistics.Where(x => x != null).ToList().ConvertAll(HikDatabase.Mapper.Map<DailyStatistic, DailyStatisticDto>)
                 };
             }

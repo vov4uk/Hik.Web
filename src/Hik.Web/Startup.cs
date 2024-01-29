@@ -1,3 +1,4 @@
+//#define USE_AUTHORIZATION
 using Autofac;
 using Autofac.Features.Variance;
 using Hik.DataAccess;
@@ -21,7 +22,11 @@ using System.Collections.Generic;
 using Hik.Quartz.Contracts.Xml;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
 #if USE_AUTHORIZATION
+using Microsoft.AspNetCore.Http;
+using System.Net;
 using idunno.Authentication.Basic;
 using System.Security.Claims;
 #endif
@@ -41,7 +46,9 @@ namespace Hik.Web
         {
             Assembly assembly = typeof(Startup).Assembly;
             Assembly[] projectsAssemblies = assembly.GetReferencedAssemblies()
-                .Where(assemblyName => assemblyName.FullName.StartsWith("Hik.", StringComparison.InvariantCulture))
+                .Where(assemblyName => 
+                 assemblyName.FullName.StartsWith("Hik.", StringComparison.InvariantCultureIgnoreCase) ||
+                 assemblyName.FullName.StartsWith("Dahua.Api", StringComparison.InvariantCultureIgnoreCase))
                 .Select(Assembly.Load)
                 .Union(new[] { assembly })
                 .ToArray();
@@ -64,17 +71,31 @@ namespace Hik.Web
                 {
                     OnValidateCredentials = context =>
                     {
-                        if (allowedUsers.Contains($"{context.Username}:{context.Password}"))
+                        var credentials = allowedUsers.FirstOrDefault(x => x.StartsWith($"{context.Username}:{context.Password}"));
+
+                        if(!string.IsNullOrEmpty(credentials))
                         {
-                            var claims = new[]
+                            var claims = new List<Claim>()
                             {
                                 new Claim(ClaimTypes.NameIdentifier, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer),
                                 new Claim(ClaimTypes.Name, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer),
-                                new Claim(ClaimTypes.Role, "Admin")
+                                new Claim(ClaimTypes.Role, context.Username == "admin" ? "Admin" : "Reader")
                             };
+
+                            var arr = credentials.Split(':');
+                            if(arr.Length == 3)
+                            {
+                                claims.Add(new Claim(ClaimTypes.UserData, arr[2]));
+                            }
+
 
                             context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
                             context.Success();
+                        }
+                        else
+                        {
+                            string ip = context.HttpContext.Connection.RemoteIpAddress?.ToString();
+                            Log.Error($"Login failed with {context.Username}:{context.Password}; IP:{ip}");
                         }
 
                         return Task.CompletedTask;
@@ -83,11 +104,18 @@ namespace Hik.Web
             });
 
             services.AddAuthorization();
+            services.AddLettuceEncrypt();
 #endif
             services.AddRazorPages();
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
             services.AddValidatorsFromAssemblyContaining<Startup>();
+
+            services.AddMvc()
+                .AddViewOptions(options =>
+                {
+                    options.HtmlHelperOptions.FormInputRenderMode = FormInputRenderMode.AlwaysUseCurrentCulture;
+                });
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
             services.AddHttpLogging(options =>
@@ -122,6 +150,18 @@ namespace Hik.Web
                 .UseRouting();
 
 #if USE_AUTHORIZATION
+            app.UseStatusCodePages(async context => await Task.Run(() =>
+            {
+                var _ = context.HttpContext;
+
+                if (_.User.Identities.First().IsAuthenticated &&
+                (_.Response.StatusCode == (int)HttpStatusCode.Unauthorized ||
+                 _.Response.StatusCode == (int)HttpStatusCode.Forbidden))
+                {
+                    _.Response.Redirect("/Error");
+                }
+            }));
+
             app.UseAuthentication()
                 .UseAuthorization()
                 .UseHttpsRedirection()
@@ -130,7 +170,8 @@ namespace Hik.Web
             app.UseEndpoints(endpoints =>
                 {
 #if USE_AUTHORIZATION
-                 endpoints.MapRazorPages().RequireAuthorization();
+                 endpoints.MapRazorPages()
+                    .RequireAuthorization();
 #else
                  endpoints.MapRazorPages();
 #endif

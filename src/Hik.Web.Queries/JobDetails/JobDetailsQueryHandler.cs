@@ -30,11 +30,11 @@ namespace Hik.Web.Queries
 
                     var totalItems = await filesRepo.CountAsync(x => x.JobId == query.JobId);
 
-                    var files = await filesRepo.FindManyByDescAsync(
-                        x => x.JobId == query.JobId,
-                        x => x.Id,
-                        Math.Max(0, query.CurrentPage - 1) * query.PageSize,
-                        query.PageSize);
+                    var files = await filesRepo.FindManyByAscAsync(
+                        predicate: x => x.JobId == query.JobId,
+                        orderByAsc: x => x.Id,
+                        skip: Math.Max(0, query.CurrentPage - 1) * query.PageSize,
+                        top: query.PageSize);
 
                     return new JobDetailsDto()
                     {

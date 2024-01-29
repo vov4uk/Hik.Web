@@ -18,13 +18,13 @@ namespace Hik.Client
 
         public HikPhotoClient(
             CameraConfig config,
-            IHikApi hikApi,
+            IHikSDK hikSDK,
             IFilesHelper filesHelper,
             IDirectoryHelper directoryHelper,
             IMapper mapper,
             IImageHelper imageHelper,
             ILogger logger)
-            : base(config, hikApi, filesHelper, directoryHelper, mapper, logger)
+            : base(config, hikSDK, filesHelper, directoryHelper, mapper, logger)
         {
             this.imageHelper = imageHelper;
         }
@@ -35,7 +35,7 @@ namespace Hik.Client
 
             logger.Information($"Get photos from {periodStart} to {periodEnd}");
 
-            var remoteFiles = await hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd, session);
+            var remoteFiles = await hikApi.PhotoService.FindFilesAsync(periodStart, periodEnd);
 
             return Mapper.Map<IReadOnlyCollection<MediaFileDto>>(remoteFiles);
         }
@@ -47,7 +47,7 @@ namespace Hik.Client
             if (!filesHelper.FileExists(targetFilePath))
             {
                 string tempFile = ToFileNameString(remoteFile);
-                hikApi.PhotoService.DownloadFile(session.UserId, remoteFile.Name, remoteFile.Size, tempFile);
+                hikApi.PhotoService.DownloadFile(remoteFile.Name, remoteFile.Size, tempFile);
 
                 filesHelper.RenameFile(tempFile, targetFilePath);
                 this.imageHelper.SetDate(targetFilePath, remoteFile.Date);

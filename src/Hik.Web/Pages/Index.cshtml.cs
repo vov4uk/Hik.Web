@@ -10,9 +10,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hik.Web.Commands.Cron;
 using Hik.Web.Queries.QuartzTrigger;
+#if USE_AUTHORIZATION
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+#endif
 
 namespace Hik.Web.Pages
 {
+#if USE_AUTHORIZATION
+    [Authorize(Roles = "Admin,Reader")]
+#endif
     public class IndexModel : PageModel
     {
         private readonly IMediator _mediator;
@@ -33,7 +40,18 @@ namespace Hik.Web.Pages
 
             var triggers = await _mediator.Send(new QuartzTriggersQuery() { ActiveOnly = true, IncludeLastJob = true }) as QuartzTriggersDto;
 
-            foreach (var cronTrigger in triggers.Triggers)
+            List<TriggerDto> triggersList = triggers.Triggers.ToList();
+#if USE_AUTHORIZATION
+            string allowedTriggers = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.UserData)?.Value;
+
+            if (!string.IsNullOrEmpty(allowedTriggers))
+            {
+                var triggerIds = allowedTriggers.Split(',').Select(int.Parse).ToList();
+                triggersList = triggersList.Where(x => triggerIds.Contains(x.Id)).ToList();
+            }
+#endif
+
+            foreach (var cronTrigger in triggersList)
             {
                 var act = RunningActivities.GetEnumerator()
                     .FirstOrDefault(x => x.Parameters.TriggerKey == cronTrigger.Name && x.Parameters.Group == cronTrigger.Group);
@@ -46,6 +64,13 @@ namespace Hik.Web.Pages
 
         public async Task<IActionResult> OnPostRun(int id)
         {
+#if USE_AUTHORIZATION
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToPage("./Error");
+            }
+#endif
+
             var triggerDto = await _mediator.Send(new QuartzTriggerQuery() { Id = id }) as QuartzTriggerDto;
             if (triggerDto?.Trigger != null)
             {
@@ -60,16 +85,23 @@ namespace Hik.Web.Pages
                 return RedirectToPage("./Index", new { msg = $"Activity {trigger.Group}.{trigger.Name} started" });
             }
 
-            return RedirectToPage("./Index", new { msg = $"Failed to start triiger {id}" });
+            return RedirectToPage("./Index", new { msg = $"Failed to start trigger {id}" });
         }
 
         public IActionResult OnPostKill(string activityId)
         {
+#if USE_AUTHORIZATION
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToPage("./Error");
+            }
+#endif
+
             var activity = RunningActivities.GetEnumerator().SingleOrDefault(a => a.Id == activityId);
             if (activity != null)
             {
                 activity?.Kill();
-                return RedirectToPage("./Index", new { msg = $"Activity {activityId} stoped" });
+                return RedirectToPage("./Index", new { msg = $"Activity {activityId} stopped" });
             }
             return RedirectToPage("./Index", new { msg = $"Activity {activityId} not found" });
         }

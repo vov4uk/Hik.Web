@@ -5,8 +5,6 @@ using Hik.Helpers.Abstraction;
 using Hik.Web.Queries.Thumbnail;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -36,7 +34,7 @@ namespace Hik.Web.Queries.Test
             var expected = new byte[2] { 0 ,1 };
             repoMock.Setup(x => x.FindByIdAsync(It.IsAny<int>()))
                             .ReturnsAsync(new MediaFile() { Name = "File", Id = 2, Path = "c:\\file.jpg", Duration = 100, Date = new(2022, 01, 01) });
-            imgMock.Setup(x => x.GetThumbnail(It.IsAny<string>(), 216, 122)).Returns(expected);
+            imgMock.Setup(x => x.GetThumbnail(It.IsAny<string>(), 278, 158)).Returns(expected);
 
             var handler = new PhotoThumbnailQueryHandler(uowFactoryMock.Object, imgMock.Object);
             var result = await handler.Handle(request, CancellationToken.None);
@@ -52,7 +50,7 @@ namespace Hik.Web.Queries.Test
         {
             repoMock.Setup(x => x.FindByIdAsync(It.IsAny<int>()))
                             .ReturnsAsync(default(MediaFile));
-            imgMock.Setup(x => x.GetThumbnail(null, 216, 122)).Returns(default(byte[]));
+            imgMock.Setup(x => x.GetThumbnail(null, 278, 158)).Returns(default(byte[]));
 
             var handler = new PhotoThumbnailQueryHandler(uowFactoryMock.Object, imgMock.Object);
             var result = await handler.Handle(request, CancellationToken.None);

@@ -10,9 +10,10 @@
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.40.3" />
+    <PackageReference Include="Dahua.Api" Version="1.0.0" />
     <PackageReference Include="FluentFTP" Version="48.0.3" />
     <PackageReference Include="FluentFTP.Logging" Version="1.0.0" />
-    <PackageReference Include="Hik.Api" Version="1.0.14" />
+    <PackageReference Include="Hik.Api" Version="2.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>

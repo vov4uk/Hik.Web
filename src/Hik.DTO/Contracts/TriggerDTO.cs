@@ -46,10 +46,10 @@ namespace Hik.DTO.Contracts
                 {
                     switch (ClassName)
                     {
-                        case "ArchiveJob": config = JsonConvert.DeserializeObject<ArchiveConfig>(Config); break;
+                        case "FilesCollectorJob": config = JsonConvert.DeserializeObject<FilesCollectorConfig>(Config); break;
                         case "GarbageCollectorJob": config = JsonConvert.DeserializeObject<GarbageCollectorConfig>(Config); break;
-                        case "HikPhotoDownloaderJob": config = JsonConvert.DeserializeObject<CameraConfig>(Config); break;
-                        case "HikVideoDownloaderJob": config = JsonConvert.DeserializeObject<CameraConfig>(Config); break;
+                        case "PhotoDownloaderJob": config = JsonConvert.DeserializeObject<CameraConfig>(Config); break;
+                        case "VideoDownloaderJob": config = JsonConvert.DeserializeObject<CameraConfig>(Config); break;
                         default:
                             config = null;  break;
                     }

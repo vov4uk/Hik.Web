@@ -75,9 +75,9 @@ namespace Hik.Web.Pages
                 switch (Dto.ClassName)
                 {
                     case "GarbageCollectorJob": configType = "GC"; break;
-                    case "ArchiveJob": configType = "Archive"; break;
-                    case "HikVideoDownloaderJob": configType = "Camera"; break;
-                    case "HikPhotoDownloaderJob": configType = "Camera"; break;
+                    case "FilesCollectorJob":  configType = "FilesCollector"; break;
+                    case "VideoDownloaderJob": configType = "Camera"; break;
+                    case "PhotoDownloaderJob": configType = "Camera"; break;
                     default: return RedirectToPage("./Scheduler", new { msg = "Invalid className" });
                 }
 

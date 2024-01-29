@@ -64,7 +64,7 @@ namespace Hik.Web.Tests
             Assert.IsType<RedirectToPageResult>(result);
             var page = (RedirectToPageResult)result;
             Assert.Equal("./Index", page.PageName);
-            Assert.Equal($"Activity { group}.{ name} stoped", page.RouteValues.Values.First());
+            Assert.Equal($"Activity { group}.{ name} stopped", page.RouteValues.Values.First());
         }
 
         [Theory]
@@ -79,7 +79,7 @@ namespace Hik.Web.Tests
                     {
                         new(){ Group = group, Name = "Floor0_Video", ClassName = videoJob },
                         new(){ Group = group, Name = name, ClassName = videoJob },
-                        new(){ Group = group, Name = "NeverRun", ClassName = archiveJob },
+                        new(){ Group = group, Name = "NeverRun", ClassName = filesCollectorJob },
                         new(){ Group = group, Name = "Floor0_Photo", ClassName = photoJob },
                         new(){ Group = group, Name = "Floor1_Photo", ClassName = photoJob },
                     }
@@ -91,7 +91,7 @@ namespace Hik.Web.Tests
             Assert.Equal(msg, sut.ResponseMsg);
             Assert.NotEmpty(sut.TriggersDtos);
             Assert.Single(sut.TriggersDtos.Values.SelectMany(x => x).Where(x => x.ProcessId != null));
-            Assert.True(sut.TriggersDtos.ContainsKey(archiveJob));
+            Assert.True(sut.TriggersDtos.ContainsKey(filesCollectorJob));
             Assert.Equal(2, sut.TriggersDtos[videoJob].Count);
             Assert.Equal(2, sut.TriggersDtos[photoJob].Count);
         }

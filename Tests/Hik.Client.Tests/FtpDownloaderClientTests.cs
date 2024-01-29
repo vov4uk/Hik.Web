@@ -52,7 +52,7 @@ namespace Hik.Client.Tests
         }
 
         [Fact]
-        public async Task GetFilesListAsync_CallWithValidParameters_ReturnMapppedFiles()
+        public async Task GetFilesListAsync_CallWithValidParameters_ReturnMappedFiles()
         {
             ftpMock.Setup(x => x.GetListing("/CameraName", default)).ReturnsAsync(new FtpListItem[]
             {
@@ -104,7 +104,7 @@ namespace Hik.Client.Tests
         }
 
         [Fact]
-        public async Task DownloadFileAsync_SizeMistmatch_DownloadFalse()
+        public async Task DownloadFileAsync_SizeMismatch_DownloadFalse()
         {
             string randomName = "RandomName";
 

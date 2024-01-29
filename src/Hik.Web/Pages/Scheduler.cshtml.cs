@@ -8,9 +8,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+#if USE_AUTHORIZATION
+using Microsoft.AspNetCore.Authorization;
+#endif
 
 namespace Hik.Web.Pages
 {
+#if USE_AUTHORIZATION
+    [Authorize(Roles = "Admin")]
+#endif
     public class SchedulerModel : PageModel
     {
         public QuartzTriggersDto Dto { get; set; }
@@ -41,13 +47,20 @@ namespace Hik.Web.Pages
             return RedirectToPage("./Scheduler", new { msg = "Scheduler restarted" });
         }
 
+        public async Task<IActionResult> OnPostRemoveAsync(int triggerId)
+        {
+            await _mediator.Send(new RemoveTriggerCommand() {TriggerId = triggerId });
+
+            return RedirectToPage("./Scheduler", new { msg = $"Trigger with id {triggerId} removed" });
+        }
+
         public IActionResult OnPostKillAll()
         {
             foreach (var item in RunningActivities.GetEnumerator())
             {
                 item?.Kill();
             }
-            return RedirectToPage("./Scheduler", new { msg = "Jobs stoped" });
+            return RedirectToPage("./Scheduler", new { msg = "Jobs stopped" });
         }
     }
 }

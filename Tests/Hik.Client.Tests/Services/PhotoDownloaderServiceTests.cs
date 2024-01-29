@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Hik.Client.Tests.Services
 {
-    public class HikPhotoDownloaderTests
+    public class PhotoDownloaderServiceTests
     {
         private readonly Mock<IDirectoryHelper> directoryMock;
         private readonly Fixture fixture;
@@ -22,7 +22,7 @@ namespace Hik.Client.Tests.Services
         private readonly Mock<IClientFactory> clientFactoryMock;
         private readonly Mock<ILogger> loggerMock;
 
-        public HikPhotoDownloaderTests()
+        public PhotoDownloaderServiceTests()
         {
             this.directoryMock = new (MockBehavior.Strict);
             this.clientMock = new (MockBehavior.Strict);
@@ -96,7 +96,7 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteAsync_CancelationOnClintItitialize_ClientDisposed()
+        public async Task ExecuteAsync_CancelationOnClientInitialize_ClientDisposed()
         {
             var cameraConfig = this.fixture.Build<CameraConfig>()
                 .Create();
@@ -119,7 +119,7 @@ namespace Hik.Client.Tests.Services
         }
 
         [Fact]
-        public async Task ExecuteAsync_CancelationOnDownload_ExceptionFiredAfterFirtstFileDownloaded()
+        public async Task ExecuteAsync_CancelationOnDownload_ExceptionFiredAfterFirstFileDownloaded()
         {
             int filesCount = 5;
 

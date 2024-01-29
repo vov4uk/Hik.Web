@@ -35,7 +35,7 @@ namespace Hik.Web.Queries.Test
                 { 2, "TriggerKey1" },
                 { 1, "TriggerKey2" },
             };
-            repoMock.Setup(x => x.FindManyAsync(x => x.ShowInSearch))
+            repoMock.Setup(x => x.FindManyAsync(x => x.ShowInSearch && x.IsEnabled))
                 .ReturnsAsync(new List<JobTrigger>()
                 {
                     new(){ Id = 1, TriggerKey = "TriggerKey2" },

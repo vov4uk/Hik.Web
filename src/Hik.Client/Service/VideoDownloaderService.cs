@@ -53,7 +53,7 @@ namespace Hik.Client.Service
             {
                 file.DownloadStarted = start;
                 var finish = DateTime.Now;
-                var duration = (int?)(finish - start).TotalSeconds;
+                var duration = (int?)(finish - start).TotalMilliseconds;
                 file.DownloadDuration = duration;
 
                 int? videoDuration = file.Duration;

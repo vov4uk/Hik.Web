@@ -115,7 +115,7 @@
         #region GetFilesListAsync
 
         [Fact]
-        public async Task GetFilesListAsync_CallWithValidParameters_ReturnMapppedFiles()
+        public async Task GetFilesListAsync_CallWithValidParameters_ReturnMappedFiles()
         {
             DateTime start = default(DateTime);
             DateTime end = start.AddMinutes(2);

@@ -1,3 +1,4 @@
+//#define USE_AUTHORIZATION
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -62,9 +63,13 @@ namespace Hik.Web
                    shared: true,
                    flushToDiskInterval: TimeSpan.FromSeconds(1))
                    .WriteTo.Seq(loggerConfig.ServerUrl,
-                                 period: TimeSpan.FromSeconds(1))
+                                 period: TimeSpan.FromSeconds(1),
+                                 apiKey: loggerConfig.ApiKey)
                 .CreateLogger();
 
+#if USE_AUTHORIZATION
+            Log.Information("USE_AUTHORIZATION");
+#endif
             DBConfig = config.GetSection("DBConfiguration").Get<DbConfiguration>();
 
             await MigrationTools.RunMigration(DBConfig);
@@ -98,6 +103,16 @@ namespace Hik.Web
                         })
 #if USE_AUTHORIZATION
                     .UseUrls($"https://+:{port}")
+                    .ConfigureKestrel(kestrel =>
+                    {
+                        kestrel.ListenAnyIP(int.Parse(port), portOptions =>
+                        {
+                            portOptions.UseHttps(h =>
+                            {
+                                h.UseLettuceEncrypt(kestrel.ApplicationServices);
+                            });
+                        });
+                    })
 #else
                     .UseUrls($"http://+:{port}")
 #endif

@@ -19,7 +19,7 @@ namespace Hik.Web.Queries.Search
             {
                 var repo = uow.GetRepository<JobTrigger>();
 
-                var triggers = await repo.FindManyAsync(x => x.ShowInSearch);
+                var triggers = await repo.FindManyAsync(x => x.ShowInSearch && x.IsEnabled);
 
                 return new SearchTriggersDto
                 {

@@ -29,7 +29,7 @@ namespace Hik.Web.Queries.Thumbnail
                 }
             }
 
-            byte[] bytes = imageHelper.GetThumbnail(path, 216, 122);
+            byte[] bytes = imageHelper.GetThumbnail(path, 278, 158);
 
             return new PhotoThumbnailDto
             {
