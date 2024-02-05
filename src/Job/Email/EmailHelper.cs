@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
@@ -12,10 +13,11 @@ namespace Job.Email
 
         static EmailHelper()
         {
-#if RELEASE
-            string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
-            Settings = Extensions.HikConfigExtensions.GetConfig<EmailConfig>(System.IO.File.ReadAllText(configPath));
-#endif
+            if (!Debugger.IsAttached)
+            {
+                string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
+                Settings = Extensions.HikConfigExtensions.GetConfig<EmailConfig>(System.IO.File.ReadAllText(configPath));
+            }
         }
 
         public void Send(string error, string className = null, string hikJobDetails = null)
@@ -29,32 +31,35 @@ namespace Job.Email
         {
             try
             {
-#if DEBUG
-                Logger.LogError(body);
-#elif RELEASE
-                if (Settings != null)
+                if (Debugger.IsAttached)
                 {
-                    using var mail = new System.Net.Mail.MailMessage
-                    {
-                        From = new System.Net.Mail.MailAddress(Settings.UserName),
-                        Subject = subject,
-                        Body = body,
-                        IsBodyHtml = true,
-                    };
-
-                    mail.To.Add(Settings.Receiver);
-                    using var smtp = new System.Net.Mail.SmtpClient(Settings.Server, Settings.Port)
-                    {
-                        Credentials = new System.Net.NetworkCredential(Settings.UserName, Settings.Password),
-                        EnableSsl = true,
-                    };
-                    smtp.Send(mail);
+                    Logger.LogError(body);
                 }
                 else
                 {
-                    Logger.LogError("Email settings file not exist");
+                    if (Settings != null)
+                    {
+                        using var mail = new System.Net.Mail.MailMessage
+                        {
+                            From = new System.Net.Mail.MailAddress(Settings.UserName),
+                            Subject = subject,
+                            Body = body,
+                            IsBodyHtml = true,
+                        };
+
+                        mail.To.Add(Settings.Receiver);
+                        using var smtp = new System.Net.Mail.SmtpClient(Settings.Server, Settings.Port)
+                        {
+                            Credentials = new System.Net.NetworkCredential(Settings.UserName, Settings.Password),
+                            EnableSsl = true,
+                        };
+                        smtp.Send(mail);
+                    }
+                    else
+                    {
+                        Logger.LogError("Email settings file not exist");
+                    }
                 }
-#endif
             }
             catch (Exception e)
             {
