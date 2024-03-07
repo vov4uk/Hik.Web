@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -54,7 +55,7 @@ namespace Job.Impl
             {
                 var triggers = await db.GetJobTriggersAsync(Config.Triggers);
                 var topFolders = triggers.Select(x => JObject.Parse(x.Config).Value<string>("DestinationFolder")).ToArray();
-                deleteFilesResult = PersentageDelete(Config, topFolders);
+                deleteFilesResult = PercentageDelete(Config, topFolders);
             }
 
             directoryHelper.DeleteEmptyDirs(Config.DestinationFolder);
@@ -77,16 +78,18 @@ namespace Job.Impl
 
         private void DeleteFiles(IReadOnlyCollection<MediaFileDto> filesToDelete)
         {
+            if (Debugger.IsAttached)
+            {
+                return;
+            }
+
             foreach (var file in filesToDelete)
             {
-                this.logger.Debug("Deleting: {path}", file.Path);
-#if RELEASE
                 file.Size = filesHelper.FileSize(file.Path);
                 this.filesHelper.DeleteFile(file.Path);
-#endif
             }
         }
-        private List<MediaFileDto> PersentageDelete(GarbageCollectorConfig gcConfig, string[] topFolders)
+        private List<MediaFileDto> PercentageDelete(GarbageCollectorConfig gcConfig, string[] topFolders)
         {
             List<MediaFileDto> deletedFiles = new();
             var destination = gcConfig.DestinationFolder;
