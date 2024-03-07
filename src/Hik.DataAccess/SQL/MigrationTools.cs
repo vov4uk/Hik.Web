@@ -1,11 +1,11 @@
 ﻿using System.Collections;
 using System.Globalization;
-using System.Resources;
 using System;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Serilog;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Hik.DataAccess.SQL
 {
@@ -25,8 +25,9 @@ namespace Hik.DataAccess.SQL
 );");
             await db.SaveChangesAsync();
 
-            ResourceSet create = SQL.ResourceManager.GetResourceSet(CultureInfo.CurrentUICulture, true, true);
-            foreach (DictionaryEntry entry in create)
+            var scripts = SQL.ResourceManager.GetResourceSet(CultureInfo.CurrentUICulture, true, true).OfType<DictionaryEntry>()
+                .OrderBy(i => i.Key);
+            foreach (DictionaryEntry entry in scripts)
             {
                 var script = await db.MigrationHistory.FindAsync(entry.Key);
                 if (script == null)
