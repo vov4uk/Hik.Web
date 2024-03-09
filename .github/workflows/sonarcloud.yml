@@ -1,19 +1,25 @@
-name: SonarCloud analysis
+name: .NET
+
 on:
   push:
-    branches:
-      - main
+    branches: [ "master" ]
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches: [ "master" ]
+
 jobs:
-  sonarcloud:
-    name: SonarCloud
-    runs-on: ubuntu-latest
+  build:
+
+    runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env: 
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
