@@ -9,19 +9,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.Threading;
 using System.Threading.Tasks;
-
-#if USE_AUTHORIZATION
-using Microsoft.AspNetCore.Authorization;
-#endif
 
 namespace Hik.Web.Pages
 {
-#if USE_AUTHORIZATION
-    [Authorize(Roles = "Admin,Reader")]
-#endif
 
     public class SearchModel : PageModel
     {
@@ -50,13 +41,6 @@ namespace Hik.Web.Pages
 
         public async Task<IActionResult> OnGetAsync(int? jobTriggerId, DateTime? dateTime)
         {
-#if USE_AUTHORIZATION
-            if (!User.IsInRole("Admin"))
-            {
-                return RedirectToPage("./Error");
-            }
-#endif
-
             if (dateTime == null)
             {
                 dateTime = DateTime.Now;
@@ -73,12 +57,6 @@ namespace Hik.Web.Pages
 
         public async Task<IActionResult> OnGetDownloadFile(int fileId)
         {
-#if USE_AUTHORIZATION
-            if (!User.IsInRole("Admin"))
-            {
-                return RedirectToPage("./Error");
-            }
-#endif
             var filePath = await GetFilePath(fileId);
 
             if (string.IsNullOrEmpty(filePath))
@@ -92,12 +70,6 @@ namespace Hik.Web.Pages
 
         public async Task<IActionResult> OnGetStreamFile(int fileId)
         {
-#if USE_AUTHORIZATION
-            if (!User.IsInRole("Admin"))
-            {
-                return RedirectToPage("./Error");
-            }
-#endif
             var filePath = await GetFilePath(fileId);
 
             if (string.IsNullOrEmpty(filePath))

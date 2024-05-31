@@ -1,4 +1,4 @@
-//#define USE_AUTHORIZATION
+#define USE_AUTHORIZATION
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -103,16 +103,6 @@ namespace Hik.Web
                         })
 #if USE_AUTHORIZATION
                     .UseUrls($"https://+:{port}")
-                    .ConfigureKestrel(kestrel =>
-                    {
-                        kestrel.ListenAnyIP(int.Parse(port), portOptions =>
-                        {
-                            portOptions.UseHttps(h =>
-                            {
-                                h.UseLettuceEncrypt(kestrel.ApplicationServices);
-                            });
-                        });
-                    })
 #else
                     .UseUrls($"http://+:{port}")
 #endif

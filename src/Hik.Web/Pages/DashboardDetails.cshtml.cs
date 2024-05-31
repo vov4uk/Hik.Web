@@ -5,15 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 
-#if USE_AUTHORIZATION
-using Microsoft.AspNetCore.Authorization;
-#endif
-
 namespace Hik.Web.Pages
 {
-#if USE_AUTHORIZATION
-    [Authorize(Roles = "Admin")]
-#endif
     public class DashboardDetailsModel : PageModel
     {
         private readonly IMediator mediator;

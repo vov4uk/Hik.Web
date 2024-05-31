@@ -9,15 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
-#if USE_AUTHORIZATION
-using Microsoft.AspNetCore.Authorization;
-#endif
 
 namespace Hik.Web.Pages
 {
-#if USE_AUTHORIZATION
-    [Authorize(Roles = "Admin")]
-#endif
     public class DashboardModel : PageModel
     {
         private readonly IMediator mediator;

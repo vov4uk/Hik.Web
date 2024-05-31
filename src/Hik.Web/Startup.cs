@@ -1,4 +1,4 @@
-//#define USE_AUTHORIZATION
+#define USE_AUTHORIZATION
 using Autofac;
 using Autofac.Features.Variance;
 using Hik.DataAccess;
@@ -73,24 +73,18 @@ namespace Hik.Web
                     {
                         var credentials = allowedUsers.FirstOrDefault(x => x.StartsWith($"{context.Username}:{context.Password}"));
 
-                        if(!string.IsNullOrEmpty(credentials))
+                        if (!string.IsNullOrEmpty(credentials))
                         {
                             var claims = new List<Claim>()
                             {
                                 new Claim(ClaimTypes.NameIdentifier, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer),
                                 new Claim(ClaimTypes.Name, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer),
-                                new Claim(ClaimTypes.Role, context.Username == "admin" ? "Admin" : "Reader")
+                                new Claim(ClaimTypes.Role, "Admin"),
                             };
-
-                            var arr = credentials.Split(':');
-                            if(arr.Length == 3)
-                            {
-                                claims.Add(new Claim(ClaimTypes.UserData, arr[2]));
-                            }
-
 
                             context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
                             context.Success();
+                            Log.Information("Login as {username}", context.Username);
                         }
                         else
                         {
@@ -104,7 +98,6 @@ namespace Hik.Web
             });
 
             services.AddAuthorization();
-            services.AddLettuceEncrypt();
 #endif
             services.AddRazorPages();
             services.AddFluentValidationAutoValidation();
@@ -164,7 +157,6 @@ namespace Hik.Web
 
             app.UseAuthentication()
                 .UseAuthorization()
-                .UseHttpsRedirection()
                 .UseHsts();
 #endif
             app.UseEndpoints(endpoints =>

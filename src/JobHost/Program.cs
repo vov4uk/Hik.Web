@@ -18,11 +18,10 @@ namespace JobHost
     {
         private static async Task Main(string[] args)
         {
-            EmailHelper email = null;
             Logger logger = null;
+
             try
             {
-                email = new EmailHelper();
                 var parameters = Parameters.Parse(args);
 
                 IConfigurationRoot appConfig = new ConfigurationBuilder()
@@ -59,8 +58,8 @@ namespace JobHost
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToStringDemystified());
                 logger?.Error(ex.ToStringDemystified());
-                email?.Send(ex.Message);
                 Environment.ExitCode = -1;
             }
 

@@ -2,7 +2,6 @@
 using Hik.DataAccess.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace Hik.Web.Commands.Cron
 {
@@ -38,15 +37,8 @@ namespace Hik.Web.Commands.Cron
                         filesRepo.RemoveRange(files);
                     }
 
-                    var exRepo = uow.GetRepository<ExceptionLog>();
-                    var ex = await exRepo.FindManyAsync(x => x.Job.JobTriggerId == request.TriggerId, x => x.Job);
-                    if (ex?.Count > 0)
-                    {
-                        exRepo.RemoveRange(ex);
-                    }
-
                     var jobsRepo = uow.GetRepository<HikJob>();
-                    var jobs = await jobsRepo.FindManyAsync(x => x.JobTriggerId == request.TriggerId && x.Id != trigger.LastExecutedJobId);
+                    var jobs = await jobsRepo.FindManyAsync(x => x.JobTriggerId == request.TriggerId && x.Id != trigger.LastExecutedJobId, x => x.ExceptionLog);
                     if (jobs?.Count > 0)
                     {
                         jobsRepo.RemoveRange(jobs);

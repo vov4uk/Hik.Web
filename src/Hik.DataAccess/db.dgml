@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph GraphDirection="LeftToRight" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="Database" Label="HikDatabase.db" Category="Database" Group="Expanded" />
+    <Node Id="DailyStatistics" Label="DailyStatistics" Category="Table" Group="Collapsed" />
+    <Node Id="DailyStatistics_Id" Label="Id" Category="Field Primary" Description="bigint" />
+    <Node Id="DailyStatistics_JobTriggerId" Label="JobTriggerId" Category="Field Foreign" Description="bigint" />
+    <Node Id="DailyStatistics_Period" Label="Period" Category="Field" Description="datetime2 " />
+    <Node Id="DailyStatistics_FilesCount" Label="FilesCount" Category="Field" Description="bigint" />
+    <Node Id="DailyStatistics_FilesSize" Label="FilesSize" Category="Field" Description="bigint" />
+    <Node Id="DailyStatistics_TotalDuration" Label="TotalDuration" Category="Field Optional" Description="bigint" />
+    <Node Id="DailyStatistics_ProcessDuration" Label="ProcessDuration" Category="Field Optional" Description="bigint" />
+    <Node Id="ExceptionLog" Label="ExceptionLog" Category="Table" Group="Collapsed" />
+    <Node Id="ExceptionLog_Id" Label="Id" Category="Field Primary" Description="bigint" />
+    <Node Id="ExceptionLog_JobId" Label="JobId" Category="Field Foreign" Description="bigint" />
+    <Node Id="ExceptionLog_Created" Label="Created" Category="Field" Description="datetime2 " />
+    <Node Id="ExceptionLog_HikErrorCode" Label="HikErrorCode" Category="Field Optional" Description="bigint" />
+    <Node Id="ExceptionLog_Message" Label="Message" Category="Field Optional" Description="text" />
+    <Node Id="ExceptionLog_CallStack" Label="CallStack" Category="Field Optional" Description="text" />
+    <Node Id="Job" Label="Job" Category="Table" Group="Collapsed" />
+    <Node Id="Job_Id" Label="Id" Category="Field Primary" Description="bigint" />
+    <Node Id="Job_JobTriggerId" Label="JobTriggerId" Category="Field Foreign" Description="bigint" />
+    <Node Id="Job_Success" Label="Success" Category="Field" Description="bigint" />
+    <Node Id="Job_PeriodStart" Label="PeriodStart" Category="Field Optional" Description="datetime2 " />
+    <Node Id="Job_PeriodEnd" Label="PeriodEnd" Category="Field Optional" Description="datetime2 " />
+    <Node Id="Job_Started" Label="Started" Category="Field" Description="datetime2 " />
+    <Node Id="Job_Finished" Label="Finished" Category="Field Optional" Description="datetime2 " />
+    <Node Id="Job_FilesCount" Label="FilesCount" Category="Field" Description="bigint" />
+    <Node Id="JobTrigger" Label="JobTrigger" Category="Table" Group="Collapsed" />
+    <Node Id="JobTrigger_Id" Label="Id" Category="Field Primary" Description="bigint" />
+    <Node Id="JobTrigger_TriggerKey" Label="TriggerKey" Category="Field Optional" Description="text" />
+    <Node Id="JobTrigger_Group" Label="Group" Category="Field Optional" Description="text" />
+    <Node Id="JobTrigger_LastSync" Label="LastSync" Category="Field Optional" Description="datetime2" />
+    <Node Id="JobTrigger_ShowInSearch" Label="ShowInSearch" Category="Field Optional" Description="bit" />
+    <Node Id="JobTrigger_LastExecutedJobId" Label="LastExecutedJobId" Category="Field Optional" Description="bigint" />
+    <Node Id="JobTrigger_ClassName" Label="ClassName" Category="Field Optional" Description="text" />
+    <Node Id="JobTrigger_Config" Label="Config" Category="Field Optional" Description="text" />
+    <Node Id="JobTrigger_Description" Label="Description" Category="Field Optional" Description="text" />
+    <Node Id="JobTrigger_CronExpression" Label="CronExpression" Category="Field Optional" Description="text" />
+    <Node Id="JobTrigger_IsEnabled" Label="IsEnabled" Category="Field Optional" Description="bit" />
+    <Node Id="JobTrigger_SentEmailOnError" Label="SentEmailOnError" Category="Field Optional" Description="bit" />
+    <Node Id="MediaFile" Label="MediaFile" Category="Table" Group="Collapsed" />
+    <Node Id="MediaFile_Id" Label="Id" Category="Field Primary" Description="bigint" />
+    <Node Id="MediaFile_JobTriggerId" Label="JobTriggerId" Category="Field Foreign" Description="bigint" />
+    <Node Id="MediaFile_JobId" Label="JobId" Category="Field Foreign" Description="bigint" />
+    <Node Id="MediaFile_Name" Label="Name" Category="Field Optional" Description="text" />
+    <Node Id="MediaFile_Path" Label="Path" Category="Field Optional" Description="text" />
+    <Node Id="MediaFile_Date" Label="Date" Category="Field" Description="datetime2" />
+    <Node Id="MediaFile_DownloadStarted" Label="DownloadStarted" Category="Field" Description="datetime2" />
+    <Node Id="MediaFile_DownloadDuration" Label="DownloadDuration" Category="Field Optional" Description="bigint" />
+    <Node Id="MediaFile_Duration" Label="Duration" Category="Field Optional" Description="bigint" />
+    <Node Id="MediaFile_Size" Label="Size" Category="Field" Description="bigint" />
+    <Node Id="MediaFile_Objects" Label="Objects" Category="Field Optional" Description="text" />
+    <Node Id="MediaFile_EventId" Label="EventId" Category="Field Optional" Description="bigint" />
+    <Node Id="MigrationHistory" Label="MigrationHistory" Category="Table" Group="Collapsed" />
+    <Node Id="MigrationHistory_ScriptName" Label="ScriptName" Category="Field Primary" Description="text" />
+    <Node Id="MigrationHistory_ExecutionDate" Label="ExecutionDate" Category="Field" Description="datetime2 " />
+  </Nodes>
+  <Links>
+    <Link Source="Database" Target="DailyStatistics" Category="Contains" />
+    <Link Source="DailyStatistics" Target="DailyStatistics_Id" Category="Contains" />
+    <Link Source="DailyStatistics" Target="DailyStatistics_JobTriggerId" Category="Contains" />
+    <Link Source="DailyStatistics" Target="DailyStatistics_Period" Category="Contains" />
+    <Link Source="DailyStatistics" Target="DailyStatistics_FilesCount" Category="Contains" />
+    <Link Source="DailyStatistics" Target="DailyStatistics_FilesSize" Category="Contains" />
+    <Link Source="DailyStatistics" Target="DailyStatistics_TotalDuration" Category="Contains" />
+    <Link Source="DailyStatistics" Target="DailyStatistics_ProcessDuration" Category="Contains" />
+    <Link Source="DailyStatistics_JobTriggerId" Target="JobTrigger_Id" Label="FK_DailyStatistics_0_0" Category="Foreign Key" />
+    <Link Source="Database" Target="ExceptionLog" Category="Contains" />
+    <Link Source="ExceptionLog" Target="ExceptionLog_Id" Category="Contains" />
+    <Link Source="ExceptionLog" Target="ExceptionLog_JobId" Category="Contains" />
+    <Link Source="ExceptionLog" Target="ExceptionLog_Created" Category="Contains" />
+    <Link Source="ExceptionLog" Target="ExceptionLog_HikErrorCode" Category="Contains" />
+    <Link Source="ExceptionLog" Target="ExceptionLog_Message" Category="Contains" />
+    <Link Source="ExceptionLog" Target="ExceptionLog_CallStack" Category="Contains" />
+    <Link Source="ExceptionLog_JobId" Target="Job_Id" Label="FK_ExceptionLog_0_0" Category="Foreign Key" />
+    <Link Source="Database" Target="Job" Category="Contains" />
+    <Link Source="Job" Target="Job_Id" Category="Contains" />
+    <Link Source="Job" Target="Job_JobTriggerId" Category="Contains" />
+    <Link Source="Job" Target="Job_Success" Category="Contains" />
+    <Link Source="Job" Target="Job_PeriodStart" Category="Contains" />
+    <Link Source="Job" Target="Job_PeriodEnd" Category="Contains" />
+    <Link Source="Job" Target="Job_Started" Category="Contains" />
+    <Link Source="Job" Target="Job_Finished" Category="Contains" />
+    <Link Source="Job" Target="Job_FilesCount" Category="Contains" />
+    <Link Source="Job_JobTriggerId" Target="JobTrigger_Id" Label="FK_Job_0_0" Category="Foreign Key" />
+    <Link Source="Database" Target="JobTrigger" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_Id" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_TriggerKey" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_Group" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_LastSync" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_ShowInSearch" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_LastExecutedJobId" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_ClassName" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_Config" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_Description" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_CronExpression" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_IsEnabled" Category="Contains" />
+    <Link Source="JobTrigger" Target="JobTrigger_SentEmailOnError" Category="Contains" />
+    <Link Source="Database" Target="MediaFile" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_Id" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_JobTriggerId" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_JobId" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_Name" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_Path" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_Date" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_DownloadStarted" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_DownloadDuration" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_Duration" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_Size" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_Objects" Category="Contains" />
+    <Link Source="MediaFile" Target="MediaFile_EventId" Category="Contains" />
+    <Link Source="MediaFile_JobId" Target="Job_Id" Label="FK_MediaFile_0_0" Category="Foreign Key" />
+    <Link Source="MediaFile_JobTriggerId" Target="JobTrigger_Id" Label="FK_MediaFile_1_0" Category="Foreign Key" />
+    <Link Source="Database" Target="MigrationHistory" Category="Contains" />
+    <Link Source="MigrationHistory" Target="MigrationHistory_ScriptName" Category="Contains" />
+    <Link Source="MigrationHistory" Target="MigrationHistory_ExecutionDate" Category="Contains" />
+  </Links>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Table" ValueLabel="True">
+      <Condition Expression="HasCategory('Table')" />
+      <Setter Property="Background" Value="#FFC0C0C0" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Schema" ValueLabel="True">
+      <Condition Expression="HasCategory('Schema')" />
+      <Setter Property="Background" Value="#FF7F9169" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Field Primary" ValueLabel="True">
+      <Condition Expression="HasCategory('Field Primary')" />
+      <Setter Property="Background" Value="#FF008000" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Field Optional" ValueLabel="True">
+      <Condition Expression="HasCategory('Field Optional')" />
+      <Setter Property="Background" Value="#FF808040" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Field Foreign" ValueLabel="True">
+      <Condition Expression="HasCategory('Field Foreign')" />
+      <Setter Property="Background" Value="#FF8080FF" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Field" ValueLabel="True">
+      <Condition Expression="HasCategory('Field')" />
+      <Setter Property="Background" Value="#FFC0A000" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Database" ValueLabel="True">
+      <Condition Expression="HasCategory('Database')" />
+      <Setter Property="Background" Value="#FFFFFFFF" />
+    </Style>
+  </Styles>
+</DirectedGraph>
