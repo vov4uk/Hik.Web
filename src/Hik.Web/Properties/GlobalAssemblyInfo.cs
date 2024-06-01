@@ -1,9 +1,9 @@
-//2024.1.29.2
+//2024.6.1.1
 using System.Reflection;
 
 [assembly: AssemblyCompany("Hik.Web")]
 [assembly: AssemblyProduct("Hik.Web")]
 [assembly:   AssemblyTitle("Hik.Web")]
 [assembly: AssemblyConfiguration("Release")]
-[assembly: AssemblyFileVersion("2024.1.29.2")]
-[assembly:     AssemblyVersion("2024.1.29.2")]
+[assembly: AssemblyFileVersion("2024.6.1.1")]
+[assembly:     AssemblyVersion("2024.6.1.1")]

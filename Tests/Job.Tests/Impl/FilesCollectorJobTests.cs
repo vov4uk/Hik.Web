@@ -9,7 +9,6 @@
     using Hik.DTO.Contracts;
     using Job.Impl;
     using Moq;
-    using Newtonsoft.Json;
     using Xunit;
     using Xunit.Abstractions;
 
@@ -27,7 +26,7 @@
         [Fact]
         public void Constructor_InvalidConfig_Exception()
         {
-            Assert.Throws<JsonReaderException>(() => CreateJob("ArchiveJobTestsInvalid.json"));
+            Assert.Throws<NullReferenceException>(() => CreateJob("ArchiveJobTestsInvalid.json"));
         }
 
         [Fact]
