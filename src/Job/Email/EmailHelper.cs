@@ -16,7 +16,10 @@ namespace Job.Email
             if (!Debugger.IsAttached)
             {
                 string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
-                Settings = Extensions.HikConfigExtensions.GetConfig<EmailConfig>(System.IO.File.ReadAllText(configPath));
+                if (System.IO.File.Exists(configPath))
+                {
+                    Settings = Extensions.HikConfigExtensions.GetConfig<EmailConfig>(System.IO.File.ReadAllText(configPath));
+                }
             }
         }
 

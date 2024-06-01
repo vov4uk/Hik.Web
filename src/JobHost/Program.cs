@@ -1,7 +1,6 @@
 ﻿using Hik.DataAccess;
 using Hik.DTO.Config;
 using Job;
-using Job.Email;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;
