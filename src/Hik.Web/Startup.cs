@@ -71,7 +71,7 @@ namespace Hik.Web
                 {
                     OnValidateCredentials = context =>
                     {
-                        var credentials = allowedUsers.FirstOrDefault(x => x.StartsWith($"{context.Username}:{context.Password}"));
+                        var credentials = Array.Find(allowedUsers, x => x.StartsWith($"{context.Username}:{context.Password}"));
 
                         if (!string.IsNullOrEmpty(credentials))
                         {
@@ -89,7 +89,7 @@ namespace Hik.Web
                         else
                         {
                             string ip = context.HttpContext.Connection.RemoteIpAddress?.ToString();
-                            Log.Error($"Login failed with {context.Username}:{context.Password}; IP:{ip}");
+                            Log.Error("Login failed with {userName}:{password}; IP:{ip}", context.Username, context.Password, ip);
                         }
 
                         return Task.CompletedTask;

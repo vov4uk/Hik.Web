@@ -81,7 +81,7 @@ namespace Hik.Web
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
             Log.Information($"App started - version {Version}");
-            host.Run();
+            await host.RunAsync();
         }
 
         public static IHostBuilder CreateHostBuilder(bool isService, IConfigurationRoot config)

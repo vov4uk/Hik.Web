@@ -16,8 +16,10 @@ namespace Job.Extensions
                 {
                     return JsonConvert.DeserializeObject<T>(json);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine(ex);
+                    return default(T);
                 }
             }
             return default(T);
