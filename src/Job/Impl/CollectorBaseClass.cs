@@ -4,12 +4,12 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using Job.Email;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using Serilog;
 using System.Linq;
+using Hik.Helpers.Email;
 
 namespace Job.Impl
 {

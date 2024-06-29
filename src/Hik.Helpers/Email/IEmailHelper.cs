@@ -1,4 +1,4 @@
-﻿namespace Job.Email
+﻿namespace Hik.Helpers.Email
 {
     public interface IEmailHelper
     {

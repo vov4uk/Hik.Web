@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Serilog.Core;
+using Hik.Helpers.Email;
 
 namespace JobHost
 {
@@ -31,6 +32,7 @@ namespace JobHost
 
                 var loggerConfig = appConfig.GetSection("Serilog").Get<LoggerConfig>();
                 var connection = appConfig.GetSection("DBConfiguration").Get<DbConfiguration>();
+                var email = appConfig.GetSection("EmailConfig").Get<EmailConfig>();
 
                 logger = new LoggerConfiguration()
                     .MinimumLevel.Information()
@@ -51,7 +53,7 @@ namespace JobHost
                     .CreateLogger();
 
 
-                IJobProcess job = await JobFactory.GetJobAsync(parameters, connection, logger);
+                IJobProcess job = await JobFactory.GetJobAsync(parameters, connection, email, logger);
 
                 await job.ExecuteAsync();
             }

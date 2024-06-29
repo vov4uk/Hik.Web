@@ -1,7 +1,6 @@
 ﻿using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Contracts;
-using Job.Email;
 using Serilog;
 using Moq;
 using System;
@@ -9,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
+using Hik.Helpers.Email;
 
 namespace Job.Tests.Impl
 {

@@ -5,7 +5,7 @@ using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
 using Hik.Helpers.Abstraction;
-using Job.Email;
+using Hik.Helpers.Email;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using System;

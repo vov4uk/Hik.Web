@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Serilog.Events;
 using Hik.DataAccess;
 using Hik.DTO.Config;
+using Hik.Helpers.Email;
 
 namespace Hik.Web
 {
@@ -27,6 +28,8 @@ namespace Hik.Web
         internal static string Environment { get; set; }
 
         internal static DbConfiguration DBConfig { get; set; }
+
+        internal static EmailConfig EmailConfig { get; set; }
 
         public static async Task Main(string[] args)
         {

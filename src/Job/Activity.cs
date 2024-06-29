@@ -1,5 +1,5 @@
 ﻿using Hik.DataAccess;
-using Job.Email;
+using Hik.Helpers.Email;
 using Serilog;
 using System;
 using System.Diagnostics;
@@ -12,6 +12,7 @@ namespace Job
     public class Activity
     {
         private readonly DbConfiguration dbConfig;
+        private readonly EmailConfig email;
         private readonly string WorkingDirectory;
 
         public Parameters Parameters { get; private set; }
@@ -38,10 +39,11 @@ namespace Job
 
         private Process hostProcess = default;
 
-        public Activity(Parameters parameters, DbConfiguration dbConfig, string workingDirectory)
+        public Activity(Parameters parameters, DbConfiguration dbConfig, EmailConfig email, string workingDirectory)
         {
             this.Parameters = parameters;
             this.dbConfig = dbConfig;
+            this.email = email;
             this.WorkingDirectory = workingDirectory;
         }
 
@@ -52,7 +54,7 @@ namespace Job
                 if (RunningActivities.Add(this))
                 {
 #if DEBUG
-                    var job = await JobFactory.GetJobAsync(Parameters, this.dbConfig, Log.Logger);
+                    var job = await JobFactory.GetJobAsync(Parameters, this.dbConfig, this.email, Log.Logger);
                     await job.ExecuteAsync();
 #else
                     await StartProcess();
@@ -67,7 +69,6 @@ namespace Job
             catch (Exception e)
             {
                 Log.Error("ErrorMsg: {errorMsg}; Trace: {trace}", "Failed to start activity", e.ToStringDemystified());
-                new EmailHelper().Send(e.Message, Parameters.TriggerKey, null);
             }
             finally
             {

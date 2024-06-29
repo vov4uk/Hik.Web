@@ -32,8 +32,11 @@
   * Remove oldest files if less than n% of free space
 ________________________________________________________________________
 
-* start from console
+* Download Hik.Web_xxx.zip [latets releases](https://github.com/vov4uk/HikConsole/releases/latest)
+* Unzip Hik.Web_xxx.zip to Hik.Web folder
+* Start from command line
 ```
+cd Hik.Web
 Hik.Web.exe --console
 ```
 
