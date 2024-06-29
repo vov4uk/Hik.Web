@@ -1,4 +1,4 @@
-#define USE_AUTHORIZATION
+//#define USE_AUTHORIZATION
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -35,8 +35,8 @@ namespace Hik.Web
         {
             Console.WriteLine($"AssemblyDirectory : {AssemblyDirectory}");
 
-            var isService = !(Debugger.IsAttached || args.Contains(ConsoleParameter));
-            Environment = isService ? "Production" : "Development";
+            var isDev = Debugger.IsAttached || args.Contains(ConsoleParameter);
+            Environment = isDev ? "Development" : "Production";
 
             string envSettings = $"appsettings.{Environment}.json";
 
@@ -77,7 +77,7 @@ namespace Hik.Web
 
             await MigrationTools.RunMigration(DBConfig);
 
-            var builder = CreateHostBuilder(isService, config);
+            var builder = CreateHostBuilder(isDev, config);
 
             var host = builder.Build();
 

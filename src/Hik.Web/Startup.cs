@@ -1,4 +1,4 @@
-#define USE_AUTHORIZATION
+//#define USE_AUTHORIZATION
 using Autofac;
 using Autofac.Features.Variance;
 using Hik.DataAccess;
