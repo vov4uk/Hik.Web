@@ -12,7 +12,15 @@ namespace Job.Extensions
         {
             if (!string.IsNullOrEmpty(json))
             {
-                return JsonConvert.DeserializeObject<T>(json);
+                try
+                {
+                    return JsonConvert.DeserializeObject<T>(json);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return default(T);
+                }
             }
             return default(T);
         }

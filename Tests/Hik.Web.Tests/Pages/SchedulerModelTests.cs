@@ -50,7 +50,7 @@ namespace Hik.Web.Tests.Pages
         [AutoData]
         public void OnPostKill_Redirect(string group, string name)
         {
-            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null));
+            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null, null));
 
             Assert.NotEmpty(RunningActivities.GetEnumerator());
 

@@ -21,7 +21,7 @@ namespace Hik.DTO.Config
         public int SkipLast { get; set; } = 0;
 
         [Display(Name = "Allowed file extentions")]
-        public string AllowedFileExtentions { get; set; } = "*.*;";
+        public string AllowedFileExtentions { get; set; } = ".jpg;";
     }
 
     public class FilesConfigValidator : AbstractValidator<FilesCollectorConfig>

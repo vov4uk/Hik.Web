@@ -8,7 +8,7 @@ using Hik.DataAccess;
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.Helpers.Abstraction;
-using Job.Email;
+using Hik.Helpers.Email;
 using Job.Impl;
 using Serilog;
 using System;
@@ -20,7 +20,9 @@ namespace Job
     [ExcludeFromCodeCoverage]
     public static class JobFactory
     {
-        public static async Task<IJobProcess> GetJobAsync(Parameters parameters, DbConfiguration connection, ILogger logger)
+        private static IEmailHelper emailHelper;
+
+        public static async Task<IJobProcess> GetJobAsync(Parameters parameters, DbConfiguration connection, EmailConfig emailCfg, ILogger logger)
         {
             JobTrigger trigger;
 
@@ -31,7 +33,7 @@ namespace Job
 
             string className = trigger.ClassName;
 
-            IEmailHelper email = new EmailHelper();
+            IEmailHelper email = GetEmailHelper(emailCfg);
 
             var loggerParameter = new ResolvedParameter(
                                 (pi, ctx) => pi.ParameterType == typeof(ILogger) && pi.Name == "logger",
@@ -80,6 +82,11 @@ namespace Job
                 default:
                     throw new ArgumentException($"No such type exist '{className}'");
             }
+        }
+
+        private static IEmailHelper GetEmailHelper(EmailConfig appConfig)
+        {
+            return emailHelper ??= new EmailHelper(appConfig);
         }
     }
 }

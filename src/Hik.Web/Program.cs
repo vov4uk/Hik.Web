@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Serilog.Events;
 using Hik.DataAccess;
 using Hik.DTO.Config;
+using Hik.Helpers.Email;
 
 namespace Hik.Web
 {
@@ -28,12 +29,14 @@ namespace Hik.Web
 
         internal static DbConfiguration DBConfig { get; set; }
 
+        internal static EmailConfig EmailConfig { get; set; }
+
         public static async Task Main(string[] args)
         {
             Console.WriteLine($"AssemblyDirectory : {AssemblyDirectory}");
 
-            var isService = !(Debugger.IsAttached || args.Contains(ConsoleParameter));
-            Environment = isService ? "Production" : "Development";
+            var isDev = Debugger.IsAttached || args.Contains(ConsoleParameter);
+            Environment = isDev ? "Development" : "Production";
 
             string envSettings = $"appsettings.{Environment}.json";
 
@@ -74,14 +77,14 @@ namespace Hik.Web
 
             await MigrationTools.RunMigration(DBConfig);
 
-            var builder = CreateHostBuilder(isService, config);
+            var builder = CreateHostBuilder(isDev, config);
 
             var host = builder.Build();
 
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
             Log.Information($"App started - version {Version}");
-            host.Run();
+            await host.RunAsync();
         }
 
         public static IHostBuilder CreateHostBuilder(bool isService, IConfigurationRoot config)
@@ -103,16 +106,6 @@ namespace Hik.Web
                         })
 #if USE_AUTHORIZATION
                     .UseUrls($"https://+:{port}")
-                    .ConfigureKestrel(kestrel =>
-                    {
-                        kestrel.ListenAnyIP(int.Parse(port), portOptions =>
-                        {
-                            portOptions.UseHttps(h =>
-                            {
-                                h.UseLettuceEncrypt(kestrel.ApplicationServices);
-                            });
-                        });
-                    })
 #else
                     .UseUrls($"http://+:{port}")
 #endif

@@ -8,15 +8,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-#if USE_AUTHORIZATION
-using Microsoft.AspNetCore.Authorization;
-#endif
 
 namespace Hik.Web.Pages
 {
-#if USE_AUTHORIZATION
-    [Authorize(Roles = "Admin")]
-#endif
     public class SchedulerModel : PageModel
     {
         public QuartzTriggersDto Dto { get; set; }

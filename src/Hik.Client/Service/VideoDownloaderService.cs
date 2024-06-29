@@ -57,7 +57,7 @@ namespace Hik.Client.Service
                 file.DownloadDuration = duration;
 
                 int? videoDuration = file.Duration;
-                logger.Information($"{file.ToVideoUserFriendlyString()} - downloaded in {duration.FormatSeconds()}, avg speed {((long)Utils.SafeDivision(file.Size, duration.Value)).FormatBytes()}/s, avg rate {((long)Utils.SafeDivision(file.Size, videoDuration.Value)).FormatBytes()}/s");
+                logger.Information($"{file.ToVideoUserFriendlyString()} - downloaded in {duration.FormatMilliseconds()}, avg speed {((long)Utils.SafeDivision(file.Size, duration.Value / 1000m)).FormatBytes()}/s, avg rate {((long)Utils.SafeDivision(file.Size, videoDuration.Value)).FormatBytes()}/s");
             }
 
             return downloaded;

@@ -2,7 +2,7 @@
 using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
-using Job.Email;
+using Hik.Helpers.Email;
 using Serilog;
 namespace Job.Impl
 {

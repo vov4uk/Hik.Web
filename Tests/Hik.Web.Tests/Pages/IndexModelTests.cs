@@ -56,7 +56,7 @@ namespace Hik.Web.Tests
         [AutoData]
         public void OnPostKill_ActivityFound(string group, string name)
         {
-            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null));
+            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null, null));
 
             var sut = new IndexModel(this._mediator.Object);
             var result = sut.OnPostKill($"{group}.{name}");
@@ -71,7 +71,7 @@ namespace Hik.Web.Tests
         [AutoData]
         public async Task OnGet_ReturnJobs(string msg)
         {
-            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null));
+            RunningActivities.Add(new Activity(new Parameters(group, name, ""), null, null, null));
             this._mediator.Setup(x => x.Send(It.IsAny<QuartzTriggersQuery>(), default(CancellationToken)))
                 .ReturnsAsync(new QuartzTriggersDto
                 {

@@ -4,7 +4,7 @@ using Hik.DataAccess.Abstractions;
 using Hik.DataAccess.Data;
 using Hik.DTO.Config;
 using Hik.DTO.Contracts;
-using Job.Email;
+using Hik.Helpers.Email;
 using Job.Extensions;
 using Serilog;
 using System.Collections.Generic;

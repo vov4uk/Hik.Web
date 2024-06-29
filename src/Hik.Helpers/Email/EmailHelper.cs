@@ -1,23 +1,18 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
 
-namespace Job.Email
+namespace Hik.Helpers.Email
 {
     [ExcludeFromCodeCoverage]
     public class EmailHelper : IEmailHelper
     {
-        static EmailConfig Settings { get;}
-        static readonly ILogger Logger = new LoggerFactory().CreateLogger(nameof(EmailHelper));
+        private EmailConfig Settings { get; }
 
-        static EmailHelper()
+        public EmailHelper(EmailConfig settings)
         {
-            if (!Debugger.IsAttached)
-            {
-                string configPath = System.IO.Path.Combine(Environment.CurrentDirectory, "email.json");
-                Settings = Extensions.HikConfigExtensions.GetConfig<EmailConfig>(System.IO.File.ReadAllText(configPath));
-            }
+            Settings = settings;
         }
 
         public void Send(string error, string className = null, string hikJobDetails = null)
@@ -33,7 +28,7 @@ namespace Job.Email
             {
                 if (Debugger.IsAttached)
                 {
-                    Logger.LogError(body);
+                    Log.Error(body);
                 }
                 else
                 {
@@ -57,13 +52,13 @@ namespace Job.Email
                     }
                     else
                     {
-                        Logger.LogError("Email settings file not exist");
+                        Log.Error("Email settings file not exist");
                     }
                 }
             }
             catch (Exception e)
             {
-                Logger.LogError(e, "Failed to sent email");
+                Log.Error(e, "Failed to sent email");
             }
         }
 

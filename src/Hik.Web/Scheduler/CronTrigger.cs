@@ -12,7 +12,7 @@ namespace Hik.Web.Scheduler
             var group = context.Trigger.Key.Group;
 
             var parameters = new Parameters(group, trigger, Program.Environment);
-            var activity = new Activity(parameters, Program.DBConfig, Program.AssemblyDirectory);
+            var activity = new Activity(parameters, Program.DBConfig, Program.EmailConfig, Program.AssemblyDirectory);
             await activity.Start();
         }
     }

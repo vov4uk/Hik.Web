@@ -1,7 +1,6 @@
 ﻿using Hik.DataAccess;
 using Hik.DTO.Config;
 using Job;
-using Job.Email;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;
@@ -10,6 +9,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Serilog.Core;
+using Hik.Helpers.Email;
 
 namespace JobHost
 {
@@ -18,11 +18,10 @@ namespace JobHost
     {
         private static async Task Main(string[] args)
         {
-            EmailHelper email = null;
             Logger logger = null;
+
             try
             {
-                email = new EmailHelper();
                 var parameters = Parameters.Parse(args);
 
                 IConfigurationRoot appConfig = new ConfigurationBuilder()
@@ -33,6 +32,7 @@ namespace JobHost
 
                 var loggerConfig = appConfig.GetSection("Serilog").Get<LoggerConfig>();
                 var connection = appConfig.GetSection("DBConfiguration").Get<DbConfiguration>();
+                var email = appConfig.GetSection("EmailConfig").Get<EmailConfig>();
 
                 logger = new LoggerConfiguration()
                     .MinimumLevel.Information()
@@ -53,14 +53,14 @@ namespace JobHost
                     .CreateLogger();
 
 
-                IJobProcess job = await JobFactory.GetJobAsync(parameters, connection, logger);
+                IJobProcess job = await JobFactory.GetJobAsync(parameters, connection, email, logger);
 
                 await job.ExecuteAsync();
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToStringDemystified());
                 logger?.Error(ex.ToStringDemystified());
-                email?.Send(ex.Message);
                 Environment.ExitCode = -1;
             }
 
